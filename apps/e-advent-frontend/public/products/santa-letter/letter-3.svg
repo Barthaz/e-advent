@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="Koperta do Zwitego MikoBaja">
+  <rect width="800" height="1000" fill="#0f5132"/>
+  <polygon points="100,280 400,120 700,280 700,720 100,720" fill="#ead5b3" stroke="#b08d57" stroke-width="4"/>
+  <polygon points="100,280 400,480 700,280" fill="#d6b182" stroke="#b08d57" stroke-width="3"/>
+  <circle cx="400" cy="430" r="42" fill="#c41e3a"/>
+  <text x="400" y="440" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#f4d03f"></text>
+  <text x="400" y="800" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#f4d03f">Opisana koperta</text>
+  <text x="400" y="850" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#ead5b3">Adres: Zwity MikoBaj, Biegun PÛBnocny</text>
+</svg>

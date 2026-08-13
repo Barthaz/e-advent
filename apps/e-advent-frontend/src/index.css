@@ -1,0 +1,1473 @@
+@import "tailwindcss";
+
+/* Design system — spójny z aplikacją mobilną e-Advent */
+@theme {
+  --color-christmas-red: #c41e3a;
+  --color-christmas-red-dark: #a0172d;
+  --color-christmas-green: #0f5132;
+  --color-christmas-green-light: #155724;
+  --color-christmas-gold: #d4af37;
+  --color-christmas-gold-light: #f4d03f;
+  --color-parchment-light: #ead5b3;
+  --color-parchment-mid: #d6b182;
+  --color-parchment-dark: #b98f5f;
+  --color-parchment-text: #5f4326;
+  --color-parchment-muted: #6e5131;
+  --color-bronze: #b08d57;
+  --color-app-dark: #090909;
+  --color-silver-muted: #c0c0c0;
+  --color-cream: #f7f2ea;
+  --color-cream-dark: #ede4d4;
+}
+
+body {
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  background-color: var(--color-cream);
+  color: #2c2418;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+/* Karta pergaminowa — jak w aplikacji mobilnej */
+.parchment-card {
+  background: linear-gradient(
+    135deg,
+    rgba(234, 213, 179, 0.96) 0%,
+    rgba(214, 177, 130, 0.9) 50%,
+    rgba(185, 143, 95, 0.88) 100%
+  );
+  border: 1px solid rgba(130, 97, 58, 0.35);
+  border-radius: 1.125rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(95, 67, 38, 0.08);
+}
+
+/* Przycisk złoty — gradient jak w aplikacji */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #f4d03f 0%, #d4af37 100%);
+  color: #0f5132;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.35);
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #d4af37 0%, #b08d57 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(212, 175, 55, 0.45);
+}
+
+.btn-outline-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: #f4d03f;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1.5px solid rgba(244, 208, 63, 0.5);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-gold:hover {
+  background: rgba(244, 208, 63, 0.1);
+  border-color: #f4d03f;
+}
+
+.btn-outline-parchment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--color-parchment-text);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1.5px solid color-mix(in srgb, var(--color-parchment-dark) 40%, transparent);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-parchment:hover {
+  background: color-mix(in srgb, var(--color-cream) 60%, transparent);
+  border-color: var(--color-parchment-dark);
+}
+
+/* Odliczanie — styl aplikacji mobilnej */
+.countdown-box {
+  background: linear-gradient(
+    135deg,
+    rgba(244, 208, 63, 0.15) 0%,
+    rgba(244, 208, 63, 0.08) 100%
+  );
+  border: 1px solid rgba(244, 208, 63, 0.3);
+  border-radius: 1rem;
+}
+
+.countdown-digit {
+  font-variant-numeric: tabular-nums;
+  color: #f4d03f;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Sekcja jasna z ciepłym tłem */
+.section-cream {
+  background: linear-gradient(180deg, #f7f2ea 0%, #ede4d4 100%);
+}
+
+/* Złota linia dekoracyjna */
+.gold-divider {
+  width: 4rem;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+  margin: 0 auto;
+  margin-bottom: 2rem;
+}
+
+/* Nagłówki sekcji — jednolita czcionka i rozmiar */
+.section-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #0f5132;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 3rem;
+  }
+}
+
+.section-title-light {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-christmas-gold-light);
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .section-title-light {
+    font-size: 3rem;
+  }
+}
+
+/* ── Tło stron ── */
+.page-bg-gradient {
+  background: linear-gradient(135deg, #0a3d2e 0%, #0f5132 40%, #155724 70%, #0a3d2e 100%);
+}
+
+.page-bg-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(244, 208, 63, 0.1) 10px,
+    rgba(244, 208, 63, 0.1) 20px
+  );
+  pointer-events: none;
+}
+
+/* ── Karty treści ── */
+.content-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.content-card--gold {
+  border: 4px solid var(--color-christmas-gold-light);
+}
+
+.content-card--error {
+  border: 4px solid var(--color-christmas-red);
+}
+
+.content-card--glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(244, 208, 63, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* ── Przyciski ── */
+.btn-green {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-christmas-green);
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(15, 81, 50, 0.3);
+}
+
+.btn-green:hover {
+  background: var(--color-christmas-green-light);
+  transform: translateY(-1px);
+}
+
+.btn-green-full {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-christmas-green);
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(15, 81, 50, 0.3);
+}
+
+.btn-green-full:hover:not(:disabled) {
+  background: var(--color-christmas-green-light);
+}
+
+.btn-green-full:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--color-christmas-red) 0%, var(--color-christmas-red-dark) 100%);
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 0.75rem;
+  border: 2px solid var(--color-christmas-gold-light);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(196, 30, 58, 0.3);
+}
+
+.btn-red:hover {
+  background: linear-gradient(135deg, var(--color-christmas-red-dark) 0%, #8b1530 100%);
+  transform: translateY(-1px);
+}
+
+.btn-green-gradient {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--color-christmas-green) 0%, var(--color-christmas-green-light) 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(15, 81, 50, 0.35);
+}
+
+.btn-green-gradient:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-christmas-green-light) 0%, var(--color-christmas-green) 100%);
+  transform: translateY(-1px);
+}
+
+.btn-preview {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, var(--color-christmas-gold-light) 0%, var(--color-christmas-gold) 100%);
+  color: var(--color-christmas-green);
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-christmas-gold);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 12px rgba(212, 175, 55, 0.25);
+}
+
+.btn-preview:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-christmas-gold) 0%, var(--color-bronze) 100%);
+}
+
+.btn-sm-green {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  background: var(--color-christmas-green);
+  color: #ffffff;
+  transition: background 0.2s ease;
+  box-shadow: 0 2px 8px rgba(15, 81, 50, 0.2);
+}
+
+.btn-sm-green:hover:not(:disabled) {
+  background: var(--color-christmas-green-light);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #374151;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.btn-disabled,
+.btn-green-gradient:disabled,
+.btn-green-full:disabled,
+.btn-preview:disabled,
+.btn-sm-green:disabled {
+  background: #9ca3af !important;
+  color: #ffffff !important;
+  border-color: #9ca3af !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Formularze — rozszerzenia ── */
+.checkbox-field {
+  margin-top: 0.25rem;
+  margin-right: 0.75rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  accent-color: var(--color-christmas-green);
+  border-color: #d1d5db;
+  border-radius: 0.25rem;
+}
+
+.link-inline {
+  color: var(--color-christmas-green);
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.link-inline:hover {
+  color: var(--color-christmas-green-light);
+}
+
+.panel-bordered {
+  background: var(--color-cream);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-parchment-dark) 20%, transparent);
+}
+
+/* ── Elementy dekoracyjne ── */
+.icon-circle {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-parchment-text) 10%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-circle-lg {
+  width: 3rem;
+  height: 3rem;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1rem;
+}
+
+.step-badge {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: var(--color-christmas-green);
+  color: var(--color-christmas-gold-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.divider-parchment {
+  border-top: 1px solid color-mix(in srgb, var(--color-parchment-text) 15%, transparent);
+}
+
+.step-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-parchment-text) 10%, transparent);
+}
+
+.step-row:last-child {
+  border-bottom: none;
+}
+
+/* ── Kreator — kroki wizarda ── */
+.wizard-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.375rem 0;
+}
+
+.wizard-step-badge {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  background: color-mix(in srgb, var(--color-parchment-mid) 50%, transparent);
+  color: var(--color-parchment-muted);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.wizard-step-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-parchment-muted);
+  transition: color 0.2s ease;
+}
+
+.wizard-step--active .wizard-step-badge {
+  background: var(--color-christmas-green);
+  color: var(--color-christmas-gold-light);
+}
+
+.wizard-step--active .wizard-step-label {
+  color: var(--color-parchment-text);
+  font-weight: 600;
+}
+
+.wizard-step--done .wizard-step-badge {
+  background: color-mix(in srgb, var(--color-christmas-gold) 35%, transparent);
+  color: var(--color-christmas-green);
+}
+
+.wizard-step--done .wizard-step-label {
+  color: var(--color-christmas-green);
+}
+
+/* ── Komunikaty ── */
+.notice-preview {
+  background: #fffbeb;
+  border-left: 4px solid #fbbf24;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.notice-preview p {
+  color: #92400e;
+  font-weight: 500;
+}
+
+.notice-warning {
+  background: #fef9c3;
+  border-left: 4px solid #facc15;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.notice-warning p {
+  color: #854d0e;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.notice-amber {
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.notice-amber-title {
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+}
+
+.notice-amber-body {
+  color: #b45309;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+.summary-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--color-christmas-red);
+}
+
+.task-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0fdf4;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #bbf7d0;
+  transition: border-color 0.2s ease;
+}
+
+.task-list-item:hover {
+  border-color: #86efac;
+}
+
+/* ── Modal prosty (ConfirmModal) ── */
+.modal-overlay-simple {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.modal-panel {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 28rem;
+  width: 100%;
+  padding: 1.5rem;
+}
+
+/* ── Stopka ── */
+.footer-bar {
+  background: var(--color-app-dark);
+  border-top: 1px solid color-mix(in srgb, var(--color-silver-muted) 30%, transparent);
+}
+
+/* ── Typografia ── */
+.heading-page {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-christmas-green);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .heading-page {
+    font-size: 2.5rem;
+  }
+}
+
+.heading-section {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-christmas-green);
+}
+
+.legal-h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-christmas-red);
+  margin-bottom: 1rem;
+}
+
+.legal-h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-christmas-green);
+  margin-bottom: 0.75rem;
+}
+
+.link-green {
+  color: var(--color-christmas-green);
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.link-green:hover {
+  color: var(--color-christmas-green-light);
+}
+
+/* ── Formularze ── */
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  background-color: #ffffff;
+  color: #2c2418;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field::placeholder {
+  color: #9ca3af;
+}
+
+.input-field:focus {
+  border-color: var(--color-christmas-green);
+  box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.15);
+}
+
+.input-field:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input-code {
+  width: 2.75rem;
+  height: 2.75rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #2c2418;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .input-code {
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.875rem;
+  }
+}
+
+.input-code:focus {
+  border-color: var(--color-christmas-green);
+  box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.15);
+}
+
+/* ── Podsumowanie kreatora ── */
+.creator-summary {
+  color: #2c2418;
+}
+
+.creator-summary-hero {
+  text-align: center;
+  margin-bottom: 1.75rem;
+  padding: 1.25rem 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 81, 50, 0.06) 0%,
+    rgba(212, 175, 55, 0.1) 100%
+  );
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 1rem;
+}
+
+.creator-summary-hero-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 0.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--color-christmas-green) 0%, var(--color-christmas-green-light) 100%);
+  color: var(--color-christmas-gold-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  box-shadow: 0 4px 16px rgba(15, 81, 50, 0.2);
+}
+
+.creator-summary-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-christmas-green);
+  margin-bottom: 0.25rem;
+}
+
+.creator-summary-subtitle {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.creator-summary-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .creator-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.creator-summary-card {
+  background: var(--color-cream);
+  border: 1px solid color-mix(in srgb, var(--color-parchment-dark) 20%, transparent);
+  border-radius: 0.875rem;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.creator-summary-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-christmas-green);
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.creator-summary-card-title i {
+  color: var(--color-christmas-gold);
+}
+
+.creator-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.creator-summary-row + .creator-summary-row {
+  border-top: 1px dashed #f3f4f6;
+}
+
+.creator-summary-label {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.creator-summary-value {
+  color: #1f2937;
+  font-weight: 600;
+  text-align: right;
+}
+
+.creator-summary-product-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(15, 81, 50, 0.08);
+  color: var(--color-christmas-green);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  margin-top: 0.35rem;
+}
+
+.creator-summary-design-card {
+  margin-bottom: 1rem;
+}
+
+.creator-summary-design-frame {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #faf8f5 0%, #f3ede4 100%);
+  border: 2px solid rgba(212, 175, 55, 0.35);
+  border-radius: 0.75rem;
+}
+
+.creator-summary-design-frame > * {
+  width: 100%;
+  max-width: 12rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.creator-summary-price {
+  background: linear-gradient(135deg, var(--color-christmas-green) 0%, var(--color-christmas-green-light) 100%);
+  color: #ffffff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.875rem;
+  border: 2px solid var(--color-christmas-gold-light);
+  box-shadow: 0 4px 20px rgba(15, 81, 50, 0.2);
+}
+
+.creator-summary-price-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.creator-summary-price-label {
+  font-size: 1.05rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.creator-summary-price-amount {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-christmas-gold-light);
+}
+
+.creator-summary-price-breakdown {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.creator-summary-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 0.5rem;
+  color: #92400e;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.creator-summary-note i {
+  margin-top: 0.15rem;
+  color: var(--color-christmas-gold);
+}
+
+/* ── Kroki kreatora (tekst na białej karcie) ── */
+.creator-wizard-step {
+  color: #2c2418;
+}
+
+.format-option {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 2px solid color-mix(in srgb, var(--color-parchment-dark) 25%, transparent);
+  text-align: left;
+  background: #ffffff;
+  color: #1f2937;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.format-option:hover {
+  border-color: color-mix(in srgb, var(--color-christmas-green) 50%, transparent);
+}
+
+.format-option--selected {
+  border-color: var(--color-christmas-green);
+  background: #f0fdf4;
+  box-shadow: 0 2px 8px rgba(15, 81, 50, 0.12);
+}
+
+.format-option-label {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.format-option-price {
+  color: var(--color-christmas-green);
+  font-weight: 600;
+}
+
+.format-option-note {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.option-card {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 2px solid color-mix(in srgb, var(--color-parchment-dark) 25%, transparent);
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.option-card:hover {
+  border-color: color-mix(in srgb, var(--color-christmas-green) 50%, transparent);
+}
+
+.option-card--selected {
+  border-color: var(--color-christmas-green);
+  background: #f0fdf4;
+  box-shadow: 0 2px 8px rgba(15, 81, 50, 0.12);
+}
+
+.option-card input[type='checkbox'] {
+  margin-top: 0.15rem;
+  margin-right: 0.75rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--color-christmas-green);
+  border-radius: 0.25rem;
+}
+
+.creator-form-well {
+  background: var(--color-cream);
+  border: 1px solid color-mix(in srgb, var(--color-parchment-dark) 15%, transparent);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.notice-cream {
+  background: color-mix(in srgb, var(--color-cream) 80%, white);
+  border-left: 4px solid var(--color-christmas-gold);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.price-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.price-breakdown-row,
+.price-breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.price-breakdown-total {
+  margin-top: 0.15rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid currentColor;
+  font-weight: 700;
+}
+
+.price-breakdown-total-amount {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.35em;
+  font-weight: 700;
+}
+
+.price-breakdown--inline {
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.price-breakdown--inline .price-breakdown-total {
+  color: var(--color-christmas-green);
+  border-color: #e5e7eb;
+}
+
+.price-breakdown--format {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+.price-breakdown--format .price-breakdown-total {
+  color: var(--color-christmas-green);
+  border-color: #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.price-breakdown--format .price-breakdown-total-amount {
+  font-size: 1.1rem;
+}
+
+.price-breakdown--panel {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+}
+
+.price-breakdown--panel .price-breakdown-total {
+  border-color: rgba(255, 255, 255, 0.25);
+  font-size: 1rem;
+}
+
+.price-breakdown--panel .price-breakdown-total-amount {
+  color: var(--color-christmas-gold-light);
+  font-size: 2rem;
+}
+
+.price-breakdown--checkout {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.95rem;
+}
+
+.price-breakdown--checkout .price-breakdown-row {
+  opacity: 0.9;
+}
+
+.price-breakdown--checkout .price-breakdown-total {
+  border-color: rgba(255, 255, 255, 0.25);
+  margin-top: 0.35rem;
+  padding-top: 0.75rem;
+}
+
+.price-breakdown--checkout .price-breakdown-total-amount {
+  color: var(--color-christmas-gold-light);
+  font-size: 2.25rem;
+}
+
+/* ── Strona płatności ── */
+.checkout-page {
+  color: #2c2418;
+}
+
+.checkout-page .checkout-summary-section {
+  border-color: #e5e7eb;
+}
+
+.checkout-page .checkout-summary-section p {
+  color: #374151;
+  margin-bottom: 0.35rem;
+}
+
+.checkout-page .checkout-summary-section p:last-child {
+  margin-bottom: 0;
+}
+
+.checkout-page .checkout-summary-section strong {
+  color: #1f2937;
+}
+
+/* ── Alerty ── */
+.alert-error {
+  background: #fef2f2;
+  border-left: 4px solid #f87171;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.alert-info {
+  background: color-mix(in srgb, var(--color-cream) 70%, #f0fdf4);
+  border-left: 4px solid var(--color-christmas-green);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  color: var(--color-parchment-text);
+  font-size: 0.875rem;
+}
+
+/* ── Spinner ── */
+.spinner {
+  display: inline-block;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 4px solid rgba(15, 81, 50, 0.2);
+  border-bottom-color: var(--color-christmas-green);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Kalendarz ── */
+.calendar-wrapper {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 4px solid var(--color-christmas-gold-light);
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .calendar-wrapper {
+    padding: 2rem;
+  }
+}
+
+.status-banner {
+  background: linear-gradient(135deg, #0a3d2e 0%, #0f5132 40%, #155724 100%);
+  color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--color-christmas-gold-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-banner-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.1;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(244, 208, 63, 0.1) 10px,
+    rgba(244, 208, 63, 0.1) 20px
+  );
+}
+
+.status-banner-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--color-christmas-gold-light);
+}
+
+@media (min-width: 768px) {
+  .status-banner-title {
+    font-size: 1.5rem;
+  }
+}
+
+.calendar-cell-opened {
+  background: linear-gradient(135deg, var(--color-christmas-green) 0%, var(--color-christmas-green-light) 100%);
+  color: var(--color-christmas-gold-light);
+  border-color: var(--color-christmas-gold-light);
+}
+
+/* ── Android promo ── */
+.android-promo {
+  background: linear-gradient(135deg, var(--color-christmas-green) 0%, var(--color-christmas-green-light) 100%);
+  color: #ffffff;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 2px solid var(--color-christmas-gold-light);
+}
+
+/* ── Cookie banner ── */
+.cookie-banner {
+  background: linear-gradient(135deg, #0a3d2e 0%, #0f5132 40%, #155724 100%);
+  color: #ffffff;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+  border-top: 4px solid var(--color-christmas-gold-light);
+}
+
+/* ── Info boxy (Success, Checkout) ── */
+.info-box-green {
+  background: linear-gradient(135deg, var(--color-christmas-green) 0%, var(--color-christmas-green-light) 100%);
+  color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 2px solid var(--color-christmas-gold-light);
+}
+
+.info-box-gold {
+  background: linear-gradient(135deg, var(--color-christmas-gold-light) 0%, var(--color-christmas-gold) 100%);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--color-christmas-gold);
+}
+
+.price-box {
+  background: linear-gradient(135deg, var(--color-christmas-red) 0%, var(--color-christmas-red-dark) 100%);
+  color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+}
+.prose-legal {
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.prose-legal section {
+  margin-bottom: 1.5rem;
+}
+
+.prose-legal ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.prose-legal li {
+  margin-bottom: 0.5rem;
+}
+
+/* Elegancka i klasyczna czcionka z efektem odręcznego pisania dla tytułów w modalu */
+.font-calligraphy {
+  font-family: 'Great Vibes', 'Allura', 'Satisfy', 'Dancing Script', cursive;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Czcionka Courgette dla treści zadania w modalu */
+.font-task {
+  font-family: 'Courgette', cursive;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+/* Animacje */
+@keyframes bounce-slow {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+/* Animacja slide-up dla cookie banner */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+/* Animacja slide-down dla modala */
+@keyframes slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.4s ease-out;
+}
+
+/* Animacja fade-in dla overlay */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Animacja migania dla dostępnych okienek */
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(244, 208, 63, 0.5);
+    opacity: 1;
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(244, 208, 63, 0.8), 0 0 30px rgba(244, 208, 63, 0.6);
+    opacity: 0.9;
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Animacja pulsującej poświaty dla dostępnych okienek - złota poświata */
+@keyframes available-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 208, 63, 0.5), 0 0 0 0 rgba(244, 208, 63, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 0 3px rgba(244, 208, 63, 0.4), 0 0 0 6px rgba(244, 208, 63, 0.2), 0 0 0 9px rgba(244, 208, 63, 0.1);
+  }
+}
+
+.animate-available-pulse {
+  animation: available-pulse 2s ease-in-out infinite;
+}
+
+/* Animacja pulsującej poświaty dla trybu debug */
+@keyframes debug-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(15, 81, 50, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.2), 0 0 0 6px rgba(15, 81, 50, 0.1);
+  }
+}
+
+.animate-debug-pulse {
+  animation: debug-pulse 2s ease-in-out infinite;
+}
+
+/* Animacja fade-in dla logo na początku */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+/* Animacja fade-in dla elementów podczas scrollowania */
+@keyframes fade-in-scroll {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animacja świecenia dla otwartych okienek */
+@keyframes opened-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(244, 208, 63, 0.4), 0 0 20px rgba(244, 208, 63, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(244, 208, 63, 0.6), 0 0 30px rgba(244, 208, 63, 0.4), 0 0 40px rgba(244, 208, 63, 0.2);
+  }
+}
+
+.animate-opened-glow {
+  animation: opened-glow 3s ease-in-out infinite;
+}
+
+/* Animacja checkmark dla otwartych okienek */
+@keyframes checkmark-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-checkmark-pop {
+  animation: checkmark-pop 0.5s ease-out forwards;
+}
+
+/* Fixed Santa tracker promo bar (slim announcement strip) */
+.santa-promo-bar {
+  background: linear-gradient(
+    90deg,
+    var(--color-christmas-red) 0%,
+    var(--color-christmas-red) 55%,
+    var(--color-christmas-red-dark) 100%
+  );
+  border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+}

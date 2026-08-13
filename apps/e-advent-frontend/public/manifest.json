@@ -1,0 +1,27 @@
+{
+  "name": "e-Advent — Niezapomniane chwile świąt",
+  "short_name": "e-Advent",
+  "description": "Przeżywaj grudzień w cieple — personalizowany kalendarz adwentowy, list do Mikołaja i magia oczekiwania na święta.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f5132",
+  "theme_color": "#0f5132",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
+
+

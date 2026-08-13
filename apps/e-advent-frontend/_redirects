@@ -1,0 +1,4 @@
+# Konfiguracja dla Netlify (alternatywa - plik w folderze public/)
+# Jeśli używasz Netlify, skopiuj ten plik do folderu public/ przed buildem
+
+/*    /index.html   200

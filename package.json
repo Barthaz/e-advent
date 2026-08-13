@@ -1,0 +1,30 @@
+{
+  "name": "e-advent",
+  "private": true,
+  "version": "1.0.0",
+  "description": "e-advent monorepo — frontend, mobile, panel, API",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w e-advent-api",
+    "dev:frontend": "npm run dev -w e-advent-frontend",
+    "dev:panel": "npm run dev -w e-advent-panel",
+    "dev:app": "npm run start -w e-advent-app",
+    "test": "npm run test -w e-advent-api && npm run test -w e-advent-frontend && npm run test -w e-advent-panel && npm run test -w e-advent-app",
+    "test:api": "npm run test -w e-advent-api",
+    "test:frontend": "npm run test -w e-advent-frontend",
+    "test:panel": "npm run test -w e-advent-panel",
+    "test:app": "npm run test -w e-advent-app",
+    "build:frontend": "npm run build -w e-advent-frontend",
+    "build:panel": "npm run build -w e-advent-panel",
+    "build:packages": "npm run build -w @e-advent/types && npm run build -w @e-advent/products && npm run build -w @e-advent/assets"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

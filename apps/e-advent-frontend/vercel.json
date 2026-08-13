@@ -1,0 +1,25 @@
+{
+  "redirects": [
+    { "source": "/checkout", "destination": "/platnosc", "permanent": true },
+    { "source": "/success", "destination": "/sukces", "permanent": true },
+    { "source": "/privacy", "destination": "/polityka-prywatnosci", "permanent": true },
+    { "source": "/terms", "destination": "/regulamin", "permanent": true },
+    { "source": "/preview", "destination": "/podglad", "permanent": true },
+    { "source": "/track-santa", "destination": "/sledz-mikolaja", "permanent": true },
+    { "source": "/create", "destination": "/stworz-kalendarz/interaktywny", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}

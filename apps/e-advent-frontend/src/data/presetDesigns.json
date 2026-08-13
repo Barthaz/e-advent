@@ -1,0 +1,26 @@
+[
+  {
+    "id": "scratch-green",
+    "name": "Zielona Gwiazdka",
+    "description": "Świąteczny zielony motyw pełen blasku",
+    "thumbnailUrl": "/designs/scratch/green.png",
+    "imageUrl": "/designs/scratch/green.png",
+    "productTypes": ["scratch"]
+  },
+  {
+    "id": "scratch-red",
+    "name": "Czerwony Mikołaj",
+    "description": "Klasyczny czerwony kolor świąt Bożego Narodzenia",
+    "thumbnailUrl": "/designs/scratch/red.png",
+    "imageUrl": "/designs/scratch/red.png",
+    "productTypes": ["scratch"]
+  },
+  {
+    "id": "scratch-blue",
+    "name": "Błękitna Noc",
+    "description": "Zimowy ciemnoniebieski nastrój gwiazdkowej nocy",
+    "thumbnailUrl": "/designs/scratch/blue.png",
+    "imageUrl": "/designs/scratch/blue.png",
+    "productTypes": ["scratch"]
+  }
+]

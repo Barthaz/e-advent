@@ -1,0 +1,19 @@
+{
+  "name": "@e-advent/types",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared domain types for e-advent apps",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "echo \"@e-advent/types is types-only\""
+  }
+}

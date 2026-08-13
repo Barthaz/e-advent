@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /platnosc
+Disallow: /platnosc-blad
+Disallow: /sukces
+Disallow: /podglad
+Disallow: /koszyk
+
+Sitemap: https://e-advent.pl/sitemap.xml
