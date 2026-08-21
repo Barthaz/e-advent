@@ -4,7 +4,10 @@ import type { CalendarFormat, DesignSelection, OpeningMethod, ProductType, Shipp
 import type { OpenedCalendarWindow, SpecialWindowDescriptor, SpecialWindowProgress } from '@e-advent/types';
 import { catalogTaskIdFromPreview } from '../special-windows/previewCalendar';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('Missing VITE_API_URL — set it in apps/e-advent-frontend/.env');
+}
 
 // Wewnętrzna struktura danych (używana w aplikacji)
 export interface InternalCalendarData {

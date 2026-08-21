@@ -3,11 +3,16 @@ import type { CalendarPayload, OpenedCalendarWindow, SpecialWindowProgress } fro
 
 export type { CalendarPayload };
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? 'https://intaz-server.vercel.app/api'; // temporary until EAS env is set
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('Missing EXPO_PUBLIC_API_URL — set it in apps/e-advent-app/.env');
+}
 
-export const ORDER_CALENDAR_URL =
-  process.env.EXPO_PUBLIC_ORDER_CALENDAR_URL ?? 'https://e-advent.pl/stworz-kalendarz';
+const orderCalendarUrl = process.env.EXPO_PUBLIC_ORDER_CALENDAR_URL;
+if (!orderCalendarUrl) {
+  throw new Error('Missing EXPO_PUBLIC_ORDER_CALENDAR_URL — set it in apps/e-advent-app/.env');
+}
+export const ORDER_CALENDAR_URL = orderCalendarUrl;
 
 export type AccessCredentials = {
   email: string;

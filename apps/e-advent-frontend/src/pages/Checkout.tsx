@@ -100,8 +100,12 @@ interface CalendarData {
   dailyContentEmail?: string;
 }
 
-// Domyślnie test — musi być zgodny z trybem API (TESTING_MODE). Na produkcji ustaw VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51S0kVDDLGQdtmhyCKE25IWjMyUNyoFgbMfNULG9TiNuiMW2i2nVgh9kzLRngYcKJ1LDWSKaFl6sgQYVVDN5oj4ud00SM4C89ML';
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+if (!STRIPE_PUBLISHABLE_KEY) {
+  throw new Error(
+    'Missing VITE_STRIPE_PUBLISHABLE_KEY — set it in apps/e-advent-frontend/.env (must match API TESTING_MODE)'
+  );
+}
 
 // Funkcja do pobierania IP klienta
 async function getClientIP(): Promise<string | null> {

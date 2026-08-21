@@ -1,5 +1,10 @@
 import { useLocation, Link } from 'react-router-dom';
 
+const STOREFRONT_URL = import.meta.env.VITE_STOREFRONT_URL;
+if (!STOREFRONT_URL) {
+  throw new Error('Missing VITE_STOREFRONT_URL — set it in apps/e-advent-panel/.env');
+}
+
 interface Breadcrumb {
   label: string;
   to?: string;
@@ -60,7 +65,7 @@ export default function TopBar() {
 
       <div className="ml-auto flex items-center gap-3">
         <a
-          href={import.meta.env.VITE_STOREFRONT_URL || 'http://localhost:5173'}
+          href={STOREFRONT_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs text-gray-400 hover:text-christmas-green transition-colors flex items-center gap-1"

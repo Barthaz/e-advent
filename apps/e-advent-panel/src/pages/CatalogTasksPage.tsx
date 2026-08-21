@@ -23,7 +23,10 @@ type CatalogSet = {
 
 type Filter = 'all' | 'special' | 'standard';
 
-const STOREFRONT = import.meta.env.VITE_STOREFRONT_URL || 'http://localhost:5173';
+const STOREFRONT = import.meta.env.VITE_STOREFRONT_URL;
+if (!STOREFRONT) {
+  throw new Error('Missing VITE_STOREFRONT_URL — set it in apps/e-advent-panel/.env');
+}
 
 const SET_DESCRIPTIONS: Record<string, string> = {
   'Świąteczny nastrój i zabawa': 'Zadania, które wprowadzą Cię w klimat świąt i poprawią humor.',
