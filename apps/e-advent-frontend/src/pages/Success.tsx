@@ -8,6 +8,13 @@ import { isPhysicalProduct, getProduct, PHYSICAL_FULFILLMENT_TIME } from '../con
 import { OPENING_METHOD_LABELS } from '../components/creator/StepOpeningMethod';
 import type { OpeningMethod } from '../types/order';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import {
+  trackPurchase,
+  loadGaPurchasePayload,
+  clearGaPurchasePayload,
+  type AnalyticsItem,
+} from '../utils/analytics';
+import { loadCart, CART_STORAGE_KEY } from '../utils/cartStorage';
 
 const ANDROID_APK_URL = 'https://e-advent.pl/download/e-advent.apk';
 
@@ -31,6 +38,51 @@ interface CalendarData {
 
 function isOpeningMethod(value: unknown): value is OpeningMethod {
   return value === 'app' || value === 'email' || value === 'online';
+}
+
+function resolvePurchaseItemsFallback(): AnalyticsItem[] {
+  const cart = loadCart();
+  if (cart.length > 0) {
+    return cart.map((i) => ({
+      sku: i.sku,
+      name: i.label || getProduct(i.sku)?.name || i.sku,
+      price: i.unitPrice ?? getProduct(i.sku)?.basePrice ?? 0,
+      quantity: i.quantity,
+    }));
+  }
+  const sku = localStorage.getItem('e-advent-sku') || 'order';
+  const product = getProduct(sku);
+  return [{
+    sku,
+    name: product?.name || 'Zamówienie e-Advent',
+    price: product?.basePrice ?? 0,
+    quantity: 1,
+  }];
+}
+
+function firePurchaseOnce(paymentIntent?: string | null) {
+  try {
+    const snapshot = loadGaPurchasePayload();
+    const transactionId =
+      snapshot?.transactionId
+      || paymentIntent
+      || localStorage.getItem('paymentIntentId')
+      || 'unknown';
+    const value = snapshot?.value ?? (Number(localStorage.getItem('orderAmount') || 0) || 0);
+    const items = snapshot?.items?.length ? snapshot.items : resolvePurchaseItemsFallback();
+    const shipping = snapshot?.shipping;
+
+    trackPurchase({
+      transactionId,
+      value,
+      items,
+      ...(shipping != null ? { shipping } : {}),
+    });
+    clearGaPurchasePayload();
+    localStorage.removeItem(CART_STORAGE_KEY);
+  } catch {
+    /* ignore analytics */
+  }
 }
 
 export default function Success() {
@@ -69,6 +121,7 @@ export default function Success() {
       if (isFree) {
         setPaymentVerified(true);
         setIsVerifyingPayment(false);
+        firePurchaseOnce(`free_${searchParams.get('calendar_id') || localStorage.getItem('calendarId') || 'order'}`);
       } else {
         if (paymentStatus === 'canceled' || paymentStatus === 'failed' || redirectStatus === 'failed') {
           navigate('/platnosc-blad');
@@ -83,42 +136,27 @@ export default function Success() {
 
         setPaymentVerified(true);
         setIsVerifyingPayment(false);
-        try {
-          const { trackPurchase } = await import('../utils/analytics');
-          const pi = paymentIntent || localStorage.getItem('paymentIntentId') || 'unknown';
-          trackPurchase({
-            transactionId: pi,
-            value: Number(localStorage.getItem('orderAmount') || 0) || 0,
-            items: [{ sku: localStorage.getItem('e-advent-sku') || 'order', name: 'Zamówienie e-Advent', price: 0, quantity: 1 }],
-          });
-          localStorage.removeItem('e-advent-cart');
-        } catch { /* ignore analytics */ }
+        firePurchaseOnce(paymentIntent);
       }
 
       const params = new URLSearchParams(window.location.search);
       const calendarId = params.get('calendar_id') || localStorage.getItem('calendarId');
       const orderSku = localStorage.getItem('e-advent-sku') || '';
-      const isLetterOrder = orderSku === 'santa-letter';
+      const isPhysicalSku =
+        orderSku === 'santa-letter'
+        || orderSku === 'santa-certificate'
+        || orderSku.startsWith('scratch');
 
-      if (!calendarId && !isLetterOrder) {
+      if (!calendarId && !isPhysicalSku) {
         navigate('/stworz-kalendarz');
         return;
       }
 
-      if (!calendarId && isLetterOrder) {
+      if (!calendarId && isPhysicalSku) {
         setIsPhysicalOrder(true);
         setPaymentVerified(true);
         setIsVerifyingPayment(false);
         setOrderNumber(localStorage.getItem('orderNumber') || '');
-        try {
-          localStorage.removeItem('e-advent-cart');
-          const { trackPurchase } = await import('../utils/analytics');
-          trackPurchase({
-            transactionId: paymentIntent || localStorage.getItem('paymentIntentId') || 'letter',
-            value: Number(localStorage.getItem('orderAmount') || 34) || 34,
-            items: [{ sku: 'santa-letter', name: 'List do Świętego Mikołaja', price: 29, quantity: 1 }],
-          });
-        } catch { /* ignore */ }
         return;
       }
 

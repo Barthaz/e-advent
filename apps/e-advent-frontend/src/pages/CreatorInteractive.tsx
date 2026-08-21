@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
 import ParchmentCard from '../components/ParchmentCard';
@@ -8,6 +9,7 @@ import StepOpeningMethod from '../components/creator/StepOpeningMethod';
 import StepSummary from '../components/creator/StepSummary';
 import { useCreatorWizard } from '../hooks/useCreatorWizard';
 import { formatPrice, getProduct, getCheckoutCtaLabel } from '../config/products';
+import { trackViewItem } from '../utils/analytics';
 
 const STEPS = ['basic', 'tasks', 'opening', 'summary'];
 const STEP_LABELS = ['Dane', 'Zadania', 'Otwieranie', 'Podsumowanie'];
@@ -15,6 +17,16 @@ const STEP_LABELS = ['Dane', 'Zadania', 'Otwieranie', 'Podsumowanie'];
 export default function CreatorInteractive() {
   const navigate = useNavigate();
   const wizard = useCreatorWizard({ productType: 'interactive', steps: STEPS });
+  const product = getProduct('interactive');
+
+  useEffect(() => {
+    trackViewItem({
+      sku: 'interactive',
+      name: product?.name ?? 'Kalendarz interaktywny',
+      price: product?.basePrice ?? 9,
+      category: 'interactive',
+    });
+  }, [product?.name, product?.basePrice]);
 
   const handleCheckout = () => {
     if (
@@ -24,20 +36,11 @@ export default function CreatorInteractive() {
     ) {
       return;
     }
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'proceed_to_checkout', {
-        event_category: 'conversion',
-        event_label: 'interactive',
-        value: 9.0,
-        currency: 'PLN',
-      });
-    }
     wizard.prepareCheckoutData();
     navigate('/platnosc');
   };
 
   const stepId = STEPS[wizard.currentStep];
-  const product = getProduct('interactive');
 
   return (
     <FestivePage className="py-4">

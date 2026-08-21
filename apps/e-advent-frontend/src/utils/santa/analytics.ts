@@ -1,4 +1,5 @@
-const GA_ID = 'G-5C07HGBQ6B';
+import { getGaMeasurementId } from '../analytics';
+
 const TRACKER_PATH = '/sledz-mikolaja';
 const TRACKER_TITLE = 'Śledź Świętego Mikołaja na żywo | Tracker e-Advent';
 
@@ -22,7 +23,7 @@ export function trackSantaTrackerPageView(debug = false) {
       page_title: TRACKER_TITLE,
       page_location: pageLocation,
       page_path: pagePath,
-      send_to: GA_ID,
+      send_to: getGaMeasurementId(),
     });
     window.gtag('event', 'santa_tracker_viewed', {
       event_category: 'santa_tracker',

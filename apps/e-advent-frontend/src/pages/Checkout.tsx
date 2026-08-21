@@ -14,7 +14,7 @@ import ShippingForm, { emptyShippingAddress, validateShippingAddress } from '../
 import type { ProductType, ShippingAddress } from '../types/order';
 import { getActiveProduct, getStorageKeys, loadShipping, saveShipping, loadCheckoutCalendarData, resolveCheckoutProduct, getReusablePendingCalendarId, getPendingCalendarSession, setPendingCalendarSession, getPurchasedCalendarIds, markCalendarPurchased, PENDING_EDIT_TOKEN_KEY, PURCHASED_CALENDAR_IDS_KEY } from '../utils/creatorStorage';
 import { CART_STORAGE_KEY, loadCart, getCartTotals, cartItemCheckoutKey, cartItemToCheckoutItem, getCartItemDisplayName, type CartItem } from '../utils/cartStorage';
-import { trackBeginCheckout } from '../utils/analytics';
+import { trackBeginCheckout, saveGaPurchasePayload } from '../utils/analytics';
 
 /** Survives React Strict Mode remounts — prevents duplicate create-payment-intent calls */
 const checkoutPaymentInitCache: {
@@ -661,6 +661,17 @@ export default function Checkout() {
           }
           localStorage.setItem('orderAmount', String(totalPrice));
           localStorage.setItem('e-advent-sku', sku);
+          saveGaPurchasePayload({
+            transactionId: paymentIntent.paymentIntentId,
+            value: totalPrice,
+            shipping: shippingCost,
+            items: cartItems.map((i) => ({
+              sku: i.sku,
+              name: i.label || getProduct(i.sku)?.name || i.sku,
+              price: i.unitPrice ?? getProduct(i.sku)?.basePrice ?? 0,
+              quantity: i.quantity,
+            })),
+          });
           return {
             clientSecret: paymentIntent.clientSecret,
             paymentIntentId: paymentIntent.paymentIntentId,
@@ -704,15 +715,6 @@ export default function Checkout() {
 
       console.log('[Payment] Inicjalizacja płatności (interaktywny)...');
       setPaymentError(null);
-
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'checkout_page_viewed', {
-          event_category: 'engagement',
-          event_label: 'checkout_page',
-          value: totalPrice,
-          currency: 'PLN'
-        });
-      }
 
       const runInteractivePaymentInit = async () => {
         const existingCalendarId = getReusablePendingCalendarId();
@@ -857,6 +859,18 @@ export default function Checkout() {
         }
         localStorage.setItem('orderAmount', String(paymentAmount));
         localStorage.setItem('e-advent-sku', sku);
+        saveGaPurchasePayload({
+          transactionId: paymentIntent.paymentIntentId,
+          value: paymentAmount,
+          shipping: 0,
+          items: [{
+            sku,
+            name: getProduct(sku)?.name || sku,
+            price: getProduct(sku)?.basePrice ?? paymentAmount,
+            quantity: 1,
+            category: 'interactive',
+          }],
+        });
 
         try {
           localStorage.removeItem('calendarData');
@@ -1155,6 +1169,20 @@ export default function Checkout() {
       console.log('[FreeCalendar] Darmowy kalendarz utworzony pomyślnie, calendarId:', newCalendarId);
       
       markCalendarPurchased(newCalendarId);
+
+      const freeSku = calendarData.sku || sku;
+      saveGaPurchasePayload({
+        transactionId: `free_${newCalendarId}`,
+        value: 0,
+        shipping: 0,
+        items: [{
+          sku: freeSku,
+          name: getProduct(freeSku)?.name || freeSku,
+          price: 0,
+          quantity: 1,
+          category: 'interactive',
+        }],
+      });
       
       // Przekieruj do strony sukcesu z parametrem free=true aby pominąć weryfikację płatności
       navigate(`/sukces?calendar_id=${newCalendarId}&free=true`);

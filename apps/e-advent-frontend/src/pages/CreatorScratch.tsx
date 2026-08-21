@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
 import ParchmentCard from '../components/ParchmentCard';
@@ -16,6 +16,7 @@ import {
 } from '../config/products';
 import { useCart } from '../context/CartContext';
 import { prepareScratchCalendarForCart } from '../utils/prepareScratchForCart';
+import { trackViewItem } from '../utils/analytics';
 
 const STEPS = ['design', 'basic', 'tasks', 'summary'];
 const STEP_LABELS = ['Grafika i format', 'Dane', 'Zadania', 'Podsumowanie'];
@@ -26,6 +27,18 @@ export default function CreatorScratch() {
   const wizard = useCreatorWizard({ productType: 'scratch', steps: STEPS, requiresDesign: true });
   const [isAdding, setIsAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+
+  const sku = wizard.getSku();
+  const product = getProduct(sku);
+
+  useEffect(() => {
+    trackViewItem({
+      sku,
+      name: product?.name ?? 'Kalendarz zdrapka',
+      price: product?.basePrice ?? 0,
+      category: 'scratch',
+    });
+  }, [sku, product?.name, product?.basePrice]);
 
   const handleAddToCart = async () => {
     if (!wizard.validateBasicStep() || !wizard.validateTasksStep() || !wizard.validateDesignStep()) return;
@@ -39,8 +52,8 @@ export default function CreatorScratch() {
 
     try {
       wizard.prepareCheckoutData();
-      const sku = wizard.getSku();
-      const product = getProduct(sku);
+      const cartSku = wizard.getSku();
+      const cartProduct = getProduct(cartSku);
       const { calendarId } = await prepareScratchCalendarForCart({
         name: wizard.name,
         email: wizard.email,
@@ -49,30 +62,21 @@ export default function CreatorScratch() {
         selectedExampleSets: wizard.selectedExampleSets,
         dailyEmailReminders: wizard.dailyEmailReminders,
         productType: 'scratch',
-        sku,
+        sku: cartSku,
         format: wizard.format,
         design: wizard.design,
       });
 
       addItem({
-        sku,
+        sku: cartSku,
         quantity: 1,
         calendarId,
-        label: product?.name ?? 'Kalendarz zdrapka',
-        unitPrice: product?.basePrice,
+        label: cartProduct?.name ?? 'Kalendarz zdrapka',
+        unitPrice: cartProduct?.basePrice,
         customerEmail: wizard.email.trim(),
         customerName: wizard.name.trim(),
         format: wizard.format,
       });
-
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'add_to_cart', {
-          event_category: 'ecommerce',
-          event_label: sku,
-          value: product?.basePrice ?? 0,
-          currency: 'PLN',
-        });
-      }
 
       navigate('/koszyk');
     } catch (err) {
@@ -83,8 +87,6 @@ export default function CreatorScratch() {
   };
 
   const stepId = STEPS[wizard.currentStep];
-  const sku = wizard.getSku();
-  const product = getProduct(sku);
 
   return (
     <FestivePage className="py-4">

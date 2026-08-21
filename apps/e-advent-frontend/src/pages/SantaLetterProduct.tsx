@@ -102,6 +102,7 @@ export default function SantaLetterProduct() {
       sku: SKU,
       name: product?.name ?? 'List do Świętego Mikołaja',
       price: basePrice,
+      category: 'letter',
     });
   }, [basePrice, product?.name]);
 
