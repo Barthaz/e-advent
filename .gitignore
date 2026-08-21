@@ -27,3 +27,14 @@ web-build/
 _backup_env/
 *.pem
 .turbo/
+*.tsbuildinfo
+
+# Accidental local copies (OS / Explorer)
+*kopia*
+* - kopia.*
+* — kopia.*
+
+# Source masters — ship optimized WebP (or API PDF JPG) only
+assets/backgrounds/*.png
+apps/e-advent-frontend/src/assets/list/*.png
+apps/e-advent-frontend/src/assets/certyficate.png

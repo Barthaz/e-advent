@@ -17,6 +17,7 @@ import PaymentError from './pages/PaymentError';
 import CalendarView from './pages/CalendarView';
 import CalendarAccess from './pages/CalendarAccess';
 import Preview from './pages/Preview';
+import WindowPreviewPage from './pages/WindowPreviewPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 import NotFound from './pages/NotFound';
@@ -37,19 +38,24 @@ function AnalyticsListener() {
 
 function AppContent() {
   const location = useLocation();
-  const isPreviewPage = location.pathname === '/preview' || location.pathname === '/podglad';
+  const isPreviewPage =
+    location.pathname === '/preview' ||
+    location.pathname === '/podglad' ||
+    location.pathname.startsWith('/podglad-okienka');
   const hideChrome = isPreviewPage;
+  const isWindowPreview = location.pathname.startsWith('/podglad-okienka');
   const noIndexPaths = ['/platnosc', '/checkout', '/sukces', '/success', '/platnosc-blad', '/koszyk'];
-  const isNoIndex = noIndexPaths.some((p) => location.pathname === p);
+  const isNoIndex =
+    noIndexPaths.some((p) => location.pathname === p) || isWindowPreview;
 
   return (
-    <div className="flex flex-col min-h-screen pt-[var(--santa-banner-h,0px)]">
+    <div className={isWindowPreview ? '' : 'flex flex-col min-h-screen pt-[var(--santa-banner-h,0px)]'}>
       {isNoIndex && (
         <SEOHead title="e-Advent" description="Proces zamówienia" robots="noindex, nofollow" />
       )}
       {!hideChrome && <SantaTrackerTeaser />}
       {!hideChrome && <SiteNav />}
-      <main className="grow">
+      <main className={isWindowPreview ? '' : 'grow'}>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/kalendarze-adwentowe" element={<CalendarsHub />} />
@@ -65,6 +71,7 @@ function AppContent() {
           <Route path="/kalendarz" element={<CalendarAccess />} />
           <Route path="/kalendarz/:calendarId" element={<CalendarView />} />
           <Route path="/podglad" element={<Preview />} />
+          <Route path="/podglad-okienka/:catalogTaskId" element={<WindowPreviewPage />} />
           <Route path="/polityka-prywatnosci" element={<PrivacyPolicy />} />
           <Route path="/regulamin" element={<Terms />} />
           <Route path="/sledz-mikolaja" element={<SantaTracker />} />
@@ -80,7 +87,7 @@ function AppContent() {
         </Routes>
       </main>
       {!hideChrome && <Footer />}
-      <CookieBanner />
+      {!hideChrome && <CookieBanner />}
     </div>
   );
 }

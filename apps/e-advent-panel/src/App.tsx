@@ -7,6 +7,9 @@ import LoginPage from './pages/LoginPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import CalendarDetailPage from './pages/CalendarDetailPage';
+import DailyEmailsPage from './pages/DailyEmailsPage';
+import EmailTemplatesPage from './pages/EmailTemplatesPage';
+import CatalogTasksPage from './pages/CatalogTasksPage';
 
 export default function App() {
   return (
@@ -24,6 +27,9 @@ export default function App() {
                     <Route path="orders" element={<OrdersPage />} />
                     <Route path="orders/:id" element={<OrderDetailPage />} />
                     <Route path="calendars/:id" element={<CalendarDetailPage />} />
+                    <Route path="emails" element={<DailyEmailsPage />} />
+                    <Route path="email-templates" element={<EmailTemplatesPage />} />
+                    <Route path="tasks" element={<CatalogTasksPage />} />
                     <Route path="*" element={<Navigate to="/orders" replace />} />
                   </Routes>
                 </AppLayout>

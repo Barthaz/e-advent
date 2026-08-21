@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
 export default function Logo({ className = '' }: { className?: string }) {
   const location = useLocation();

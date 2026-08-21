@@ -1,0 +1,15 @@
+export {
+  SHIPPING_COST,
+  FREE_SHIPPING_THRESHOLD,
+  PRODUCTS,
+  PRODUCT_FAMILIES,
+  getProduct,
+  getProductPrice,
+  computeOrderTotals,
+  getSkuForTypeAndFormat,
+  isPhysicalProduct,
+  SANTA_CERTIFICATE_SKU,
+  SANTA_LETTER_SKU,
+  isLetterAddonSku,
+  getOrderItemDisplayName,
+} from './catalog.js';

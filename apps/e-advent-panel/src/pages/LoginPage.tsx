@@ -5,7 +5,7 @@ import { setCredentials } from '../store/authSlice';
 import { useAppDispatch } from '../hooks/useAppDispatch';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import logoSrc from '../assets/logo.png';
+import logoSrc from '@e-advent/assets/brand/eadvent-logo.png';
 
 export default function LoginPage() {
   const { isAuthenticated } = useAuth();

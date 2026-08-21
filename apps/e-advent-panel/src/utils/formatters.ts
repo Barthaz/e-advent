@@ -36,6 +36,14 @@ export function formatAmount(amount: number | null | undefined, currency = 'PLN'
   }).format(amount);
 }
 
+/** Numer zamówienia dla klienta: 1 → "000001" */
+export function formatOrderNumber(value: number | string | null | undefined): string {
+  if (value == null || value === '') return '—';
+  const n = typeof value === 'number' ? value : parseInt(String(value).replace(/\D/g, ''), 10);
+  if (!Number.isFinite(n) || n < 1) return '—';
+  return String(n).padStart(6, '0');
+}
+
 export function formatAddress(
   street: string | null,
   city: string | null,

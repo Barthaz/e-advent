@@ -7,6 +7,7 @@ const {
   buildCollaborationInviteEmail,
   buildCollaborationInviteEmailText,
 } = require('../services/orderEmails');
+const EmailSend = require('../models/EmailSend');
 
 const router = express.Router();
 
@@ -63,9 +64,10 @@ router.post(
       let emailSent = false;
       try {
         const inviteeHasAccount = result.invited.status === 'active';
+        const subject = 'Zaproszenie do współpracy w e-advent';
         await sendEmail({
           to: result.invited.email,
-          subject: 'Zaproszenie do współpracy w e-advent',
+          subject,
           html: buildCollaborationInviteEmail({
             inviterEmail: req.profile.email,
             inviteeHasAccount,
@@ -76,6 +78,17 @@ router.post(
           }),
         });
         emailSent = true;
+        try {
+          await EmailSend.createSend({
+            type: 'collaboration_invite',
+            recipientEmail: result.invited.email,
+            subject,
+            status: 'sent',
+            triggeredBy: 'system',
+          });
+        } catch (logErr) {
+          console.error('Failed to log collaboration invite email:', logErr.message);
+        }
       } catch (emailErr) {
         console.error('Collaboration invite email failed:', emailErr.message);
       }

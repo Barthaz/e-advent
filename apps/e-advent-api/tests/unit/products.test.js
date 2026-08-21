@@ -35,6 +35,25 @@ describe('products catalog (unit)', () => {
     expect(isPhysicalProduct('santa-letter')).toBe(true);
   });
 
+  test('santa-certificate addon is 9 PLN without extra shipping', () => {
+    expect(getProduct('santa-certificate')?.basePrice).toBe(9);
+    expect(isPhysicalProduct('santa-certificate')).toBe(false);
+    const withLetter = computeOrderTotals([
+      { sku: 'santa-letter', quantity: 1 },
+      { sku: 'santa-certificate', quantity: 1 },
+    ]);
+    expect(withLetter?.subtotal).toBe(38);
+    expect(withLetter?.shipping).toBe(5);
+    expect(withLetter?.total).toBe(43);
+  });
+
+  test('getOrderItemDisplayName for certificate includes child name', () => {
+    const { getOrderItemDisplayName } = require('../../config/products');
+    expect(getOrderItemDisplayName('santa-certificate', { childName: 'Kasia' })).toBe(
+      'CERTYFIKAT - Kasia',
+    );
+  });
+
   test('unknown SKU returns null price', () => {
     expect(getProductPrice('fake-sku')).toBeNull();
     expect(getProduct('fake-sku')).toBeNull();

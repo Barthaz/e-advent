@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import CalendarGrid from '../components/CalendarGrid';
-import Modal from '../components/Modal';
 import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
 import CalendarStatusBanner from '../components/CalendarStatusBanner';
 import LoadingState from '../components/LoadingState';
 import StatusMessagePage from '../components/StatusMessagePage';
 import { getCalendar, openCalendarDay, type GetCalendarResponse } from '../api/api';
+import type { OpenedCalendarWindow } from '@e-advent/types';
+import OpenedDayModal from '../components/OpenedDayModal';
+import SpecialWindowShell from '../special-windows/SpecialWindowShell';
+import { isDayUnlockedByDate, parseOkienkoParam } from '../special-windows/okienkoParam';
 
 interface CalendarDay {
   day: number;
@@ -26,29 +29,30 @@ interface CalendarData {
 
 export default function CalendarView() {
   const { calendarId } = useParams<{ calendarId: string }>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [days, setDays] = useState<CalendarDay[]>([]);
   const [openedDay, setOpenedDay] = useState<number | null>(null);
+  const [openedWindows, setOpenedWindows] = useState<Record<number, OpenedCalendarWindow>>({});
+  const [emailSpecialWindow, setEmailSpecialWindow] = useState<OpenedCalendarWindow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [orderStatus, setOrderStatus] = useState<string | null>(null);
+  const [readyTick, setReadyTick] = useState(0);
+  const hasLoadedRef = useRef(false);
+  const consumedOkienkoRef = useRef<string | null>(null);
+  const openedWindowsRef = useRef(openedWindows);
+  openedWindowsRef.current = openedWindows;
   
   // Sprawdź czy tryb debug jest włączony
   const debugMode = searchParams.get('debugmode') === 'true';
-  const accessCodeFromUrl = searchParams.get('code');
 
   useEffect(() => {
-    if (calendarId && accessCodeFromUrl) {
-      try {
-        sessionStorage.setItem(`e-advent-access-code-${calendarId}`, accessCodeFromUrl);
-      } catch {
-        /* ignore */
-      }
-    }
-  }, [calendarId, accessCodeFromUrl]);
+    let cancelled = false;
+    consumedOkienkoRef.current = null;
+    setEmailSpecialWindow(null);
+    setReadyTick(0);
 
-  useEffect(() => {
     const loadCalendar = async () => {
       if (!calendarId) {
         setError('Brak ID kalendarza');
@@ -56,14 +60,38 @@ export default function CalendarView() {
         return;
       }
 
-      setIsLoading(true);
+      if (!hasLoadedRef.current) {
+        try {
+          const cached = sessionStorage.getItem(`e-advent-cal-view:${calendarId}`);
+          if (cached) {
+            const parsed = JSON.parse(cached) as {
+              calendarData: CalendarData;
+              days: CalendarDay[];
+              openedWindows: Record<number, OpenedCalendarWindow>;
+              orderStatus: string | null;
+            };
+            setCalendarData(parsed.calendarData);
+            setDays(parsed.days);
+            setOpenedWindows(parsed.openedWindows || {});
+            setOrderStatus(parsed.orderStatus);
+            hasLoadedRef.current = true;
+            setIsLoading(false);
+          }
+        } catch {
+          /* ignore broken cache */
+        }
+      }
+
+      if (!hasLoadedRef.current) {
+        setIsLoading(true);
+      }
       setError(null);
 
       try {
         console.log('[CalendarView] Pobieranie kalendarza z API, calendarId:', calendarId);
-        
-        // Pobierz dane kalendarza z API
+
         const response: GetCalendarResponse = await getCalendar(calendarId);
+        if (cancelled) return;
         const apiCalendar = response.calendar;
 
         console.log('[CalendarView] Kalendarz pobrany z API:', {
@@ -118,23 +146,137 @@ export default function CalendarView() {
         }
 
         setDays(calendarDays);
+
+        const hydrated: Record<number, OpenedCalendarWindow> = {};
+        for (const apiTask of apiCalendar.tasks) {
+          if (apiTask.status === 'opened' && apiTask.isSpecial && apiTask.special) {
+            hydrated[apiTask.day] = {
+              taskId: apiTask.catalogTaskId || '',
+              day: apiTask.day,
+              state: 'OPENED',
+              title: apiTask.title,
+              text: apiTask.title,
+              isSpecial: true,
+              special: apiTask.special,
+            };
+          }
+        }
+        setOpenedWindows(hydrated);
+        hasLoadedRef.current = true;
         setIsLoading(false);
+        try {
+          sessionStorage.setItem(
+            `e-advent-cal-view:${calendarId}`,
+            JSON.stringify({
+              calendarData: mappedData,
+              days: calendarDays,
+              openedWindows: hydrated,
+              orderStatus: apiCalendar.status || null,
+            })
+          );
+        } catch {
+          /* quota */
+        }
       } catch (error) {
+        if (cancelled) return;
         console.error('[CalendarView] Błąd podczas pobierania kalendarza:', error);
-        setError('Nie można załadować kalendarza. Sprawdź czy link jest poprawny.');
+        if (!hasLoadedRef.current) {
+          setError('Nie można załadować kalendarza. Sprawdź czy link jest poprawny.');
+        }
         setIsLoading(false);
+      } finally {
+        if (!cancelled) setReadyTick((n) => n + 1);
       }
     };
 
     loadCalendar();
+    return () => {
+      cancelled = true;
+    };
   }, [calendarId]);
+
+  useEffect(() => {
+    if (!calendarId || !calendarData || days.length === 0 || readyTick === 0) return;
+
+    const raw = searchParams.get('okienko');
+    const token = `${calendarId}:${raw ?? ''}`;
+    if (consumedOkienkoRef.current === token) return;
+
+    const stripOkienko = () => {
+      if (!searchParams.has('okienko')) return;
+      const next = new URLSearchParams(searchParams);
+      next.delete('okienko');
+      setSearchParams(next, { replace: true });
+    };
+
+    const requested = parseOkienkoParam(raw);
+    if (requested == null) {
+      consumedOkienkoRef.current = token;
+      if (raw != null) stripOkienko();
+      return;
+    }
+
+    const dayData = days.find((d) => d.day === requested);
+    if (!dayData || !isDayUnlockedByDate(dayData)) {
+      consumedOkienkoRef.current = token;
+      stripOkienko();
+      return;
+    }
+
+    consumedOkienkoRef.current = token;
+    stripOkienko();
+
+    const existing = openedWindowsRef.current[requested];
+    if (existing?.isSpecial && existing.special) {
+      setEmailSpecialWindow(existing);
+      return;
+    }
+
+    if (dayData.isOpened && !existing?.isSpecial) {
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await openCalendarDay(calendarId, requested);
+        if (cancelled) return;
+        if (res.openedWindow?.isSpecial && res.openedWindow.special) {
+          setOpenedWindows((prev) => ({ ...prev, [requested]: res.openedWindow! }));
+          setDays((prev) =>
+            prev.map((d) => (d.day === requested ? { ...d, isOpened: true } : d))
+          );
+          setEmailSpecialWindow(res.openedWindow);
+        }
+      } catch {
+        /* stay on the calendar grid */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [calendarId, calendarData, days, readyTick, searchParams, setSearchParams]);
+
+  const loadOpenedWindow = async (day: number) => {
+    if (!calendarId) return;
+    if (openedWindows[day]) return;
+    try {
+      const res = await openCalendarDay(calendarId, day);
+      if (res.openedWindow) {
+        setOpenedWindows((prev) => ({ ...prev, [day]: res.openedWindow! }));
+      }
+    } catch {
+      /* ignore */
+    }
+  };
 
   const handleDayClick = async (day: number) => {
     const dayData = days.find(d => d.day === day);
     if (!dayData) return;
 
-    // Jeśli już otwarte, zawsze pokaż modal (ponowne otwarcie)
     if (dayData.isOpened) {
+      await loadOpenedWindow(day);
       setOpenedDay(day);
       return;
     }
@@ -167,8 +309,11 @@ export default function CalendarView() {
     if (calendarId) {
       try {
         console.log('[CalendarView] Otwieranie okienka w API:', { calendarId, day });
-        await openCalendarDay(calendarId, day);
+        const res = await openCalendarDay(calendarId, day);
         console.log('[CalendarView] Okienko otwarte w API pomyślnie');
+        if (res.openedWindow) {
+          setOpenedWindows((prev) => ({ ...prev, [day]: res.openedWindow! }));
+        }
       } catch (error) {
         console.error('[CalendarView] Błąd podczas otwierania okienka w API:', error);
         // Cofnij zmianę w UI jeśli API zwróciło błąd
@@ -230,11 +375,11 @@ export default function CalendarView() {
   const nextAvailableDate = getNextAvailableDay();
   const isBeforeDecember = nextAvailableDate && nextAvailableDate.getMonth() !== 11; // 11 = grudzień (0-indexed)
 
-  if (isLoading) {
+  if (isLoading && !calendarData) {
     return <LoadingState message="Ładowanie kalendarza..." variant="light" />;
   }
 
-  if (error || !calendarData) {
+  if (!calendarData) {
     return (
       <StatusMessagePage
         icon="fas fa-exclamation-circle"
@@ -302,34 +447,29 @@ export default function CalendarView() {
             currentDate={new Date()}
             debugMode={debugMode}
           />
-        <Modal
+        <OpenedDayModal
           isOpen={openedDay !== null}
           onClose={() => setOpenedDay(null)}
-          title={`Dzień ${openedDay}!`}
-        >
-          <div className="text-center">
-            {(() => {
-              const taskInfo = getDayTask(openedDay || 0);
-              const taskText = typeof taskInfo === 'string' ? taskInfo : taskInfo.task;
-              const duration = typeof taskInfo === 'object' ? taskInfo.duration : undefined;
-              
-              return (
-                <>
-                  <p className="text-4xl md:text-5xl mb-4 text-christmas-gold-light font-bold drop-shadow-lg px-4 font-task">
-                    {taskText}
-                  </p>
-                  {duration && duration > 0 && (
-                    <p className="text-xl text-christmas-gold-light font-medium drop-shadow-md font-calligraphy">
-                      <i className="fas fa-clock text-christmas-gold-light mr-2" />
-                      Czas realizacji: {duration} {duration === 1 ? 'dzień' : 'dni'}
-                    </p>
-                  )}
-                  
-                </>
-              );
-            })()}
-          </div>
-        </Modal>
+          day={openedDay || 0}
+          taskText={(() => {
+            const taskInfo = getDayTask(openedDay || 0);
+            return typeof taskInfo === 'string' ? taskInfo : taskInfo.task;
+          })()}
+          duration={(() => {
+            const taskInfo = getDayTask(openedDay || 0);
+            return typeof taskInfo === 'object' ? taskInfo.duration : undefined;
+          })()}
+          calendarId={calendarId || ''}
+          openedWindow={openedDay ? openedWindows[openedDay] : undefined}
+        />
+        {emailSpecialWindow && calendarId && (
+          <SpecialWindowShell
+            calendarId={calendarId}
+            openedWindow={emailSpecialWindow}
+            autoOpenStage
+            onClose={() => setEmailSpecialWindow(null)}
+          />
+        )}
       </ContentCard>
     </FestivePage>
   );

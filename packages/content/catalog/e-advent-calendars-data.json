@@ -1,0 +1,2951 @@
+{
+  "documentTitle": "e‑Advent 2026 — specyfikacja okienek specjalnych i dodatków",
+  "scope": "6 płatnych zestawów kalendarza. Darmowy zestaw celowo nie otrzymuje okienek specjalnych ani materiałów premium.",
+  "goal": "Płatny kalendarz nie powinien być wyłącznie listą 24 poleceń. Część dni ma otwierać okienko specjalne: gotową zabawę, materiał do pobrania, interaktywną kartę, planer, generator lub mini‑narzędzie. Użytkownik ma mieć poczucie, że e‑Advent przygotował część pracy za niego.",
+  "specialWindowRevealPolicy": {
+    "closedWindow": "Zamknięte okienko nie może w żaden sposób zdradzać, że jest specjalne. Nie pokazujemy gwiazdki, badge, innego obramowania, poświaty, animacji ani odmiennego koloru. Wszystkie zamknięte okienka wyglądają według tych samych zasad wynikających wyłącznie ze stanu kalendarza (zamknięte / dostępne do otwarcia / odwiedzone).",
+    "dataRule": "Informacja isSpecial jest wyłącznie metadanymi logiki i nie może wpływać na wygląd zamkniętego kafelka. Dzięki temu dodatek pozostaje niespodzianką.",
+    "afterOpen": "Dopiero po otwarciu okienka, jeśli isSpecial = true, pojawia się badge „✨ OKIENKO SPECJALNE” nad tytułem zadania oraz krótka animacja odkrycia dodatku.",
+    "mainCtaExamples": [
+      "Zagraj",
+      "Wypełnij kartę",
+      "Pobierz szablon",
+      "Rozpocznij quiz"
+    ],
+    "freeCalendar": "Bez badge i bez dodatków premium."
+  },
+  "sharedComponents": [
+    {
+      "name": "QuizEngine",
+      "use": "quizy",
+      "commonFunctions": "pytanie, odpowiedzi, wynik, ekran końcowy"
+    },
+    {
+      "name": "Checklist / ChecklistScore",
+      "use": "bingo, listy, misje, audyty",
+      "commonFunctions": "checkboxy, zapis postępu, filtr braków, opcjonalna punktacja"
+    },
+    {
+      "name": "Randomizer + Timer",
+      "use": "kalambury, teatrzyk, misje",
+      "commonFunctions": "losowanie z puli, restart, timer, punktacja"
+    },
+    {
+      "name": "CardForm + ShareCard",
+      "use": "listy, refleksje, rankingi, życzenia",
+      "commonFunctions": "formularz, live preview, eksport PNG/PDF"
+    },
+    {
+      "name": "PrintableAsset",
+      "use": "szablony DIY",
+      "commonFunctions": "miniatura, instrukcja, pobierz PDF, drukuj"
+    },
+    {
+      "name": "RecipeCard",
+      "use": "przepisy",
+      "commonFunctions": "składniki, kroki, porcje, czas, ulubione, PDF"
+    },
+    {
+      "name": "Scorecard",
+      "use": "degustacje",
+      "commonFunctions": "oceny 1–5, suma, zwycięzca, karta wyniku"
+    },
+    {
+      "name": "ImageCard",
+      "use": "kolaże i ramki",
+      "commonFunctions": "upload, crop, tekst, canvas export PNG"
+    },
+    {
+      "name": "DateGate / LockedNote",
+      "use": "przepowiednie, kapsuły",
+      "commonFunctions": "trwały zapis, data odkrycia, ukrywanie treści"
+    }
+  ],
+  "commonTechnicalRules": [
+    "Postęp interakcji powinien zapisywać się automatycznie. Jeśli użytkownik jest zalogowany — preferowany zapis po stronie backendu; w przeciwnym razie localStorage + możliwość eksportu ważnych treści.",
+    "PNG: minimum 1080 px szerokości; dla tapet dodatkowo wariant 1080×1920.",
+    "PDF do druku: A4, bezpieczne marginesy; jeśli wycinanie jest elementem zadania — czytelne linie cięcia/zgięcia i legenda.",
+    "Web Share API może być dodatkiem, ale zawsze musi istnieć fallback: pobierz / kopiuj.",
+    "Materiały użytkownika (np. zdjęcia i prywatne refleksje) nie powinny być publiczne domyślnie.",
+    "Okienko specjalne ma nadal wyświetlać oryginalne zadanie; dodatek je ułatwia lub wzbogaca, a nie zastępuje sensu dnia.",
+    "Nie budujemy modułu nagrywania audio, nie prosimy o dostęp do mikrofonu i nie przechowujemy nagrań użytkownika."
+  ],
+  "dataModel": {
+    "example": {
+      "id": "fun-bingo",
+      "text": "Dziś jest Dzień Świątecznego Bingo — ...",
+      "isSpecial": true,
+      "specialType": "bingo",
+      "specialConfigId": "christmas-bingo-v1"
+    },
+    "rule": "Dla zwykłego okienka isSpecial może być false, a pozostałe pola specjalne nie są potrzebne. Copy zadania i mechanika dodatku pozostają rozdzielone.",
+    "recommendedSpecialTypes": [
+      "quiz",
+      "checklist",
+      "bingo",
+      "randomizer",
+      "timer",
+      "card-form",
+      "printable",
+      "recipe",
+      "scorecard",
+      "image-card",
+      "date-gate"
+    ]
+  },
+  "assetNaming": {
+    "printables": "printables/<set>/<task-id>/...pdf",
+    "templates": "templates/<set>/<task-id>/...png",
+    "content": "content/<set>/<task-id>.json",
+    "versioning": "specialConfigId powinien wskazywać wersjonowaną konfigurację, np. christmas-bingo-v1."
+  },
+  "summary": [
+    {
+      "set": "Świąteczny nastrój i zabawa",
+      "total": 30,
+      "special": 15,
+      "standard": 15
+    },
+    {
+      "set": "Porządki i przygotowania",
+      "total": 30,
+      "special": 10,
+      "standard": 20
+    },
+    {
+      "set": "Dobre uczynki i życzliwość",
+      "total": 30,
+      "special": 8,
+      "standard": 22
+    },
+    {
+      "set": "Kreatywne i artystyczne",
+      "total": 30,
+      "special": 15,
+      "standard": 15
+    },
+    {
+      "set": "Kuchenne i kulinarne",
+      "total": 30,
+      "special": 12,
+      "standard": 18
+    },
+    {
+      "set": "Refleksja i relaks",
+      "total": 30,
+      "special": 12,
+      "standard": 18
+    },
+    {
+      "set": "Łącznie",
+      "total": 180,
+      "special": 72,
+      "standard": 108
+    }
+  ],
+  "target": "72 okienka specjalne w 180 płatnych zadaniach (40%). Specjalność pozostaje niespodzianką do chwili otwarcia.",
+  "sets": [
+    {
+      "setNumber": 1,
+      "title": "Świąteczny nastrój i zabawa",
+      "tasks": [
+        {
+          "id": "set-1-task-1",
+          "order": 1,
+          "title": "Świątecznych Brzmień",
+          "text": "Dziś jest Dzień Świątecznych Brzmień — wybierz dziesięć piosenek, które naprawdę kojarzą Ci się ze świętami, i ułóż z nich własną playlistę. Na koniec dodaj jeden utwór, który od dziś będzie „piosenką tych świąt”.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-2",
+          "order": 2,
+          "title": "Kolędowego Zgadywania",
+          "text": "Dziś jest Dzień Kolędowego Zgadywania — odtwórz pierwsze pięć sekund kilku świątecznych piosenek i sprawdź, kto pierwszy odgadnie tytuł. Za każdą poprawną odpowiedź przyznaj jeden „piernikowy punkt”.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-3",
+          "order": 3,
+          "title": "Świątecznego Karaoke",
+          "text": "Dziś jest Dzień Świątecznego Karaoke — wybierz piosenkę, której refren zna prawie każdy, i zaśpiewaj go samodzielnie albo razem z kimś bliskim. Talent nie jest wymagany — liczy się wykonanie z pełnym przekonaniem.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-4",
+          "order": 4,
+          "title": "Jarmarkowej Misji",
+          "text": "Dziś jest Dzień Jarmarkowej Misji — wybierz się na jarmark lub świątecznie udekorowany rynek i znajdź trzy rzeczy: najładniejszą dekorację, najbardziej świąteczny zapach i drobiazg, który najmocniej przypomina Ci dzieciństwo.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-5",
+          "order": 5,
+          "title": "Bożonarodzeniowego Quizu",
+          "text": "Dziś jest Dzień Bożonarodzeniowego Quizu — przygotuj pięć pytań o Bożym Narodzeniu i urządź domowy turniej. Niech jedno pytanie będzie podchwytliwe, a zwycięzca wybierze dzisiejszy świąteczny film albo deser.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Gotowy Bożonarodzeniowy Quiz",
+            "format": "Interaktywny quiz",
+            "preparation": "Przygotować bazę 12–20 pytań z 3 odpowiedziami, poprawną odpowiedzią i krótką ciekawostką. Na jedno otwarcie losować 7 pytań.",
+            "interaction": "Użytkownik odpowiada A/B/C, od razu widzi poprawność i ciekawostkę; pasek postępu 1/7; na końcu wynik.",
+            "endEffect": "Ekran wyniku „X/7 — poziom świątecznej wiedzy”, możliwość zapisania wyniku jako PNG i udostępnienia.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Reużywalny komponent QuizEngine."
+          }
+        },
+        {
+          "id": "set-1-task-6",
+          "order": 6,
+          "title": "Dorosłego Listu do Mikołaja",
+          "text": "Dziś jest Dzień Dorosłego Listu do Mikołaja — zapisz trzy rzeczy, których naprawdę sobie życzysz: jedną materialną, jedną związaną z przeżyciem lub doświadczeniem oraz jedną, której nie da się kupić.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "List do Mikołaja dla dorosłych",
+            "format": "List na kartce + eksport PDF",
+            "preparation": "Zaprojektować list, nie suchą listę: nagłówek „Drogi Mikołaju”, bezosobowe wstęp i zakończenie oraz trzy życzenia (rzecz, przeżycie, coś, czego nie da się kupić).",
+            "interaction": "Użytkownik wpisuje trzy życzenia; podgląd listu aktualizuje się na żywo.",
+            "endEffect": "Pobranie listu jako PDF — do schowania albo do wigilijnego stołu.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Reużywalny CardForm + exporter PNG/PDF."
+          }
+        },
+        {
+          "id": "set-1-task-7",
+          "order": 7,
+          "title": "Świątecznego Bingo",
+          "text": "Dziś jest Dzień Świątecznego Bingo — wypisz dziewięć rzeczy, które możesz zobaczyć podczas grudniowego spaceru, np. renifera, dużą gwiazdę, czerwony wieniec czy migające lampki. Spróbuj znaleźć tyle z nich, by skreślić cały rząd.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczne Bingo 3×3",
+            "format": "Interaktywna plansza bingo",
+            "preparation": "Przygotować pulę min. 30 pól (np. renifer, wieniec, gwiazda w oknie, Mikołaj, bałwan, czerwone lampki). Losować 9 bez powtórzeń.",
+            "interaction": "Kliknięcie pola oznacza je jako znalezione; postęp zapisywany automatycznie. Po zamknięciu rzędu animacja „BINGO!”.",
+            "endEffect": "Użytkownik może zapisać ukończoną planszę jako PNG albo zresetować i wylosować nową.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "BingoGrid + local/server persistence."
+          }
+        },
+        {
+          "id": "set-1-task-8",
+          "order": 8,
+          "title": "Nietypowego Zdjęcia",
+          "text": "Dziś jest Dzień Nietypowego Zdjęcia — zrób świąteczne zdjęcie w miejscu, które na co dzień wcale nie kojarzy się ze świętami. Im większy kontrast między miejscem a świątecznym akcentem, tym ciekawszy efekt.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-9",
+          "order": 9,
+          "title": "Domowej Wioski",
+          "text": "Dziś jest Dzień Domowej Wioski — zbuduj miniaturową świąteczną scenkę z rzeczy, które już masz: pudełek, figurek, waty, klocków albo papieru. Wieczorem podświetl ją małą lampką lub lampkami LED.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Papierowa świąteczna wioska",
+            "format": "PDF do druku",
+            "preparation": "Zaprojektować A4 PDF z 3 prostymi domkami: linie cięcia, linie zgięcia, okna, drzwi; wersja kolorowa i oszczędna czarno-biała.",
+            "interaction": "Podgląd miniatur + przycisk „Pobierz szablon”. Krótka instrukcja składania w 4 krokach.",
+            "endEffect": "Użytkownik drukuje, wycina i składa gotową dekorację.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Asset PDF + miniatura; bez złożonego frontendu."
+          }
+        },
+        {
+          "id": "set-1-task-10",
+          "order": 10,
+          "title": "Świątecznej Reklamy",
+          "text": "Dziś jest Dzień Świątecznej Reklamy — wybierz zwykły domowy przedmiot i w 30 sekund zareklamuj go jako najbardziej ekskluzywny prezent bożonarodzeniowy. Im bardziej poważna prezentacja, tym zabawniejszy efekt.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-11",
+          "order": 11,
+          "title": "Świątecznej Ciekawostki",
+          "text": "Dziś jest Dzień Świątecznej Ciekawostki — znajdź jeden zaskakujący fakt o tradycjach bożonarodzeniowych w dowolnym kraju i opowiedz go komuś bliskiemu. Wybierz coś, co będzie nowością także dla Ciebie.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna ciekawostka dnia",
+            "format": "Interaktywna karta ciekawostki",
+            "preparation": "Przygotować 20–30 zweryfikowanych ciekawostek o tradycjach świątecznych z różnych krajów, każda 2–4 zdania.",
+            "interaction": "Klik „Losuj ciekawostkę”; możliwość odkrycia drugiej dopiero po oznaczeniu pierwszej jako przeczytanej.",
+            "endEffect": "Kartę można zapisać jako PNG lub udostępnić.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Baza contentowa + ShareCard."
+          }
+        },
+        {
+          "id": "set-1-task-12",
+          "order": 12,
+          "title": "Świątecznej Parodii",
+          "text": "Dziś jest Dzień Świątecznej Parodii — wybierz znany refren i zmień kilka słów tak, żeby opowiadał o choince, piernikach albo pakowaniu prezentów. Potem koniecznie wykonaj swoją wersję na głos.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-13",
+          "order": 13,
+          "title": "Dawnej Kolędy",
+          "text": "Dziś jest Dzień Dawnej Kolędy — posłuchaj starej polskiej kolędy w tradycyjnym wykonaniu i sprawdź, ile jej zwrotek znasz. Wybierz jeden wers, który najmocniej przywołuje świąteczny obraz lub wspomnienie.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-14",
+          "order": 14,
+          "title": "Filmowego Seansu Specjalnego",
+          "text": "Dziś jest Dzień Filmowego Seansu Specjalnego — wybierz świąteczny film, przygotuj coś ciepłego do picia i zgaś główne światło. Na czas seansu odłóż telefon poza zasięg ręki.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-15",
+          "order": 15,
+          "title": "Polowania na Iluminacje",
+          "text": "Dziś jest Dzień Polowania na Iluminacje — wybierz się po zmroku na 20-minutowy spacer i przyznawaj punkty mijanym dekoracjom: jeden za lampki, dwa za renifera i trzy za naprawdę efektownie udekorowany dom lub witrynę.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Polowanie na iluminacje",
+            "format": "Interaktywna karta punktowa",
+            "preparation": "Przygotować 10–12 typów dekoracji z punktacją i 3 poziomy wyniku.",
+            "interaction": "Użytkownik odhacza napotkane dekoracje; punkty liczą się automatycznie.",
+            "endEffect": "Na końcu karta wyniku z tytułem np. „Łowca Świątecznych Świateł — 18 pkt”, do zapisania jako PNG.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "ChecklistScore component."
+          }
+        },
+        {
+          "id": "set-1-task-16",
+          "order": 16,
+          "title": "Świątecznego Stroju",
+          "text": "Dziś jest Dzień Świątecznego Stroju — załóż jeden świąteczny element i wymyśl jego historię: skąd „przybył”, do kogo wcześniej należał albo jaką magiczną moc mógłby mieć.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-17",
+          "order": 17,
+          "title": "Fotograficznego Powrotu",
+          "text": "Dziś jest Dzień Fotograficznego Powrotu — znajdź stare grudniowe zdjęcie i spróbuj odtworzyć je dziś w podobnym miejscu lub w podobnej pozie. Na koniec zestaw oba ujęcia obok siebie.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Fotograficzny powrót — przed i po",
+            "format": "Generator kolażu zdjęć",
+            "preparation": "Przygotować szablon 2-polowy „Wtedy / Dziś” z datą i subtelnym brandingiem e‑Advent.",
+            "interaction": "Użytkownik dodaje stare i nowe zdjęcie, kadruje je i opcjonalnie wpisuje podpis.",
+            "endEffect": "Eksport gotowego kolażu jako PNG do galerii/udostępnienia.",
+            "effort": "`L` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Image upload + crop + canvas export."
+          }
+        },
+        {
+          "id": "set-1-task-18",
+          "order": 18,
+          "title": "Najdziwniejszej Bombki",
+          "text": "Dziś jest Dzień Najdziwniejszej Bombki — wybierz najbardziej nietypową ozdobę, jaką masz, i wymyśl jej krótką legendę. Jeśli żadna się nie wyróżnia, wskaż zwykły domowy przedmiot, który mógłby zostać bombką, i uzasadnij swój wybór.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-19",
+          "order": 19,
+          "title": "Świątecznego Alfabetu",
+          "text": "Dziś jest Dzień Świątecznego Alfabetu — zagraj z kimś bliskim: na zmianę wymieniajcie świąteczne słowa zaczynające się od kolejnych liter alfabetu. Osoba, która nie poda hasła w ciągu pięciu sekund, odpada z rundy.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-20",
+          "order": 20,
+          "title": "Mikołajowego Komunikatu",
+          "text": "Dziś jest Dzień Mikołajowego Komunikatu — nagraj krótką wiadomość głosem Świętego Mikołaja i wyślij ją komuś bliskiemu. Może być zabawna, ale niech zawiera też jedno naprawdę miłe zdanie.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**. Użytkownik może zrealizować nagranie w dowolnej aplikacji w telefonie — e‑Advent nie prosi o dostęp do mikrofonu i nie przechowuje audio.",
+            "workRequired": "brak modułu nagrywania i brak obsługi plików audio.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-21",
+          "order": 21,
+          "title": "Tajnej Misji Elfa",
+          "text": "Dziś jest Dzień Tajnej Misji Elfa — wybierz jednego domownika i w ciągu dnia zrób dla niego trzy drobne, miłe rzeczy tak, aby nie od razu było wiadomo, kto za nimi stoi.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Tajna misja elfa",
+            "format": "Losowanie prywatnej misji",
+            "preparation": "Przygotować 30 małych gestów dla domownika, podzielonych na łatwe/średnie.",
+            "interaction": "Użytkownik wybiera lub wpisuje imię domownika i losuje 3 sekretne misje. Postęp można odhaczać.",
+            "endEffect": "Po wykonaniu 3/3 pojawia się „Misja Elfa zakończona” i mała karta sukcesu.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Randomizer + checklist."
+          }
+        },
+        {
+          "id": "set-1-task-22",
+          "order": 22,
+          "title": "Świątecznych Kalamburów",
+          "text": "Dziś jest Dzień Świątecznych Kalamburów — wylosuj świąteczne hasło, pokaż je bez słów, a reszta zgaduje, zanim minie minuta. Potem losuj kolejne: w tej rundzie hasła się nie powtarzają. Tytuł „Kevin sam w domu” możesz potraktować jako poziom trudny.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczne kalambury",
+            "format": "Losowanie haseł + timer",
+            "preparation": "Przygotować min. 80 haseł w 3 poziomach trudności, bez konieczności używania chronionych grafik.",
+            "interaction": "Użytkownik wybiera poziom, losuje hasło, uruchamia 60 s; „zaliczone/pomiń” zlicza punkty.",
+            "endEffect": "Wynik po 10 hasłach, możliwość nowej rundy.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "CharadesGame reuse randomizer/timer."
+          }
+        },
+        {
+          "id": "set-1-task-23",
+          "order": 23,
+          "title": "Prezentowego Detektywa",
+          "text": "Dziś jest Dzień Prezentowego Detektywa — wybierz zapakowany prezent albo zamknięte pudełko i razem z kimś spróbujcie odgadnąć jego zawartość wyłącznie po kształcie, wadze i dźwięku. Bez podglądania.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Karta Prezentowego Detektywa",
+            "format": "Interaktywna karta dedukcji + opcjonalny eksport PNG",
+            "preparation": "Przygotować formularz z polami: „Co podpowiada kształt?”, „Co podpowiada waga?”, „Co słychać po delikatnym poruszeniu?”, trzy możliwe typy oraz jedno pole „Mój ostateczny strzał”. Dodać prostą punktację po ujawnieniu zawartości: 3 pkt za dokładne trafienie, 1 pkt za trafienie kategorii.",
+            "interaction": "Użytkownik zapisuje kolejne wskazówki bez podglądania prezentu, zatwierdza ostateczny typ, a po rozpakowaniu wybiera „Trafione / blisko / pudło”. Aplikacja pokazuje wynik detektywa.",
+            "endEffect": "Karta „Raport Prezentowego Detektywa” z wynikiem i zgadywaną odpowiedzią; możliwość zapisania jej jako PNG albo rozpoczęcia kolejnej rundy z innym prezentem.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Reużywalny CardForm + Scorecard; żadnego dostępu do kamery ani mikrofonu."
+          }
+        },
+        {
+          "id": "set-1-task-24",
+          "order": 24,
+          "title": "Grudniowego Rankingu",
+          "text": "Dziś jest Dzień Grudniowego Rankingu — ułóż ranking pięciu ulubionych świątecznych filmów, potraw, piosenek albo tradycji. Porównaj go z rankingiem kogoś bliskiego i znajdź przynajmniej jedną wspólną pozycję.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Grudniowy ranking TOP 5",
+            "format": "Interaktywne sortowanie + eksport",
+            "preparation": "Przygotować kategorie: filmy, potrawy, piosenki, tradycje + możliwość własnej.",
+            "interaction": "Użytkownik wpisuje 5 pozycji i przeciąga je w kolejności 1–5.",
+            "endEffect": "Eksport estetycznej karty „Moje świąteczne TOP 5” jako PNG.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "SortableList + ShareCard."
+          }
+        },
+        {
+          "id": "set-1-task-25",
+          "order": 25,
+          "title": "Świątecznej Reklamy",
+          "text": "Dziś jest Dzień Świątecznej Reklamy — wybierz zwykły domowy przedmiot i w 30 sekund zareklamuj go jako najbardziej ekskluzywny prezent bożonarodzeniowy. Im bardziej poważna prezentacja, tym zabawniejszy efekt.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-26",
+          "order": 26,
+          "title": "Choinkowych Poszukiwań",
+          "text": "Dziś jest Dzień Choinkowych Poszukiwań — poproś kogoś o ukrycie małej ozdoby w pokoju, a następnie spróbuj ją znaleźć, korzystając wyłącznie ze wskazówek „cieplej” i „zimniej”.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-27",
+          "order": 27,
+          "title": "Jednego Kadru",
+          "text": "Dziś jest Dzień Jednego Kadru — ustaw telefon i nagraj dziesięć sekund zwykłej świątecznej chwili: migające lampki, przygotowania, śmiech albo kubki stojące na stole. Bez pozowania — niech to będzie prawdziwy fragment grudnia.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-1-task-28",
+          "order": 28,
+          "title": "Świątecznej Prognozy",
+          "text": "Dziś jest Dzień Świątecznej Prognozy — razem z domownikami zapiszcie na osobnych kartkach po jednej zabawnej przepowiedni dotyczącej tegorocznych świąt. Otwórzcie je w Wigilię i sprawdźcie, czy któraś się spełniła.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna prognoza",
+            "format": "Karta przepowiedni z późniejszym odkryciem",
+            "preparation": "Przygotować formularz dla 1–6 osób: imię + przepowiednia. Możliwość ustawienia „nie pokazuj do 24 grudnia”.",
+            "interaction": "Wpisy są zapisywane i po zatwierdzeniu mogą zostać zasłonięte; 24.12 przycisk „Odkryj przepowiednie”.",
+            "endEffect": "Karta porównawcza do zapisania jako PNG po odkryciu.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Persisted form + date gate + exporter."
+          }
+        },
+        {
+          "id": "set-1-task-29",
+          "order": 29,
+          "title": "Reniferowego Wyzwania",
+          "text": "Dziś jest Dzień Reniferowego Wyzwania — przez pięć minut komunikuj się z domownikami wyłącznie za pomocą gestów i zabawnych, świątecznych odgłosów. Zakończcie zabawę, gdy ktoś poprawnie odgadnie trzy komunikaty.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Reniferowe wyzwanie",
+            "format": "Losowanie komunikatów + timer",
+            "preparation": "Przygotować 30 prostych komunikatów do przekazania gestem/dźwiękiem, np. „chcę kakao”, „Mikołaj zgubił worek”.",
+            "interaction": "Losuj komunikat → 60 s timera → zaliczone/pomiń.",
+            "endEffect": "Po 3 poprawnych komunikatach animacja sukcesu i odznaka „Reniferowy Tłumacz”.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Randomizer + Timer."
+          }
+        },
+        {
+          "id": "set-1-task-30",
+          "order": 30,
+          "title": "Małego Finału",
+          "text": "Dziś jest Dzień Małego Finału — wybierz jedną rzecz, która w tym grudniu najmocniej budowała u Ciebie świąteczny klimat, i powtórz ją dziś w wyjątkowej wersji: trochę ładniej, trochę dłużej albo razem z kimś bliskim.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        }
+      ]
+    },
+    {
+      "setNumber": 2,
+      "title": "Porządki i przygotowania",
+      "tasks": [
+        {
+          "id": "set-2-task-1",
+          "order": 1,
+          "title": "Świątecznej Stacji Pakowania",
+          "text": "Dziś jest Dzień Świątecznej Stacji Pakowania — zbierz w jednym miejscu papier, taśmę, nożyczki, wstążki i etykiety. Dzięki temu przy kolejnym pakowaniu prezentów wszystko będzie pod ręką.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna stacja pakowania — checklista",
+            "format": "Interaktywna checklista + PDF",
+            "preparation": "Przygotować listę: papier, taśma, nożyczki, wstążki, etykiety, marker, torebki, pudełka; krótki schemat organizacji stacji.",
+            "interaction": "Użytkownik odhacza posiadane rzeczy; brakujące można oznaczyć „do kupienia”.",
+            "endEffect": "Pobranie listy zakupowej jako PDF/druk albo zachowanie checklisty w aplikacji.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Checklist component + printable view."
+          }
+        },
+        {
+          "id": "set-2-task-2",
+          "order": 2,
+          "title": "Testu Lampek",
+          "text": "Dziś jest Dzień Testu Lampek — sprawdź wszystkie świąteczne lampki, zanim naprawdę będą potrzebne. Rozplącz przewody, wymień baterie i odłóż osobno te zestawy, które wymagają naprawy.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-3",
+          "order": 3,
+          "title": "Choinkowej Przestrzeni",
+          "text": "Dziś jest Dzień Choinkowej Przestrzeni — przygotuj miejsce na drzewko albo uporządkuj przestrzeń wokół już stojącej choinki. Zostaw obok trochę wolnego miejsca na prezenty i rodzinne zdjęcia.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-4",
+          "order": 4,
+          "title": "Pudełka Awaryjnego",
+          "text": "Dziś jest Dzień Pudełka Awaryjnego — przygotuj mały zestaw z taśmą, nożyczkami, bateriami, zapasowymi haczykami, sznurkiem i kilkoma torebkami prezentowymi. W grudniu taki zestaw potrafi uratować niejedną sytuację.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Pudełko awaryjne — gotowa lista",
+            "format": "Interaktywna checklista",
+            "preparation": "Przygotować gotową listę awaryjną i sekcję „mam / brakuje”.",
+            "interaction": "Odhaczanie elementów; automatycznie tworzona lista braków.",
+            "endEffect": "Przycisk „Skopiuj listę zakupów” lub pobierz jako PDF.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Checklist + copy-to-clipboard."
+          }
+        },
+        {
+          "id": "set-2-task-5",
+          "order": 5,
+          "title": "Listy Bez Paniki",
+          "text": "Dziś jest Dzień Listy Bez Paniki — zapisz wszystkie osoby, dla których planujesz prezenty, a przy każdym imieniu dopisz jedną konkretną rzecz do zrobienia. Jeden prosty plan jest lepszy niż próba pamiętania o wszystkim naraz.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Planer prezentów",
+            "format": "Interaktywny planer",
+            "preparation": "Przygotować tabelę: osoba, pomysł, budżet opcjonalny, kupione, zapakowane.",
+            "interaction": "Dodawanie osób, wpisywanie pomysłów, statusy kupione/zapakowane.",
+            "endEffect": "Plan zapisuje się automatycznie; możliwość eksportu do PDF. Dane prywatne — domyślnie nie udostępniać.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "CRUD list + persistence + print view."
+          }
+        },
+        {
+          "id": "set-2-task-6",
+          "order": 6,
+          "title": "Świątecznej Spiżarni",
+          "text": "Dziś jest Dzień Świątecznej Spiżarni — sprawdź zapasy mąki, cukru, kakao, przypraw, bakalii i innych produktów, które zwykle przydają się w grudniu. Na listę zakupów dopisz tylko to, czego rzeczywiście brakuje.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna spiżarnia",
+            "format": "Checklista zapasów",
+            "preparation": "Przygotować kategorie: pieczenie, przyprawy, bakalie, napoje, inne; predefiniowane pozycje + własne.",
+            "interaction": "Użytkownik oznacza „mam/brakuje”; filtr „pokaż tylko braki”.",
+            "endEffect": "Skopiowanie listy braków do schowka albo wydruk/PDF.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Reusable shopping checklist."
+          }
+        },
+        {
+          "id": "set-2-task-7",
+          "order": 7,
+          "title": "Wolnej Półki",
+          "text": "Dziś jest Dzień Wolnej Półki — opróżnij jedną półkę albo fragment blatu i przeznacz to miejsce na świąteczne rzeczy: słodycze, herbaty, serwetki lub produkty do pieczenia. Dzięki temu nie będą porozkładane po całym domu.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-8",
+          "order": 8,
+          "title": "Prezentowego Magazynu",
+          "text": "Dziś jest Dzień Prezentowego Magazynu — wyznacz jedno dyskretne miejsce na prezenty i rzeczy czekające na zapakowanie. Dodaj tam torbę lub pudełko na małe drobiazgi, które łatwo zgubić.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-9",
+          "order": 9,
+          "title": "Papierowej Kontroli",
+          "text": "Dziś jest Dzień Papierowej Kontroli — przejrzyj papier, torby i dodatki do pakowania prezentów. Zachowaj wstążki, pudełka i większe kawałki papieru, które można wykorzystać ponownie, a pozbądź się tylko tego, co naprawdę nieprzydatne.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Inwentaryzacja materiałów do pakowania",
+            "format": "Interaktywna lista stanu",
+            "preparation": "Przygotować pozycje z prostym statusem: dużo / mało / brak oraz wskazówką „wykorzystaj ponownie”.",
+            "interaction": "Użytkownik ocenia zapas materiałów.",
+            "endEffect": "Na końcu automatyczna mini lista „dokup tylko: …”.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Inventory checklist."
+          }
+        },
+        {
+          "id": "set-2-task-10",
+          "order": 10,
+          "title": "Stołowej Próby Generalnej",
+          "text": "Dziś jest Dzień Stołowej Próby Generalnej — wyjmij obrus, serwetki i naczynia, których chcesz użyć podczas świąt. Przygotuj jedno próbne nakrycie — od razu zobaczysz, czy czegoś brakuje.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-11",
+          "order": 11,
+          "title": "Kuchennej Przestrzeni",
+          "text": "Dziś jest Dzień Kuchennej Przestrzeni — zwolnij fragment blatu i przeznacz go na świąteczne gotowanie lub pieczenie. Nawet niewielka wolna powierzchnia potrafi później oszczędzić sporo nerwów.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-12",
+          "order": 12,
+          "title": "Lodówkowego Planu",
+          "text": "Dziś jest Dzień Lodówkowego Planu — usuń przeterminowane produkty i wyznacz jedną półkę na świąteczne zapasy. Dzięki temu przed Wigilią łatwiej będzie znaleźć miejsce na przygotowane potrawy.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-13",
+          "order": 13,
+          "title": "Zamrażarkowego Oddechu",
+          "text": "Dziś jest Dzień Zamrażarkowego Oddechu — sprawdź zawartość zamrażarki i zrób trochę miejsca na świąteczne przygotowania. Wybierz dwie rzeczy, które warto zużyć w najbliższych dniach.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-14",
+          "order": 14,
+          "title": "Dekoracyjnego Serwisu",
+          "text": "Dziś jest Dzień Dekoracyjnego Serwisu — obejrzyj ulubione ozdoby i napraw jeden drobiazg: urwany sznurek, luźną kokardę, brakujący haczyk albo odklejony element. Kilka minut pracy może przedłużyć życie dekoracji o kolejne sezony.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-15",
+          "order": 15,
+          "title": "Gościnnego Wieszaka",
+          "text": "Dziś jest Dzień Gościnnego Wieszaka — jeśli spodziewasz się gości, przygotuj kilka wolnych wieszaków i trochę miejsca na kurtki. To niewielki detal, który w świąteczny dzień naprawdę ułatwia życie.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-16",
+          "order": 16,
+          "title": "Ciepłego Wejścia",
+          "text": "Dziś jest Dzień Ciepłego Wejścia — uporządkuj przedpokój i dodaj w nim jeden świąteczny akcent. To pierwsze miejsce, które widzisz po powrocie do domu, i jedno z pierwszych, które zobaczą goście.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-17",
+          "order": 17,
+          "title": "Obrusowej Gotowości",
+          "text": "Dziś jest Dzień Obrusowej Gotowości — sprawdź wcześniej świąteczny obrus lub bieżnik. Jeśli wymaga prania albo prasowania, zrób to dziś i odłóż go gotowego do użycia.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-18",
+          "order": 18,
+          "title": "Prezentowych Etykiet",
+          "text": "Dziś jest Dzień Prezentowych Etykiet — przygotuj karteczki z imionami osób, które chcesz obdarować. Podczas pakowania unikniesz później zgadywania, które podobne pudełko jest dla kogo.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Prezentowe etykiety e‑Advent",
+            "format": "PDF + prosty generator etykiet",
+            "preparation": "Zaprojektować 2 arkusze A4 z 12–16 etykietami w stylu e‑Advent oraz wersję interaktywną z wpisaniem imienia.",
+            "interaction": "Użytkownik może pobrać pusty PDF lub wpisać imiona i wygenerować spersonalizowany arkusz.",
+            "endEffect": "Pobranie PDF gotowego do druku.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Template PDF; opcjonalnie HTML-to-PDF z imionami."
+          }
+        },
+        {
+          "id": "set-2-task-19",
+          "order": 19,
+          "title": "Grudniowego Kalendarza",
+          "text": "Dziś jest Dzień Grudniowego Kalendarza — wpisz w jedno miejsce ważne terminy: spotkania, dostawy, zakupy, szkolne wydarzenia i rodzinne plany. Zostaw przynajmniej jeden wieczór całkowicie wolny.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Grudniowy planer",
+            "format": "Interaktywny kalendarz 1–31 grudnia",
+            "preparation": "Przygotować prosty widok grudnia z kategoriami: rodzina, zakupy, przesyłki, szkoła/praca, odpoczynek.",
+            "interaction": "Dodawanie krótkich wpisów do dni; specjalne oznaczenie przynajmniej jednego „wolnego wieczoru”.",
+            "endEffect": "Plan zapisany w aplikacji + opcjonalny eksport A4 PDF.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Month planner component."
+          }
+        },
+        {
+          "id": "set-2-task-20",
+          "order": 20,
+          "title": "Świątecznego Menu",
+          "text": "Dziś jest Dzień Świątecznego Menu — spisz potrawy, które naprawdę chcesz przygotować, i zaznacz te, które można zrobić wcześniej. Im mniej decyzji zostawisz na ostatnią chwilę, tym więcej czasu podczas świąt zostanie dla Ciebie.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Planer świątecznego menu",
+            "format": "Interaktywny planer + lista zakupów",
+            "preparation": "Przygotować sekcje: potrawa, kiedy przygotować, składniki/braki, status.",
+            "interaction": "Użytkownik dodaje potrawy i oznacza „można zrobić wcześniej”.",
+            "endEffect": "Automatyczna lista potraw i harmonogram; eksport PDF.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "CRUD planner; nie trzeba automatycznie scalać składników w v1."
+          }
+        },
+        {
+          "id": "set-2-task-21",
+          "order": 21,
+          "title": "Naczyń Specjalnych",
+          "text": "Dziś jest Dzień Naczyń Specjalnych — sprawdź półmiski, miski, dzbanki i tace, które zwykle wyjmujesz tylko na wyjątkowe okazje. Umyj potrzebne rzeczy i odłóż je razem w łatwo dostępnym miejscu.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-22",
+          "order": 22,
+          "title": "Baterii Mikołaja",
+          "text": "Dziś jest Dzień Baterii Mikołaja — sprawdź, czy masz zapas baterii do lampek, zabawek i drobnych dekoracji. Kilka dodatkowych sztuk może uratować sytuację dokładnie wtedy, gdy sklepy będą już zamknięte.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-23",
+          "order": 23,
+          "title": "Małych Zapasów",
+          "text": "Dziś jest Dzień Małych Zapasów — sprawdź, czy masz pod ręką serwetki, worki na śmieci, ręczniki papierowe i zapasowe lampki lub świece LED. To mało świąteczne zakupy, ale bardzo świąteczny spokój.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-24",
+          "order": 24,
+          "title": "Awaryjnej Listy Prezentów",
+          "text": "Dziś jest Dzień Awaryjnej Listy Prezentów — zapisz trzy uniwersalne drobiazgi, które można szybko kupić lub przygotować. Taka lista przyda się, jeśli pojawi się niespodziewany gość albo przypomnisz sobie o kimś w ostatniej chwili.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Awaryjne prezenty — gotowa baza pomysłów",
+            "format": "Interaktywny selektor",
+            "preparation": "Przygotować 30 uniwersalnych pomysłów pogrupowanych wg budżetu i typu: jadalne, domowe, cyfrowe, doświadczenie.",
+            "interaction": "Użytkownik wybiera budżet i losuje/filtruje 3 propozycje; może zapisać wybrane.",
+            "endEffect": "Mini lista „awaryjne pomysły”, którą można skopiować do schowka.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Filtered idea database."
+          }
+        },
+        {
+          "id": "set-2-task-25",
+          "order": 25,
+          "title": "Porządku w Dekoracjach",
+          "text": "Dziś jest Dzień Porządku w Dekoracjach — ozdoby, których jeszcze nie używasz, włóż do opisanych pudeł zamiast zostawiać je w przypadkowych miejscach. Od razu przygotuj też jedno pudełko oznaczone „do schowania po świętach”.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-26",
+          "order": 26,
+          "title": "Świątecznego Ładowania",
+          "text": "Dziś jest Dzień Świątecznego Ładowania — naładuj powerbank, aparat, głośnik i inne urządzenia, z których chcesz korzystać podczas świąt. Dzięki temu nie będziesz szukać kabla akurat wtedy, gdy wydarzy się coś wartego uwiecznienia.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-27",
+          "order": 27,
+          "title": "Zdjęciowego Porządku",
+          "text": "Dziś jest Dzień Zdjęciowego Porządku — zwolnij trochę miejsca w telefonie i utwórz album „Święta 2026”. Nowe zdjęcia od razu będą miały swoje miejsce, a później łatwiej będzie do nich wrócić.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-28",
+          "order": 28,
+          "title": "Pięciominutowego Koszyka",
+          "text": "Dziś jest Dzień Pięciominutowego Koszyka — ustaw w salonie mały koszyk na rzeczy, które wieczorem trzeba odłożyć na miejsce. Jeden szybki obchód wystarczy, by przywrócić porządek bez większego sprzątania.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-29",
+          "order": 29,
+          "title": "Spokojnego Poranka",
+          "text": "Dziś jest Dzień Spokojnego Poranka — wieczorem przygotuj rzeczy potrzebne na następny dzień: ubranie, torbę, listę zakupów albo produkty na śniadanie. Jutro podziękujesz sobie za te kilka minut przygotowań.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-2-task-30",
+          "order": 30,
+          "title": "Ostatniej Kontroli",
+          "text": "Dziś jest Dzień Ostatniej Kontroli — przejdź po domu z jednym pytaniem: „Co w Wigilię mogłoby mnie najbardziej zirytować?” Wybierz tylko jeden problem, któremu możesz zapobiec, i zajmij się nim dziś.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Ostatnia kontrola przed świętami",
+            "format": "Interaktywny audyt 10 pytań",
+            "preparation": "Przygotować 10 krótkich pytań kontrolnych: prezenty, jedzenie, goście, baterie, transport, stół, odpoczynek itd.",
+            "interaction": "Użytkownik odpowiada Tak/Nie/Nie dotyczy; system pokazuje tylko punkty wymagające uwagi.",
+            "endEffect": "Końcowa lista maks. kilku spraw „Zajmij się tym teraz”, zapisywalna/skopiowalna.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Audit checklist + filtered result."
+          }
+        }
+      ]
+    },
+    {
+      "setNumber": 3,
+      "title": "Dobre uczynki i życzliwość",
+      "tasks": [
+        {
+          "id": "set-3-task-1",
+          "order": 1,
+          "title": "Tajemniczego Elfa",
+          "text": "Dziś jest Dzień Tajemniczego Elfa — zrób komuś drobną przysługę anonimowo i nie zdradzaj się do końca dnia. Może to być posprzątane miejsce, przygotowany napój albo mały upominek zostawiony z karteczką „dla Ciebie”.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Tajemniczy Elf — misja dobra",
+            "format": "Losowanie misji",
+            "preparation": "Przygotować 40 anonimowych drobnych gestów bez wydawania pieniędzy lub za symboliczną kwotę.",
+            "interaction": "Użytkownik losuje jedną misję; może wylosować ponownie raz. Po wykonaniu klika „Misja wykonana”.",
+            "endEffect": "Odznaka „Tajemniczy Elf” i opcjonalna anonimowa karta sukcesu do PNG.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Random mission card."
+          }
+        },
+        {
+          "id": "set-3-task-2",
+          "order": 2,
+          "title": "Prawdziwego „Dziękuję”",
+          "text": "Dziś jest Dzień Prawdziwego „Dziękuję” — wybierz jedną osobę i napisz jej, za co konkretnie chcesz podziękować. Zamiast ogólnego „dzięki za wszystko” przywołaj jedną sytuację, która naprawdę została Ci w pamięci.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Karta prawdziwego „Dziękuję”",
+            "format": "Formularz + karta PNG/PDF",
+            "preparation": "Zaprojektować elegancki szablon: „Dziękuję Ci za…”, „Pamiętam, kiedy…”, podpis.",
+            "interaction": "Użytkownik wpisuje treść i widzi podgląd.",
+            "endEffect": "Pobranie PNG/PDF albo skopiowanie samego tekstu do wiadomości.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "CardForm exporter."
+          }
+        },
+        {
+          "id": "set-3-task-3",
+          "order": 3,
+          "title": "Ciepłego Telefonu",
+          "text": "Dziś jest Dzień Ciepłego Telefonu — zadzwoń do kogoś, z kim od dawna nie masz kontaktu, bez żadnej sprawy do załatwienia. Jedyny cel: dowiedzieć się, co naprawdę u tej osoby słychać.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-4",
+          "order": 4,
+          "title": "Starego Zdjęcia",
+          "text": "Dziś jest Dzień Starego Zdjęcia — znajdź wspólne zdjęcie sprzed lat i wyślij je osobie, która na nim jest. Dodaj jedno zdanie o tym, co najbardziej pamiętasz z tamtego dnia.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-5",
+          "order": 5,
+          "title": "Dobrego Kubka",
+          "text": "Dziś jest Dzień Dobrego Kubka — przygotuj komuś ulubioną kawę, herbatę albo kakao bez wcześniejszej zapowiedzi i podaj napój tak, jakby był małym prezentem.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-6",
+          "order": 6,
+          "title": "Komplementu z Uzasadnieniem",
+          "text": "Dziś jest Dzień Komplementu z Uzasadnieniem — powiedz komuś coś miłego i od razu dodaj, dlaczego tak uważasz. Konkretne, szczere słowa zostają w pamięci dłużej niż samo „ładnie wyglądasz”.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-7",
+          "order": 7,
+          "title": "Ręcznej Kartki",
+          "text": "Dziś jest Dzień Ręcznej Kartki — przygotuj prostą kartkę świąteczną dla konkretnej osoby i dopisz kilka zdań własnymi słowami. Nie musi być idealna — ważne, żeby była osobista.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna kartka e‑Advent",
+            "format": "PDF do druku + wersja cyfrowa",
+            "preparation": "Zaprojektować 3 proste wzory kartki A6/A5 z miejscem na własny tekst.",
+            "interaction": "Wybór wzoru; opcjonalne wpisanie życzeń w przeglądarce.",
+            "endEffect": "Pobranie PDF do druku lub PNG do wysłania cyfrowo.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "3 templates + text overlay."
+          }
+        },
+        {
+          "id": "set-3-task-8",
+          "order": 8,
+          "title": "Pomocnego Elfa",
+          "text": "Dziś jest Dzień Pomocnego Elfa — wybierz obowiązek, którego ktoś bliski nie lubi, i wykonaj go bez zapowiedzi. Najlepiej tak, aby efekt był miłą niespodzianką zauważoną dopiero po chwili.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-9",
+          "order": 9,
+          "title": "Małej Paczuszki",
+          "text": "Dziś jest Dzień Małej Paczuszki — przygotuj drobiazg dla osoby, która raczej nie spodziewa się prezentu: kilka słodyczy, herbatę, mandarynkę albo domowe ciastko. Dodaj krótką, serdeczną karteczkę.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Etykietka do małej paczuszki",
+            "format": "PDF/PNG etykiet",
+            "preparation": "Przygotować arkusz małych etykiet z krótkimi hasłami „Dla Ciebie”, „Mała rzecz, dużo ciepła”, plus wersje puste.",
+            "interaction": "Użytkownik wybiera wzór i ewentualnie wpisuje imię.",
+            "endEffect": "Pobranie arkusza PDF lub pojedynczej etykiety PNG.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Template assets + simple personalization."
+          }
+        },
+        {
+          "id": "set-3-task-10",
+          "order": 10,
+          "title": "Dobrego Słowa dla Nieznajomego",
+          "text": "Dziś jest Dzień Dobrego Słowa dla Nieznajomego — podziękuj komuś, kogo zwykle mijasz bez dłuższej rozmowy: kurierowi, kasjerowi, kierowcy, ochroniarzowi albo osobie sprzątającej. Wystarczy jedno proste i szczere zdanie.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-11",
+          "order": 11,
+          "title": "Świątecznej Darowizny",
+          "text": "Dziś jest Dzień Świątecznej Darowizny — wybierz jedną rzecz w dobrym stanie, której już nie potrzebujesz, i przekaż ją komuś lub organizacji, która rzeczywiście może z niej skorzystać.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-12",
+          "order": 12,
+          "title": "Jednej Pełnej Torby",
+          "text": "Dziś jest Dzień Jednej Pełnej Torby — podczas zakupów wybierz kilka trwałych produktów na lokalną zbiórkę żywności lub dla miejsca pomagającego osobom w potrzebie. Nie musi być ich dużo — liczy się świadomy gest.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-13",
+          "order": 13,
+          "title": "Łańcucha Dobra",
+          "text": "Dziś jest Dzień Łańcucha Dobra — zrób dla kogoś coś miłego i poproś tylko o jedno: aby przy najbliższej okazji przekazać podobny gest dalej.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Łańcuch dobra",
+            "format": "Interaktywna karta do przekazania dalej",
+            "preparation": "Przygotować kartę z instrukcją „Dostałeś gest dobra → zrób jeden dla kolejnej osoby”.",
+            "interaction": "Po wykonaniu użytkownik może wygenerować cyfrową kartę z własnym krótkim dopiskiem.",
+            "endEffect": "PNG/share link/kopiowanie tekstu — bez publicznego śledzenia osób.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "ShareCard; privacy-first, no chain tracking."
+          }
+        },
+        {
+          "id": "set-3-task-14",
+          "order": 14,
+          "title": "Wiadomości Bez Powodu",
+          "text": "Dziś jest Dzień Wiadomości Bez Powodu — napisz do kogoś: „Pomyślałem dziś o Tobie i chcę Ci tylko życzyć dobrego dnia”. Bez pytania, prośby ani ukrytego celu.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-15",
+          "order": 15,
+          "title": "Domowego Ratunku",
+          "text": "Dziś jest Dzień Domowego Ratunku — zapytaj bliską osobę: „Co mogę Ci dziś zdjąć z głowy?” Wybierz jedną rzecz z odpowiedzi i naprawdę się nią zajmij.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-16",
+          "order": 16,
+          "title": "Słodkiego Dzielenia",
+          "text": "Dziś jest Dzień Słodkiego Dzielenia — przygotuj lub kup coś niewielkiego do jedzenia i podziel się z sąsiadem, współpracownikiem albo inną osobą, którą regularnie spotykasz.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-17",
+          "order": 17,
+          "title": "Głosu Wdzięczności",
+          "text": "Dziś jest Dzień Głosu Wdzięczności — nagraj krótką wiadomość głosową dla ważnej osoby i powiedz, za co ją cenisz. Głos potrafi przekazać znacznie więcej ciepła niż samo emoji.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-18",
+          "order": 18,
+          "title": "Dobrego Wspomnienia",
+          "text": "Dziś jest Dzień Dobrego Wspomnienia — przypomnij komuś historię, w której zrobił dla Ciebie coś ważnego. Dla tej osoby mógł to być drobiazg, ale Tobie ten gest zapadł w pamięć.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-19",
+          "order": 19,
+          "title": "Trzech Uśmiechów",
+          "text": "Dziś jest Dzień Trzech Uśmiechów — spróbuj poprawić dziś humor trzem osobom: żartem, pomocą, komplementem albo małą niespodzianką. Każdy gest może być inny.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Trzy uśmiechy",
+            "format": "Tracker 3 gestów",
+            "preparation": "Przygotować trzy pola z możliwością wpisania krótkiej notatki „co zrobiłem/am” bez wymuszania form płciowych w UI, np. „Co udało Ci się zrobić?”.",
+            "interaction": "Po każdym geście użytkownik zaznacza jedno serce i opcjonalnie dopisuje notatkę.",
+            "endEffect": "3/3 uruchamia delikatną animację; karta podsumowania może zostać zapisana prywatnie.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Three-step tracker."
+          }
+        },
+        {
+          "id": "set-3-task-20",
+          "order": 20,
+          "title": "Sąsiedzkiego „Cześć”",
+          "text": "Dziś jest Dzień Sąsiedzkiego „Cześć” — przywitaj się lub zamień kilka zdań z sąsiadem, którego zwykle mijasz w pośpiechu. Grudzień to dobry moment, żeby choć trochę przełamać codzienną anonimowość.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-21",
+          "order": 21,
+          "title": "Prezentu z Czasu",
+          "text": "Dziś jest Dzień Prezentu z Czasu — podaruj komuś 20 minut pełnej uwagi. Bez telefonu i robienia kilku rzeczy naraz — po prostu porozmawiaj albo posłuchaj.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-22",
+          "order": 22,
+          "title": "Pomocy Przy Prezentach",
+          "text": "Dziś jest Dzień Pomocy Przy Prezentach — zaproponuj komuś pomoc w pakowaniu, wyborze upominku, odebraniu paczki lub innym przedświątecznym drobiazgu. Mała pomoc może komuś oszczędzić sporo stresu.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-23",
+          "order": 23,
+          "title": "Dobrej Opinii",
+          "text": "Dziś jest Dzień Dobrej Opinii — jeśli masz dobre doświadczenie z małą firmą, lokalnym sklepem, restauracją albo usługodawcą, zostaw uczciwą pozytywną opinię. Tobie zajmie to kilka minut, a dla małego biznesu może mieć duże znaczenie.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-24",
+          "order": 24,
+          "title": "Rodzinnych Wspomnień",
+          "text": "Dziś jest Dzień Rodzinnych Wspomnień — zadzwoń lub odwiedź starszą osobę w rodzinie i poproś o jedno świąteczne wspomnienie z dzieciństwa. Dziś to jej opowieść jest najważniejsza.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Rodzinne wspomnienia — karta rozmowy",
+            "format": "Interaktywne pytania + PDF",
+            "preparation": "Przygotować 12 pytań o dawne święta: potrawy, prezenty, choinka, zwyczaje, muzyka, dzieciństwo.",
+            "interaction": "Użytkownik losuje 3 pytania albo pobiera całą kartę rozmowy.",
+            "endEffect": "PDF A4 do rodzinnej rozmowy lub zapis 3 wylosowanych pytań na ekranie.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Prompt deck + printable sheet."
+          }
+        },
+        {
+          "id": "set-3-task-25",
+          "order": 25,
+          "title": "Ciepłego Miejsca",
+          "text": "Dziś jest Dzień Ciepłego Miejsca — zadbaj o wspólną przestrzeń, z której korzystają też inni: kuchnię w pracy, klatkę schodową, rodzinny kącik albo wspólny pokój. Zostaw ją odrobinę lepszą, niż ją zastajesz na co dzień.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-26",
+          "order": 26,
+          "title": "Sekretnej Słodkości",
+          "text": "Dziś jest Dzień Sekretnej Słodkości — ukryj dla kogoś mały smakołyk w miejscu, w którym zostanie znaleziony dopiero później. Dodaj karteczkę z jednym ciepłym, świątecznym zdaniem.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-27",
+          "order": 27,
+          "title": "Życzeń Bez Kopiowania",
+          "text": "Dziś jest Dzień Życzeń Bez Kopiowania — napisz jednej osobie życzenia całkowicie własnymi słowami. Zamiast uniwersalnego „zdrowia i szczęścia” napisz, czego naprawdę jej życzysz w nadchodzącym roku.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Życzenia bez kopiowania",
+            "format": "Kreator osobistych życzeń",
+            "preparation": "Przygotować 4 pola pomocnicze: za co cenisz osobę, czego jej życzysz, wspólne wspomnienie, jedno ciepłe zakończenie.",
+            "interaction": "Użytkownik odpowiada własnymi słowami; aplikacja składa odpowiedzi w elegancki układ, ale nie generuje za niego „gotowca”.",
+            "endEffect": "Kopiowanie tekstu lub eksport kartki PNG/PDF.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Guided writing form + exporter."
+          }
+        },
+        {
+          "id": "set-3-task-28",
+          "order": 28,
+          "title": "Drugiej Szansy dla Rzeczy",
+          "text": "Dziś jest Dzień Drugiej Szansy dla Rzeczy — znajdź zabawkę, książkę, grę albo ubranie w dobrym stanie i przekaż je dalej. Jeśli wiąże się z tym przedmiotem miła historia, możesz dołączyć krótką notatkę.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-29",
+          "order": 29,
+          "title": "Jednego „Tak”",
+          "text": "Dziś jest Dzień Jednego „Tak” — jeśli ktoś poprosi Cię o niewielką pomoc, której zwykle odmawiasz z wygody lub braku czasu, spróbuj dziś powiedzieć „tak” — oczywiście tylko wtedy, gdy naprawdę możesz pomóc.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-3-task-30",
+          "order": 30,
+          "title": "Cichego Finału",
+          "text": "Dziś jest Dzień Cichego Finału — przed snem pomyśl o jednej osobie, której w tym miesiącu udało Ci się sprawić radość, oraz o jednej, której jeszcze chcesz okazać trochę życzliwości przed świętami.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        }
+      ]
+    },
+    {
+      "setNumber": 4,
+      "title": "Kreatywne i artystyczne",
+      "tasks": [
+        {
+          "id": "set-4-task-1",
+          "order": 1,
+          "title": "Bombki z Historią",
+          "text": "Dziś jest Dzień Bombki z Historią — zrób prostą ozdobę i zapisz na jej odwrocie rok oraz jedno słowo opisujące ten grudzień. Za kilka lat może być czymś więcej niż tylko dekoracją.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-2",
+          "order": 2,
+          "title": "Własnego Papieru Prezentowego",
+          "text": "Dziś jest Dzień Własnego Papieru Prezentowego — użyj zwykłego papieru i ozdób go powtarzalnym wzorem wykonanym flamastrem, stemplem albo końcówką gumki od ołówka. Nawet prosty motyw powtórzony wiele razy daje świetny efekt.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Własny papier prezentowy — wzory",
+            "format": "PDF do druku",
+            "preparation": "Zaprojektować 4 arkusze A4/A3 z prostymi powtarzalnymi wzorami oraz 1 pustą kartę z siatką inspiracji do własnego stemplowania.",
+            "interaction": "Podgląd wzorów + wybór i pobranie.",
+            "endEffect": "PDF do druku lub inspiracja do ręcznego odtworzenia wzoru.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "4 assets PDF."
+          }
+        },
+        {
+          "id": "set-4-task-3",
+          "order": 3,
+          "title": "Eleganckiej Etykietki",
+          "text": "Dziś jest Dzień Eleganckiej Etykietki — wytnij z grubszego papieru kilka prostych etykiet, zrób w nich otwory i przewlecz cienki sznurek. Jedną ozdób małą gałązką albo narysowaną gwiazdką.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Eleganckie etykiety prezentowe",
+            "format": "PDF + personalizacja",
+            "preparation": "Zaprojektować 12–16 etykiet w 3 stylach zgodnych z marką.",
+            "interaction": "Wybór stylu, wpisanie imienia/krótkiego „od…”, generowanie arkusza.",
+            "endEffect": "Pobranie PDF do druku.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Template personalization."
+          }
+        },
+        {
+          "id": "set-4-task-4",
+          "order": 4,
+          "title": "Świątecznej Pocztówki",
+          "text": "Dziś jest Dzień Świątecznej Pocztówki — stwórz kartkę inspirowaną miejscem, w którym mieszkasz. Dodaj charakterystyczny element miasta lub okolicy, ale pokaż go w zimowej, świątecznej wersji.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna pocztówka z Twojego miejsca",
+            "format": "Edytowalny szablon PNG/PDF",
+            "preparation": "Przygotować ramkę pocztówki z pustym obszarem na rysunek/zdjęcie i polem na nazwę miejscowości.",
+            "interaction": "Użytkownik dodaje zdjęcie albo zostawia miejsce do ręcznego rysowania; wpisuje miejscowość.",
+            "endEffect": "Eksport PNG do wysłania lub PDF do druku.",
+            "effort": "`L` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Image upload optional + template export."
+          }
+        },
+        {
+          "id": "set-4-task-5",
+          "order": 5,
+          "title": "Papierowej Wioski",
+          "text": "Dziś jest Dzień Papierowej Wioski — z papieru lub cienkiego kartonu wytnij trzy proste domki z okienkami. Ustaw je przed lampkami LED i zobacz, jak po zmroku zmieniają się w małe świąteczne miasteczko.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Papierowa wioska",
+            "format": "PDF do druku",
+            "preparation": "Przygotować 3–5 domków, latarnię/choinkę jako bonus, linie cięcia i zgięcia.",
+            "interaction": "Pobranie kolorowego albo czarno-białego szablonu; instrukcja 4 kroków.",
+            "endEffect": "Gotowa przestrzenna dekoracja.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "PDF assets."
+          }
+        },
+        {
+          "id": "set-4-task-6",
+          "order": 6,
+          "title": "Masy Solnej",
+          "text": "Dziś jest Dzień Masy Solnej — zrób jedną lub kilka prostych zawieszek, odciskając w masie gałązkę, koronkę albo wzór z foremki. Po wyschnięciu dodaj sznurek, aby można było je zawiesić.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Masa solna — wzory zawieszek",
+            "format": "PDF instrukcja + szablony",
+            "preparation": "Przygotować sprawdzony prosty przepis na masę solną, 6 kształtów i instrukcję suszenia/pieczenia z bezpiecznym zastrzeżeniem zależnym od grubości.",
+            "interaction": "Użytkownik wybiera kształt i pobiera kartę.",
+            "endEffect": "PDF A4, który można położyć obok podczas pracy.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Content + vector shapes."
+          }
+        },
+        {
+          "id": "set-4-task-7",
+          "order": 7,
+          "title": "Świątecznego Stempla",
+          "text": "Dziś jest Dzień Świątecznego Stempla — przygotuj prosty stempel z ziemniaka, gąbki albo gumki i użyj go do ozdobienia papieru, koperty lub etykiet prezentowych. Najlepiej wybierz jeden łatwy do powtarzania motyw.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczne stemple — karta wzorów",
+            "format": "PDF instrukcja",
+            "preparation": "Przygotować 8 prostych wzorów: gwiazda, choinka, prezent, serce, śnieżynka itd., pokazanych jako kontur do przeniesienia na ziemniak/gąbkę.",
+            "interaction": "Wybór wzoru/pobranie jednego arkusza.",
+            "endEffect": "Gotowa pomoc do wykonania własnego stempla.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Printable guide."
+          }
+        },
+        {
+          "id": "set-4-task-8",
+          "order": 8,
+          "title": "Zimowego Kolażu",
+          "text": "Dziś jest Dzień Zimowego Kolażu — wybierz kilka zdjęć, fragmentów papieru i napisów kojarzących Ci się z grudniem, a następnie ułóż z nich jedną kompozycję zatytułowaną „Mój świąteczny klimat”.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-9",
+          "order": 9,
+          "title": "Zdjęcia Jak z Pocztówki",
+          "text": "Dziś jest Dzień Zdjęcia Jak z Pocztówki — ustaw niewielki świąteczny kadr z rzeczy, które masz w domu, i zrób mu zdjęcie. Spróbuj wykorzystać światło padające z boku zamiast lampy błyskowej.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-10",
+          "order": 10,
+          "title": "Ozdobnej Koperty",
+          "text": "Dziś jest Dzień Ozdobnej Koperty — weź zwykłą kopertę i dodaj jeden charakterystyczny detal: ręcznie narysowaną ramkę, pieczątkę, naklejkę albo małą ilustrację w rogu. Czasem jeden motyw wystarczy, żeby całość wyglądała wyjątkowo.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Ozdobna koperta",
+            "format": "PDF szablon ozdabiania",
+            "preparation": "Przygotować 4 warianty narożników/ramek i mini ikon do odrysowania lub wydrukowania.",
+            "interaction": "Użytkownik wybiera styl; może pobrać A4 z elementami lub pojedynczy PNG.",
+            "endEffect": "Gotowa baza do ozdobienia zwykłej koperty.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Assets only."
+          }
+        },
+        {
+          "id": "set-4-task-11",
+          "order": 11,
+          "title": "Świątecznej Zakładki",
+          "text": "Dziś jest Dzień Świątecznej Zakładki — z kawałka grubszego papieru zrób zakładkę do książki i dodaj krótkie grudniowe hasło. Taki drobiazg powstaje w kilka minut, a może służyć przez cały rok.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna zakładka",
+            "format": "PDF do druku",
+            "preparation": "Zaprojektować 6 zakładek na jednym arkuszu A4, w tym 2 z miejscem na własne hasło.",
+            "interaction": "Wybór/pobranie; opcjonalnie wpisanie hasła przed generowaniem.",
+            "endEffect": "PDF do wycięcia; użytkownik zachowuje fizyczny drobiazg.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Templates + optional text field."
+          }
+        },
+        {
+          "id": "set-4-task-12",
+          "order": 12,
+          "title": "Małego Wianka",
+          "text": "Dziś jest Dzień Małego Wianka — z kilku elastycznych gałązek, drucika albo papieru wykonaj niewielki wianek. Dodaj tylko jeden akcent: kokardkę, gwiazdkę lub szyszkę.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-13",
+          "order": 13,
+          "title": "Papierowego Renifera",
+          "text": "Dziś jest Dzień Papierowego Renifera — z kartonu lub papieru zrób prostą sylwetkę renifera i dodaj czerwony nos. Gotową postać wykorzystaj jako dekorację, etykietę albo element kartki.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Papierowy renifer",
+            "format": "PDF do wycięcia",
+            "preparation": "Przygotować prosty szablon renifera w wersji płaskiej i opcjonalnie stojącej/składanej.",
+            "interaction": "Podgląd + PDF z liniami cięcia/zgięcia.",
+            "endEffect": "Gotowa dekoracja/etykieta po wycięciu.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Vector template."
+          }
+        },
+        {
+          "id": "set-4-task-14",
+          "order": 14,
+          "title": "Świątecznej Typografii",
+          "text": "Dziś jest Dzień Świątecznej Typografii — napisz „Poczuj magię świąt” lub inne ulubione zdanie w trzech różnych stylach. Wybierz wersję, która najbardziej nadaje się do oprawienia albo wykorzystania jako dekoracja.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-15",
+          "order": 15,
+          "title": "Pudełka z Charakterem",
+          "text": "Dziś jest Dzień Pudełka z Charakterem — ozdób zwykłe pudełko po butach lub przesyłce tak, aby wyglądało jak świąteczne opakowanie. Wystarczą papier, sznurek i jeden powtarzający się motyw.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-16",
+          "order": 16,
+          "title": "Origami",
+          "text": "Dziś jest Dzień Origami — z jednej kartki złóż prostą choinkę, gwiazdkę albo postać Mikołaja. Wybierz wzór, który można wykonać w mniej niż 15 minut.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Origami świąteczne",
+            "format": "Instrukcja krok po kroku PDF + ekran",
+            "preparation": "Przygotować jeden naprawdę prosty model (np. choinka) z 6–10 ilustracjami kroków; opcjonalnie drugi trudniejszy.",
+            "interaction": "Użytkownik przechodzi krok po kroku na ekranie albo pobiera PDF.",
+            "endEffect": "Gotowe origami; możliwość zaznaczenia „ukończone”.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Illustrated tutorial."
+          }
+        },
+        {
+          "id": "set-4-task-17",
+          "order": 17,
+          "title": "Świątecznej Ramki",
+          "text": "Dziś jest Dzień Świątecznej Ramki — wybierz rodzinne zdjęcie i przygotuj dla niego papierową ramkę z datą oraz krótkim podpisem. Nie musi być perfekcyjna — ważne, żeby miała osobisty charakter.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna ramka na zdjęcie",
+            "format": "Generator ramki",
+            "preparation": "Przygotować 3 ramki 1:1 i 4:5 z subtelnym brandingiem.",
+            "interaction": "Dodanie zdjęcia, kadrowanie, wybór ramki i wpisanie daty/podpisu.",
+            "endEffect": "Eksport PNG do galerii.",
+            "effort": "`L` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Image crop + canvas export."
+          }
+        },
+        {
+          "id": "set-4-task-18",
+          "order": 18,
+          "title": "Rysunku Jedną Linią",
+          "text": "Dziś jest Dzień Rysunku Jedną Linią — spróbuj narysować choinkę, renifera albo bombkę bez odrywania długopisu od kartki. Zrób trzy próby i zachowaj tę, która wyszła najciekawiej lub najzabawniej.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-19",
+          "order": 19,
+          "title": "Prezentowej Pieczęci",
+          "text": "Dziś jest Dzień Prezentowej Pieczęci — zaprojektuj prosty symbol do oznaczania prezentów, np. gwiazdkę z inicjałem. Powtórz go na wszystkich etykietach, których dziś używasz, jak własny znak pracowni Mikołaja.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-20",
+          "order": 20,
+          "title": "Świątecznego Komiksu",
+          "text": "Dziś jest Dzień Świątecznego Komiksu — narysuj cztery kadry pokazujące największy problem Świętego Mikołaja w tym roku. Nie przejmuj się poziomem rysunków — patyczaki są całkowicie dozwolone.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczny komiks — 4 kadry",
+            "format": "PDF + edytowalna karta",
+            "preparation": "Przygotować kartę z 4 kadrami, miejscem na tytuł i dymki; wariant czysty do druku.",
+            "interaction": "Użytkownik może pobrać PDF lub wpisać teksty w dymkach online.",
+            "endEffect": "PDF do rysowania albo PNG z cyfrowymi podpisami.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Comic template; simple text overlays."
+          }
+        },
+        {
+          "id": "set-4-task-21",
+          "order": 21,
+          "title": "Łańcucha Wspomnień",
+          "text": "Dziś jest Dzień Łańcucha Wspomnień — przygotuj kilka papierowych pasków i na każdym zapisz jedno dobre wspomnienie z mijającego roku. Połącz paski w mały łańcuch i zachowaj go do Wigilii.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Łańcuch wspomnień",
+            "format": "PDF pasków do wycięcia",
+            "preparation": "Przygotować 12–24 paski w 2 stylach, każdy z miejscem na jedno wspomnienie.",
+            "interaction": "Pobranie arkusza; opcjonalnie wpisanie wspomnień przed drukiem.",
+            "endEffect": "Fizyczny papierowy łańcuch wspomnień.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Printable strips + optional form."
+          }
+        },
+        {
+          "id": "set-4-task-22",
+          "order": 22,
+          "title": "Kartonowej Gwiazdy",
+          "text": "Dziś jest Dzień Kartonowej Gwiazdy — wytnij gwiazdę z niepotrzebnego pudełka, a następnie oklej ją papierem albo pomaluj. Dodaj otwór i sznurek, aby mogła zawisnąć jak pełnoprawna ozdoba.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-23",
+          "order": 23,
+          "title": "Świątecznego Monogramu",
+          "text": "Dziś jest Dzień Świątecznego Monogramu — zaprojektuj swój inicjał albo inicjał bliskiej osoby w świątecznym stylu. Dodaj do litery gałązkę, gwiazdkę, czapkę Mikołaja lub drobny ornament.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-24",
+          "order": 24,
+          "title": "Papierowego Mikołaja",
+          "text": "Dziś jest Dzień Papierowego Mikołaja — stwórz postać Mikołaja wyłącznie z prostych figur: kół, trójkątów i prostokątów. Sprawdź, jak niewiele elementów potrzeba, aby postać była od razu rozpoznawalna.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-25",
+          "order": 25,
+          "title": "Małej Girlandy",
+          "text": "Dziś jest Dzień Małej Girlandy — przygotuj krótką girlandę z pięciu papierowych elementów: gwiazd, chorągiewek albo choinek. Zawieś ją w jednym wybranym miejscu zamiast dekorować cały pokój.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Mała girlanda",
+            "format": "PDF do wycięcia",
+            "preparation": "Przygotować zestaw gwiazd/choinek/chorągiewek z otworami zaznaczonymi do przewleczenia sznurka.",
+            "interaction": "Wybór jednego z 3 motywów i pobranie A4.",
+            "endEffect": "Gotowa krótka girlanda po wycięciu.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "3 printable templates."
+          }
+        },
+        {
+          "id": "set-4-task-26",
+          "order": 26,
+          "title": "Świątecznego Portretu",
+          "text": "Dziś jest Dzień Świątecznego Portretu — narysuj siebie jako elfa, Mikołaja albo bohatera zimowej bajki. Dodaj jeden charakterystyczny przedmiot lub cechę, która naprawdę do Ciebie pasuje.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-27",
+          "order": 27,
+          "title": "Ręcznie Pisanych Życzeń",
+          "text": "Dziś jest Dzień Ręcznie Pisanych Życzeń — wybierz jedno krótkie zdanie i napisz je odręcznie tak starannie, jak potrafisz. Dodaj prostą ramkę i ustaw kartkę jako małą świąteczną dekorację.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-28",
+          "order": 28,
+          "title": "Prezentu z Papieru",
+          "text": "Dziś jest Dzień Prezentu z Papieru — przygotuj dla kogoś drobiazg bez kupowania dodatkowych materiałów: kupon na wspólną kawę, małą książeczkę wspomnień albo listę pięciu rzeczy, które cenisz w tej osobie.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Prezent z papieru — kupony",
+            "format": "Generator kuponów + PDF",
+            "preparation": "Przygotować gotowe typy: wspólna kawa, spacer, film, śniadanie, pomoc, dzień bez obowiązku + opcja własnego kuponu.",
+            "interaction": "Użytkownik wybiera kupon, wpisuje dla kogo/od kogo i opcjonalnie datę.",
+            "endEffect": "Pobranie pojedynczego PNG albo arkusza PDF z kuponami.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Coupon generator + exporter."
+          }
+        },
+        {
+          "id": "set-4-task-29",
+          "order": 29,
+          "title": "Świątecznej Scenografii",
+          "text": "Dziś jest Dzień Świątecznej Scenografii — ustaw na stole małą scenę z trzema przedmiotami i jednym źródłem światła. Zrób zdjęcie, zmień wyłącznie ustawienie przedmiotów i wykonaj drugie ujęcie, aby porównać efekt.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-4-task-30",
+          "order": 30,
+          "title": "Ozdoby na Lata",
+          "text": "Dziś jest Dzień Ozdoby na Lata — wykonaj jedną dekorację, którą po świętach naprawdę zechcesz schować i wyjąć ponownie za rok. Zanim trafi na swoje miejsce, podpisz ją rokiem 2026.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        }
+      ]
+    },
+    {
+      "setNumber": 5,
+      "title": "Kuchenne i kulinarne",
+      "tasks": [
+        {
+          "id": "set-5-task-1",
+          "order": 1,
+          "title": "Tosta-Gwiazdki",
+          "text": "Dziś jest Dzień Tosta-Gwiazdki — przygotuj tost lub grzankę i wytnij z pieczywa gwiazdkę foremką albo nożem. Dodaj ulubione składniki i zamień zwykłe śniadanie w mały grudniowy rytuał.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-2",
+          "order": 2,
+          "title": "Czekoladowej Degustacji",
+          "text": "Dziś jest Dzień Czekoladowej Degustacji — wybierz trzy różne czekolady, połam je na małe kawałki i spróbuj w ciemno. Oceń każdą pod względem zapachu, smaku i tego, jak bardzo kojarzy Ci się ze świętami.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Czekoladowa degustacja",
+            "format": "Interaktywna karta ocen",
+            "preparation": "Przygotować 3 kolumny próbek i skale 1–5: zapach, smak, „świąteczność”; pole na nazwę odkrywaną po teście.",
+            "interaction": "Użytkownik ocenia próbki, potem odsłania nazwy.",
+            "endEffect": "Karta zwycięzcy „Czekolada wieczoru” jako PNG.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Scorecard component."
+          }
+        },
+        {
+          "id": "set-5-task-3",
+          "order": 3,
+          "title": "Zimowych Naleśników",
+          "text": "Dziś jest Dzień Zimowych Naleśników — przygotuj naleśniki z jabłkiem i cynamonem albo dodaj te składniki do ulubionego nadzienia. Na koniec oprósz całość odrobiną cukru pudru jak świeżym śniegiem.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-4",
+          "order": 4,
+          "title": "Trufli Bez Pieczenia",
+          "text": "Dziś jest Dzień Trufli Bez Pieczenia — pokrusz herbatniki, połącz je z serkiem lub masą czekoladową i uformuj niewielkie kulki. Obtocz je w kakao, wiórkach kokosowych albo posiekanych orzechach.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Trufle bez pieczenia",
+            "format": "Karta przepisu + PDF",
+            "preparation": "Przygotować dokładny, przetestowany przepis z gramaturami, liczbą porcji, czasem i wariantami obtoczenia.",
+            "interaction": "Tryb krok po kroku z checkboxami; opcja „nie wygaszaj ekranu” jeśli technicznie możliwe.",
+            "endEffect": "Pobranie/druk przepisu PDF; możliwość zapisania jako ulubiony.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "RecipeCard component."
+          }
+        },
+        {
+          "id": "set-5-task-5",
+          "order": 5,
+          "title": "Piernikowego Testu",
+          "text": "Dziś jest Dzień Piernikowego Testu — udekoruj trzy pierniki w trzech różnych stylach: eleganckim, zabawnym i celowo przesadzonym. Przed zjedzeniem ustaw je obok siebie i zrób pamiątkowe zdjęcie.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Piernikowy test dekoracji",
+            "format": "Karta wyzwania + zdjęcie",
+            "preparation": "Przygotować 3 style z mini inspiracją: elegancki, zabawny, przesadzony.",
+            "interaction": "Użytkownik odhacza 3 ukończone pierniki i może dodać jedno zdjęcie wszystkich.",
+            "endEffect": "Eksport ramki „Piernikowy test 2026” z własnym zdjęciem jako PNG.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Challenge + optional image export."
+          }
+        },
+        {
+          "id": "set-5-task-6",
+          "order": 6,
+          "title": "Świątecznej Deski",
+          "text": "Dziś jest Dzień Świątecznej Deski — ułóż na jednym talerzu kilka przekąsek w czerwieni, zieleni i złocie: owoce, sery, orzechy, krakersy albo słodycze. Dziś liczy się przede wszystkim kompozycja.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna deska",
+            "format": "Interaktywny kreator kompozycji",
+            "preparation": "Przygotować listę propozycji wg kolorów: czerwone, zielone, złote/jasne; bez narzucania konkretnych marek.",
+            "interaction": "Użytkownik wybiera 2–3 elementy z każdej grupy i dostaje własną listę zakupów/składników.",
+            "endEffect": "Skopiowanie listy albo zapis małej karty kompozycji.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Ingredient picker."
+          }
+        },
+        {
+          "id": "set-5-task-7",
+          "order": 7,
+          "title": "Zimowej Owsianki",
+          "text": "Dziś jest Dzień Zimowej Owsianki — dodaj do owsianki jabłko, cynamon i odrobinę miodu lub syropu. Na wierzchu ułóż prosty wzór z orzechów, rodzynek albo plasterków owoców.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-8",
+          "order": 8,
+          "title": "Cynamonowych Ślimaczków",
+          "text": "Dziś jest Dzień Cynamonowych Ślimaczków — wykorzystaj gotowe ciasto francuskie: posmaruj je masłem, posyp cukrem i cynamonem, zwiń w rulon, pokrój na kawałki i upiecz małe ślimaczki.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Cynamonowe ślimaczki",
+            "format": "Karta przepisu + PDF",
+            "preparation": "Przygotować konkretny przepis z gotowego ciasta francuskiego: ilości, temperatura, orientacyjny czas, zdjęciowy/rysunkowy schemat zwijania.",
+            "interaction": "Tryb krok po kroku.",
+            "endEffect": "PDF przepisu + oznaczenie jako ulubiony.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "RecipeCard."
+          }
+        },
+        {
+          "id": "set-5-task-9",
+          "order": 9,
+          "title": "Gorącej Czekolady na Bogato",
+          "text": "Dziś jest Dzień Gorącej Czekolady na Bogato — przygotuj kakao albo gorącą czekoladę i dodaj jeden kawiarniany akcent: piankę mleczną, bitą śmietanę, startą czekoladę lub szczyptę cynamonu.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Gorąca czekolada na bogato",
+            "format": "Kreator wersji + przepis",
+            "preparation": "Przygotować bazowy przepis i dodatki w kategoriach: kremowe, korzenne, chrupiące.",
+            "interaction": "Użytkownik wybiera bazę + 2 dodatki; aplikacja pokazuje gotową wersję i nazwę.",
+            "endEffect": "Karta własnej gorącej czekolady do PNG + bazowy przepis PDF.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Recipe configurator + ShareCard."
+          }
+        },
+        {
+          "id": "set-5-task-10",
+          "order": 10,
+          "title": "Świątecznego Popcornu",
+          "text": "Dziś jest Dzień Świątecznego Popcornu — do gotowego popcornu dodaj odrobinę cynamonu i cukru albo polej część ziaren roztopioną czekoladą. Przełóż wszystko do dużej miski i podaj podczas filmu.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-11",
+          "order": 11,
+          "title": "Jabłka z Pieca",
+          "text": "Dziś jest Dzień Jabłka z Pieca — wydrąż lub przekrój jabłko, dodaj cynamon, odrobinę miodu i kilka orzechów, a następnie piecz do miękkości. To prosty deser, który przy okazji wypełni dom przyjemnym zapachem.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-12",
+          "order": 12,
+          "title": "Deseru w Szklance",
+          "text": "Dziś jest Dzień Deseru w Szklance — przygotuj prosty deser warstwowy z tego, co masz pod ręką: jogurtu, kremu, pokruszonych ciastek i owoców. Dziś ważniejszy od przepisu jest efekt widocznych warstw.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-13",
+          "order": 13,
+          "title": "Korzennego Ciasta w Kubku",
+          "text": "Dziś jest Dzień Korzennego Ciasta w Kubku — przygotuj szybkie ciasto w kubku i dodaj odrobinę cynamonu albo przyprawy piernikowej. Cały deser powinien powstać w jednym naczyniu i bez długiego pieczenia.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-14",
+          "order": 14,
+          "title": "Czerwono-Zielonego Talerza",
+          "text": "Dziś jest Dzień Czerwono-Zielonego Talerza — przygotuj posiłek, w którym pojawią się oba świąteczne kolory. Możesz wykorzystać pomidory, paprykę, szpinak, pesto, winogrona albo zupełnie inne składniki.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-15",
+          "order": 15,
+          "title": "Karmelizowanych Orzechów",
+          "text": "Dziś jest Dzień Karmelizowanych Orzechów — podgrzej na patelni garść orzechów z odrobiną cukru, cynamonu i szczyptą soli. Po ostygnięciu przełóż je do małej miseczki i podaj jak przekąskę z jarmarku.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Karmelizowane orzechy",
+            "format": "Karta przepisu + PDF",
+            "preparation": "Przygotować przetestowane proporcje i ważne wskazówki bezpieczeństwa przy gorącym karmelu/cukrze.",
+            "interaction": "Krok po kroku; checkboxy etapów.",
+            "endEffect": "PDF przepisu / ulubione.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "RecipeCard; wyraźna informacja o ostrożności z gorącym cukrem."
+          }
+        },
+        {
+          "id": "set-5-task-16",
+          "order": 16,
+          "title": "Małych Kanapek",
+          "text": "Dziś jest Dzień Małych Kanapek — przygotuj trzy niewielkie kanapki, każdą z innymi dodatkami, i ułóż je na talerzu jak małe menu degustacyjne. Jednej nadaj najbardziej świąteczny wygląd.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-17",
+          "order": 17,
+          "title": "Świątecznego Koktajlu Bezalkoholowego",
+          "text": "Dziś jest Dzień Świątecznego Koktajlu Bezalkoholowego — połącz sok jabłkowy lub żurawinowy z wodą gazowaną i plastrem cytrusa. Podaj napój w ładnej szklance lub kieliszku i nadaj mu własną świąteczną nazwę.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczny koktajl bezalkoholowy",
+            "format": "Kreator napoju",
+            "preparation": "Przygotować 3 bazy, 5 dodatków i 4 dekoracje; wszystkie bezalkoholowe.",
+            "interaction": "Użytkownik wybiera elementy; aplikacja tworzy proporcje dla 1 szklanki i nazwę do samodzielnej edycji.",
+            "endEffect": "Eksport karty koktajlu jako PNG albo zapis przepisu.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Drink configurator."
+          }
+        },
+        {
+          "id": "set-5-task-18",
+          "order": 18,
+          "title": "Zupy, Która Rozgrzewa",
+          "text": "Dziś jest Dzień Zupy, Która Rozgrzewa — przygotuj prostą zupę krem albo ulubioną zimową zupę. Podaj ją z grzankami i potraktuj jak główny punkt chłodnego wieczoru.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-19",
+          "order": 19,
+          "title": "Kulinarnej Niespodzianki",
+          "text": "Dziś jest Dzień Kulinarnej Niespodzianki — wybierz dobrze znane danie i dodaj mu jeden świąteczny akcent: korzenną przyprawę, żurawinę, pomarańczę, orzechy albo nietypowy sposób podania.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-20",
+          "order": 20,
+          "title": "Małej Degustacji Herbat",
+          "text": "Dziś jest Dzień Małej Degustacji Herbat — zaparz dwie różne herbaty i spróbuj ich bez pośpiechu. Do jednej dodaj plaster cytrusa, do drugiej wybraną przyprawę, a potem zdecyduj, która zostaje „herbatą tych świąt”.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Mała degustacja herbat",
+            "format": "Karta porównawcza",
+            "preparation": "Przygotować ocenę: aromat, smak, rozgrzewanie, „świąteczność” + dodatki.",
+            "interaction": "Użytkownik porównuje herbatę A i B, przyznaje punkty.",
+            "endEffect": "Karta „Herbata tych świąt” z wynikiem, do PNG.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Two-column scorecard."
+          }
+        },
+        {
+          "id": "set-5-task-21",
+          "order": 21,
+          "title": "Świątecznej Grzanki",
+          "text": "Dziś jest Dzień Świątecznej Grzanki — przygotuj grzankę z serem i dodatkiem, którego zwykle nie używasz, np. żurawiną, gruszką albo odrobiną miodu. Sprawdź, czy słodko-słone połączenie trafi do Twojego świątecznego menu.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-22",
+          "order": 22,
+          "title": "Jadalnego Prezentu",
+          "text": "Dziś jest Dzień Jadalnego Prezentu — przygotuj mały słoiczek lub woreczek z domową mieszanką: orzechami, ciasteczkami albo porcją składników do kakao. Dodaj ręcznie napisaną etykietę.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Jadalny prezent",
+            "format": "Etykieta + karta przepisu",
+            "preparation": "Przygotować 3 proste pomysły na mieszankę do słoika/woreczka oraz 6 etykiet do druku.",
+            "interaction": "Użytkownik wybiera pomysł, podaje liczbę porcji i wybiera etykietę.",
+            "endEffect": "PDF przepisu/instrukcji + spersonalizowana etykieta PDF/PNG.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Recipe + label generator."
+          }
+        },
+        {
+          "id": "set-5-task-23",
+          "order": 23,
+          "title": "Świątecznego Śniadania",
+          "text": "Dziś jest Dzień Świątecznego Śniadania — niezależnie od tego, co jesz, podaj śniadanie odrobinę ładniej niż zwykle. Wystarczą serwetka, ciepły napój i jeden grudniowy detal na stole.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-24",
+          "order": 24,
+          "title": "Ciasteczkowego Pojedynku",
+          "text": "Dziś jest Dzień Ciasteczkowego Pojedynku — wybierz dwa rodzaje ciastek lub pierników i zrób degustację w ciemno. Zwycięski smak otrzymuje tytuł „Oficjalnego Smaku Grudnia”.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Ciasteczkowy pojedynek",
+            "format": "Interaktywna karta degustacji",
+            "preparation": "Przygotować ocenę dwóch próbek: wygląd, chrupkość/tekstura, smak, świąteczność.",
+            "interaction": "Użytkownik ocenia A i B bez nazw, potem odsłania i zatwierdza zwycięzcę.",
+            "endEffect": "Odznaka/karta „Oficjalny Smak Grudnia” jako PNG.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Scorecard reuse."
+          }
+        },
+        {
+          "id": "set-5-task-25",
+          "order": 25,
+          "title": "Słodkiego Tria",
+          "text": "Dziś jest Dzień Słodkiego Tria — przygotuj trzy małe porcje różnych słodkości i podaj je razem na jednym talerzu. Mogą być gotowe — zabawa polega na stworzeniu własnej miniaturowej degustacji.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-26",
+          "order": 26,
+          "title": "Zimowego Talerza Owoców",
+          "text": "Dziś jest Dzień Zimowego Talerza Owoców — pokrój mandarynkę, jabłko, gruszkę lub inne owoce i ułóż z nich choinkę, gwiazdę albo wieniec. Zwykłe owoce też mogą wyglądać bardzo świątecznie.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-27",
+          "order": 27,
+          "title": "Kuchennej Pamiątki",
+          "text": "Dziś jest Dzień Kuchennej Pamiątki — przygotuj potrawę kojarzącą Ci się z dzieciństwem albo poproś bliską osobę o rodzinny przepis. Zapisz choć przybliżone proporcje, zanim kolejny raz usłyszysz, że wszystkiego dodaje się po prostu „na oko”.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Kuchenna pamiątka — rodzinny przepis",
+            "format": "Formularz archiwizacji przepisu + PDF",
+            "preparation": "Przygotować pola: nazwa, od kogo pochodzi, składniki, sposób przygotowania, „sekret rodzinny”, wspomnienie.",
+            "interaction": "Użytkownik wpisuje przepis i historię; podgląd stylizowanej karty.",
+            "endEffect": "Eksport rodzinnej karty przepisu jako PDF/PNG, gotowej do zachowania.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Recipe archive form + exporter."
+          }
+        },
+        {
+          "id": "set-5-task-28",
+          "order": 28,
+          "title": "Świątecznego Dipu",
+          "text": "Dziś jest Dzień Świątecznego Dipu — przygotuj prosty dip na bazie jogurtu, serka albo hummusu i dodaj jeden zimowy akcent, np. żurawinę, orzechy lub zioła. Podaj go z warzywami albo krakersami.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-29",
+          "order": 29,
+          "title": "Kuchennego Eksperymentu",
+          "text": "Dziś jest Dzień Kuchennego Eksperymentu — wybierz przyprawę, której rzadko używasz, i dodaj niewielką ilość do prostego deseru lub napoju. Sprawdź, czy zasługuje na stałe miejsce w Twoim świątecznym menu.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-5-task-30",
+          "order": 30,
+          "title": "Własnego Świątecznego Smaku",
+          "text": "Dziś jest Dzień Własnego Świątecznego Smaku — połącz dwa ulubione grudniowe smaki w jednym prostym deserze, napoju, kanapce albo przekąsce. Na koniec nadaj swojemu pomysłowi własną nazwę.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        }
+      ]
+    },
+    {
+      "setNumber": 6,
+      "title": "Refleksja i relaks",
+      "tasks": [
+        {
+          "id": "set-6-task-1",
+          "order": 1,
+          "title": "Listu do Przyszłego Siebie",
+          "text": "Dziś jest Dzień Listu do Przyszłego Siebie — napisz pół strony do siebie i schowaj ją do przyszłego grudnia. Zapisz, czego dziś pragniesz, co zaprząta Ci głowę i jaką wiadomość chcesz przekazać sobie na kolejne święta.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "List do przyszłego siebie",
+            "format": "Prywatny formularz + blokada daty",
+            "preparation": "Przygotować edytor listu z datą otwarcia domyślnie 1 grudnia kolejnego roku.",
+            "interaction": "Użytkownik pisze list, zatwierdza i opcjonalnie „zamyka”; treść po zamknięciu jest ukryta do wybranej daty.",
+            "endEffect": "Zapis w koncie lub lokalnie; dodatkowo możliwość pobrania zaszyfrowanego/normalnego PDF przed zamknięciem.",
+            "effort": "`L` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Wymaga trwałego storage; przy braku konta konieczny eksport, bo localStorage może zniknąć."
+          }
+        },
+        {
+          "id": "set-6-task-2",
+          "order": 2,
+          "title": "Trzech Dobrych Scen",
+          "text": "Dziś jest Dzień Trzech Dobrych Scen — zapisz trzy konkretne chwile z mijającego roku, do których chcesz kiedyś wrócić pamięcią. Zamiast całych wydarzeń opisz po jednej scenie: miejsce, ludzi, zapach albo zdanie, które zostało w głowie.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Trzy dobre sceny",
+            "format": "Interaktywna karta wspomnień",
+            "preparation": "Przygotować 3 sekcje: gdzie, z kim, szczegół który pamiętasz.",
+            "interaction": "Użytkownik wypełnia po jednej scenie; karta pokazuje się jako trzy krótkie „kadry tekstowe”.",
+            "endEffect": "Eksport PNG/PDF do prywatnego zachowania.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "CardForm."
+          }
+        },
+        {
+          "id": "set-6-task-3",
+          "order": 3,
+          "title": "Roku w Sześciu Słowach",
+          "text": "Dziś jest Dzień Roku w Sześciu Słowach — spróbuj opisać mijający rok dokładnie sześcioma słowami. Potem dodaj siódme — takie, które chcesz zabrać ze sobą w nowy rok.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Rok w sześciu słowach",
+            "format": "Karta 6 słów + eksport",
+            "preparation": "Przygotować sześć pól i osobne pole „słowo na kolejny rok”.",
+            "interaction": "Po wpisaniu słów powstaje typograficzna karta.",
+            "endEffect": "Eksport PNG, idealny do galerii/udostępnienia.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "ShareCard."
+          }
+        },
+        {
+          "id": "set-6-task-4",
+          "order": 4,
+          "title": "Zdjęcia Roku",
+          "text": "Dziś jest Dzień Zdjęcia Roku — przejrzyj galerię i wybierz jedno zdjęcie, które najlepiej opowiada historię Twojego roku. Dopisz do niego krótki podpis tylko dla siebie i nie publikuj go nigdzie.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Zdjęcie roku",
+            "format": "Generator karty zdjęciowej",
+            "preparation": "Przygotować szablon zdjęcie + krótki prywatny podpis + rok.",
+            "interaction": "Użytkownik dodaje zdjęcie, kadruje i wpisuje podpis.",
+            "endEffect": "Eksport PNG; opcja „zapisz tylko dla mnie” bez przycisku społecznościowego na pierwszym planie.",
+            "effort": "`L` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Image upload/crop/export."
+          }
+        },
+        {
+          "id": "set-6-task-5",
+          "order": 5,
+          "title": "Zimowego Spaceru Pięciu Zmysłów",
+          "text": "Dziś jest Dzień Zimowego Spaceru Pięciu Zmysłów — podczas krótkiego spaceru świadomie uruchom wszystkie zmysły: wypatrz jeden szczegół, wsłuchaj się w jeden dźwięk, rozpoznaj jeden zapach i dotknij powierzchni o ciekawej fakturze. Po powrocie zwróć jeszcze uwagę na smak pierwszego łyku ciepłego napoju.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Spacer pięciu zmysłów",
+            "format": "Interaktywna checklista",
+            "preparation": "Przygotować 5 pól: wzrok, słuch, węch, dotyk, smak po powrocie; krótkie przykłady bez narzucania odpowiedzi.",
+            "interaction": "Użytkownik odhacza kolejne zmysły podczas spaceru.",
+            "endEffect": "Po 5/5 pojawia się spokojna karta „Zauważone dziś” z możliwością wpisania jednego słowa.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Checklist."
+          }
+        },
+        {
+          "id": "set-6-task-6",
+          "order": 6,
+          "title": "Jednej Rzeczy Mniej",
+          "text": "Dziś jest Dzień Jednej Rzeczy Mniej — zapisz coś, czego nie chcesz zabierać ze sobą do kolejnego roku: nawyk, zobowiązanie, sposób myślenia albo niepotrzebną presję. Nie musisz dziś niczego rozwiązywać — wystarczy to nazwać.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-7",
+          "order": 7,
+          "title": "Cichej Herbaty",
+          "text": "Dziś jest Dzień Cichej Herbaty — przygotuj ciepły napój i przez pierwsze dziesięć minut nie włączaj muzyki, telewizora ani telefonu. Zadaj sobie tylko jedno pytanie: „Czego najbardziej potrzebuję tej zimy?”",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-8",
+          "order": 8,
+          "title": "Dobrych Ludzi",
+          "text": "Dziś jest Dzień Dobrych Ludzi — zapisz imiona trzech osób, które w tym roku wniosły coś dobrego do Twojego życia. Przy każdej dopisz jedno konkretne zdanie o tym, za co ją cenisz.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Dobrzy ludzie",
+            "format": "Karta wdzięczności",
+            "preparation": "Przygotować 3 pola: imię + „co ta osoba wniosła do mojego roku”.",
+            "interaction": "Wypełnianie trzech wpisów.",
+            "endEffect": "Prywatny eksport PDF/PNG; opcjonalny przycisk „skopiuj jeden wpis”, jeśli użytkownik chce go komuś wysłać.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "CardForm."
+          }
+        },
+        {
+          "id": "set-6-task-9",
+          "order": 9,
+          "title": "Wspomnienia z Dzieciństwa",
+          "text": "Dziś jest Dzień Wspomnienia z Dzieciństwa — przypomnij sobie jeden grudniowy moment sprzed lat i zapisz tyle szczegółów, ile potrafisz przywołać. Nie oceniaj, czy był ważny — po prostu sprawdź, co z niego zostało w pamięci.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-10",
+          "order": 10,
+          "title": "Godziny Bez Powiadomień",
+          "text": "Dziś jest Dzień Godziny Bez Powiadomień — wycisz telefon na godzinę i wcześniej zdecyduj, czym chcesz wypełnić ten czas: książką, spacerem, rozmową, puzzlami albo spokojnym siedzeniem przy stole. Niech to będzie świadoma przerwa, a nie tylko brak ekranu.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Godzina bez powiadomień",
+            "format": "Timer skupienia 60 min",
+            "preparation": "Przygotować wybór aktywności: książka, spacer, rozmowa, puzzle, inne; delikatny timer bez nachalnych animacji.",
+            "interaction": "Start 60 min; ekran może pokazywać tylko czas i wybraną intencję.",
+            "endEffect": "Po zakończeniu krótki komunikat i oznaczenie wykonania. Bez potrzeby eksportu.",
+            "effort": "`S` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Timer; działać także przy powrocie do karty na podstawie timestampu."
+          }
+        },
+        {
+          "id": "set-6-task-11",
+          "order": 11,
+          "title": "Dziesięciu Małych Radości",
+          "text": "Dziś jest Dzień Dziesięciu Małych Radości — wypisz dziesięć drobiazgów, które ostatnio poprawiły Ci humor. Jeśli przy siódmym zacznie brakować pomysłów, nie kończ — właśnie wtedy warto poszukać tych mniej oczywistych.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Dziesięć małych radości",
+            "format": "Interaktywna lista 10 pozycji",
+            "preparation": "Przygotować 10 krótkich pól; po 7. pozycji subtelna zachęta do znalezienia mniej oczywistych rzeczy.",
+            "interaction": "Użytkownik wpisuje pozycje kolejno.",
+            "endEffect": "Eksport eleganckiej listy jako PNG/PDF.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "ListForm + exporter."
+          }
+        },
+        {
+          "id": "set-6-task-12",
+          "order": 12,
+          "title": "Powodu do Dumy",
+          "text": "Dziś jest Dzień Powodu do Dumy — zapisz jedną rzecz z tego roku, która daje Ci poczucie satysfakcji, nawet jeśli nikt poza Tobą jej nie zauważył.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-13",
+          "order": 13,
+          "title": "Rozmowy o Dawnych Świętach",
+          "text": "Dziś jest Dzień Rozmowy o Dawnych Świętach — zapytaj bliską osobę: „Jak wyglądały święta w Twoim dzieciństwie?” Posłuchaj odpowiedzi bez poprawiania, dopowiadania i porównywania jej ze swoimi wspomnieniami.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-14",
+          "order": 14,
+          "title": "Świątecznej Intencji",
+          "text": "Dziś jest Dzień Świątecznej Intencji — wybierz jedno słowo, które ma opisywać tegoroczne święta: „spokój”, „bliskość”, „zabawa”, „wdzięczność” albo dowolne inne. Wróć do niego myślami, gdy przedświąteczny pośpiech zacznie przejmować kontrolę.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczna intencja",
+            "format": "Generator tapety/karty",
+            "preparation": "Przygotować 8 gotowych słów + własne; 3 minimalistyczne tła w stylu e‑Advent.",
+            "interaction": "Użytkownik wybiera słowo i tło.",
+            "endEffect": "Pobranie pionowego PNG 9:16 jako tapety na telefon oraz kwadratowego PNG.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Simple text-on-template exporter."
+          }
+        },
+        {
+          "id": "set-6-task-15",
+          "order": 15,
+          "title": "Starej Kartki",
+          "text": "Dziś jest Dzień Starej Kartki — jeśli masz zachowaną świąteczną kartkę, list lub wiadomość sprzed lat, przeczytaj ją jeszcze raz. Zwróć uwagę na to, co dziś odbierasz inaczej niż w chwili, gdy ta wiadomość powstała.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-16",
+          "order": 16,
+          "title": "Jednego Marzenia",
+          "text": "Dziś jest Dzień Jednego Marzenia — zapisz jedno doświadczenie, które naprawdę chcesz przeżyć w przyszłym roku. Obok dopisz najmniejszy możliwy krok, który może przybliżyć Cię do niego już po świętach.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-17",
+          "order": 17,
+          "title": "Domowego Zachodu",
+          "text": "Dziś jest Dzień Domowego Zachodu — znajdź miejsce przy oknie i przez kilka minut obserwuj, jak pod koniec dnia zmienia się światło. Zdjęcie zrób dopiero na sam koniec — najpierw po prostu popatrz.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-18",
+          "order": 18,
+          "title": "Własnej Tradycji",
+          "text": "Dziś jest Dzień Własnej Tradycji — wypisz trzy świąteczne zwyczaje, które pielęgnuje się w Twoim domu, i wybierz ten, który najbardziej chcesz zachować na kolejne lata. Dopisz jedno zdanie wyjaśniające, dlaczego właśnie ten.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Karta „Nasza świąteczna tradycja”",
+            "format": "Interaktywny formularz + elegancki eksport PNG/PDF",
+            "preparation": "Przygotować trzy krótkie pola na rodzinne zwyczaje, wybór jednego z nich jako „tradycji, którą zachowujemy”, pole „Dlaczego jest dla nas ważna?” oraz opcjonalne pole „Od którego roku ją pamiętamy / zaczynamy?”.",
+            "interaction": "Użytkownik wpisuje trzy tradycje, zaznacza jedną jako najważniejszą i dodaje krótkie uzasadnienie. Podgląd pamiątkowej karty aktualizuje się na żywo.",
+            "endEffect": "Gotowa karta „Nasza świąteczna tradycja 2026” do pobrania jako PNG lub PDF i zachowania na kolejne lata.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "CardForm + ShareCard; karta prywatna domyślnie, główne CTA „Zapisz pamiątkę”, nie „Udostępnij”."
+          }
+        },
+        {
+          "id": "set-6-task-19",
+          "order": 19,
+          "title": "Głosu do Przyszłości",
+          "text": "Dziś jest Dzień Głosu do Przyszłości — nagraj minutową wiadomość głosową do siebie i zachowaj ją do kolejnych świąt. Powiedz, co jest teraz ważne w Twoim życiu i czego nie chcesz zapomnieć.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**. Jeśli użytkownik chce wykonać zadanie dosłownie, korzysta z własnej aplikacji do nagrywania — e‑Advent nie uruchamia mikrofonu i nie przechowuje pliku.",
+            "workRequired": "brak modułu audio, brak uprawnień mikrofonu i brak storage dla nagrań.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-20",
+          "order": 20,
+          "title": "Jednego Dobrego Zdania",
+          "text": "Dziś jest Dzień Jednego Dobrego Zdania — zapisz zdanie, które dobrze byłoby usłyszeć w trudniejszym dniu. Potem przeczytaj je sobie na głos tak, jakby ktoś naprawdę kierował te słowa właśnie do Ciebie.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-21",
+          "order": 21,
+          "title": "Powolnego Śniadania",
+          "text": "Dziś jest Dzień Powolnego Śniadania — zjedz jeden posiłek bez telefonu i robienia czegokolwiek równocześnie. Przez pierwsze pięć minut skup się wyłącznie na smaku, zapachu i chwili przy stole.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-22",
+          "order": 22,
+          "title": "Rodzinnego „Pamiętasz?”",
+          "text": "Dziś jest Dzień Rodzinnego „Pamiętasz?” — wybierz jedno wspólne wydarzenie z mijającego roku i poproś domowników, aby każdy opowiedział, co zapamiętał z niego najbardziej. Zobaczcie, jak różne mogą być wspomnienia tej samej chwili.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-23",
+          "order": 23,
+          "title": "Małej Kapsuły Czasu",
+          "text": "Dziś jest Dzień Małej Kapsuły Czasu — włóż do koperty krótką notatkę o tym, co obecnie lubisz, czym żyjesz i czego najczęściej słuchasz. Dopisz datę i otwórz kopertę za rok.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Mała kapsuła czasu",
+            "format": "Formularz + karta PDF",
+            "preparation": "Przygotować pola: co lubię, czym żyję, czego słucham, czego oczekuję; data otwarcia za rok.",
+            "interaction": "Użytkownik wypełnia i „zamyka kapsułę”.",
+            "endEffect": "PDF do zapisania/wydrukowania; opcjonalnie ukrycie cyfrowej wersji do daty.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "CardForm; date gate optional."
+          }
+        },
+        {
+          "id": "set-6-task-24",
+          "order": 24,
+          "title": "Pięciu Minut Przy Oknie",
+          "text": "Dziś jest Dzień Pięciu Minut Przy Oknie — usiądź przy oknie i przez pięć minut po prostu patrz na zewnątrz. Jeśli chcesz, weź coś ciepłego do picia. Na koniec zapisz jedną rzecz, która wcześniej umykała Twojej uwadze.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-25",
+          "order": 25,
+          "title": "Odpowiedzi na Jedno Pytanie",
+          "text": "Dziś jest Dzień Odpowiedzi na Jedno Pytanie — dokończ zdanie: „Ten rok nauczył mnie, że…” Nie szukaj idealnej odpowiedzi — pierwsza szczera myśl zwykle mówi najwięcej.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-26",
+          "order": 26,
+          "title": "Listy „Chcę Więcej”",
+          "text": "Dziś jest Dzień Listy „Chcę Więcej” — wypisz trzy niematerialne rzeczy, których chcesz mieć więcej w przyszłym roku. Mogą to być spacery, spotkania, sen, odwaga, spokój albo spontaniczność.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-27",
+          "order": 27,
+          "title": "Listy „Chcę Mniej”",
+          "text": "Dziś jest Dzień Listy „Chcę Mniej” — zapisz trzy rzeczy, które niepotrzebnie zabierają Ci czas lub spokój. Przy jednej z nich dopisz prostą granicę, którą możesz wprowadzić po świętach.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-28",
+          "order": 28,
+          "title": "Świątecznego Wspomnienia",
+          "text": "Dziś jest Dzień Świątecznego Wspomnienia — wybierz zapach, smak albo dźwięk, który natychmiast przenosi Cię do dawnych świąt. Opowiedz komuś, jakie konkretne wspomnienie za nim stoi.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-29",
+          "order": 29,
+          "title": "Jednego Zdjęcia Tylko dla Siebie",
+          "text": "Dziś jest Dzień Jednego Zdjęcia Tylko dla Siebie — zrób fotografię chwili, którą chcesz zachować wyłącznie we własnej galerii. Nie publikuj jej — niech będzie prywatną pocztówką z tego grudnia.",
+          "isSpecial": false,
+          "status": "ZWYKŁE OKIENKO",
+          "standard": {
+            "addon": "brak osobnego dodatku premium.",
+            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
+            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
+            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          }
+        },
+        {
+          "id": "set-6-task-30",
+          "order": 30,
+          "title": "Grudniowego Domknięcia",
+          "text": "Dziś jest Dzień Grudniowego Domknięcia — zapisz trzy rzeczy: za co chcesz podziękować mijającemu rokowi, co zostawiasz za sobą i na co najbardziej czekasz. Schowaj kartkę razem ze świątecznymi dekoracjami i wróć do niej za rok.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Grudniowe domknięcie",
+            "format": "Interaktywny finał roku",
+            "preparation": "Przygotować 3 duże pola: dziękuję za…, zostawiam…, czekam na…; elegancki finalny layout.",
+            "interaction": "Użytkownik wypełnia trzy odpowiedzi; aplikacja tworzy podsumowanie.",
+            "endEffect": "Eksport „Moje grudniowe domknięcie 2026” jako PNG/PDF; możliwość zapisania do przyszłego roku.",
+            "effort": "`M` (S = mały, M = średni, L = większy)",
+            "implementationNotes": "Final reflection card + exporter."
+          }
+        }
+      ]
+    }
+  ],
+  "productDecisions": [
+    "Specjalność okienka jest tajna do momentu otwarcia. Zamknięty kafelek nie może być oznaczony gwiazdką, kolorem, obramowaniem ani animacją sugerującą dodatkową zawartość. Badge „✨ OKIENKO SPECJALNE” pojawia się dopiero wewnątrz otwartego dnia.",
+    "Nie tworzymy specjalnych mechanik wymagających nagrywania audio. e‑Advent nie potrzebuje modułu mikrofonu, obsługi MediaRecorder ani przechowywania nagrań. Zadania, które same w sobie sugerują użycie głosu, mogą pozostać zwykłymi zadaniami realizowanymi poza aplikacją.",
+    "Kolędowe zgadywanie pozostaje zwykłym okienkiem: e‑Advent nie powinien hostować krótkich fragmentów komercyjnych nagrań bez odpowiednich licencji. Użytkownik może użyć własnej aplikacji muzycznej.",
+    "Dobre uczynki nie powinny śledzić innych osób ani budować publicznego „łańcucha dobra”. Karty mogą być udostępniane, ale prywatność ma pierwszeństwo.",
+    "Refleksje i listy są prywatne domyślnie. Przycisk „Udostępnij” nie powinien być głównym CTA przy osobistych treściach.",
+    "PDF nie jest obowiązkowy tam, gdzie interakcja ekranowa daje lepsze doświadczenie. Druk zostawić dla DIY, etykiet, kart i materiałów, które faktycznie mają trafić do ręki.",
+    "Nie tworzyć osobnego komponentu dla każdego zadania. Mechanika ma być konfigurowalna danymi i współdzielona pomiędzy zestawami."
+  ],
+  "implementationOrder": [
+    {
+      "stage": 1,
+      "title": "największy efekt przy najmniejszym koszcie",
+      "work": "Zbudować Checklist, Randomizer + Timer, CardForm + ShareCard, Scorecard i obsługę statycznych PDF. Te komponenty obsłużą większość okienek specjalnych."
+    },
+    {
+      "stage": 2,
+      "title": "materiały graficzne",
+      "work": "Przygotować zestaw szablonów PDF: bingo/DIY, etykiety, papierowa wioska, origami, renifer, komiks, łańcuch wspomnień, girlanda i kupony. Wszystkie powinny wyglądać jak jedna rodzina materiałów e‑Advent."
+    },
+    {
+      "stage": 3,
+      "title": "bardziej zaawansowane funkcje",
+      "work": "Dodać upload/crop zdjęć, generowanie kolaży PNG oraz trwałe DateGate/LockedNote. Nie budujemy modułu nagrywania audio ani nie prosimy użytkownika o dostęp do mikrofonu. Te funkcje nadal wymagają dodatkowych testów na telefonach."
+    }
+  ],
+  "specialWindowDoneCriteria": [
+    "Użytkownik rozumie w 3–5 sekund, co ma zrobić.",
+    "Nie musi sam przygotowywać materiału, który e‑Advent obiecuje dostarczyć.",
+    "Interakcja działa wygodnie na telefonie.",
+    "Stan nie znika przypadkowo po odświeżeniu strony.",
+    "Jeśli powstaje wynik/karta — można go pobrać, zapisać lub skopiować.",
+    "Jeśli wymagany jest druk — PDF ma prawidłowy format A4 i czytelne instrukcje.",
+    "Okienko nadal kończy się możliwością „Oznacz jako wykonane”."
+  ],
+  "freeCalendarPolicy": "Darmowy kalendarz zachowuje formę porad i nie otrzymuje oznaczeń ani dodatków premium."
+}

@@ -285,4 +285,68 @@ describe('Faza 1 — price tampering (P-*)', () => {
     expect(res.status).toBe(200);
     expect(res.body.shipping).toBe(0);
   });
+
+  test('P-09: santa-certificate without letter is rejected', async () => {
+    const res = await request(app)
+      .post('/api/v1/stripe/create-payment-intent')
+      .send({
+        data: {
+          amount: 9,
+          currency: 'pln',
+          customerEmail: 'buyer@example.com',
+          orderId: 'order_cert_alone',
+          items: [{
+            sku: 'santa-certificate',
+            quantity: 1,
+            metadata: { childName: 'Kasia' },
+          }],
+          shippingAddress: {
+            fullName: 'Anna Nowak',
+            street: 'ul. Świąteczna 5',
+            city: 'Kraków',
+            postalCode: '30-001',
+            phone: '501502503',
+          },
+        },
+      });
+
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(res.body)).toMatch(/Listem do Świętego Mikołaja/i);
+    expect(stripe.paymentIntents.create).not.toHaveBeenCalled();
+  });
+
+  test('P-10: letter with certificate and correct total is accepted', async () => {
+    stripe.paymentIntents.create.mockResolvedValue({
+      id: 'pi_letter_cert',
+      client_secret: 'secret',
+      status: 'requires_payment_method',
+      amount: 4300,
+      currency: 'pln',
+    });
+
+    const res = await request(app)
+      .post('/api/v1/stripe/create-payment-intent')
+      .send({
+        data: {
+          amount: 43,
+          currency: 'pln',
+          customerEmail: 'buyer@example.com',
+          orderId: 'order_letter_cert',
+          items: [
+            { sku: 'santa-letter', quantity: 1 },
+            { sku: 'santa-certificate', quantity: 1, metadata: { childName: 'Kasia Kowalska' } },
+          ],
+          shippingAddress: {
+            fullName: 'Anna Nowak',
+            street: 'ul. Świąteczna 5',
+            city: 'Kraków',
+            postalCode: '30-001',
+            phone: '501502503',
+          },
+        },
+      });
+
+    expect(res.status).toBe(200);
+    expect(stripe.paymentIntents.create).toHaveBeenCalled();
+  });
 });

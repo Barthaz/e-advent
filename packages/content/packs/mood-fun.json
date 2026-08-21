@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "packs": {
+    "christmas-quiz-v1": {
+      "questionsPerSession": 7,
+      "replayLabel": "Jeszcze raz",
+      "resultLabel": "Wynik",
+      "questions": [
+        { "id": "q1", "text": "W którym mieście urodził się Jezus według Biblii?", "options": ["Betlejem", "Nazaret", "Jerozolima"], "correctIndex": 0, "fact": "Betlejem znaczy „dom chleba”." },
+        { "id": "q2", "text": "Ile dni trwa adwent?", "options": ["24", "28-31", "12"], "correctIndex": 1, "fact": "Advent trwa od I niedzieli adwentu do Wigilii." },
+        { "id": "q3", "text": "Co symbolizuje gwiazda betlejemska?", "options": ["Śnieg", "Gwiazdę przewodnią", "Choinkę"], "correctIndex": 1, "fact": "Mędrcy podążali za gwiazdą." },
+        { "id": "q4", "text": "Kto przyniósł złoto do szopki?", "options": ["Pasterz", "Melchior", "Anioł"], "correctIndex": 1, "fact": "Złoto symbolizowało królewskość." },
+        { "id": "q5", "text": "Jak nazywa się tradycyjna polska potrawa wigilijna z makiem?", "options": ["Kutia", "Barszcz", "Pierogi"], "correctIndex": 0, "fact": "Kutia to słodka kasza z makiem." },
+        { "id": "q6", "text": "Ile reniferów ciągnie sanie Mikołaja w popularnej wersji?", "options": ["6", "8", "9"], "correctIndex": 2, "fact": "Rudolf to dziewiąty renifer." },
+        { "id": "q7", "text": "Co wieszamy na drzwiach w adwencie?", "options": ["Wieniec adwentowy", "Skarpetę", "Dzwonek"], "correctIndex": 0, "fact": "Wieniec ma cztery świece." },
+        { "id": "q8", "text": "Kiedy tradycyjnie otwiera się pierwsze okienko kalendarza adwentowego?", "options": ["1 grudnia", "6 grudnia", "24 grudnia"], "correctIndex": 0, "fact": "Od 1 do 24 grudnia." }
+      ]
+    },
+    "christmas-bingo-v1": {
+      "items": [
+        "Renifer", "Gwiazda", "Choinka", "Prezent", "Śnieg", "Dzwonek", "Świeca", "Mikołaj", "Lampki"
+      ],
+      "rows": 3,
+      "columns": 3
+    },
+    "photo-then-now-v1": {
+      "ctaLabel": "Dodaj zdjęcia",
+      "kicker": "Wtedy i dziś",
+      "captionField": "Podpis",
+      "formatsHint": "Wczytaj zdjęcie JPG, PNG, WEBP lub GIF (do 10 MB).",
+      "notes": [
+        "Dodaj stare grudniowe zdjęcie i dzisiejsze ujęcie w podobnym miejscu albo pozie.",
+        "PDF ułoży oba zdjęcia obok siebie, w poziomie, w złotych ramkach."
+      ],
+      "slots": [
+        { "id": "then", "label": "Wtedy" },
+        { "id": "now", "label": "Dziś" }
+      ]
+    },
+    "illumination-hunt-v1": {
+      "ctaLabel": "Zacznij polowanie",
+      "kicker": "Łowca światełek",
+      "nameField": "Dom albo ulica",
+      "houseNoun": "Dom",
+      "houseCount": 6,
+      "maxPoints": 6,
+      "pointsLabel": "Punkty",
+      "totalLabel": "Suma",
+      "notes": [
+        "Po zmroku idź na krótki spacer i przyznawaj punkty mijanym domom.",
+        "1 pkt — lampki, 2 pkt — renifer, 3 pkt — naprawdę efektowny dom lub witryna. Jeśli dom ma kilka ozdób, zsumuj punkty."
+      ],
+      "printInstruction": "Zaznacz, ile punktów ma każdy dom — jak na planszy do gry. Puste linie dopisz ołówkiem.",
+      "legend": [
+        { "points": 1, "label": "Lampki" },
+        { "points": 2, "label": "Renifer" },
+        { "points": 3, "label": "Efektowny dom lub witryna" }
+      ],
+      "titles": [
+        { "min": 0, "title": "Początek tropu" },
+        { "min": 6, "title": "Łowca światełek" },
+        { "min": 12, "title": "Mistrz iluminacji" },
+        { "min": 18, "title": "Król świątecznych świateł" }
+      ]
+    },
+    "christmas-trivia-v1": {
+      "uniqueDraw": true,
+      "itemNoun": "Ciekawostka",
+      "ctaLabel": "Odkryj ciekawostkę",
+      "drawLabel": "Odkryj",
+      "emptyLabel": "Odkryj ciekawostkę",
+      "nextLabel": "Następna ciekawostka",
+      "newRoundLabel": "Jeszcze raz",
+      "exhaustedLabel": "To była ostatnia ciekawostka",
+      "facts": [
+        "Pierwsze choinki w Polsce pojawiły się w XIX wieku.",
+        "Kolęda „Cicha noc” została napisana w 1818 roku w austriackim Oberndorfie.",
+        "Adwent może trwać od 22 do 28 dni, w zależności od daty pierwszej niedzieli adwentu.",
+        "W Japonii na święta popularny jest kubełek z KFC — zwyczaj wziął się z kampanii reklamowej z lat 70.",
+        "Na Filipinach sezon świąteczny zaczyna się już we wrześniu i należy do najdłuższych na świecie.",
+        "W Islandii przez 13 nocy przed Wigilią dzieci dostają prezenty od jólasveinarów, islandzkich „mikołajów”.",
+        "W Norwegii w Wigilię chowa się miotły, żeby złe duchy nie mogły ich ukraść.",
+        "Meksykańska posada to dziewięć wieczorów wędrówki z Maryją i Józefem, kończących się kolędą i piñatą.",
+        "W Ukrainie na stole wigilijnym zostawia się puste nakrycie dla niespodziewanego gościa.",
+        "Szwedzką Lucię (13 grudnia) obchodzi się procesją w białych szatach i z koroną ze świec.",
+        "W Grecji na święta piecze się christopsomo — chleb ozdobiony krzyżem.",
+        "Niemiecki kalendarz adwentowy z okienkami spopularyzował się na początku XX wieku.",
+        "W Finlandii „oficjalny” dom Świętego Mikołaja leży w Rovaniemi, za kołem podbiegunowym.",
+        "We Włoszech 6 stycznia prezenty przynosi Befana — staruszka na miotle.",
+        "W Katalonii popularny jest Caga Tió: pień, który po opukaniu „daje” prezenty.",
+        "Amerykańskie skarpety na kominku wzięły się z legendy o Mikołaju wrzucającym monety do suszących się skarpet.",
+        "W Etiopii Boże Narodzenie (Genna) przypada 7 stycznia według kalendarza koptyjskiego.",
+        "W Czechach w Wigilię kroi się jabłko — gwiazda w środku ma wróżyć szczęście.",
+        "W Polsce pierwsza gwiazdka na niebie daje znak do rozpoczęcia wieczerzy wigilijnej.",
+        "W Australii święta wypadają latem, więc kolację często je się przy grillu na dworze.",
+        "W Wielkiej Brytanii Christmas cracker pęka z hukiem i ukrywa papierową koronę oraz żart.",
+        "W Armenii Boże Narodzenie obchodzi się 6 stycznia, łącząc je ze świętem Objawienia Pańskiego.",
+        "Duńczycy w święta tańczą wokół choinki i śpiewają kolędy, zanim otworzą prezenty.",
+        "W wigilię na Ukrainie i w Polsce kutia z makiem symbolizuje obfitość i pamięć o przodkach."
+      ]
+    },
+    "christmas-charades-v1": {
+      "promptHint": "Pokaż bez słów — reszta zgaduje, zanim minie minuta",
+      "uniqueDraw": true,
+      "timerSeconds": 60,
+      "timerLabel": "Minuta na hasło",
+      "itemNoun": "Hasło",
+      "ctaLabel": "Wylosuj hasło",
+      "prompts": [
+        "Mikołaj",
+        "Choinka",
+        "Renifer",
+        "Prezent",
+        "Śnieg",
+        "Lampki",
+        "Gwiazda betlejemska",
+        "Piernik",
+        "Bombka",
+        "Sanie",
+        "Wieniec adwentowy",
+        "Skarpeta na kominku",
+        "Elf",
+        "Anioł",
+        "Opłatek",
+        "Karp",
+        "Kutia",
+        "Pakowanie prezentów",
+        "Ubieranie choinki",
+        "Śpiewanie kolęd",
+        "Łamanie się opłatkiem",
+        "Pierwsza gwiazdka",
+        "Jarmark świąteczny",
+        "Pasterka",
+        "Cicha noc",
+        "List do Mikołaja",
+        "Kevin sam w domu",
+        "Dwanaście potraw",
+        "Czekanie na prezenty",
+        "Rozpakowywanie prezentów",
+        "Pieczenie pierników",
+        "Zawieszanie bombki",
+        "Sypanie śniegiem",
+        "Pociągnięcie sań",
+        "Gaszenie świateł na seans",
+        "Szukanie prezentu pod choinką",
+        "Śnieżynka",
+        "Gwiazdor",
+        "Piernikowy ludzik",
+        "Pasterz",
+        "Zgubiony prezent",
+        "Zepsuta lampka",
+        "Brak śniegu",
+        "Spóźniony renifer",
+        "Zawiązana kokarda",
+        "Rozsypane cukierki",
+        "Za ciasna czapka",
+        "Przepalona żarówka",
+        "Kuchnia",
+        "Salon",
+        "Pod choinką",
+        "Na dachu",
+        "Przy kominku",
+        "Na jarmarku",
+        "W saniach",
+        "Przy wigilijnym stole"
+      ]
+    },
+    "secret-elf-missions-v1": {
+      "nameField": "Dla kogo",
+      "itemNoun": "Zestaw",
+      "ctaLabel": "Wylosuj misję",
+      "drawLabel": "Wylosuj misję",
+      "nextLabel": "Inny zestaw",
+      "newRoundLabel": "Jeszcze raz",
+      "emptyLabel": "Wylosuj trzy miłe rzeczy",
+      "exhaustedLabel": "To był ostatni zestaw tej rundy",
+      "successTitle": "Misja Elfa zakończona",
+      "successLabel": "Trzy miłe rzeczy zrobione — elf może zniknąć.",
+      "promptHint": "Wybierz domownika i wylosuj trzy proste rzeczy, które da się zrobić po cichu w praktycznie każdym domu.",
+      "sets": [
+        [
+          "Zrób komuś ciepłą herbatę albo kawę i zostaw przy stole",
+          "Napisz krótką miłą karteczkę",
+          "Umyj czyjś kubek i odstaw na miejsce"
+        ],
+        [
+          "Zostaw szklankę wody przy czyimś miejscu",
+          "Złóż koc albo narzutę",
+          "Zaświeć lampkę w pokoju, zanim ktoś wróci"
+        ],
+        [
+          "Przygotuj talerz i kubek przy stole",
+          "Odkryj zasłony, żeby wpuścić światło",
+          "Zostaw herbatnika albo cukierka na spodeczku"
+        ],
+        [
+          "Ułóż czyjeś kapcie albo buty przy drzwiach",
+          "Powieś kurtkę, która leży byle gdzie",
+          "Zostaw karteczkę „dla Ciebie”"
+        ],
+        [
+          "Wstaw czysty ręcznik",
+          "Ułóż poduszki na kanapie",
+          "Zostaw miłe zdanie na kartce na stole"
+        ],
+        [
+          "Napełnij czajnik wodą",
+          "Przygotuj kubek z torebką herbaty",
+          "Zostaw łyżeczkę obok"
+        ],
+        [
+          "Namydl gąbkę i przetrzyj blat",
+          "Wynieś śmieci, jeśli worek jest pełny",
+          "Zostaw karteczkę „już zrobione”"
+        ],
+        [
+          "Zrób kanapkę albo pokrój owoc",
+          "Nalej wodę do szklanki",
+          "Zostaw to przy czyimś miejscu bez komentarza"
+        ],
+        [
+          "Podrzuć koc na fotel",
+          "Zaświeć lampkę nocną albo małe światło",
+          "Zostaw herbatę, żeby ostygła do picia"
+        ],
+        [
+          "Ustaw krzesło przy stole",
+          "Połóż serwetkę albo czysty kubek",
+          "Napisz „dziękuję, że jesteś” na kartce"
+        ]
+      ]
+    },
+    "reindeer-challenge-v1": {
+      "promptHint": "Przekaż komunikat gestem i zabawnym, świątecznym odgłosem — bez słów. Reszta zgaduje, o co Ci chodzi.",
+      "modeLabel": "Gest + odgłos",
+      "timerSeconds": 60,
+      "timerLabel": "Czas na komunikat",
+      "itemNoun": "Komunikat",
+      "ctaLabel": "Start",
+      "startLabel": "Start",
+      "emptyLabel": "Kliknij Start, gdy będziecie gotowi",
+      "drawLabel": "Start",
+      "nextLabel": "Następny komunikat",
+      "newRoundLabel": "Jeszcze raz",
+      "exhaustedLabel": "To był ostatni komunikat tej rundy",
+      "markGuessed": true,
+      "guessedLabel": "Odgadnięte",
+      "skipLabel": "Pomiń",
+      "successTarget": 3,
+      "successTitle": "Reniferowy Tłumacz",
+      "successLabel": "Trzy komunikaty odgadnięte — misja zaliczona!",
+      "prompts": [
+        "Chcę kakao",
+        "Mikołaj zgubił worek",
+        "Renifer utknął w śniegu",
+        "Choinka się chwieje",
+        "Zimno mi przy oknie",
+        "Lampki nie działają",
+        "Otwórz prezent",
+        "Śpiewamy kolędę",
+        "Pora na pierniki",
+        "Elf chrapie pod choinką",
+        "Sanie pędzą po dachu",
+        "Gwiazda spadła z czubka",
+        "Karp pluska w wannie",
+        "Dzwoni dzwoneczek",
+        "Pies zjadł piernika",
+        "Czas zgasić światło",
+        "Mikołaj mówi ho-ho-ho",
+        "Śnieg sypie za oknem",
+        "Brakuje opłatka",
+        "Bombka się stłukła",
+        "Renifer chce marchewkę",
+        "Paczka puka do drzwi",
+        "Czapka Mikołaja jest za duża",
+        "Piec pachnie cynamonem",
+        "Idziemy na Pasterkę",
+        "Skarpeta na kominku jest pusta",
+        "Kot bawi się bombką",
+        "Czekolada się rozpływa",
+        "Zgubiłem list do Mikołaja",
+        "Czas na świąteczny film"
+      ]
+    },
+    "gift-detective-v1": {
+      "nameField": "Imię",
+      "fields": ["Typ"],
+      "allowMultipleCards": true,
+      "maxCards": 6,
+      "cardNoun": "Uczestnik",
+      "addCardLabel": "Dodaj uczestnika",
+      "removeCardLabel": "Usuń",
+      "entryLayout": "roster",
+      "ctaLabel": "Zapisz typy",
+      "reportKicker": "Raport detektywów",
+      "reportCaption": "Kto na co stawiał",
+      "notes": [
+        "Każdy detektyw wpisuje imię i swój typ — na co stawia, co jest w zapakowanym prezencie.",
+        "Możecie dodać maksymalnie 6 uczestników. Po rozpakowaniu pobierzcie PDF z raportem, kto jaki miał typ."
+      ]
+    },
+    "christmas-prediction-v1": {
+      "fieldNoun": "Przepowiednia",
+      "fieldCount": 3,
+      "fieldsOptional": true,
+      "optionalLabel": "opcjonalne",
+      "nameField": "Imię",
+      "clearOnPrint": true,
+      "ctaLabel": "Zapisz przepowiednie",
+      "notes": [
+        "Pola są opcjonalne — możesz uzupełnić do trzech przepowiedni.",
+        "Po pobraniu PDF pola się wyczyszczą. Możesz wtedy podać urządzenie następnej osobie, żeby zapisała swoje przepowiednie."
+      ]
+    },
+    "adult-santa-letter-v1": {
+      "ctaLabel": "Napisz list",
+      "letterGreeting": "Drogi Mikołaju,",
+      "letterIntro": "W tym roku było całkiem grzecznie. Lista życzeń jest krótka i konkretna — bez wielkich obietnic, tylko to, co naprawdę ma znaczenie.",
+      "letterOutro": "Z grudniowym pozdrowieniem.",
+      "fields": [
+        "Co można położyć pod choinką",
+        "Jakie przeżycie warto dostać",
+        "Czego nie kupi się w żadnym sklepie"
+      ],
+      "letterLeads": [
+        "Pod choinkę może trafić",
+        "Z przeżyć naprawdę warto dostać",
+        "A czego nie kupi się w żadnym sklepie —"
+      ]
+    }
+  }
+}

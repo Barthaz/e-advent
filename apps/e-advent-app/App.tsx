@@ -37,8 +37,8 @@ const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
 
 // Import obrazków
-const logo = require('./assets/logo.png');
-const appLogo = require('./assets/app_logo.png');
+const logo = require('./assets/eadvent-logo.png');
+const appLogo = require('./assets/eadvent-mark.png');
 const backgroundImage = require('@e-advent/assets/background.png');
 const windowClose = require('./assets/windows/close.png');
 const windowOpen = require('./assets/windows/open.png');

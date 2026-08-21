@@ -205,7 +205,7 @@ export default function DemoCalendar({ debugMode = false }: DemoCalendarProps) {
         usePortal={true}
       >
         <div className="text-center">
-          <p className="text-4xl md:text-5xl mb-4 text-christmas-gold-light font-bold drop-shadow-lg px-4 font-task">
+          <p className="text-2xl md:text-4xl mb-4 text-christmas-gold-light drop-shadow-lg px-4 font-task">
             {getDayTask(openedDay || 0)}
           </p>
         </div>

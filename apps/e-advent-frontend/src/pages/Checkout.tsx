@@ -4,6 +4,7 @@ import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
 import LoadingState from '../components/LoadingState';
 import { validateCalendarConfiguration, buildCalendarTasks } from '../utils/calendarGenerator';
+import { textToCatalogTaskId } from '../utils/catalogTaskIds';
 import { createPaymentIntent, createCalendar, type InternalCalendarData, validatePromoCode, createFreeCalendar } from '../api/api';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -12,7 +13,7 @@ import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_F
 import ShippingForm, { emptyShippingAddress, validateShippingAddress } from '../components/checkout/ShippingForm';
 import type { ProductType, ShippingAddress } from '../types/order';
 import { getActiveProduct, getStorageKeys, loadShipping, saveShipping, loadCheckoutCalendarData, resolveCheckoutProduct, getReusablePendingCalendarId, getPendingCalendarSession, setPendingCalendarSession, getPurchasedCalendarIds, markCalendarPurchased, PENDING_EDIT_TOKEN_KEY, PURCHASED_CALENDAR_IDS_KEY } from '../utils/creatorStorage';
-import { CART_STORAGE_KEY, loadCart, getCartTotals, type CartItem } from '../utils/cartStorage';
+import { CART_STORAGE_KEY, loadCart, getCartTotals, cartItemCheckoutKey, cartItemToCheckoutItem, getCartItemDisplayName, type CartItem } from '../utils/cartStorage';
 import { trackBeginCheckout } from '../utils/analytics';
 
 /** Survives React Strict Mode remounts — prevents duplicate create-payment-intent calls */
@@ -71,7 +72,8 @@ async function generateCalendarFallback(calendarData: {
   return buildCalendarTasks(
     calendarData.tasks || [],
     Array.isArray(examples) ? examples : [],
-    calendarData.selectedExampleSets || []
+    calendarData.selectedExampleSets || [],
+    textToCatalogTaskId
   );
 }
 
@@ -94,6 +96,8 @@ interface CalendarData {
   format?: string;
   design?: { source: string; presetId?: string; imageUrl: string };
   selectedExampleSets?: number[];
+  openingMethod?: 'app' | 'email' | 'online';
+  dailyContentEmail?: string;
 }
 
 // Domyślnie test — musi być zgodny z trybem API (TESTING_MODE). Na produkcji ustaw VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
@@ -401,7 +405,9 @@ export default function Checkout() {
 
     // ── Cart checkout (scratch + letter) ───────────────────────────────────
     if (!isInteractiveCheckout && cart.length > 0) {
-      const onlyLetters = cart.every((i) => i.sku === 'santa-letter');
+      const onlyLetters = cart.every(
+        (i) => i.sku === 'santa-letter' || i.sku === 'santa-certificate',
+      );
       const firstSku = cart[0].sku;
       const firstProduct = getProduct(firstSku);
       const emailFromCart = cart.find((i) => i.customerEmail)?.customerEmail?.trim() || '';
@@ -554,7 +560,7 @@ export default function Checkout() {
 
       // Stable key: cart/email/amount — shipping updates reuse the same pending payment on backend
       const cartFingerprint = cartMode
-        ? cartItems.map((i) => `${i.sku}:${i.quantity}:${i.calendarId || ''}`).join('|')
+        ? cartItems.map((i) => cartItemCheckoutKey(i)).join('|')
         : `${sku}:1`;
       const initKey = cartMode
         ? `cart:${calendarData.email}:${totalPrice}:${cartFingerprint}`
@@ -626,11 +632,7 @@ export default function Checkout() {
         const runCartPaymentInit = async () => {
           setPaymentError(null);
           const orderId = getStableCheckoutOrderId(initKey);
-          const items = cartItems.map((i) => ({
-            sku: i.sku,
-            quantity: i.quantity,
-            ...(i.calendarId ? { calendarId: i.calendarId } : {}),
-          }));
+          const items = cartItems.map((i) => cartItemToCheckoutItem(i));
           const primaryCalendarId = cartItems.find((i) => i.calendarId)?.calendarId;
           const paymentIntent = await createPaymentIntent({
             amount: totalPrice,
@@ -650,6 +652,9 @@ export default function Checkout() {
           });
           localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
           localStorage.setItem('orderId', orderId);
+          if (paymentIntent.orderNumber) {
+            localStorage.setItem('orderNumber', paymentIntent.orderNumber);
+          }
           localStorage.setItem('orderAmount', String(totalPrice));
           localStorage.setItem('e-advent-sku', sku);
           return {
@@ -758,10 +763,11 @@ export default function Checkout() {
         if (savedGeneratedCalendar) {
           try {
             const generatedCalendar: Array<{ day: number; task: string; duration?: number; latestDay?: number }> = JSON.parse(savedGeneratedCalendar);
-            generatedTasks = generatedCalendar.map(({ day, task, duration, latestDay }) => ({
+            generatedTasks = generatedCalendar.map(({ day, task, duration, latestDay, catalogTaskId }) => ({
               day,
               task,
               duration,
+              ...(catalogTaskId ? { catalogTaskId } : {}),
               ...(latestDay !== undefined ? { latestDay } : {}),
             }));
           } catch (error) {
@@ -781,7 +787,12 @@ export default function Checkout() {
           calendarTitle: calendarData.calendarTitle,
           tasks: generatedTasks,
           dates: calendarData.dates || [],
-          dailyEmailReminders: calendarData.dailyEmailReminders || false,
+          dailyEmailReminders: calendarData.dailyEmailReminders || calendarData.openingMethod === 'email',
+          openingMethod: calendarData.openingMethod,
+          dailyContentEmail:
+            calendarData.openingMethod === 'email'
+              ? (calendarData.dailyContentEmail || calendarData.email)
+              : undefined,
           previewLayout: previewLayout,
           openedDays: openedDays,
           productType: calendarData.productType || productType,
@@ -837,6 +848,9 @@ export default function Checkout() {
 
         localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
         localStorage.setItem('orderId', orderId);
+        if (paymentIntent.orderNumber) {
+          localStorage.setItem('orderNumber', paymentIntent.orderNumber);
+        }
         localStorage.setItem('orderAmount', String(paymentAmount));
         localStorage.setItem('e-advent-sku', sku);
 
@@ -919,13 +933,9 @@ export default function Checkout() {
 
     const timer = setTimeout(() => {
       const orderId = getStableCheckoutOrderId(
-        `cart:${calendarData.email}:${totalPrice}:${cartItems.map((i) => `${i.sku}:${i.quantity}:${i.calendarId || ''}`).join('|')}`
+        `cart:${calendarData.email}:${totalPrice}:${cartItems.map((i) => cartItemCheckoutKey(i)).join('|')}`
       );
-      const items = cartItems.map((i) => ({
-        sku: i.sku,
-        quantity: i.quantity,
-        ...(i.calendarId ? { calendarId: i.calendarId } : {}),
-      }));
+      const items = cartItems.map((i) => cartItemToCheckoutItem(i));
       const primaryCalendarId = cartItems.find((i) => i.calendarId)?.calendarId;
       void createPaymentIntent({
         amount: totalPrice,
@@ -944,8 +954,11 @@ export default function Checkout() {
           shippingUpdate: '1',
         },
       })
-        .then(() => {
+        .then((paymentIntent) => {
           lastSyncedShippingRef.current = shippingKey;
+          if (paymentIntent.orderNumber) {
+            localStorage.setItem('orderNumber', paymentIntent.orderNumber);
+          }
         })
         .catch(() => {
           /* non-blocking — pay flow still works with address captured at first successful init */
@@ -1069,10 +1082,11 @@ export default function Checkout() {
         try {
           const generatedCalendar: Array<{ day: number; task: string; duration?: number; latestDay?: number }> = JSON.parse(savedGeneratedCalendar);
           
-          generatedTasks = generatedCalendar.map(({ day, task, duration, latestDay }) => ({
+          generatedTasks = generatedCalendar.map(({ day, task, duration, latestDay, catalogTaskId }) => ({
             day,
             task,
             duration,
+            ...(catalogTaskId ? { catalogTaskId } : {}),
             ...(latestDay !== undefined ? { latestDay } : {}),
           }));
           
@@ -1096,9 +1110,16 @@ export default function Checkout() {
         calendarTitle: calendarData.calendarTitle,
         tasks: generatedTasks,
         dates: calendarData.dates || [],
-        dailyEmailReminders: calendarData.dailyEmailReminders || false,
+        dailyEmailReminders: calendarData.dailyEmailReminders || calendarData.openingMethod === 'email',
+        openingMethod: calendarData.openingMethod,
+        dailyContentEmail:
+          calendarData.openingMethod === 'email'
+            ? (calendarData.dailyContentEmail || calendarData.email)
+            : undefined,
         previewLayout: previewLayout,
         openedDays: openedDays,
+        productType: calendarData.productType || productType,
+        sku: calendarData.sku || sku,
       };
 
       // Pobierz pending calendarId jeśli istnieje
@@ -1211,10 +1232,11 @@ export default function Checkout() {
                   {cartItems.map((item) => {
                     const p = getProduct(item.sku);
                     const unit = item.unitPrice ?? p?.basePrice ?? 0;
+                    const displayName = getCartItemDisplayName(item);
                     return (
                       <li key={item.id} className="flex justify-between gap-3 text-sm sm:text-base">
                         <span>
-                          <strong>{item.label || p?.name || item.sku}</strong>
+                          <strong>{displayName}</strong>
                           {item.format ? ` (${item.format})` : ''}
                           {' '}× {item.quantity}
                         </span>
@@ -1272,8 +1294,16 @@ export default function Checkout() {
                   )}
                 </>
               )}
-              {calendarData.dailyEmailReminders && (
-                <p className="text-christmas-green mt-2">✓ Codzienne przypomnienia e-mail włączone</p>
+              {(calendarData.openingMethod === 'email' || calendarData.dailyEmailReminders) && (
+                <p className="text-christmas-green mt-2">
+                  ✓ Codzienna treść okienka na: {calendarData.dailyContentEmail || calendarData.email}
+                </p>
+              )}
+              {calendarData.openingMethod === 'app' && (
+                <p className="text-christmas-green mt-2">✓ Otwieranie w aplikacji Android</p>
+              )}
+              {calendarData.openingMethod === 'online' && (
+                <p className="text-christmas-green mt-2">✓ Otwieranie online przez unikalny link</p>
               )}
             </div>
             )}

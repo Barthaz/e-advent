@@ -36,7 +36,15 @@ const getPool = () => {
 // Pojedyncze zapytanie - zwraca [rows, fields]
 const query = async (sql, params = []) => {
   const p = getPool();
-  return p.execute(sql, params);
+  try {
+    return await p.execute(sql, params);
+  } catch (err) {
+    const retryable = ['ECONNRESET', 'ETIMEDOUT', 'PROTOCOL_CONNECTION_LOST', 'PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR'];
+    if (retryable.includes(err.code)) {
+      return p.execute(sql, params);
+    }
+    throw err;
+  }
 };
 
 // Transakcja pomocnicza

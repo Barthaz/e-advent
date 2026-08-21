@@ -19,12 +19,13 @@
     "test:app": "npm run test -w e-advent-app",
     "build:frontend": "npm run build -w e-advent-frontend",
     "build:panel": "npm run build -w e-advent-panel",
-    "build:packages": "npm run build -w @e-advent/types && npm run build -w @e-advent/products && npm run build -w @e-advent/assets"
+    "build:packages": "npm run build -w @e-advent/types && npm run build -w @e-advent/products && npm run build -w @e-advent/assets && npm run build -w @e-advent/design-tokens && npm run build -w @e-advent/special-core && npm run build -w @e-advent/render-schema && npm run build -w @e-advent/content"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
-    "jsdom": "^30.0.1"
+    "jsdom": "^30.0.1",
+    "typescript": "^5.7.3"
   }
 }

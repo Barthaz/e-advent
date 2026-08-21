@@ -1,0 +1,20 @@
+{
+  "name": "@e-advent/special-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared special window logic — schema, completion, progress",
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "echo \"@e-advent/special-core is source-only\""
+  },
+  "dependencies": {
+    "@e-advent/types": "*"
+  }
+}

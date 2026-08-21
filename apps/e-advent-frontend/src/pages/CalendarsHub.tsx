@@ -4,7 +4,7 @@ import SEOHead from '../components/SEOHead';
 import ProductShowcase from '../components/products/ProductShowcase';
 import SocialShare from '../components/SocialShare';
 import { PRODUCT_FAMILIES, formatPrice } from '../config/products';
-import logo from '../assets/logo.png';
+import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
 const CALENDAR_FAMILIES = PRODUCT_FAMILIES.filter(
   (f) => f.type === 'interactive' || f.type === 'scratch',

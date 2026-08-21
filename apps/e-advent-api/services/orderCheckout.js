@@ -3,6 +3,8 @@ const {
   getProduct,
   computeOrderTotals,
   isPhysicalProduct,
+  isLetterAddonSku,
+  SANTA_LETTER_SKU,
 } = require('../config/products');
 
 function parseShippingAddress(raw) {
@@ -153,6 +155,39 @@ async function resolveCheckoutItems(requestData) {
       continue;
     }
 
+    if (isLetterAddonSku(product.sku)) {
+      const childName = String(raw.metadata?.childName ?? raw.childName ?? '').trim();
+      if (!childName || childName.length < 2) {
+        errors.push({
+          type: 'field',
+          msg: 'Imię dziecka jest wymagane dla certyfikatu (min. 2 znaki)',
+          path: `items[${i}].metadata.childName`,
+          location: 'body',
+        });
+        continue;
+      }
+      if (quantity !== 1) {
+        errors.push({
+          type: 'field',
+          msg: 'Certyfikat musi być zamówiony pojedynczo — każde dziecko to osobna pozycja',
+          path: `items[${i}].quantity`,
+          location: 'body',
+        });
+        continue;
+      }
+      resolved.push({
+        sku: product.sku,
+        productType: product.type,
+        quantity: 1,
+        unitPrice: product.basePrice,
+        calendarId: null,
+        calendar: null,
+        requiresShipping: product.requiresShipping,
+        metadata: { childName },
+      });
+      continue;
+    }
+
     resolved.push({
       sku: product.sku,
       productType: product.type,
@@ -166,6 +201,35 @@ async function resolveCheckoutItems(requestData) {
 
   if (errors.length > 0) {
     return { errors };
+  }
+
+  const letterCount = resolved
+    .filter((r) => r.sku === SANTA_LETTER_SKU)
+    .reduce((sum, r) => sum + r.quantity, 0);
+  const certificateCount = resolved
+    .filter((r) => isLetterAddonSku(r.sku))
+    .reduce((sum, r) => sum + r.quantity, 0);
+
+  if (certificateCount > 0 && letterCount === 0) {
+    return {
+      errors: [{
+        type: 'field',
+        msg: 'Certyfikat Grzecznego Dziecka można zamówić wyłącznie razem z Listem do Świętego Mikołaja',
+        path: 'items',
+        location: 'body',
+      }],
+    };
+  }
+
+  if (certificateCount > letterCount) {
+    return {
+      errors: [{
+        type: 'field',
+        msg: 'Liczba certyfikatów nie może przekraczać liczby listów do Mikołaja w zamówieniu',
+        path: 'items',
+        location: 'body',
+      }],
+    };
   }
 
   const totals = computeOrderTotals(resolved.map((r) => ({ sku: r.sku, quantity: r.quantity })));
@@ -197,7 +261,9 @@ async function resolveCheckoutItems(requestData) {
     };
   }
 
-  const primary = resolved[0];
+  const primary = resolved.find((r) => r.sku === SANTA_LETTER_SKU)
+    || resolved.find((r) => r.calendarId)
+    || resolved[0];
   return {
     items: resolved,
     totals,

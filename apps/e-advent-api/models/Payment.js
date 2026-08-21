@@ -1,5 +1,6 @@
 const { query } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const { formatOrderNumber } = require('../utils/orderNumber');
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -24,9 +25,12 @@ function resolveDeliveryType(shippingAddress, hasPhysical) {
 
 function rowToPayment(row, items = []) {
   if (!row) return null;
+  const orderNumber = row.order_number != null ? Number(row.order_number) : null;
   return {
     _id:                       row.id,
     id:                        row.id,
+    orderNumber,
+    orderNumberDisplay:        formatOrderNumber(orderNumber),
     stripePaymentIntentId:     row.stripe_payment_intent_id,
     amount:                    parseFloat(row.amount),
     shippingAmount:            row.shipping_amount != null ? parseFloat(row.shipping_amount) : 0,
@@ -195,6 +199,13 @@ const findPaymentById = async (id) => {
   return loadPaymentWithItems(rows[0] || null);
 };
 
+const findPaymentByOrderNumber = async (orderNumber) => {
+  const n = typeof orderNumber === 'number' ? orderNumber : parseInt(String(orderNumber), 10);
+  if (!Number.isFinite(n) || n < 1) return null;
+  const [rows] = await query('SELECT * FROM orders WHERE order_number = ?', [n]);
+  return loadPaymentWithItems(rows[0] || null);
+};
+
 const updatePaymentStatus = async (stripePaymentIntentId, status) => {
   await query(
     'UPDATE orders SET status = ? WHERE stripe_payment_intent_id = ?',
@@ -350,6 +361,7 @@ module.exports = {
   createPayment,
   findPaymentByStripeId,
   findPaymentById,
+  findPaymentByOrderNumber,
   updatePaymentStatus,
   updatePayment,
   updatePaymentByProductId,

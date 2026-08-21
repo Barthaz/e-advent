@@ -15,7 +15,14 @@
     "migrate:seed-admin": "node scripts/migrate.js --seed-admin",
     "migrate:security": "node scripts/migrate-security.js",
     "migrate:interactive-delivered": "node scripts/migrate-interactive-delivered.js",
-    "migrate:collaboration": "node scripts/migrate-collaboration.js"
+    "migrate:collaboration": "node scripts/migrate-collaboration.js",
+    "migrate:opening-method": "node scripts/migrate-opening-method.js",
+    "migrate:email-sends": "node scripts/migrate-email-sends.js",
+    "migrate:order-number": "node scripts/migrate-order-number.js",
+    "migrate:special-windows": "node scripts/migrate-special-windows.js"
+  },
+  "nodemonConfig": {
+    "ignore": ["assets/**", "tests/**"]
   },
   "keywords": [
     "nodejs",
@@ -29,6 +36,7 @@
   "license": "ISC",
   "dependencies": {
     "@e-advent/products": "1.0.0",
+    "@react-pdf/renderer": "^4.3.0",
     "@vercel/blob": "^2.6.1",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.2",
@@ -41,6 +49,7 @@
     "multer": "^2.2.0",
     "mysql2": "^3.23.3",
     "nodemailer": "^6.9.7",
+    "react": "^19.0.0",
     "socket.io": "^4.6.1",
     "stripe": "^14.7.0",
     "uuid": "^14.0.1"

@@ -120,7 +120,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           <View style={styles.topContent}>
             <View style={styles.logoContainer}>
               <Image
-                source={require('../assets/logo.png')}
+                source={require('../assets/eadvent-logo.png')}
                 style={styles.logo}
                 resizeMode="contain"
               />

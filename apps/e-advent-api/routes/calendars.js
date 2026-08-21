@@ -14,7 +14,14 @@ const {
   buildInteractiveAccessEmail,
   buildInteractiveAccessEmailText,
 } = require('../services/orderEmails');
-const { frontendUrl, emailLogoUrl } = require('../config/app');
+const { frontendUrl } = require('../config/app');
+const { sanitizeTasksForClient, findTaskByDay } = require('../services/special/taskSanitizer');
+const {
+  getSpecialDescriptor,
+  isPremiumCalendar,
+  buildOpenedWindow,
+} = require('../services/special/SpecialConfigRegistry');
+const specialWindowsRouter = require('./specialWindows');
 
 const generateAccessCode = () => {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -35,6 +42,9 @@ function calendarToResponse(calendar, { includeEditToken = false } = {}) {
     createdAt: calendar.createdAt,
     updatedAt: calendar.updatedAt,
   };
+  if (response.tasks) {
+    response.tasks = sanitizeTasksForClient(response.tasks, calendar);
+  }
   if (includeEditToken && calendar.editToken) {
     response.editToken = calendar.editToken;
   }
@@ -159,16 +169,13 @@ router.post('/createFree', createFreeLimiter, [
 
     const calendarData = updatedCalendar.data || calendar.data || {};
     const calendarTitle = calendarData.title || 'Twój Kalendarz Adwentowy';
-    const calendarLink = `${frontendUrl}/kalendarz/${calendarId}?code=${encodeURIComponent(accessCode)}`;
-    const logoUrl = emailLogoUrl;
-
+    const calendarLink = `${frontendUrl}/kalendarz/${calendarId}`;
     const emailSubject = `🎄 Twój Kalendarz Adwentowy: ${calendarTitle}`;
     const emailHtml = buildInteractiveAccessEmail({
       calendarTitle,
       calendarLink,
       accessCode,
-      logoUrl,
-      subtitle: 'Zakup pomyślny!',
+      subtitle: 'Twój kalendarz jest gotowy',
     });
     const emailText = buildInteractiveAccessEmailText({ calendarTitle, calendarLink, accessCode });
 
@@ -377,30 +384,29 @@ router.put('/:id/open/:day', async (req, res) => {
       return res.status(404).json({ error: 'Calendar not found' });
     }
 
-    const accessCode = req.body?.accessCode || req.headers['x-access-code'];
-    const editToken = extractEditToken(req);
-
-    const allowedByAccess = Calendar.verifyAccessCode(calendar, accessCode);
-    const allowedByEdit = calendar.status === 'pending' && Calendar.verifyEditToken(calendar, editToken);
-
-    if (!allowedByAccess && !allowedByEdit) {
-      return res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Wymagany kod dostępu lub token edycji.',
-      });
-    }
-
     const updated = await Calendar.openTask(id, dayNum);
     const d = updated.data || {};
+    const openedTask = findTaskByDay(updated, dayNum);
+    let openedWindow = null;
+
+    if (openedTask && isPremiumCalendar(updated) && openedTask.catalogTaskId) {
+      const descriptor = getSpecialDescriptor(openedTask.catalogTaskId);
+      if (descriptor) {
+        openedWindow = buildOpenedWindow(openedTask, descriptor);
+      }
+    }
+
     res.json({
       success: true,
       message: `Task for day ${dayNum} opened successfully`,
       calendar: {
         id: updated._id || updated.id,
         ...d,
+        tasks: sanitizeTasksForClient(d.tasks || [], updated),
         status: updated.status,
         updatedAt: updated.updatedAt,
       },
+      ...(openedWindow ? { openedWindow } : {}),
     });
   } catch (error) {
     console.error('Error opening task:', error);
@@ -410,5 +416,7 @@ router.put('/:id/open/:day', async (req, res) => {
     res.status(500).json({ error: 'Failed to open task', message: error.message });
   }
 });
+
+router.use('/', specialWindowsRouter);
 
 module.exports = router;

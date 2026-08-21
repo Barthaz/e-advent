@@ -17,6 +17,8 @@ const adminRoutes = require('./routes/admin');
 const collaborationRoutes = require('./routes/collaboration');
 const sharedTasksRoutes = require('./routes/sharedTasks');
 const giftIdeasRoutes = require('./routes/giftIdeas');
+const specialPreview = require('./routes/specialPreview');
+const cronRoutes = require('./routes/cron');
 const socketHandler = require('./socket/socketHandler');
 const path = require('path');
 
@@ -78,7 +80,7 @@ app.use((req, res, next) => {
         return next();
     }
     // Dla wszystkich innych endpointów parsuj JSON
-    bodyParser.json()(req, res, next);
+    bodyParser.json({ limit: '16mb' })(req, res, next);
 });
 
 app.use((req, res, next) => {
@@ -87,7 +89,7 @@ app.use((req, res, next) => {
         return next();
     }
     // Dla wszystkich innych endpointów parsuj URL encoded
-    bodyParser.urlencoded({ extended: true })(req, res, next);
+    bodyParser.urlencoded({ extended: true, limit: '16mb' })(req, res, next);
 });
 
 // Request logging middleware
@@ -107,6 +109,9 @@ app.use((req, res, next) => {
         if (sanitizedBody.EMAIL_PASS) sanitizedBody.EMAIL_PASS = '***';
         if (sanitizedBody.token) sanitizedBody.token = '***';
         if (sanitizedBody.clientSecret) sanitizedBody.clientSecret = '***';
+        if (sanitizedBody.payload && typeof sanitizedBody.payload === 'object') {
+            sanitizedBody.payload = '[payload]';
+        }
         const bodyStr = JSON.stringify(sanitizedBody);
         console.log(`  📦 Body: ${bodyStr.length > 200 ? bodyStr.substring(0, 200) + '...' : bodyStr}`);
     }
@@ -174,6 +179,8 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/collaboration', collaborationRoutes);
 app.use('/api/v1/shared-tasks', sharedTasksRoutes);
 app.use('/api/v1/gift-ideas', giftIdeasRoutes);
+app.use('/api/v1/special', specialPreview.router);
+app.use('/api/v1/cron', cronRoutes);
 
 // Android minimum version endpoint
 app.get('/api/v1/android/min-version', (req, res) => {
@@ -196,7 +203,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/collaboration', collaborationRoutes);
 app.use('/api/shared-tasks', sharedTasksRoutes);
 app.use('/api/gift-ideas', giftIdeasRoutes);
+app.use('/api/special', specialPreview.router);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/assets', express.static(path.join(__dirname, '../../assets')));
 app.use('/health', healthRoutes); // Alternatywna ścieżka dla healthcheck
 
 // Backward compatibility - Android min version endpoint
@@ -215,6 +224,11 @@ io.on('connection', (socket) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+    if (err?.type === 'entity.too.large' || err?.status === 413 || err?.name === 'PayloadTooLargeError') {
+        return res.status(413).json({
+            error: 'Zdjęcia są za duże do wysłania. Wczytaj JPG, PNG, WEBP lub GIF do 10 MB.',
+        });
+    }
     console.error(err.stack);
     res.status(500).json({ error: 'Something went wrong!' });
 });

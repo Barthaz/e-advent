@@ -1,6 +1,8 @@
 // Helper do komunikacji z backendem
 
-import type { CalendarFormat, DesignSelection, ProductType, ShippingAddress } from '../types/order';
+import type { CalendarFormat, DesignSelection, OpeningMethod, ProductType, ShippingAddress } from '../types/order';
+import type { OpenedCalendarWindow, SpecialWindowDescriptor, SpecialWindowProgress } from '@e-advent/types';
+import { catalogTaskIdFromPreview } from '../special-windows/previewCalendar';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -10,14 +12,17 @@ export interface InternalCalendarData {
   email: string;
   calendarTitle: string;
   tasks: Array<{
-    day: number; // Zadania już przypisane do dni
+    day: number;
     task: string;
+    catalogTaskId?: string;
     duration?: number;
     lockedDay?: number;
     latestDay?: number;
   }>;
   dates?: string[];
   dailyEmailReminders?: boolean;
+  openingMethod?: OpeningMethod;
+  dailyContentEmail?: string;
   previewLayout?: Array<{
     day: number;
     width: number;
@@ -56,6 +61,8 @@ export interface CreateCalendarRequest {
   design?: DesignSelection;
   shippingAddress?: ShippingAddress;
   fulfillmentStatus?: string;
+  openingMethod?: OpeningMethod;
+  dailyContentEmail?: string;
 }
 
 export interface CreateCalendarResponse {
@@ -88,6 +95,7 @@ function mapToApiFormat(
       title: task.task,
       day: task.day,
       status: openedDaysSet.has(task.day) ? 'opened' : 'closed' as 'opened' | 'closed',
+      ...(task.catalogTaskId ? { catalogTaskId: task.catalogTaskId } : {}),
       ...(task.latestDay !== undefined ? { latestDay: task.latestDay } : {}),
       ...(task.duration !== undefined ? { duration: task.duration } : {}),
     })),
@@ -97,6 +105,8 @@ function mapToApiFormat(
     ...(internalData.design ? { design: internalData.design } : {}),
     ...(internalData.shippingAddress ? { shippingAddress: internalData.shippingAddress } : {}),
     ...(internalData.fulfillmentStatus ? { fulfillmentStatus: internalData.fulfillmentStatus } : {}),
+    ...(internalData.openingMethod ? { openingMethod: internalData.openingMethod } : {}),
+    ...(internalData.dailyContentEmail ? { dailyContentEmail: internalData.dailyContentEmail } : {}),
   };
 }
 
@@ -205,6 +215,9 @@ export interface GetCalendarResponse {
       status: 'opened' | 'closed';
       latestDay?: number;
       duration?: number;
+      catalogTaskId?: string;
+      isSpecial?: boolean;
+      special?: OpenedCalendarWindow['special'];
     }>;
     productType?: string;
     sku?: string;
@@ -217,14 +230,23 @@ export interface GetCalendarResponse {
       postalCode?: string;
       phone?: string;
     };
+    openingMethod?: OpeningMethod;
+    dailyContentEmail?: string;
   };
 }
 
 export async function getCalendar(calendarId: string): Promise<GetCalendarResponse> {
   console.log('[API] Pobieranie kalendarza:', calendarId);
   const url = `${API_BASE_URL}/calendars/${calendarId}`;
-  
-  const response = await fetch(url);
+
+  const fetchOnce = () => fetch(url);
+  let response: Response;
+  try {
+    response = await fetchOnce();
+  } catch {
+    await new Promise((r) => setTimeout(r, 400));
+    response = await fetchOnce();
+  }
 
   if (!response.ok) {
     console.error('[API] Błąd podczas pobierania kalendarza:', {
@@ -249,31 +271,25 @@ export async function getCalendar(calendarId: string): Promise<GetCalendarRespon
 /**
  * Otwiera okienko kalendarza (oznacza zadanie jako otwarte)
  */
+export type OpenDayResponse = {
+  success: boolean;
+  message?: string;
+  calendar?: unknown;
+  openedWindow?: OpenedCalendarWindow;
+};
+
 export async function openCalendarDay(
   calendarId: string,
   day: number,
-  accessCode?: string
-): Promise<{ success: boolean }> {
+  _accessCode?: string
+): Promise<OpenDayResponse> {
   console.log('[API] Otwieranie okienka:', { calendarId, day });
   const url = `${API_BASE_URL}/calendars/${calendarId}/open/${day}`;
-  const code = accessCode
-    || (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(`e-advent-access-code-${calendarId}`) : null)
-    || undefined;
-  const editToken = typeof localStorage !== 'undefined'
-    ? localStorage.getItem('e-advent-pending-edit-token')
-    : null;
 
   const response = await fetch(url, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(code ? { 'X-Access-Code': code } : {}),
-      ...(editToken ? { 'X-Calendar-Edit-Token': editToken } : {}),
-    },
-    body: JSON.stringify({
-      ...(code ? { accessCode: code } : {}),
-      ...(editToken ? { editToken } : {}),
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
   });
 
   if (!response.ok) {
@@ -325,6 +341,8 @@ export interface CreatePaymentIntentSuccessResponse {
   paymentIntentId: string;
   productId?: string | null;
   orderId?: string;
+  /** Publiczny numer zamówienia, np. "000001" */
+  orderNumber?: string | null;
   amount?: number;
   shipping?: number;
   subtotal?: number;
@@ -386,100 +404,6 @@ export async function createPaymentIntent(
   }
 
   return responseData as CreatePaymentIntentSuccessResponse;
-}
-
-export interface SendEmailRequest {
-  email: string;
-  name: string;
-  calendarLink: string;
-  calendarData: {
-    name: string;
-    email: string;
-    calendarTitle: string;
-    tasks: Array<{
-      day: number;
-      task: string;
-      duration?: number;
-      lockedDay?: number;
-      latestDay?: number;
-    }>;
-    dates: string[];
-    previewLayout?: Array<{
-      day: number;
-      width: number;
-      height: number;
-      order: number;
-      x?: number;
-      y?: number;
-    }>;
-  };
-}
-
-export interface SendEmailResponse {
-  success: boolean;
-  message?: string;
-}
-
-export async function sendCalendarEmail(
-  data: SendEmailRequest
-): Promise<SendEmailResponse> {
-  const url = `${API_BASE_URL}/send-email`;
-  console.log('[API] Wywoływanie sendCalendarEmail:', {
-    url,
-    method: 'POST',
-    email: data.email,
-    calendarTitle: data.calendarData.calendarTitle,
-    tasksCount: data.calendarData.tasks.length,
-  });
-
-  const requestOptions = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  };
-
-  console.log('[API] Wysyłanie żądania HTTP...');
-  const startTime = Date.now();
-  
-  try {
-    const response = await fetch(url, requestOptions);
-    const requestDuration = Date.now() - startTime;
-    
-    console.log('[API] Otrzymano odpowiedź:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok,
-      duration: `${requestDuration}ms`,
-    });
-
-    const responseData = await response.json();
-    console.log('[API] Parsowana odpowiedź:', {
-      success: responseData.success,
-      message: responseData.message,
-    });
-
-    if (!response.ok) {
-      const errorMessage = responseData.message || 'Failed to send email';
-      console.error('[API] Błąd odpowiedzi API:', {
-        status: response.status,
-        errorMessage,
-      });
-      throw new Error(errorMessage);
-    }
-
-    console.log('[API] Email wysłany pomyślnie');
-    return responseData as SendEmailResponse;
-  } catch (error) {
-    const requestDuration = Date.now() - startTime;
-    console.error('[API] Błąd podczas wywołania API:', {
-      error,
-      duration: `${requestDuration}ms`,
-      url,
-    });
-    throw error;
-  }
 }
 
 export interface UpdateCalendarAcceptanceRequest {
@@ -788,6 +712,9 @@ export interface GetCalendarByAccessCodeResponse {
       status: 'opened' | 'closed';
       latestDay?: number;
       duration?: number;
+      catalogTaskId?: string;
+      isSpecial?: boolean;
+      special?: OpenedCalendarWindow['special'];
     }>;
   };
   message?: string;
@@ -897,4 +824,107 @@ export async function uploadDesignImage(
   }
   return data as UploadDesignResponse;
 }
+
+function specialHeaders(): Record<string, string> {
+  return { 'Content-Type': 'application/json' };
+}
+
+export async function getSpecialProgress(
+  calendarId: string,
+  day: number
+): Promise<SpecialWindowProgress | null> {
+  const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/progress`, {
+    headers: specialHeaders(),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.progress ?? null;
+}
+
+export async function saveSpecialProgress(
+  calendarId: string,
+  day: number,
+  body: Partial<SpecialWindowProgress>
+): Promise<SpecialWindowProgress> {
+  const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/progress`, {
+    method: 'PUT',
+    headers: specialHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('Autosave failed');
+  const data = await res.json();
+  return data.progress;
+}
+
+export async function uploadSpecialImage(
+  calendarId: string,
+  day: number,
+  slot: string,
+  blob: Blob,
+  filename = 'photo.jpg'
+): Promise<{ imageUrl: string; imageKey?: string }> {
+  const formData = new FormData();
+  formData.append('image', blob, filename);
+  formData.append('slot', slot);
+
+  const response = await fetch(
+    `${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/upload`,
+    { method: 'POST', body: formData }
+  );
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || data.message || 'Błąd uploadu grafiki');
+  }
+  return { imageUrl: data.imageUrl, imageKey: data.imageKey };
+}
+
+export async function completeSpecialWindow(calendarId: string, day: number): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/complete`, {
+    method: 'POST',
+    headers: specialHeaders(),
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) throw new Error('Complete failed');
+}
+
+export async function exportSpecialPdf(
+  calendarId: string,
+  day: number,
+  variant: 'COLOR' | 'INK_SAVER' = 'COLOR',
+  payload?: Record<string, unknown>,
+  layout?: 'PORTRAIT' | 'LANDSCAPE' | 'SQUARE'
+): Promise<Blob> {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new Error('Do wygenerowania PDF potrzebne jest połączenie z internetem.');
+  }
+
+  const previewTaskId = catalogTaskIdFromPreview(calendarId);
+  const url = previewTaskId
+    ? `${API_BASE_URL}/special/preview/pdf`
+    : `${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/export/pdf`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: specialHeaders(),
+    body: JSON.stringify({
+      variant,
+      ...(payload ? { payload } : {}),
+      ...(layout ? { layout } : {}),
+      ...(previewTaskId ? { catalogTaskId: previewTaskId } : {}),
+    }),
+  });
+  if (!res.ok) {
+    let message = 'Nie udało się wygenerować PDF.';
+    try {
+      const data = await res.json();
+      message = data.message || data.error || message;
+    } catch {
+      /* non-JSON error body */
+    }
+    throw new Error(message);
+  }
+  return res.blob();
+}
+
+export type { OpenedCalendarWindow, SpecialWindowDescriptor, SpecialWindowProgress };
 

@@ -24,6 +24,7 @@ module.exports = {
   updateCalendarData: jest.fn(),
   upsertCalendar: jest.fn(),
   findCalendars: jest.fn(),
+  findEmailOpeningCalendars: jest.fn(),
   openTask: jest.fn(),
   generateEditToken: jest.fn(() => 'generated-edit-token'),
 };

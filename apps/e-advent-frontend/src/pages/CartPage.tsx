@@ -1,16 +1,18 @@
 import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import FestivePage from '../components/FestivePage';
+import ParchmentCard from '../components/ParchmentCard';
+import SEOHead from '../components/SEOHead';
 import {
   FREE_SHIPPING_THRESHOLD,
   formatPrice,
   getProduct,
 } from '../config/products';
-import { useCart } from '../context/CartContext';
-import FestivePage from '../components/FestivePage';
-import ParchmentCard from '../components/ParchmentCard';
-import SEOHead from '../components/SEOHead';
+import { buildCartDisplayRows, getCartItemDisplayName } from '../utils/cartStorage';
 
 export default function CartPage() {
   const { items, totals, updateQty, removeItem, freeShippingThreshold } = useCart();
+  const displayRows = buildCartDisplayRows(items);
 
   const remainingForFree =
     totals.hasPhysical && !totals.freeShipping
@@ -47,26 +49,43 @@ export default function CartPage() {
           ) : (
             <>
               <ul className="space-y-4 mb-8">
-                {items.map((item) => {
+                {displayRows.map((row) => {
+                  const item = row.item;
                   const product = getProduct(item.sku);
-                  const name = item.label ?? product?.name ?? item.sku;
+                  const name = getCartItemDisplayName(item);
                   const unit = item.unitPrice ?? product?.basePrice ?? 0;
                   const isPersonalized = Boolean(item.calendarId);
+                  const isAddon = row.kind === 'addon';
+                  const lockQuantity = row.kind === 'item' ? row.lockQuantity : true;
+                  const removable = row.kind === 'item' ? row.removable : false;
+
                   return (
                     <li
                       key={item.id}
-                      className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-4 border-b border-parchment-dark/20 last:border-0"
+                      className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-4 border-b border-parchment-dark/20 last:border-0 ${
+                        isAddon ? 'ml-4 sm:ml-6 pl-4 border-l-2 border-christmas-gold/35 bg-cream/20 rounded-r-xl' : ''
+                      }`}
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="font-display text-xl font-semibold text-parchment-text">{name}</p>
+                        <p
+                          className={`font-display font-semibold text-parchment-text ${
+                            isAddon ? 'text-lg' : 'text-xl'
+                          }`}
+                        >
+                          {isAddon && (
+                            <i className="fas fa-link text-christmas-gold/80 text-sm mr-2" aria-hidden />
+                          )}
+                          {name}
+                        </p>
                         <p className="text-parchment-muted text-sm">
                           {formatPrice(unit)} / szt.
                           {item.format ? ` · format ${item.format}` : ''}
                           {isPersonalized ? ' · spersonalizowany' : ''}
+                          {isAddon ? ' · dodatek do listu' : ''}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        {isPersonalized ? (
+                        {lockQuantity ? (
                           <span className="w-16 text-center text-parchment-text font-medium">1</span>
                         ) : (
                           <>
@@ -87,14 +106,24 @@ export default function CartPage() {
                         <p className="font-semibold text-christmas-green min-w-[4.5rem] text-right">
                           {formatPrice(unit * item.quantity)}
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => removeItem(item.id)}
-                          className="text-parchment-muted hover:text-christmas-red transition-colors p-2"
-                          aria-label={`Usuń ${name}`}
-                        >
-                          <i className="fas fa-trash-alt" />
-                        </button>
+                        {removable ? (
+                          <button
+                            type="button"
+                            onClick={() => removeItem(item.id)}
+                            className="text-parchment-muted hover:text-christmas-red transition-colors p-2"
+                            aria-label={`Usuń ${name}`}
+                          >
+                            <i className="fas fa-trash-alt" />
+                          </button>
+                        ) : (
+                          <span
+                            className="w-9 text-center text-parchment-muted/40 p-2"
+                            title="Certyfikat usuwa się razem z listem"
+                            aria-hidden
+                          >
+                            <i className="fas fa-trash-alt" />
+                          </span>
+                        )}
                       </div>
                     </li>
                   );

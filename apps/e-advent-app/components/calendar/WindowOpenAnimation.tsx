@@ -39,6 +39,7 @@ interface WindowOpenAnimationProps {
   duration?: number;
   sourceRect: WindowRect | null;
   onRequestClose: () => void;
+  specialContent?: React.ReactNode;
 }
 
 /**
@@ -53,6 +54,7 @@ export default function WindowOpenAnimation({
   duration,
   sourceRect,
   onRequestClose,
+  specialContent,
 }: WindowOpenAnimationProps) {
   const { width: screenW, height: screenH } = Dimensions.get('window');
 
@@ -267,6 +269,7 @@ export default function WindowOpenAnimation({
             <Text style={styles.quoteDay}>Dzień {day} grudnia</Text>
             <Text style={styles.quoteText}>{task || 'Brak zadania'}</Text>
             {!!durationLabel && <Text style={styles.quoteDuration}>{durationLabel}</Text>}
+            {specialContent}
             <TouchableOpacity style={styles.closeBtn} onPress={onRequestClose} activeOpacity={0.85}>
               <Text style={styles.closeBtnText}>Wróć do kalendarza</Text>
             </TouchableOpacity>

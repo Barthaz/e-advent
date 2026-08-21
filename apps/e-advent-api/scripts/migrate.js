@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS calendars (
   is_free            TINYINT(1)    NOT NULL DEFAULT 0,
   fulfillment_status VARCHAR(50)   NOT NULL DEFAULT 'pending',
   fulfillment_notes  TEXT          NULL,
+  opening_method     VARCHAR(20)   NULL COMMENT 'app | email | online',
+  daily_content_email VARCHAR(255) NULL COMMENT 'Inbox for daily window content (email opening method)',
   created_at         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
@@ -42,6 +44,7 @@ CREATE TABLE IF NOT EXISTS calendars (
 
 CREATE TABLE IF NOT EXISTS orders (
   id                           VARCHAR(36)    NOT NULL,
+  order_number                 INT UNSIGNED   NOT NULL AUTO_INCREMENT,
   calendar_id                  VARCHAR(36)    NULL,
   stripe_payment_intent_id     VARCHAR(255)   NULL,
   amount                       DECIMAL(10,2)  NOT NULL DEFAULT 0,
@@ -71,6 +74,7 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at                   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at                   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
+  UNIQUE KEY uq_order_number (order_number),
   UNIQUE KEY uq_stripe_pi (stripe_payment_intent_id),
   INDEX idx_ord_calendar (calendar_id),
   INDEX idx_ord_email (customer_email),
@@ -152,6 +156,25 @@ CREATE TABLE IF NOT EXISTS gift_ideas (
   PRIMARY KEY (id),
   INDEX idx_gi_collab (collaboration_id),
   CONSTRAINT fk_gi_collaboration FOREIGN KEY (collaboration_id) REFERENCES collaborations(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS email_sends (
+  id               VARCHAR(36)   NOT NULL,
+  type             VARCHAR(40)   NOT NULL COMMENT 'order_confirmation | interactive_access | shipping | daily_window | collaboration_invite',
+  order_id         VARCHAR(36)   NULL,
+  calendar_id      VARCHAR(36)   NULL,
+  day              TINYINT       NULL,
+  recipient_email  VARCHAR(255)  NOT NULL,
+  subject          VARCHAR(255)  NOT NULL DEFAULT '',
+  status           VARCHAR(20)   NOT NULL DEFAULT 'sent' COMMENT 'sent | failed',
+  error_message    TEXT          NULL,
+  triggered_by     VARCHAR(20)   NOT NULL DEFAULT 'system' COMMENT 'webhook | admin | cron | system',
+  created_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_es_order (order_id),
+  INDEX idx_es_calendar (calendar_id),
+  INDEX idx_es_daily (calendar_id, day, type, status),
+  INDEX idx_es_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 `;
 

@@ -10,10 +10,13 @@ import type {
   DeliveryType,
 } from '../types/order';
 import type { CalendarDetail, CalendarTaskDetail } from '../types/calendar';
+import { getOrderItemDisplayName } from '@e-advent/products';
 
 /** Surowy wiersz z GET /admin/orders (snake_case z MySQL) */
 interface RawOrderListRow {
   id: string;
+  order_number?: number | string | null;
+  order_number_display?: string | null;
   created_at: string;
   updated_at?: string;
   status: string;
@@ -40,6 +43,8 @@ interface RawOrderListRow {
 /** Odpowiedź GET /admin/orders/:id — camelCase opakowana w { order } */
 interface RawOrderDetail {
   id: string;
+  orderNumber?: number | string | null;
+  orderNumberDisplay?: string | null;
   calendarId?: string;
   stripePaymentIntentId?: string;
   amount?: number | string;
@@ -99,6 +104,8 @@ interface RawCalendarDetail {
   isFree?: boolean;
   fulfillmentStatus?: string;
   fulfillmentNotes?: string;
+  openingMethod?: string | null;
+  dailyContentEmail?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -107,6 +114,20 @@ function toNumber(value: number | string | null | undefined): number {
   if (value == null) return 0;
   const n = typeof value === 'number' ? value : parseFloat(value);
   return Number.isFinite(n) ? n : 0;
+}
+
+/** Numer zamówienia dla klienta: 1 → "000001" */
+function formatOrderNumberDisplay(value: number | string | null | undefined): string | null {
+  if (value == null || value === '') return null;
+  const n = typeof value === 'number' ? value : parseInt(String(value).replace(/\D/g, ''), 10);
+  if (!Number.isFinite(n) || n < 1) return null;
+  return String(n).padStart(6, '0');
+}
+
+function toOrderNumber(value: number | string | null | undefined): number | null {
+  if (value == null || value === '') return null;
+  const n = typeof value === 'number' ? value : parseInt(String(value), 10);
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
 /** Brak product_type + SKU scratch* / santa-letter → typ; w pozostałych przypadkach interaktywny. */
@@ -119,6 +140,7 @@ function resolveProductType(
   }
   if (sku && String(sku).startsWith('scratch')) return 'scratch';
   if (sku === 'santa-letter') return 'letter';
+  if (sku === 'santa-certificate') return 'letter';
   return 'interactive';
 }
 
@@ -127,6 +149,11 @@ function mapOrderItems(raw: unknown): OrderItem[] {
   return raw.map((row, index) => {
     const item = row as Record<string, unknown>;
     const sku = String(item.sku ?? '');
+    const metadataRaw = item.metadata;
+    const metadata =
+      metadataRaw && typeof metadataRaw === 'object'
+        ? (metadataRaw as OrderItem['metadata'])
+        : undefined;
     return {
       id: String(item.id ?? `${sku}-${index}`),
       sku,
@@ -137,6 +164,8 @@ function mapOrderItems(raw: unknown): OrderItem[] {
       quantity: Math.max(1, Number(item.quantity) || 1),
       unitPrice: toNumber((item.unitPrice ?? item.unit_price) as number | string),
       calendarId: (item.calendarId ?? item.calendar_id ?? null) as string | null,
+      metadata,
+      displayName: getOrderItemDisplayName(sku, metadata),
     };
   });
 }
@@ -159,8 +188,11 @@ function normalizeTasks(raw: unknown): CalendarTaskDetail[] {
 }
 
 export function mapOrderListItem(row: RawOrderListRow): OrderListItem {
+  const orderNumber = toOrderNumber(row.order_number);
   return {
     id: String(row.id),
+    order_number: orderNumber,
+    order_number_display: row.order_number_display ?? formatOrderNumberDisplay(orderNumber),
     calendar_id: row.calendar_id ?? null,
     stripe_payment_intent_id: row.stripe_payment_intent_id ?? null,
     status: (row.status as PaymentStatus) || 'pending',
@@ -216,6 +248,8 @@ export function mapOrderDetail(raw: RawOrderDetail): OrderDetail {
 
   return {
     id: String(raw.id),
+    order_number: toOrderNumber(raw.orderNumber),
+    order_number_display: raw.orderNumberDisplay ?? formatOrderNumberDisplay(raw.orderNumber),
     calendar_id: calendarId,
     stripe_payment_intent_id: raw.stripePaymentIntentId ?? null,
     status: (raw.status as PaymentStatus) || 'pending',
@@ -250,8 +284,11 @@ export function mapOrderDetail(raw: RawOrderDetail): OrderDetail {
 
 /** PATCH zwraca surowy wiersz MySQL (snake_case) w { success, order } */
 export function mapPatchedOrder(raw: Record<string, unknown>): OrderDetail {
+  const orderNumber = toOrderNumber(raw.order_number as number | string | null | undefined);
   return {
     id: String(raw.id),
+    order_number: orderNumber,
+    order_number_display: formatOrderNumberDisplay(orderNumber),
     calendar_id: (raw.calendar_id as string) ?? null,
     stripe_payment_intent_id: (raw.stripe_payment_intent_id as string) ?? null,
     status: (raw.status as PaymentStatus) || 'pending',
@@ -299,6 +336,8 @@ export function mapCalendarDetail(raw: RawCalendarDetail): CalendarDetail {
     access_code: raw.accessCode ?? null,
     fulfillment_status: raw.fulfillmentStatus ?? 'pending',
     status: raw.status ?? 'pending',
+    opening_method: raw.openingMethod ?? null,
+    daily_content_email: raw.dailyContentEmail ?? null,
     tasks: normalizeTasks(raw.tasks),
     created_at: raw.createdAt ?? '',
     updated_at: raw.updatedAt ?? '',

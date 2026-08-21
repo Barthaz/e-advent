@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import examplesData from '../data/examples.json';
 import { buildCalendarTasks, validateExampleSetsCoverage } from '../utils/calendarGenerator';
-import type { CalendarFormat, CalendarTaskInput, DesignSelection, ProductType } from '../types/order';
+import { textToCatalogTaskId } from '../utils/catalogTaskIds';
+import type { CalendarFormat, CalendarTaskInput, DesignSelection, OpeningMethod, ProductType } from '../types/order';
 import {
   loadFormData,
   loadTasks,
@@ -31,12 +32,16 @@ export interface UseCreatorWizardOptions {
   requiresDesign?: boolean;
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function useCreatorWizard({ productType, steps, requiresDesign = false }: UseCreatorWizardOptions) {
   const [currentStep, setCurrentStep] = useState(0);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [calendarTitle, setCalendarTitle] = useState('Mój Kalendarz Adwentowy');
   const [dailyEmailReminders, setDailyEmailReminders] = useState(false);
+  const [openingMethod, setOpeningMethod] = useState<OpeningMethod | null>(null);
+  const [dailyContentEmail, setDailyContentEmail] = useState('');
   const [tasks, setTasks] = useState<CalendarTaskInput[]>([]);
   const [selectedExampleSets, setSelectedExampleSets] = useState<number[]>([]);
   const [format, setFormatState] = useState<CalendarFormat>('A4');
@@ -51,6 +56,12 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     if (form.email) setEmail(form.email);
     if (form.calendarTitle) setCalendarTitle(form.calendarTitle);
     if (form.dailyEmailReminders !== undefined) setDailyEmailReminders(form.dailyEmailReminders);
+    if (form.openingMethod) setOpeningMethod(form.openingMethod);
+    if (form.dailyContentEmail) {
+      setDailyContentEmail(form.dailyContentEmail);
+    } else if (form.openingMethod === 'email' && form.email) {
+      setDailyContentEmail(form.email);
+    }
     setTasks(loadTasks(productType));
     setSelectedExampleSets(loadSelectedExamples(productType));
     if (requiresDesign) {
@@ -64,8 +75,15 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
 
   useEffect(() => {
     if (isInitialLoad) return;
-    saveFormData(productType, { name, email, calendarTitle, dailyEmailReminders });
-  }, [name, email, calendarTitle, dailyEmailReminders, productType, isInitialLoad]);
+    saveFormData(productType, {
+      name,
+      email,
+      calendarTitle,
+      dailyEmailReminders: openingMethod === 'email',
+      openingMethod: openingMethod || undefined,
+      dailyContentEmail: openingMethod === 'email' ? dailyContentEmail : undefined,
+    });
+  }, [name, email, calendarTitle, openingMethod, dailyContentEmail, productType, isInitialLoad]);
 
   useEffect(() => {
     if (isInitialLoad) return;
@@ -91,13 +109,17 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     if (isInitialLoad) return;
     if (selectedExampleSets.length === 0 && tasks.length < 24) return;
 
-    const preview = buildCalendarTasks(tasks, examples, selectedExampleSets);
+    const preview = buildCalendarTasks(tasks, examples, selectedExampleSets, textToCatalogTaskId);
     saveGeneratedCalendar(productType, preview);
   }, [tasks, selectedExampleSets, isInitialLoad, examples, productType]);
 
   const validateBasicStep = useCallback(() => {
     if (!name.trim() || !email.trim()) {
       setValidationError('Proszę wypełnić wszystkie wymagane pola');
+      return false;
+    }
+    if (!EMAIL_RE.test(email.trim())) {
+      setValidationError('Podaj prawidłowy adres e-mail');
       return false;
     }
     setValidationError(null);
@@ -123,13 +145,34 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     return true;
   }, [design]);
 
+  const validateOpeningStep = useCallback(() => {
+    if (!openingMethod) {
+      setValidationError('Wybierz sposób otwierania okienek');
+      return false;
+    }
+    if (openingMethod === 'email') {
+      const target = (dailyContentEmail || email).trim();
+      if (!target) {
+        setValidationError('Podaj e-mail, na który ma przychodzić treść okienka');
+        return false;
+      }
+      if (!EMAIL_RE.test(target)) {
+        setValidationError('Podaj prawidłowy e-mail na treść okienka');
+        return false;
+      }
+    }
+    setValidationError(null);
+    return true;
+  }, [openingMethod, dailyContentEmail, email]);
+
   const goNext = useCallback(() => {
     const stepId = steps[currentStep];
     if (stepId === 'basic' && !validateBasicStep()) return;
     if (stepId === 'tasks' && !validateTasksStep()) return;
     if (stepId === 'design' && !validateDesignStep()) return;
+    if (stepId === 'opening' && !validateOpeningStep()) return;
     setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-  }, [currentStep, steps, validateBasicStep, validateTasksStep, validateDesignStep]);
+  }, [currentStep, steps, validateBasicStep, validateTasksStep, validateDesignStep, validateOpeningStep]);
 
   const goBack = useCallback(() => {
     setValidationError(null);
@@ -145,12 +188,16 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     const sku = getSku();
     setActiveProduct(productType, sku);
     const keys = getStorageKeys(productType);
+    const resolvedDailyEmail =
+      openingMethod === 'email' ? (dailyContentEmail.trim() || email.trim()) : undefined;
     const data = {
       name,
       email,
       calendarTitle,
       tasks,
-      dailyEmailReminders,
+      dailyEmailReminders: openingMethod === 'email',
+      openingMethod: openingMethod || undefined,
+      dailyContentEmail: resolvedDailyEmail,
       selectedExampleSets,
       productType,
       sku,
@@ -162,7 +209,7 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     localStorage.setItem('e-advent-product-type', productType);
     localStorage.setItem('e-advent-sku', sku);
     return data;
-  }, [name, email, calendarTitle, tasks, dailyEmailReminders, selectedExampleSets, productType, format, design, getSku]);
+  }, [name, email, calendarTitle, tasks, openingMethod, dailyContentEmail, selectedExampleSets, productType, format, design, getSku]);
 
   return {
     currentStep,
@@ -175,6 +222,10 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     setCalendarTitle,
     dailyEmailReminders,
     setDailyEmailReminders,
+    openingMethod,
+    setOpeningMethod,
+    dailyContentEmail,
+    setDailyContentEmail,
     tasks,
     setTasks,
     selectedExampleSets,
@@ -194,5 +245,6 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     validateBasicStep,
     validateTasksStep,
     validateDesignStep,
+    validateOpeningStep,
   };
 }

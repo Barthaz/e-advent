@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "packs": {
+    "future-self-letter-v1": {
+      "fields": ["List do siebie za rok", "Co chcę pamiętać?", "Czego się uczę?"],
+      "revealAt": "next-christmas"
+    },
+    "three-good-scenes-v1": {
+      "fields": ["Scena 1", "Scena 2", "Scena 3"]
+    },
+    "five-senses-walk-v1": {
+      "items": ["Co widzę", "Co słyszę", "Co czuję zapachem", "Co dotykam", "Co smakuję"]
+    }
+  }
+}

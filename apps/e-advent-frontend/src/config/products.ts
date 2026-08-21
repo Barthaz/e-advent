@@ -10,8 +10,12 @@ import {
   computeOrderTotals,
   getSkuForTypeAndFormat,
   isPhysicalProduct,
+  getOrderItemDisplayName,
+  SANTA_CERTIFICATE_SKU,
+  SANTA_LETTER_SKU,
 } from '@e-advent/products';
 import interactiveImage from '../assets/interactive.png';
+import letterImage from '../assets/list/list_1.webp';
 
 export {
   SHIPPING_COST,
@@ -22,6 +26,9 @@ export {
   computeOrderTotals,
   getSkuForTypeAndFormat,
   isPhysicalProduct,
+  getOrderItemDisplayName,
+  SANTA_CERTIFICATE_SKU,
+  SANTA_LETTER_SKU,
 };
 export type { ProductSkuConfig, OrderTotals };
 
@@ -50,7 +57,7 @@ export const PRODUCT_FAMILIES: ProductFamily[] = BASE_PRODUCT_FAMILIES.map((fami
   if (family.type === 'letter') {
     return {
       ...family,
-      imageSrc: '/products/santa-letter/letter-1.svg',
+      imageSrc: letterImage,
       imageAlt: 'Zestaw List do Świętego Mikołaja',
       eyebrow: 'Prezent adwentowy',
     };

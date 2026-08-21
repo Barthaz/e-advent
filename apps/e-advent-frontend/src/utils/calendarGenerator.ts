@@ -1,6 +1,7 @@
 interface CalendarTask {
   day?: number; // Opcjonalne - używane tylko w interfejsie formularza
   task: string;
+  catalogTaskId?: string;
   duration?: number;
   lockedDay?: number; // Dzień, w którym zadanie musi być (np. 6 grudnia)
   latestDay?: number; // Najpóźniejszy dzień, w którym zadanie może być (np. 10 grudnia)
@@ -246,7 +247,8 @@ export function fillMissingDaysWithExampleTasks(
   taskMap: Map<number, CalendarTask & { day: number }>,
   missingDays: number[],
   exampleSets: Array<{ tasks?: string[] }>,
-  selectedSetIndices: number[]
+  selectedSetIndices: number[],
+  textToCatalogTaskId: Record<string, string> = {}
 ): void {
   if (missingDays.length === 0 || selectedSetIndices.length === 0) return;
 
@@ -260,7 +262,13 @@ export function fillMissingDaysWithExampleTasks(
   const picked = pickUniqueTasksFromPool(pool, missingDays.length, usedTexts);
   missingDays.forEach((day, index) => {
     if (picked[index]) {
-      taskMap.set(day, { task: picked[index], day });
+      const taskText = picked[index];
+      const catalogTaskId = textToCatalogTaskId[normalizeTaskText(taskText)];
+      taskMap.set(day, {
+        task: taskText,
+        day,
+        ...(catalogTaskId ? { catalogTaskId } : {}),
+      });
     }
   });
 }
@@ -268,6 +276,7 @@ export function fillMissingDaysWithExampleTasks(
 export type GeneratedCalendarDay = {
   day: number;
   task: string;
+  catalogTaskId?: string;
   duration?: number;
   latestDay?: number;
 };
@@ -278,7 +287,8 @@ export type GeneratedCalendarDay = {
 export function buildCalendarTasks(
   userTasks: CalendarTask[],
   exampleSets: Array<{ tasks?: string[] }>,
-  selectedSetIndices: number[]
+  selectedSetIndices: number[],
+  textToCatalogTaskId: Record<string, string> = {}
 ): GeneratedCalendarDay[] {
   const taskMap = generateCalendarWithConstraints(userTasks);
   const missingDays: number[] = [];
@@ -286,7 +296,13 @@ export function buildCalendarTasks(
     if (!taskMap.has(day)) missingDays.push(day);
   }
 
-  fillMissingDaysWithExampleTasks(taskMap, missingDays, exampleSets, selectedSetIndices);
+  fillMissingDaysWithExampleTasks(
+    taskMap,
+    missingDays,
+    exampleSets,
+    selectedSetIndices,
+    textToCatalogTaskId
+  );
 
   const result: GeneratedCalendarDay[] = [];
   for (let day = 1; day <= 24; day++) {
@@ -295,6 +311,7 @@ export function buildCalendarTasks(
       result.push({
         day,
         task: taskData.task,
+        ...(taskData.catalogTaskId ? { catalogTaskId: taskData.catalogTaskId } : {}),
         duration: taskData.duration,
         ...(taskData.latestDay !== undefined ? { latestDay: taskData.latestDay } : {}),
       });

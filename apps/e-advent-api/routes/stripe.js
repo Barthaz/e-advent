@@ -3,17 +3,11 @@ const router = express.Router();
 const stripe = require('../config/stripe');
 const Payment = require('../models/Payment');
 const Calendar = require('../models/Calendar');
-const { sendEmail } = require('../config/email');
 const { body, validationResult } = require('express-validator');
 const { getProductPrice, isPhysicalProduct, computeOrderTotals } = require('../config/products');
-const { frontendUrl, emailLogoUrl } = require('../config/app');
 const { resolveCheckoutItems } = require('../services/orderCheckout');
-const {
-    buildOrderConfirmationEmail,
-    buildOrderConfirmationText,
-    buildInteractiveAccessEmail,
-    buildInteractiveAccessEmailText,
-} = require('../services/orderEmails');
+const { generateAccessCode, sendPaidOrderEmails } = require('../services/orderMailer');
+const { formatOrderNumber } = require('../utils/orderNumber');
 
 function extractRequestData(body) {
     let requestData = body;
@@ -244,8 +238,10 @@ router.post('/create-payment-intent', async (req, res) => {
             unitPrice: item.unitPrice,
             calendarId: item.calendarId,
             requiresShipping: item.requiresShipping,
+            ...(item.metadata ? { metadata: item.metadata } : {}),
         }));
 
+        let savedOrder = null;
         try {
             // Race guard: another parallel request may have inserted while we created Stripe PI
             if (!isUpdate && calendarIds.length > 0) {
@@ -281,7 +277,7 @@ router.post('/create-payment-intent', async (req, res) => {
                     }
                 }
 
-                await Payment.updatePayment(paymentIntent.id, {
+                savedOrder = await Payment.updatePayment(paymentIntent.id, {
                     stripePaymentIntentId: paymentIntent.id,
                     amount,
                     shippingAmount: totals.shipping,
@@ -299,7 +295,7 @@ router.post('/create-payment-intent', async (req, res) => {
                     await Payment.replaceOrderItems(existingPayment.id, orderItemsPayload);
                 }
             } else {
-                await Payment.createPayment({
+                savedOrder = await Payment.createPayment({
                     stripePaymentIntentId: paymentIntent.id,
                     amount,
                     shippingAmount: totals.shipping,
@@ -322,16 +318,26 @@ router.post('/create-payment-intent', async (req, res) => {
             console.warn('⚠️ Payment Intent processed in Stripe but failed to save/update in database');
         }
 
+        if (!savedOrder) {
+            savedOrder = await Payment.findPaymentByStripeId(paymentIntent.id);
+        }
+
+        const orderNumberDisplay = savedOrder?.orderNumberDisplay
+            || formatOrderNumber(savedOrder?.orderNumber)
+            || null;
+
         res.json({
             clientSecret: paymentIntent.client_secret,
             paymentIntentId: paymentIntent.id,
             productId: primaryProductId,
             orderId,
+            orderNumber: orderNumberDisplay,
             amount,
             shipping: totals.shipping,
             subtotal: totals.subtotal,
-            items: orderItemsPayload.map(({ sku, productType, quantity, unitPrice, calendarId }) => ({
+            items: orderItemsPayload.map(({ sku, productType, quantity, unitPrice, calendarId, metadata }) => ({
                 sku, productType, quantity, unitPrice, calendarId,
+                ...(metadata ? { metadata } : {}),
             })),
         });
     } catch (error) {
@@ -510,19 +516,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                     break;
                 }
 
-                const generateAccessCode = () => {
-                    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                    let code = '';
-                    for (let i = 0; i < 6; i++) {
-                        code += chars.charAt(Math.floor(Math.random() * chars.length));
-                    }
-                    return code;
-                };
-
                 const hasPhysical = lineItems.some((i) => isPhysicalProduct(i.sku));
-                const customerEmail = payment.customerEmail;
-                const logoUrl = emailLogoUrl;
-                const interactiveResults = [];
 
                 for (const item of lineItems) {
                     const physical = isPhysicalProduct(item.sku);
@@ -544,7 +538,6 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                                 accessCode,
                                 fulfillmentStatus: 'delivered',
                             });
-                            interactiveResults.push({ calendar, accessCode, data: calendar.data || {} });
                         }
                     }
                 }
@@ -554,47 +547,12 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                     deliveryType: hasPhysical ? (payment.deliveryType || 'poczta_polska') : 'none',
                 });
 
-                // Confirmation emails
-                if (hasPhysical) {
-                    const shipping = payment.shippingAddress || {};
-                    const emailSubject = '🎄 Potwierdzenie zamówienia e-Advent';
-                    const emailHtml = buildOrderConfirmationEmail({
-                        orderId: payment.orderId || payment.id,
-                        items: lineItems,
-                        shipping,
-                        amount: payment.amount,
-                        shippingAmount: payment.shippingAmount,
-                        hasPhysical: true,
-                        logoUrl,
-                    });
-                    const emailText = buildOrderConfirmationText({
-                        orderId: payment.orderId || payment.id,
-                        items: lineItems,
-                        shipping,
-                        amount: payment.amount,
-                        shippingAmount: payment.shippingAmount,
-                        hasPhysical: true,
-                    });
-                    await sendEmail({ to: customerEmail, subject: emailSubject, text: emailText, html: emailHtml });
-                    console.log('✅ Physical/mixed order confirmation email sent');
-                }
-
-                for (const result of interactiveResults) {
-                    const calendarTitle = result.data.title || 'Twój Kalendarz Adwentowy';
-                    const accessCode = result.accessCode;
-                    const calendar = result.calendar;
-                    const calendarLink = `${frontendUrl}/kalendarz/${calendar._id || calendar.id}?code=${encodeURIComponent(accessCode)}`;
-                    const emailSubject = `🎄 Twój Kalendarz Adwentowy: ${calendarTitle}`;
-                    const emailHtml = buildInteractiveAccessEmail({
-                        calendarTitle,
-                        calendarLink,
-                        accessCode,
-                        logoUrl,
-                        subtitle: 'Zakup pomyślny!',
-                    });
-                    const emailText = buildInteractiveAccessEmailText({ calendarTitle, calendarLink, accessCode });
-                    await sendEmail({ to: customerEmail, subject: emailSubject, text: emailText, html: emailHtml });
-                    console.log('✅ Interactive calendar email sent');
+                payment = await Payment.findPaymentByStripeId(paymentIntentId);
+                try {
+                    const mailResult = await sendPaidOrderEmails(payment, 'webhook');
+                    console.log('✅ Paid-order emails:', mailResult);
+                } catch (mailErr) {
+                    console.error('❌ Paid-order emails failed:', mailErr.message);
                 }
 
                 console.log('🎉 WEBHOOK: payment_intent.succeeded - ZAKOŃCZONY');

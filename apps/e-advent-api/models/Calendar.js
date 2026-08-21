@@ -6,8 +6,23 @@ function generateEditToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+const VALID_OPENING_METHODS = new Set(['app', 'email', 'online']);
+
+function normalizeOpeningMethod(value) {
+  const method = String(value || '').trim().toLowerCase();
+  return VALID_OPENING_METHODS.has(method) ? method : null;
+}
+
+function normalizeDailyContentEmail(value, openingMethod) {
+  const email = String(value || '').trim().toLowerCase();
+  if (!email) return null;
+  if (openingMethod && openingMethod !== 'email') return null;
+  return email;
+}
+
 function rowToCalendar(row) {
   if (!row) return null;
+  const openingMethod = normalizeOpeningMethod(row.opening_method);
   return {
     _id: row.id,
     id: row.id,
@@ -20,6 +35,8 @@ function rowToCalendar(row) {
       format: row.format || null,
       design: row.design_url ? { imageUrl: row.design_url } : null,
       tasks: typeof row.tasks === 'string' ? JSON.parse(row.tasks) : (row.tasks || []),
+      openingMethod,
+      dailyContentEmail: row.daily_content_email || null,
     },
     status: row.status,
     accessCode: row.access_code || null,
@@ -41,11 +58,18 @@ const createCalendar = async (calendarData) => {
   const editToken = generateEditToken();
   const d = calendarData.data || {};
 
+  const openingMethod = normalizeOpeningMethod(d.openingMethod);
+  const dailyContentEmail = normalizeDailyContentEmail(
+    d.dailyContentEmail || (openingMethod === 'email' ? d.email : null),
+    openingMethod
+  );
+
   await query(
     `INSERT INTO calendars
        (id, title, author, email, product_type, sku, format, design_url, tasks,
-        status, access_code, edit_token, is_free, fulfillment_status, fulfillment_notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        status, access_code, edit_token, is_free, fulfillment_status, fulfillment_notes,
+        opening_method, daily_content_email)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       d.title || null,
@@ -62,6 +86,8 @@ const createCalendar = async (calendarData) => {
       0,
       'pending',
       null,
+      openingMethod,
+      dailyContentEmail,
     ]
   );
 
@@ -170,6 +196,10 @@ const findCalendars = async (filter = {}, options = {}) => {
     sql += ' AND LOWER(email) = ?';
     vals.push(String(filter.email).trim().toLowerCase());
   }
+  if (filter.openingMethod) {
+    sql += ' AND opening_method = ?';
+    vals.push(String(filter.openingMethod).trim().toLowerCase());
+  }
 
   sql += ' ORDER BY created_at DESC';
 
@@ -187,17 +217,30 @@ const updateCalendarData = async (id, data, status) => {
   if (!existing) return null;
 
   const d = data || {};
+  const openingMethod = Object.prototype.hasOwnProperty.call(d, 'openingMethod')
+    ? normalizeOpeningMethod(d.openingMethod)
+    : normalizeOpeningMethod(existing.opening_method);
+  const dailyContentEmail = Object.prototype.hasOwnProperty.call(d, 'dailyContentEmail')
+    || Object.prototype.hasOwnProperty.call(d, 'openingMethod')
+    ? normalizeDailyContentEmail(
+      d.dailyContentEmail || (openingMethod === 'email' ? (d.email || existing.email) : null),
+      openingMethod
+    )
+    : (existing.daily_content_email || null);
+
   await query(
     `UPDATE calendars SET
-       title             = ?,
-       author            = ?,
-       email             = ?,
-       product_type      = ?,
-       sku               = ?,
-       format            = ?,
-       design_url        = ?,
-       tasks             = ?,
-       status            = ?
+       title               = ?,
+       author              = ?,
+       email               = ?,
+       product_type        = ?,
+       sku                 = ?,
+       format              = ?,
+       design_url          = ?,
+       tasks               = ?,
+       status              = ?,
+       opening_method      = ?,
+       daily_content_email = ?
      WHERE id = ?`,
     [
       d.title || existing.title,
@@ -209,6 +252,8 @@ const updateCalendarData = async (id, data, status) => {
       d.design?.imageUrl || existing.design_url,
       JSON.stringify(d.tasks || (typeof existing.tasks === 'string' ? JSON.parse(existing.tasks) : existing.tasks) || []),
       status || existing.status,
+      openingMethod,
+      dailyContentEmail,
       String(id),
     ]
   );
@@ -224,7 +269,7 @@ const openTask = async (calendarId, day) => {
   const tasks = typeof cal.tasks === 'string' ? JSON.parse(cal.tasks) : (cal.tasks || []);
   if (!Array.isArray(tasks)) throw new Error('Calendar does not have tasks');
 
-  const idx = tasks.findIndex((t) => t.day === parseInt(day, 10));
+  const idx = tasks.findIndex((t) => Number(t.day) === parseInt(day, 10));
   if (idx === -1) throw new Error(`Task for day ${day} not found`);
 
   tasks[idx] = { ...tasks[idx], status: 'opened' };
@@ -233,6 +278,20 @@ const openTask = async (calendarId, day) => {
   const [updated] = await query('SELECT * FROM calendars WHERE id = ?', [String(calendarId)]);
   console.log(`Task for day ${day} opened in calendar ${calendarId}`);
   return rowToCalendar(updated[0]);
+};
+
+const findEmailOpeningCalendars = async () => {
+  const [rows] = await query(
+    `SELECT * FROM calendars
+     WHERE opening_method = 'email'
+       AND status = 'succeeded'
+       AND (
+         (daily_content_email IS NOT NULL AND daily_content_email != '')
+         OR (email IS NOT NULL AND email != '')
+       )
+     ORDER BY created_at ASC`
+  );
+  return rows.map(rowToCalendar);
 };
 
 module.exports = {
@@ -246,6 +305,7 @@ module.exports = {
   updateCalendarData,
   upsertCalendar,
   findCalendars,
+  findEmailOpeningCalendars,
   openTask,
   generateEditToken,
 };

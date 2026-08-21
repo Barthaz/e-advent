@@ -63,4 +63,18 @@ export const PRODUCT_TYPE_OPTIONS: Array<{ value: ProductType | ''; label: strin
   { value: 'letter', label: 'List do Mikołaja' },
 ];
 
+export const OPENING_METHOD_LABELS: Record<string, string> = {
+  app: 'Aplikacja mobilna',
+  email: 'Codzienny e-mail',
+  online: 'Otwieranie online',
+};
+
+export const EMAIL_TYPE_LABELS: Record<string, string> = {
+  order_confirmation: 'Potwierdzenie zamówienia',
+  interactive_access: 'Dostęp do kalendarza',
+  shipping: 'Wysyłka paczki',
+  daily_window: 'Okienko dnia',
+  collaboration_invite: 'Zaproszenie do współpracy',
+};
+
 export const DEFAULT_PAGE_LIMIT = 20;

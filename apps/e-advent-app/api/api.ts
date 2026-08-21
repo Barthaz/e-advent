@@ -1,5 +1,5 @@
 // API helper dla aplikacji mobilnej
-import type { CalendarPayload } from '@e-advent/types';
+import type { CalendarPayload, OpenedCalendarWindow, SpecialWindowProgress } from '@e-advent/types';
 
 export type { CalendarPayload };
 
@@ -117,20 +117,17 @@ export async function getCalendarByAccessCode(
 export async function openCalendarDay(
   calendarId: string,
   day: number,
-  accessCode?: string
-): Promise<{ success: boolean }> {
-  console.log('[API] Otwieranie okienka:', { calendarId, day, hasAccessCode: !!accessCode });
+  _accessCode?: string
+): Promise<{ success: boolean; openedWindow?: OpenedCalendarWindow }> {
+  console.log('[API] Otwieranie okienka:', { calendarId, day });
   const url = `${API_BASE_URL}/calendars/${calendarId}/open/${day}`;
 
   let response: Response;
   try {
     response = await fetch(url, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessCode ? { 'X-Access-Code': accessCode } : {}),
-      },
-      body: JSON.stringify(accessCode ? { accessCode } : {}),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
     });
   } catch (error) {
     console.error('[API] Błąd połączenia:', error);
@@ -139,9 +136,7 @@ export async function openCalendarDay(
 
   if (!response.ok) {
     let errorMessage = `Nie udało się otworzyć okienka dnia ${day}`;
-    if (response.status === 401 || response.status === 403) {
-      errorMessage = 'Brak uprawnień do otwarcia okienka. Zaloguj się ponownie kodem dostępu.';
-    } else if (response.status === 404) {
+    if (response.status === 404) {
       errorMessage = 'Kalendarz nie został znaleziony.';
     } else if (response.status >= 500) {
       errorMessage = 'Serwer tymczasowo niedostępny. Spróbuj ponownie za chwilę.';
@@ -151,7 +146,11 @@ export async function openCalendarDay(
     throw new Error(errorMessage);
   }
 
-  return { success: true };
+  const data = (await response.json()) as {
+    success?: boolean;
+    openedWindow?: OpenedCalendarWindow;
+  };
+  return { success: data.success !== false, openedWindow: data.openedWindow };
 }
 
 export interface MinVersionResponse {
@@ -402,4 +401,94 @@ export async function deleteGiftIdea(
   if (!response.ok) {
     throw new Error(await parseErrorMessage(response, 'Nie udało się usunąć pomysłu'));
   }
+}
+
+function specialHeaders(): Record<string, string> {
+  return { 'Content-Type': 'application/json' };
+}
+
+export async function getSpecialProgress(
+  calendarId: string,
+  day: number
+): Promise<SpecialWindowProgress | null> {
+  const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/progress`, {
+    headers: specialHeaders(),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.progress ?? null;
+}
+
+export async function saveSpecialProgress(
+  calendarId: string,
+  day: number,
+  body: Partial<SpecialWindowProgress>
+): Promise<SpecialWindowProgress> {
+  const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/progress`, {
+    method: 'PUT',
+    headers: specialHeaders(),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('Autosave failed');
+  const data = await res.json();
+  return data.progress;
+}
+
+export async function uploadSpecialImage(
+  calendarId: string,
+  day: number,
+  slot: string,
+  uri: string,
+  mimeType = 'image/jpeg'
+): Promise<{ imageUrl: string; imageKey?: string }> {
+  const formData = new FormData();
+  const name = `${slot}.${mimeType.includes('png') ? 'png' : 'jpg'}`;
+  formData.append('image', { uri, name, type: mimeType } as unknown as Blob);
+  formData.append('slot', slot);
+
+  const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || data.message || 'Błąd uploadu grafiki');
+  }
+  return { imageUrl: data.imageUrl, imageKey: data.imageKey };
+}
+
+export async function exportSpecialPdf(
+  calendarId: string,
+  day: number,
+  payload?: Record<string, unknown>
+): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/export/pdf`, {
+    method: 'POST',
+    headers: specialHeaders(),
+    body: JSON.stringify({
+      variant: 'COLOR',
+      client: 'mobile',
+      ...(payload ? { payload } : {}),
+    }),
+  });
+  if (!res.ok) {
+    throw new Error(await parseErrorMessage(res, 'Nie udało się przygotować PDF.'));
+  }
+
+  const buffer = await res.arrayBuffer();
+  const { File, Paths } = await import('expo-file-system');
+  const Sharing = await import('expo-sharing');
+  const file = new File(Paths.cache, `e-advent-dzien-${day}.pdf`);
+  file.write(new Uint8Array(buffer));
+
+  if (await Sharing.isAvailableAsync()) {
+    await Sharing.shareAsync(file.uri, {
+      mimeType: 'application/pdf',
+      UTI: 'com.adobe.pdf',
+      dialogTitle: 'Zapisz listę PDF',
+    });
+    return;
+  }
+
+  throw new Error('Na tym urządzeniu nie da się udostępnić pliku PDF.');
 }

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "packs": {
+    "packing-station-v1": {
+      "items": ["Taśma", "Nożyczki", "Papier", "Etykiety", "Kurier", "Lista prezentów"]
+    },
+    "gift-planner-v1": {
+      "columns": ["Osoba", "Pomysł", "Budżet", "Kupione", "Zapakowane"]
+    },
+    "december-planner-v1": {
+      "days": 31
+    }
+  }
+}

@@ -41,8 +41,7 @@ const corsAllowlist = Array.from(
 );
 
 const emailLogoUrl =
-  process.env.EMAIL_LOGO_URL ||
-  (frontendUrl ? `${frontendUrl}/assets/logo.png` : '');
+  process.env.EMAIL_LOGO_URL || 'https://e-advent.pl/assets/brand/eadvent-logo.png';
 
 /**
  * Aktywne credentiale MySQL zależne od TESTING_MODE.

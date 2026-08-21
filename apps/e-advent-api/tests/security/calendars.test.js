@@ -208,27 +208,7 @@ describe('Faza 3 — calendar ownership / ID (fixed)', () => {
     expect(Calendar.updateCalendarData).not.toHaveBeenCalled();
   });
 
-  test('C-03: open-day without access proof is rejected', async () => {
-    Calendar.findCalendarById.mockResolvedValue(
-      pendingCalendar({
-        id: 'any-cal',
-        status: 'succeeded',
-        accessCode: 'SECRET',
-        editToken: 'et',
-        data: {
-          sku: 'interactive',
-          productType: 'interactive',
-          tasks: [{ day: 1, title: 'T', status: 'closed' }],
-        },
-      })
-    );
-
-    const res = await request(app).put('/api/v1/calendars/any-cal/open/1');
-    expect(res.status).toBe(401);
-    expect(Calendar.openTask).not.toHaveBeenCalled();
-  });
-
-  test('C-03b: open-day with correct access code succeeds', async () => {
+  test('C-03: open-day with calendar id succeeds without access code', async () => {
     const cal = pendingCalendar({
       id: 'any-cal',
       status: 'succeeded',
@@ -246,10 +226,7 @@ describe('Faza 3 — calendar ownership / ID (fixed)', () => {
       data: { ...cal.data, tasks: [{ day: 1, title: 'T', status: 'opened' }] },
     });
 
-    const res = await request(app)
-      .put('/api/v1/calendars/any-cal/open/1')
-      .send({ accessCode: 'SECRET' });
-
+    const res = await request(app).put('/api/v1/calendars/any-cal/open/1');
     expect(res.status).toBe(200);
     expect(Calendar.openTask).toHaveBeenCalled();
   });

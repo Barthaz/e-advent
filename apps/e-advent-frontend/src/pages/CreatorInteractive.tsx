@@ -4,19 +4,26 @@ import ParchmentCard from '../components/ParchmentCard';
 import WizardShell from '../components/creator/WizardShell';
 import StepBasicInfo from '../components/creator/StepBasicInfo';
 import StepTasks from '../components/creator/StepTasks';
+import StepOpeningMethod from '../components/creator/StepOpeningMethod';
 import StepSummary from '../components/creator/StepSummary';
 import { useCreatorWizard } from '../hooks/useCreatorWizard';
 import { formatPrice, getProduct, getCheckoutCtaLabel } from '../config/products';
 
-const STEPS = ['basic', 'tasks', 'summary'];
-const STEP_LABELS = ['Dane', 'Zadania', 'Podsumowanie'];
+const STEPS = ['basic', 'tasks', 'opening', 'summary'];
+const STEP_LABELS = ['Dane', 'Zadania', 'Otwieranie', 'Podsumowanie'];
 
 export default function CreatorInteractive() {
   const navigate = useNavigate();
   const wizard = useCreatorWizard({ productType: 'interactive', steps: STEPS });
 
   const handleCheckout = () => {
-    if (!wizard.validateBasicStep() || !wizard.validateTasksStep()) return;
+    if (
+      !wizard.validateBasicStep()
+      || !wizard.validateTasksStep()
+      || !wizard.validateOpeningStep()
+    ) {
+      return;
+    }
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'proceed_to_checkout', {
         event_category: 'conversion',
@@ -63,6 +70,15 @@ export default function CreatorInteractive() {
               productType="interactive"
             />
           )}
+          {stepId === 'opening' && (
+            <StepOpeningMethod
+              openingMethod={wizard.openingMethod}
+              setOpeningMethod={wizard.setOpeningMethod}
+              dailyContentEmail={wizard.dailyContentEmail}
+              setDailyContentEmail={wizard.setDailyContentEmail}
+              buyerEmail={wizard.email}
+            />
+          )}
           {stepId === 'summary' && (
             <StepSummary
               productType="interactive"
@@ -71,6 +87,8 @@ export default function CreatorInteractive() {
               email={wizard.email}
               calendarTitle={wizard.calendarTitle}
               tasksCount={wizard.tasks.length}
+              openingMethod={wizard.openingMethod}
+              dailyContentEmail={wizard.dailyContentEmail}
             />
           )}
 

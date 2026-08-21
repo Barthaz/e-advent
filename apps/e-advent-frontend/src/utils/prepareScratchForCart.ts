@@ -1,6 +1,7 @@
 import { createCalendar, type InternalCalendarData } from '../api/api';
 import type { CalendarFormat, CalendarTaskInput, DesignSelection, ProductType } from '../types/order';
 import { buildCalendarTasks } from './calendarGenerator';
+import { textToCatalogTaskId } from './catalogTaskIds';
 import {
   clearPendingCalendarSession,
   getReusablePendingCalendarId,
@@ -69,7 +70,7 @@ export async function prepareScratchCalendarForCart(input: ScratchCartPrepareInp
   }
 
   if (generatedTasks.length === 0) {
-    generatedTasks = buildCalendarTasks(input.tasks, examples, input.selectedExampleSets);
+    generatedTasks = buildCalendarTasks(input.tasks, examples, input.selectedExampleSets, textToCatalogTaskId);
   }
 
   generatedTasks = generatedTasks.sort((a, b) => a.day - b.day);

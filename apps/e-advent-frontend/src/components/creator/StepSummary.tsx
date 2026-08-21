@@ -1,7 +1,8 @@
 import { getProduct, PHYSICAL_FULFILLMENT_NOTE } from '../../config/products';
 import PriceBreakdown from '../PriceBreakdown';
 import ScratchDesignPreview from '../ScratchDesignPreview';
-import type { CalendarFormat, DesignSelection, ProductType } from '../../types/order';
+import { OPENING_METHOD_LABELS } from './StepOpeningMethod';
+import type { CalendarFormat, DesignSelection, OpeningMethod, ProductType } from '../../types/order';
 
 interface StepSummaryProps {
   productType: ProductType;
@@ -12,6 +13,8 @@ interface StepSummaryProps {
   tasksCount?: number;
   format?: CalendarFormat;
   design?: DesignSelection | null;
+  openingMethod?: OpeningMethod | null;
+  dailyContentEmail?: string;
 }
 
 const PRODUCT_META: Record<ProductType, { icon: string; tagline: string; note?: string }> = {
@@ -40,6 +43,8 @@ export default function StepSummary({
   tasksCount,
   format,
   design,
+  openingMethod,
+  dailyContentEmail,
 }: StepSummaryProps) {
   const product = getProduct(sku);
   const meta = PRODUCT_META[productType];
@@ -87,6 +92,18 @@ export default function StepSummary({
             <div className="creator-summary-row">
               <span className="creator-summary-label">Zadania</span>
               <span className="creator-summary-value">{tasksLabel}</span>
+            </div>
+          )}
+          {openingMethod && (
+            <div className="creator-summary-row">
+              <span className="creator-summary-label">Sposób otwierania</span>
+              <span className="creator-summary-value">{OPENING_METHOD_LABELS[openingMethod]}</span>
+            </div>
+          )}
+          {openingMethod === 'email' && (dailyContentEmail || email) && (
+            <div className="creator-summary-row">
+              <span className="creator-summary-label">E-mail na treść</span>
+              <span className="creator-summary-value">{dailyContentEmail || email}</span>
             </div>
           )}
           <span className="creator-summary-product-badge">

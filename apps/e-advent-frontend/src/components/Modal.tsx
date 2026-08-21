@@ -9,9 +9,11 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   usePortal?: boolean; // Opcjonalny prop do użycia portalu (domyślnie true)
+  /** Lock overlay to 100vh (iframe / panel embed — `inset-0` can grow with the document). */
+  viewportLock?: boolean;
 }
 
-export default function Modal({ isOpen, onClose, title, children, usePortal = true }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, usePortal = true, viewportLock = false }: ModalProps) {
   // Zamykanie modala po naciśnięciu Escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -35,21 +37,23 @@ export default function Modal({ isOpen, onClose, title, children, usePortal = tr
 
   const modalContent = (
     <div 
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
+      className={
+        viewportLock
+          ? 'fixed top-0 left-0 right-0 z-[9999] flex h-[100vh] max-h-[100vh] w-auto max-w-full items-center justify-center overflow-hidden p-4 bg-black/70 backdrop-blur-sm animate-fade-in'
+          : 'fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in'
+      }
       onClick={onClose}
     >
       <div 
         className="relative rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-slide-down"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          backgroundImage: `url(${modalBackground})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
       >
-        {/* Overlay dla lepszej czytelności tekstu */}
-        <div className="absolute inset-0 bg-black/20"></div>
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${modalBackground})` }}
+          aria-hidden
+        />
+        <div className="absolute inset-0 bg-black/35" aria-hidden />
         
         {/* Zawartość modala */}
         <div className="relative z-10 h-full flex flex-col">
@@ -67,7 +71,7 @@ export default function Modal({ isOpen, onClose, title, children, usePortal = tr
           </div>
           
           {/* Tytuł i opis na dole w 2/5 wysokości */}
-          <div className="flex-shrink-0 px-6 pb-6" style={{ height: '40%' }}>
+          <div className="flex-shrink-0 px-6 pb-6 overflow-y-auto" style={{ maxHeight: '42%', minHeight: '32%' }}>
             <div className="h-full flex flex-col justify-center items-center">
               {children}
             </div>

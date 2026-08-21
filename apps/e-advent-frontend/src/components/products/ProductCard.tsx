@@ -26,8 +26,9 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
               src={product.imageSrc}
               alt={product.imageAlt ?? product.name}
               className="w-full aspect-[4/5] object-cover"
-              width={400}
-              height={500}
+              width={480}
+              height={600}
+              decoding="async"
             />
           )}
         </div>

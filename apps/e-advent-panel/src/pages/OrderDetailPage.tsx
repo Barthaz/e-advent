@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGetOrderQuery, usePatchOrderMutation } from '../api/ordersApi';
+import {
+  useGetOrderEmailsQuery,
+  useSendPaidOrderEmailMutation,
+  useSendShippingEmailMutation,
+} from '../api/emailsApi';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { useToast } from '../hooks/useToast';
@@ -8,6 +13,7 @@ import type { PatchOrderRequest, FulfillmentStatus, PaymentStatus, DeliveryType 
 import {
   formatDate,
   formatAmount,
+  formatOrderNumber,
   getPaymentStatusLabel,
   getFulfillmentStatusLabel,
   getDeliveryTypeLabel,
@@ -17,7 +23,9 @@ import {
   FULFILLMENT_STATUS_OPTIONS,
   PAYMENT_STATUS_OPTIONS,
   DELIVERY_TYPE_OPTIONS,
+  EMAIL_TYPE_LABELS,
 } from '../utils/constants';
+import { isPhysicalProduct } from '@e-advent/products';
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +35,9 @@ export default function OrderDetailPage() {
 
   const { data: order, isLoading, isError } = useGetOrderQuery(orderId, { skip: !orderId });
   const [patchOrder, { isLoading: isSaving }] = usePatchOrderMutation();
+  const { data: emails = [], isLoading: emailsLoading } = useGetOrderEmailsQuery(orderId, { skip: !orderId });
+  const [sendPaidEmail, { isLoading: isSendingPaid }] = useSendPaidOrderEmailMutation();
+  const [sendShippingEmail, { isLoading: isSendingShipping }] = useSendShippingEmailMutation();
 
   const [form, setForm] = useState<PatchOrderRequest>({});
   const [isDirty, setIsDirty] = useState(false);
@@ -67,6 +78,33 @@ export default function OrderDetailPage() {
     }
   };
 
+  const handleSendPaid = async () => {
+    try {
+      const result = await sendPaidEmail(orderId).unwrap();
+      const failed = result.failed ?? 0;
+      if (failed > 0) {
+        toast.error(`Wysłano ${result.sent}, nie udało się: ${failed}.`);
+      } else {
+        toast.success(`Wysłano wiadomości po opłaceniu (${result.sent}).`);
+      }
+    } catch (err) {
+      const message = (err as { data?: { message?: string } })?.data?.message
+        || 'Nie udało się wysłać maila po opłaceniu.';
+      toast.error(message);
+    }
+  };
+
+  const handleSendShipping = async () => {
+    try {
+      await sendShippingEmail(orderId).unwrap();
+      toast.success('Wysłano mail o wysyłce paczki.');
+    } catch (err) {
+      const message = (err as { data?: { message?: string } })?.data?.message
+        || 'Nie udało się wysłać maila o wysyłce.';
+      toast.error(message);
+    }
+  };
+
   if (isLoading) return <LoadingSpinner size="lg" label="Ładowanie zamówienia…" />;
   if (isError || !order) {
     return (
@@ -84,6 +122,12 @@ export default function OrderDetailPage() {
     form.delivery_type === 'poczta_polska' ||
     form.delivery_type === 'none';
 
+  const hasPhysical = (order.items ?? []).some((item) => isPhysicalProduct(item.sku))
+    || order.product_type === 'scratch'
+    || order.product_type === 'letter';
+  const trackingReady = Boolean((form.tracking_number ?? order.tracking_number ?? '').trim());
+  const canSendPaid = order.status === 'succeeded';
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       {/* Nagłówek */}
@@ -96,7 +140,9 @@ export default function OrderDetailPage() {
           Wróć
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="heading-page">Zamówienie #{order.id}</h1>
+          <h1 className="heading-page">
+            Zamówienie #{order.order_number_display ?? formatOrderNumber(order.order_number)}
+          </h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Złożone: {formatDate(order.created_at)} · Ostatnia zmiana: {formatDate(order.updated_at)}
           </p>
@@ -198,7 +244,10 @@ export default function OrderDetailPage() {
                       return (
                         <tr key={item.id} className="border-b border-gray-50 last:border-0">
                           <td className="py-2.5">
-                            <div className="font-mono text-xs text-gray-800">{item.sku}</div>
+                            <div className="font-medium text-gray-800">
+                              {item.displayName ?? item.sku}
+                            </div>
+                            <div className="font-mono text-[11px] text-gray-400">{item.sku}</div>
                             {item.calendarId && (
                               <Link
                                 to={`/calendars/${item.calendarId}`}
@@ -395,6 +444,9 @@ export default function OrderDetailPage() {
                 <Row label="Stripe PI" value={
                   <span className="font-mono text-xs break-all">{order.stripe_payment_intent_id ?? '—'}</span>
                 } />
+                <Row label="ID wewnętrzne" value={
+                  <span className="font-mono text-xs break-all text-gray-400">{order.id}</span>
+                } />
               </div>
             </dl>
           </div>
@@ -430,6 +482,87 @@ export default function OrderDetailPage() {
               </div>
             </div>
           )}
+
+          {/* Wiadomości e-mail */}
+          <div className="panel-card p-5">
+            <h2 className="heading-section mb-3">Wiadomości e-mail</h2>
+            <p className="text-xs text-gray-500 mb-4">
+              Webhook wysyła maile po opłaceniu automatycznie. Te przyciski służą do ręcznej wysyłki,
+              gdy coś nie dotrze.
+            </p>
+            <div className="space-y-2 mb-4">
+              <button
+                type="button"
+                onClick={handleSendPaid}
+                disabled={!canSendPaid || isSendingPaid}
+                className="btn-secondary w-full py-2.5 text-sm disabled:opacity-50"
+                title={!canSendPaid ? 'Zamówienie musi być opłacone' : undefined}
+              >
+                {isSendingPaid ? (
+                  <>
+                    <span className="spinner spinner-sm" />
+                    Wysyłanie…
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-envelope" />
+                    Wyślij mail po opłaceniu
+                  </>
+                )}
+              </button>
+              {hasPhysical && (
+                <button
+                  type="button"
+                  onClick={handleSendShipping}
+                  disabled={!trackingReady || isSendingShipping}
+                  className="btn-secondary w-full py-2.5 text-sm disabled:opacity-50"
+                  title={!trackingReady ? 'Uzupełnij i zapisz numer listu' : undefined}
+                >
+                  {isSendingShipping ? (
+                    <>
+                      <span className="spinner spinner-sm" />
+                      Wysyłanie…
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa-solid fa-truck" />
+                      Wyślij mail o wysyłce
+                    </>
+                  )}
+                </button>
+              )}
+              {hasPhysical && !trackingReady && (
+                <p className="text-xs text-gray-400">
+                  Mail o wysyłce wymaga zapisanego numeru listu przewozowego.
+                </p>
+              )}
+            </div>
+            {emailsLoading ? (
+              <p className="text-xs text-gray-400">Ładowanie historii…</p>
+            ) : emails.length === 0 ? (
+              <p className="text-xs text-gray-400">Brak zarejestrowanych wysyłek.</p>
+            ) : (
+              <ul className="space-y-2 max-h-64 overflow-y-auto">
+                {emails.map((mail) => (
+                  <li key={mail.id} className="text-xs border border-gray-100 rounded-lg p-2.5 bg-gray-50">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-gray-700">
+                        {EMAIL_TYPE_LABELS[mail.type] ?? mail.type}
+                      </span>
+                      <span className={mail.status === 'sent' ? 'text-christmas-green' : 'text-christmas-red'}>
+                        {mail.status === 'sent' ? 'wysłano' : 'błąd'}
+                      </span>
+                    </div>
+                    <p className="text-gray-500 truncate mt-0.5">{mail.recipientEmail}</p>
+                    <p className="text-gray-400 mt-0.5">{formatDate(mail.createdAt)}</p>
+                    {mail.errorMessage && (
+                      <p className="text-christmas-red mt-1">{mail.errorMessage}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           {/* Przycisk zapisu */}
           {isDirty && (

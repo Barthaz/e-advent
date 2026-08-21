@@ -12,6 +12,8 @@ export interface ProductSkuConfig {
   requiresShipping: boolean;
   requiresDesign: boolean;
   creatorRoute: string;
+  /** Dostępny wyłącznie jako dodatek do listu do Mikołaja */
+  letterAddonOnly?: boolean;
 }
 
 export interface ProductFamilyBase {
@@ -50,3 +52,11 @@ export function getSkuForTypeAndFormat(
   type: ProductType,
   format?: CalendarFormat | null,
 ): string | null;
+
+export const SANTA_CERTIFICATE_SKU: string;
+export const SANTA_LETTER_SKU: string;
+export function isLetterAddonSku(sku: string): boolean;
+export function getOrderItemDisplayName(
+  sku: string,
+  metadata?: { childName?: string } | null,
+): string;

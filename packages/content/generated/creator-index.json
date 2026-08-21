@@ -1,0 +1,2211 @@
+{
+  "version": 1,
+  "sets": [
+    {
+      "setNumber": 1,
+      "title": "Świąteczny nastrój i zabawa",
+      "description": "Zadania, które wprowadzą Cię w klimat świąt i poprawią humor.",
+      "tasks": [
+        {
+          "order": 1,
+          "text": "Dziś jest Dzień Świątecznych Brzmień — wybierz dziesięć piosenek, które naprawdę kojarzą Ci się ze świętami, i ułóż z nich własną playlistę. Na koniec dodaj jeden utwór, który od dziś będzie „piosenką tych świąt”.",
+          "catalogTaskId": "set-1-task-1",
+          "isSpecial": false
+        },
+        {
+          "order": 2,
+          "text": "Dziś jest Dzień Kolędowego Zgadywania — odtwórz pierwsze pięć sekund kilku świątecznych piosenek i sprawdź, kto pierwszy odgadnie tytuł. Za każdą poprawną odpowiedź przyznaj jeden „piernikowy punkt”.",
+          "catalogTaskId": "set-1-task-2",
+          "isSpecial": false
+        },
+        {
+          "order": 3,
+          "text": "Dziś jest Dzień Świątecznego Karaoke — wybierz piosenkę, której refren zna prawie każdy, i zaśpiewaj go samodzielnie albo razem z kimś bliskim. Talent nie jest wymagany — liczy się wykonanie z pełnym przekonaniem.",
+          "catalogTaskId": "set-1-task-3",
+          "isSpecial": false
+        },
+        {
+          "order": 4,
+          "text": "Dziś jest Dzień Jarmarkowej Misji — wybierz się na jarmark lub świątecznie udekorowany rynek i znajdź trzy rzeczy: najładniejszą dekorację, najbardziej świąteczny zapach i drobiazg, który najmocniej przypomina Ci dzieciństwo.",
+          "catalogTaskId": "set-1-task-4",
+          "isSpecial": false
+        },
+        {
+          "order": 5,
+          "text": "Dziś jest Dzień Bożonarodzeniowego Quizu — przygotuj pięć pytań o Bożym Narodzeniu i urządź domowy turniej. Niech jedno pytanie będzie podchwytliwe, a zwycięzca wybierze dzisiejszy świąteczny film albo deser.",
+          "catalogTaskId": "set-1-task-5",
+          "isSpecial": true
+        },
+        {
+          "order": 6,
+          "text": "Dziś jest Dzień Dorosłego Listu do Mikołaja — zapisz trzy rzeczy, których naprawdę sobie życzysz: jedną materialną, jedną związaną z przeżyciem lub doświadczeniem oraz jedną, której nie da się kupić.",
+          "catalogTaskId": "set-1-task-6",
+          "isSpecial": true
+        },
+        {
+          "order": 7,
+          "text": "Dziś jest Dzień Świątecznego Bingo — wypisz dziewięć rzeczy, które możesz zobaczyć podczas grudniowego spaceru, np. renifera, dużą gwiazdę, czerwony wieniec czy migające lampki. Spróbuj znaleźć tyle z nich, by skreślić cały rząd.",
+          "catalogTaskId": "set-1-task-7",
+          "isSpecial": true
+        },
+        {
+          "order": 8,
+          "text": "Dziś jest Dzień Nietypowego Zdjęcia — zrób świąteczne zdjęcie w miejscu, które na co dzień wcale nie kojarzy się ze świętami. Im większy kontrast między miejscem a świątecznym akcentem, tym ciekawszy efekt.",
+          "catalogTaskId": "set-1-task-8",
+          "isSpecial": false
+        },
+        {
+          "order": 9,
+          "text": "Dziś jest Dzień Domowej Wioski — zbuduj miniaturową świąteczną scenkę z rzeczy, które już masz: pudełek, figurek, waty, klocków albo papieru. Wieczorem podświetl ją małą lampką lub lampkami LED.",
+          "catalogTaskId": "set-1-task-9",
+          "isSpecial": true
+        },
+        {
+          "order": 10,
+          "text": "Dziś jest Dzień Świątecznej Reklamy — wybierz zwykły domowy przedmiot i w 30 sekund zareklamuj go jako najbardziej ekskluzywny prezent bożonarodzeniowy. Im bardziej poważna prezentacja, tym zabawniejszy efekt.",
+          "catalogTaskId": "set-1-task-10",
+          "isSpecial": false
+        },
+        {
+          "order": 11,
+          "text": "Dziś jest Dzień Świątecznej Ciekawostki — znajdź jeden zaskakujący fakt o tradycjach bożonarodzeniowych w dowolnym kraju i opowiedz go komuś bliskiemu. Wybierz coś, co będzie nowością także dla Ciebie.",
+          "catalogTaskId": "set-1-task-11",
+          "isSpecial": true
+        },
+        {
+          "order": 12,
+          "text": "Dziś jest Dzień Świątecznej Parodii — wybierz znany refren i zmień kilka słów tak, żeby opowiadał o choince, piernikach albo pakowaniu prezentów. Potem koniecznie wykonaj swoją wersję na głos.",
+          "catalogTaskId": "set-1-task-12",
+          "isSpecial": false
+        },
+        {
+          "order": 13,
+          "text": "Dziś jest Dzień Dawnej Kolędy — posłuchaj starej polskiej kolędy w tradycyjnym wykonaniu i sprawdź, ile jej zwrotek znasz. Wybierz jeden wers, który najmocniej przywołuje świąteczny obraz lub wspomnienie.",
+          "catalogTaskId": "set-1-task-13",
+          "isSpecial": false
+        },
+        {
+          "order": 14,
+          "text": "Dziś jest Dzień Filmowego Seansu Specjalnego — wybierz świąteczny film, przygotuj coś ciepłego do picia i zgaś główne światło. Na czas seansu odłóż telefon poza zasięg ręki.",
+          "catalogTaskId": "set-1-task-14",
+          "isSpecial": false
+        },
+        {
+          "order": 15,
+          "text": "Dziś jest Dzień Polowania na Iluminacje — wybierz się po zmroku na 20-minutowy spacer i przyznawaj punkty mijanym dekoracjom: jeden za lampki, dwa za renifera i trzy za naprawdę efektownie udekorowany dom lub witrynę.",
+          "catalogTaskId": "set-1-task-15",
+          "isSpecial": true
+        },
+        {
+          "order": 16,
+          "text": "Dziś jest Dzień Świątecznego Stroju — załóż jeden świąteczny element i wymyśl jego historię: skąd „przybył”, do kogo wcześniej należał albo jaką magiczną moc mógłby mieć.",
+          "catalogTaskId": "set-1-task-16",
+          "isSpecial": false
+        },
+        {
+          "order": 17,
+          "text": "Dziś jest Dzień Fotograficznego Powrotu — znajdź stare grudniowe zdjęcie i spróbuj odtworzyć je dziś w podobnym miejscu lub w podobnej pozie. Na koniec zestaw oba ujęcia obok siebie.",
+          "catalogTaskId": "set-1-task-17",
+          "isSpecial": true
+        },
+        {
+          "order": 18,
+          "text": "Dziś jest Dzień Najdziwniejszej Bombki — wybierz najbardziej nietypową ozdobę, jaką masz, i wymyśl jej krótką legendę. Jeśli żadna się nie wyróżnia, wskaż zwykły domowy przedmiot, który mógłby zostać bombką, i uzasadnij swój wybór.",
+          "catalogTaskId": "set-1-task-18",
+          "isSpecial": false
+        },
+        {
+          "order": 19,
+          "text": "Dziś jest Dzień Świątecznego Alfabetu — zagraj z kimś bliskim: na zmianę wymieniajcie świąteczne słowa zaczynające się od kolejnych liter alfabetu. Osoba, która nie poda hasła w ciągu pięciu sekund, odpada z rundy.",
+          "catalogTaskId": "set-1-task-19",
+          "isSpecial": false
+        },
+        {
+          "order": 20,
+          "text": "Dziś jest Dzień Mikołajowego Komunikatu — nagraj krótką wiadomość głosem Świętego Mikołaja i wyślij ją komuś bliskiemu. Może być zabawna, ale niech zawiera też jedno naprawdę miłe zdanie.",
+          "catalogTaskId": "set-1-task-20",
+          "isSpecial": false
+        },
+        {
+          "order": 21,
+          "text": "Dziś jest Dzień Tajnej Misji Elfa — wybierz jednego domownika i w ciągu dnia zrób dla niego trzy drobne, miłe rzeczy tak, aby nie od razu było wiadomo, kto za nimi stoi.",
+          "catalogTaskId": "set-1-task-21",
+          "isSpecial": true
+        },
+        {
+          "order": 22,
+          "text": "Dziś jest Dzień Świątecznych Kalamburów — wylosuj świąteczne hasło, pokaż je bez słów, a reszta zgaduje, zanim minie minuta. Potem losuj kolejne: w tej rundzie hasła się nie powtarzają. Tytuł „Kevin sam w domu” możesz potraktować jako poziom trudny.",
+          "catalogTaskId": "set-1-task-22",
+          "isSpecial": true
+        },
+        {
+          "order": 23,
+          "text": "Dziś jest Dzień Prezentowego Detektywa — wybierz zapakowany prezent albo zamknięte pudełko i razem z kimś spróbujcie odgadnąć jego zawartość wyłącznie po kształcie, wadze i dźwięku. Bez podglądania.",
+          "catalogTaskId": "set-1-task-23",
+          "isSpecial": true
+        },
+        {
+          "order": 24,
+          "text": "Dziś jest Dzień Grudniowego Rankingu — ułóż ranking pięciu ulubionych świątecznych filmów, potraw, piosenek albo tradycji. Porównaj go z rankingiem kogoś bliskiego i znajdź przynajmniej jedną wspólną pozycję.",
+          "catalogTaskId": "set-1-task-24",
+          "isSpecial": true
+        }
+      ]
+    },
+    {
+      "setNumber": 2,
+      "title": "Porządki i przygotowania",
+      "description": "Zadania pomagające uporządkować dom i przygotować się do świąt.",
+      "tasks": [
+        {
+          "order": 1,
+          "text": "Dziś jest Dzień Świątecznej Stacji Pakowania — zbierz w jednym miejscu papier, taśmę, nożyczki, wstążki i etykiety. Dzięki temu przy kolejnym pakowaniu prezentów wszystko będzie pod ręką.",
+          "catalogTaskId": "set-2-task-1",
+          "isSpecial": true
+        },
+        {
+          "order": 2,
+          "text": "Dziś jest Dzień Testu Lampek — sprawdź wszystkie świąteczne lampki, zanim naprawdę będą potrzebne. Rozplącz przewody, wymień baterie i odłóż osobno te zestawy, które wymagają naprawy.",
+          "catalogTaskId": "set-2-task-2",
+          "isSpecial": false
+        },
+        {
+          "order": 3,
+          "text": "Dziś jest Dzień Choinkowej Przestrzeni — przygotuj miejsce na drzewko albo uporządkuj przestrzeń wokół już stojącej choinki. Zostaw obok trochę wolnego miejsca na prezenty i rodzinne zdjęcia.",
+          "catalogTaskId": "set-2-task-3",
+          "isSpecial": false
+        },
+        {
+          "order": 4,
+          "text": "Dziś jest Dzień Pudełka Awaryjnego — przygotuj mały zestaw z taśmą, nożyczkami, bateriami, zapasowymi haczykami, sznurkiem i kilkoma torebkami prezentowymi. W grudniu taki zestaw potrafi uratować niejedną sytuację.",
+          "catalogTaskId": "set-2-task-4",
+          "isSpecial": true
+        },
+        {
+          "order": 5,
+          "text": "Dziś jest Dzień Listy Bez Paniki — zapisz wszystkie osoby, dla których planujesz prezenty, a przy każdym imieniu dopisz jedną konkretną rzecz do zrobienia. Jeden prosty plan jest lepszy niż próba pamiętania o wszystkim naraz.",
+          "catalogTaskId": "set-2-task-5",
+          "isSpecial": true
+        },
+        {
+          "order": 6,
+          "text": "Dziś jest Dzień Świątecznej Spiżarni — sprawdź zapasy mąki, cukru, kakao, przypraw, bakalii i innych produktów, które zwykle przydają się w grudniu. Na listę zakupów dopisz tylko to, czego rzeczywiście brakuje.",
+          "catalogTaskId": "set-2-task-6",
+          "isSpecial": true
+        },
+        {
+          "order": 7,
+          "text": "Dziś jest Dzień Wolnej Półki — opróżnij jedną półkę albo fragment blatu i przeznacz to miejsce na świąteczne rzeczy: słodycze, herbaty, serwetki lub produkty do pieczenia. Dzięki temu nie będą porozkładane po całym domu.",
+          "catalogTaskId": "set-2-task-7",
+          "isSpecial": false
+        },
+        {
+          "order": 8,
+          "text": "Dziś jest Dzień Prezentowego Magazynu — wyznacz jedno dyskretne miejsce na prezenty i rzeczy czekające na zapakowanie. Dodaj tam torbę lub pudełko na małe drobiazgi, które łatwo zgubić.",
+          "catalogTaskId": "set-2-task-8",
+          "isSpecial": false
+        },
+        {
+          "order": 9,
+          "text": "Dziś jest Dzień Papierowej Kontroli — przejrzyj papier, torby i dodatki do pakowania prezentów. Zachowaj wstążki, pudełka i większe kawałki papieru, które można wykorzystać ponownie, a pozbądź się tylko tego, co naprawdę nieprzydatne.",
+          "catalogTaskId": "set-2-task-9",
+          "isSpecial": true
+        },
+        {
+          "order": 10,
+          "text": "Dziś jest Dzień Stołowej Próby Generalnej — wyjmij obrus, serwetki i naczynia, których chcesz użyć podczas świąt. Przygotuj jedno próbne nakrycie — od razu zobaczysz, czy czegoś brakuje.",
+          "catalogTaskId": "set-2-task-10",
+          "isSpecial": false
+        },
+        {
+          "order": 11,
+          "text": "Dziś jest Dzień Kuchennej Przestrzeni — zwolnij fragment blatu i przeznacz go na świąteczne gotowanie lub pieczenie. Nawet niewielka wolna powierzchnia potrafi później oszczędzić sporo nerwów.",
+          "catalogTaskId": "set-2-task-11",
+          "isSpecial": false
+        },
+        {
+          "order": 12,
+          "text": "Dziś jest Dzień Lodówkowego Planu — usuń przeterminowane produkty i wyznacz jedną półkę na świąteczne zapasy. Dzięki temu przed Wigilią łatwiej będzie znaleźć miejsce na przygotowane potrawy.",
+          "catalogTaskId": "set-2-task-12",
+          "isSpecial": false
+        },
+        {
+          "order": 13,
+          "text": "Dziś jest Dzień Zamrażarkowego Oddechu — sprawdź zawartość zamrażarki i zrób trochę miejsca na świąteczne przygotowania. Wybierz dwie rzeczy, które warto zużyć w najbliższych dniach.",
+          "catalogTaskId": "set-2-task-13",
+          "isSpecial": false
+        },
+        {
+          "order": 14,
+          "text": "Dziś jest Dzień Dekoracyjnego Serwisu — obejrzyj ulubione ozdoby i napraw jeden drobiazg: urwany sznurek, luźną kokardę, brakujący haczyk albo odklejony element. Kilka minut pracy może przedłużyć życie dekoracji o kolejne sezony.",
+          "catalogTaskId": "set-2-task-14",
+          "isSpecial": false
+        },
+        {
+          "order": 15,
+          "text": "Dziś jest Dzień Gościnnego Wieszaka — jeśli spodziewasz się gości, przygotuj kilka wolnych wieszaków i trochę miejsca na kurtki. To niewielki detal, który w świąteczny dzień naprawdę ułatwia życie.",
+          "catalogTaskId": "set-2-task-15",
+          "isSpecial": false
+        },
+        {
+          "order": 16,
+          "text": "Dziś jest Dzień Ciepłego Wejścia — uporządkuj przedpokój i dodaj w nim jeden świąteczny akcent. To pierwsze miejsce, które widzisz po powrocie do domu, i jedno z pierwszych, które zobaczą goście.",
+          "catalogTaskId": "set-2-task-16",
+          "isSpecial": false
+        },
+        {
+          "order": 17,
+          "text": "Dziś jest Dzień Obrusowej Gotowości — sprawdź wcześniej świąteczny obrus lub bieżnik. Jeśli wymaga prania albo prasowania, zrób to dziś i odłóż go gotowego do użycia.",
+          "catalogTaskId": "set-2-task-17",
+          "isSpecial": false
+        },
+        {
+          "order": 18,
+          "text": "Dziś jest Dzień Prezentowych Etykiet — przygotuj karteczki z imionami osób, które chcesz obdarować. Podczas pakowania unikniesz później zgadywania, które podobne pudełko jest dla kogo.",
+          "catalogTaskId": "set-2-task-18",
+          "isSpecial": true
+        },
+        {
+          "order": 19,
+          "text": "Dziś jest Dzień Grudniowego Kalendarza — wpisz w jedno miejsce ważne terminy: spotkania, dostawy, zakupy, szkolne wydarzenia i rodzinne plany. Zostaw przynajmniej jeden wieczór całkowicie wolny.",
+          "catalogTaskId": "set-2-task-19",
+          "isSpecial": true
+        },
+        {
+          "order": 20,
+          "text": "Dziś jest Dzień Świątecznego Menu — spisz potrawy, które naprawdę chcesz przygotować, i zaznacz te, które można zrobić wcześniej. Im mniej decyzji zostawisz na ostatnią chwilę, tym więcej czasu podczas świąt zostanie dla Ciebie.",
+          "catalogTaskId": "set-2-task-20",
+          "isSpecial": true
+        },
+        {
+          "order": 21,
+          "text": "Dziś jest Dzień Naczyń Specjalnych — sprawdź półmiski, miski, dzbanki i tace, które zwykle wyjmujesz tylko na wyjątkowe okazje. Umyj potrzebne rzeczy i odłóż je razem w łatwo dostępnym miejscu.",
+          "catalogTaskId": "set-2-task-21",
+          "isSpecial": false
+        },
+        {
+          "order": 22,
+          "text": "Dziś jest Dzień Baterii Mikołaja — sprawdź, czy masz zapas baterii do lampek, zabawek i drobnych dekoracji. Kilka dodatkowych sztuk może uratować sytuację dokładnie wtedy, gdy sklepy będą już zamknięte.",
+          "catalogTaskId": "set-2-task-22",
+          "isSpecial": false
+        },
+        {
+          "order": 23,
+          "text": "Dziś jest Dzień Małych Zapasów — sprawdź, czy masz pod ręką serwetki, worki na śmieci, ręczniki papierowe i zapasowe lampki lub świece LED. To mało świąteczne zakupy, ale bardzo świąteczny spokój.",
+          "catalogTaskId": "set-2-task-23",
+          "isSpecial": false
+        },
+        {
+          "order": 24,
+          "text": "Dziś jest Dzień Awaryjnej Listy Prezentów — zapisz trzy uniwersalne drobiazgi, które można szybko kupić lub przygotować. Taka lista przyda się, jeśli pojawi się niespodziewany gość albo przypomnisz sobie o kimś w ostatniej chwili.",
+          "catalogTaskId": "set-2-task-24",
+          "isSpecial": true
+        }
+      ]
+    },
+    {
+      "setNumber": 3,
+      "title": "Dobre uczynki i życzliwość",
+      "description": "Zadania, które pomagają szerzyć dobro i pozytywną energię.",
+      "tasks": [
+        {
+          "order": 1,
+          "text": "Dziś jest Dzień Tajemniczego Elfa — zrób komuś drobną przysługę anonimowo i nie zdradzaj się do końca dnia. Może to być posprzątane miejsce, przygotowany napój albo mały upominek zostawiony z karteczką „dla Ciebie”.",
+          "catalogTaskId": "set-3-task-1",
+          "isSpecial": true
+        },
+        {
+          "order": 2,
+          "text": "Dziś jest Dzień Prawdziwego „Dziękuję” — wybierz jedną osobę i napisz jej, za co konkretnie chcesz podziękować. Zamiast ogólnego „dzięki za wszystko” przywołaj jedną sytuację, która naprawdę została Ci w pamięci.",
+          "catalogTaskId": "set-3-task-2",
+          "isSpecial": true
+        },
+        {
+          "order": 3,
+          "text": "Dziś jest Dzień Ciepłego Telefonu — zadzwoń do kogoś, z kim od dawna nie masz kontaktu, bez żadnej sprawy do załatwienia. Jedyny cel: dowiedzieć się, co naprawdę u tej osoby słychać.",
+          "catalogTaskId": "set-3-task-3",
+          "isSpecial": false
+        },
+        {
+          "order": 4,
+          "text": "Dziś jest Dzień Starego Zdjęcia — znajdź wspólne zdjęcie sprzed lat i wyślij je osobie, która na nim jest. Dodaj jedno zdanie o tym, co najbardziej pamiętasz z tamtego dnia.",
+          "catalogTaskId": "set-3-task-4",
+          "isSpecial": false
+        },
+        {
+          "order": 5,
+          "text": "Dziś jest Dzień Dobrego Kubka — przygotuj komuś ulubioną kawę, herbatę albo kakao bez wcześniejszej zapowiedzi i podaj napój tak, jakby był małym prezentem.",
+          "catalogTaskId": "set-3-task-5",
+          "isSpecial": false
+        },
+        {
+          "order": 6,
+          "text": "Dziś jest Dzień Komplementu z Uzasadnieniem — powiedz komuś coś miłego i od razu dodaj, dlaczego tak uważasz. Konkretne, szczere słowa zostają w pamięci dłużej niż samo „ładnie wyglądasz”.",
+          "catalogTaskId": "set-3-task-6",
+          "isSpecial": false
+        },
+        {
+          "order": 7,
+          "text": "Dziś jest Dzień Ręcznej Kartki — przygotuj prostą kartkę świąteczną dla konkretnej osoby i dopisz kilka zdań własnymi słowami. Nie musi być idealna — ważne, żeby była osobista.",
+          "catalogTaskId": "set-3-task-7",
+          "isSpecial": true
+        },
+        {
+          "order": 8,
+          "text": "Dziś jest Dzień Pomocnego Elfa — wybierz obowiązek, którego ktoś bliski nie lubi, i wykonaj go bez zapowiedzi. Najlepiej tak, aby efekt był miłą niespodzianką zauważoną dopiero po chwili.",
+          "catalogTaskId": "set-3-task-8",
+          "isSpecial": false
+        },
+        {
+          "order": 9,
+          "text": "Dziś jest Dzień Małej Paczuszki — przygotuj drobiazg dla osoby, która raczej nie spodziewa się prezentu: kilka słodyczy, herbatę, mandarynkę albo domowe ciastko. Dodaj krótką, serdeczną karteczkę.",
+          "catalogTaskId": "set-3-task-9",
+          "isSpecial": true
+        },
+        {
+          "order": 10,
+          "text": "Dziś jest Dzień Dobrego Słowa dla Nieznajomego — podziękuj komuś, kogo zwykle mijasz bez dłuższej rozmowy: kurierowi, kasjerowi, kierowcy, ochroniarzowi albo osobie sprzątającej. Wystarczy jedno proste i szczere zdanie.",
+          "catalogTaskId": "set-3-task-10",
+          "isSpecial": false
+        },
+        {
+          "order": 11,
+          "text": "Dziś jest Dzień Świątecznej Darowizny — wybierz jedną rzecz w dobrym stanie, której już nie potrzebujesz, i przekaż ją komuś lub organizacji, która rzeczywiście może z niej skorzystać.",
+          "catalogTaskId": "set-3-task-11",
+          "isSpecial": false
+        },
+        {
+          "order": 12,
+          "text": "Dziś jest Dzień Jednej Pełnej Torby — podczas zakupów wybierz kilka trwałych produktów na lokalną zbiórkę żywności lub dla miejsca pomagającego osobom w potrzebie. Nie musi być ich dużo — liczy się świadomy gest.",
+          "catalogTaskId": "set-3-task-12",
+          "isSpecial": false
+        },
+        {
+          "order": 13,
+          "text": "Dziś jest Dzień Łańcucha Dobra — zrób dla kogoś coś miłego i poproś tylko o jedno: aby przy najbliższej okazji przekazać podobny gest dalej.",
+          "catalogTaskId": "set-3-task-13",
+          "isSpecial": true
+        },
+        {
+          "order": 14,
+          "text": "Dziś jest Dzień Wiadomości Bez Powodu — napisz do kogoś: „Pomyślałem dziś o Tobie i chcę Ci tylko życzyć dobrego dnia”. Bez pytania, prośby ani ukrytego celu.",
+          "catalogTaskId": "set-3-task-14",
+          "isSpecial": false
+        },
+        {
+          "order": 15,
+          "text": "Dziś jest Dzień Domowego Ratunku — zapytaj bliską osobę: „Co mogę Ci dziś zdjąć z głowy?” Wybierz jedną rzecz z odpowiedzi i naprawdę się nią zajmij.",
+          "catalogTaskId": "set-3-task-15",
+          "isSpecial": false
+        },
+        {
+          "order": 16,
+          "text": "Dziś jest Dzień Słodkiego Dzielenia — przygotuj lub kup coś niewielkiego do jedzenia i podziel się z sąsiadem, współpracownikiem albo inną osobą, którą regularnie spotykasz.",
+          "catalogTaskId": "set-3-task-16",
+          "isSpecial": false
+        },
+        {
+          "order": 17,
+          "text": "Dziś jest Dzień Głosu Wdzięczności — nagraj krótką wiadomość głosową dla ważnej osoby i powiedz, za co ją cenisz. Głos potrafi przekazać znacznie więcej ciepła niż samo emoji.",
+          "catalogTaskId": "set-3-task-17",
+          "isSpecial": false
+        },
+        {
+          "order": 18,
+          "text": "Dziś jest Dzień Dobrego Wspomnienia — przypomnij komuś historię, w której zrobił dla Ciebie coś ważnego. Dla tej osoby mógł to być drobiazg, ale Tobie ten gest zapadł w pamięć.",
+          "catalogTaskId": "set-3-task-18",
+          "isSpecial": false
+        },
+        {
+          "order": 19,
+          "text": "Dziś jest Dzień Trzech Uśmiechów — spróbuj poprawić dziś humor trzem osobom: żartem, pomocą, komplementem albo małą niespodzianką. Każdy gest może być inny.",
+          "catalogTaskId": "set-3-task-19",
+          "isSpecial": true
+        },
+        {
+          "order": 20,
+          "text": "Dziś jest Dzień Sąsiedzkiego „Cześć” — przywitaj się lub zamień kilka zdań z sąsiadem, którego zwykle mijasz w pośpiechu. Grudzień to dobry moment, żeby choć trochę przełamać codzienną anonimowość.",
+          "catalogTaskId": "set-3-task-20",
+          "isSpecial": false
+        },
+        {
+          "order": 21,
+          "text": "Dziś jest Dzień Prezentu z Czasu — podaruj komuś 20 minut pełnej uwagi. Bez telefonu i robienia kilku rzeczy naraz — po prostu porozmawiaj albo posłuchaj.",
+          "catalogTaskId": "set-3-task-21",
+          "isSpecial": false
+        },
+        {
+          "order": 22,
+          "text": "Dziś jest Dzień Pomocy Przy Prezentach — zaproponuj komuś pomoc w pakowaniu, wyborze upominku, odebraniu paczki lub innym przedświątecznym drobiazgu. Mała pomoc może komuś oszczędzić sporo stresu.",
+          "catalogTaskId": "set-3-task-22",
+          "isSpecial": false
+        },
+        {
+          "order": 23,
+          "text": "Dziś jest Dzień Dobrej Opinii — jeśli masz dobre doświadczenie z małą firmą, lokalnym sklepem, restauracją albo usługodawcą, zostaw uczciwą pozytywną opinię. Tobie zajmie to kilka minut, a dla małego biznesu może mieć duże znaczenie.",
+          "catalogTaskId": "set-3-task-23",
+          "isSpecial": false
+        },
+        {
+          "order": 24,
+          "text": "Dziś jest Dzień Rodzinnych Wspomnień — zadzwoń lub odwiedź starszą osobę w rodzinie i poproś o jedno świąteczne wspomnienie z dzieciństwa. Dziś to jej opowieść jest najważniejsza.",
+          "catalogTaskId": "set-3-task-24",
+          "isSpecial": true
+        }
+      ]
+    },
+    {
+      "setNumber": 4,
+      "title": "Kreatywne i artystyczne",
+      "description": "Zadania rozwijające kreatywność i artystyczną stronę świąt.",
+      "tasks": [
+        {
+          "order": 1,
+          "text": "Dziś jest Dzień Bombki z Historią — zrób prostą ozdobę i zapisz na jej odwrocie rok oraz jedno słowo opisujące ten grudzień. Za kilka lat może być czymś więcej niż tylko dekoracją.",
+          "catalogTaskId": "set-4-task-1",
+          "isSpecial": false
+        },
+        {
+          "order": 2,
+          "text": "Dziś jest Dzień Własnego Papieru Prezentowego — użyj zwykłego papieru i ozdób go powtarzalnym wzorem wykonanym flamastrem, stemplem albo końcówką gumki od ołówka. Nawet prosty motyw powtórzony wiele razy daje świetny efekt.",
+          "catalogTaskId": "set-4-task-2",
+          "isSpecial": true
+        },
+        {
+          "order": 3,
+          "text": "Dziś jest Dzień Eleganckiej Etykietki — wytnij z grubszego papieru kilka prostych etykiet, zrób w nich otwory i przewlecz cienki sznurek. Jedną ozdób małą gałązką albo narysowaną gwiazdką.",
+          "catalogTaskId": "set-4-task-3",
+          "isSpecial": true
+        },
+        {
+          "order": 4,
+          "text": "Dziś jest Dzień Świątecznej Pocztówki — stwórz kartkę inspirowaną miejscem, w którym mieszkasz. Dodaj charakterystyczny element miasta lub okolicy, ale pokaż go w zimowej, świątecznej wersji.",
+          "catalogTaskId": "set-4-task-4",
+          "isSpecial": true
+        },
+        {
+          "order": 5,
+          "text": "Dziś jest Dzień Papierowej Wioski — z papieru lub cienkiego kartonu wytnij trzy proste domki z okienkami. Ustaw je przed lampkami LED i zobacz, jak po zmroku zmieniają się w małe świąteczne miasteczko.",
+          "catalogTaskId": "set-4-task-5",
+          "isSpecial": true
+        },
+        {
+          "order": 6,
+          "text": "Dziś jest Dzień Masy Solnej — zrób jedną lub kilka prostych zawieszek, odciskając w masie gałązkę, koronkę albo wzór z foremki. Po wyschnięciu dodaj sznurek, aby można było je zawiesić.",
+          "catalogTaskId": "set-4-task-6",
+          "isSpecial": true
+        },
+        {
+          "order": 7,
+          "text": "Dziś jest Dzień Świątecznego Stempla — przygotuj prosty stempel z ziemniaka, gąbki albo gumki i użyj go do ozdobienia papieru, koperty lub etykiet prezentowych. Najlepiej wybierz jeden łatwy do powtarzania motyw.",
+          "catalogTaskId": "set-4-task-7",
+          "isSpecial": true
+        },
+        {
+          "order": 8,
+          "text": "Dziś jest Dzień Zimowego Kolażu — wybierz kilka zdjęć, fragmentów papieru i napisów kojarzących Ci się z grudniem, a następnie ułóż z nich jedną kompozycję zatytułowaną „Mój świąteczny klimat”.",
+          "catalogTaskId": "set-4-task-8",
+          "isSpecial": false
+        },
+        {
+          "order": 9,
+          "text": "Dziś jest Dzień Zdjęcia Jak z Pocztówki — ustaw niewielki świąteczny kadr z rzeczy, które masz w domu, i zrób mu zdjęcie. Spróbuj wykorzystać światło padające z boku zamiast lampy błyskowej.",
+          "catalogTaskId": "set-4-task-9",
+          "isSpecial": false
+        },
+        {
+          "order": 10,
+          "text": "Dziś jest Dzień Ozdobnej Koperty — weź zwykłą kopertę i dodaj jeden charakterystyczny detal: ręcznie narysowaną ramkę, pieczątkę, naklejkę albo małą ilustrację w rogu. Czasem jeden motyw wystarczy, żeby całość wyglądała wyjątkowo.",
+          "catalogTaskId": "set-4-task-10",
+          "isSpecial": true
+        },
+        {
+          "order": 11,
+          "text": "Dziś jest Dzień Świątecznej Zakładki — z kawałka grubszego papieru zrób zakładkę do książki i dodaj krótkie grudniowe hasło. Taki drobiazg powstaje w kilka minut, a może służyć przez cały rok.",
+          "catalogTaskId": "set-4-task-11",
+          "isSpecial": true
+        },
+        {
+          "order": 12,
+          "text": "Dziś jest Dzień Małego Wianka — z kilku elastycznych gałązek, drucika albo papieru wykonaj niewielki wianek. Dodaj tylko jeden akcent: kokardkę, gwiazdkę lub szyszkę.",
+          "catalogTaskId": "set-4-task-12",
+          "isSpecial": false
+        },
+        {
+          "order": 13,
+          "text": "Dziś jest Dzień Papierowego Renifera — z kartonu lub papieru zrób prostą sylwetkę renifera i dodaj czerwony nos. Gotową postać wykorzystaj jako dekorację, etykietę albo element kartki.",
+          "catalogTaskId": "set-4-task-13",
+          "isSpecial": true
+        },
+        {
+          "order": 14,
+          "text": "Dziś jest Dzień Świątecznej Typografii — napisz „Poczuj magię świąt” lub inne ulubione zdanie w trzech różnych stylach. Wybierz wersję, która najbardziej nadaje się do oprawienia albo wykorzystania jako dekoracja.",
+          "catalogTaskId": "set-4-task-14",
+          "isSpecial": false
+        },
+        {
+          "order": 15,
+          "text": "Dziś jest Dzień Pudełka z Charakterem — ozdób zwykłe pudełko po butach lub przesyłce tak, aby wyglądało jak świąteczne opakowanie. Wystarczą papier, sznurek i jeden powtarzający się motyw.",
+          "catalogTaskId": "set-4-task-15",
+          "isSpecial": false
+        },
+        {
+          "order": 16,
+          "text": "Dziś jest Dzień Origami — z jednej kartki złóż prostą choinkę, gwiazdkę albo postać Mikołaja. Wybierz wzór, który można wykonać w mniej niż 15 minut.",
+          "catalogTaskId": "set-4-task-16",
+          "isSpecial": true
+        },
+        {
+          "order": 17,
+          "text": "Dziś jest Dzień Świątecznej Ramki — wybierz rodzinne zdjęcie i przygotuj dla niego papierową ramkę z datą oraz krótkim podpisem. Nie musi być perfekcyjna — ważne, żeby miała osobisty charakter.",
+          "catalogTaskId": "set-4-task-17",
+          "isSpecial": true
+        },
+        {
+          "order": 18,
+          "text": "Dziś jest Dzień Rysunku Jedną Linią — spróbuj narysować choinkę, renifera albo bombkę bez odrywania długopisu od kartki. Zrób trzy próby i zachowaj tę, która wyszła najciekawiej lub najzabawniej.",
+          "catalogTaskId": "set-4-task-18",
+          "isSpecial": false
+        },
+        {
+          "order": 19,
+          "text": "Dziś jest Dzień Prezentowej Pieczęci — zaprojektuj prosty symbol do oznaczania prezentów, np. gwiazdkę z inicjałem. Powtórz go na wszystkich etykietach, których dziś używasz, jak własny znak pracowni Mikołaja.",
+          "catalogTaskId": "set-4-task-19",
+          "isSpecial": false
+        },
+        {
+          "order": 20,
+          "text": "Dziś jest Dzień Świątecznego Komiksu — narysuj cztery kadry pokazujące największy problem Świętego Mikołaja w tym roku. Nie przejmuj się poziomem rysunków — patyczaki są całkowicie dozwolone.",
+          "catalogTaskId": "set-4-task-20",
+          "isSpecial": true
+        },
+        {
+          "order": 21,
+          "text": "Dziś jest Dzień Łańcucha Wspomnień — przygotuj kilka papierowych pasków i na każdym zapisz jedno dobre wspomnienie z mijającego roku. Połącz paski w mały łańcuch i zachowaj go do Wigilii.",
+          "catalogTaskId": "set-4-task-21",
+          "isSpecial": true
+        },
+        {
+          "order": 22,
+          "text": "Dziś jest Dzień Kartonowej Gwiazdy — wytnij gwiazdę z niepotrzebnego pudełka, a następnie oklej ją papierem albo pomaluj. Dodaj otwór i sznurek, aby mogła zawisnąć jak pełnoprawna ozdoba.",
+          "catalogTaskId": "set-4-task-22",
+          "isSpecial": false
+        },
+        {
+          "order": 23,
+          "text": "Dziś jest Dzień Świątecznego Monogramu — zaprojektuj swój inicjał albo inicjał bliskiej osoby w świątecznym stylu. Dodaj do litery gałązkę, gwiazdkę, czapkę Mikołaja lub drobny ornament.",
+          "catalogTaskId": "set-4-task-23",
+          "isSpecial": false
+        },
+        {
+          "order": 24,
+          "text": "Dziś jest Dzień Papierowego Mikołaja — stwórz postać Mikołaja wyłącznie z prostych figur: kół, trójkątów i prostokątów. Sprawdź, jak niewiele elementów potrzeba, aby postać była od razu rozpoznawalna.",
+          "catalogTaskId": "set-4-task-24",
+          "isSpecial": false
+        }
+      ]
+    },
+    {
+      "setNumber": 5,
+      "title": "Kuchenne i kulinarne",
+      "description": "Zadania kuchenne i kulinarne na świąteczny czas.",
+      "tasks": [
+        {
+          "order": 1,
+          "text": "Dziś jest Dzień Tosta-Gwiazdki — przygotuj tost lub grzankę i wytnij z pieczywa gwiazdkę foremką albo nożem. Dodaj ulubione składniki i zamień zwykłe śniadanie w mały grudniowy rytuał.",
+          "catalogTaskId": "set-5-task-1",
+          "isSpecial": false
+        },
+        {
+          "order": 2,
+          "text": "Dziś jest Dzień Czekoladowej Degustacji — wybierz trzy różne czekolady, połam je na małe kawałki i spróbuj w ciemno. Oceń każdą pod względem zapachu, smaku i tego, jak bardzo kojarzy Ci się ze świętami.",
+          "catalogTaskId": "set-5-task-2",
+          "isSpecial": true
+        },
+        {
+          "order": 3,
+          "text": "Dziś jest Dzień Zimowych Naleśników — przygotuj naleśniki z jabłkiem i cynamonem albo dodaj te składniki do ulubionego nadzienia. Na koniec oprósz całość odrobiną cukru pudru jak świeżym śniegiem.",
+          "catalogTaskId": "set-5-task-3",
+          "isSpecial": false
+        },
+        {
+          "order": 4,
+          "text": "Dziś jest Dzień Trufli Bez Pieczenia — pokrusz herbatniki, połącz je z serkiem lub masą czekoladową i uformuj niewielkie kulki. Obtocz je w kakao, wiórkach kokosowych albo posiekanych orzechach.",
+          "catalogTaskId": "set-5-task-4",
+          "isSpecial": true
+        },
+        {
+          "order": 5,
+          "text": "Dziś jest Dzień Piernikowego Testu — udekoruj trzy pierniki w trzech różnych stylach: eleganckim, zabawnym i celowo przesadzonym. Przed zjedzeniem ustaw je obok siebie i zrób pamiątkowe zdjęcie.",
+          "catalogTaskId": "set-5-task-5",
+          "isSpecial": true
+        },
+        {
+          "order": 6,
+          "text": "Dziś jest Dzień Świątecznej Deski — ułóż na jednym talerzu kilka przekąsek w czerwieni, zieleni i złocie: owoce, sery, orzechy, krakersy albo słodycze. Dziś liczy się przede wszystkim kompozycja.",
+          "catalogTaskId": "set-5-task-6",
+          "isSpecial": true
+        },
+        {
+          "order": 7,
+          "text": "Dziś jest Dzień Zimowej Owsianki — dodaj do owsianki jabłko, cynamon i odrobinę miodu lub syropu. Na wierzchu ułóż prosty wzór z orzechów, rodzynek albo plasterków owoców.",
+          "catalogTaskId": "set-5-task-7",
+          "isSpecial": false
+        },
+        {
+          "order": 8,
+          "text": "Dziś jest Dzień Cynamonowych Ślimaczków — wykorzystaj gotowe ciasto francuskie: posmaruj je masłem, posyp cukrem i cynamonem, zwiń w rulon, pokrój na kawałki i upiecz małe ślimaczki.",
+          "catalogTaskId": "set-5-task-8",
+          "isSpecial": true
+        },
+        {
+          "order": 9,
+          "text": "Dziś jest Dzień Gorącej Czekolady na Bogato — przygotuj kakao albo gorącą czekoladę i dodaj jeden kawiarniany akcent: piankę mleczną, bitą śmietanę, startą czekoladę lub szczyptę cynamonu.",
+          "catalogTaskId": "set-5-task-9",
+          "isSpecial": true
+        },
+        {
+          "order": 10,
+          "text": "Dziś jest Dzień Świątecznego Popcornu — do gotowego popcornu dodaj odrobinę cynamonu i cukru albo polej część ziaren roztopioną czekoladą. Przełóż wszystko do dużej miski i podaj podczas filmu.",
+          "catalogTaskId": "set-5-task-10",
+          "isSpecial": false
+        },
+        {
+          "order": 11,
+          "text": "Dziś jest Dzień Jabłka z Pieca — wydrąż lub przekrój jabłko, dodaj cynamon, odrobinę miodu i kilka orzechów, a następnie piecz do miękkości. To prosty deser, który przy okazji wypełni dom przyjemnym zapachem.",
+          "catalogTaskId": "set-5-task-11",
+          "isSpecial": false
+        },
+        {
+          "order": 12,
+          "text": "Dziś jest Dzień Deseru w Szklance — przygotuj prosty deser warstwowy z tego, co masz pod ręką: jogurtu, kremu, pokruszonych ciastek i owoców. Dziś ważniejszy od przepisu jest efekt widocznych warstw.",
+          "catalogTaskId": "set-5-task-12",
+          "isSpecial": false
+        },
+        {
+          "order": 13,
+          "text": "Dziś jest Dzień Korzennego Ciasta w Kubku — przygotuj szybkie ciasto w kubku i dodaj odrobinę cynamonu albo przyprawy piernikowej. Cały deser powinien powstać w jednym naczyniu i bez długiego pieczenia.",
+          "catalogTaskId": "set-5-task-13",
+          "isSpecial": false
+        },
+        {
+          "order": 14,
+          "text": "Dziś jest Dzień Czerwono-Zielonego Talerza — przygotuj posiłek, w którym pojawią się oba świąteczne kolory. Możesz wykorzystać pomidory, paprykę, szpinak, pesto, winogrona albo zupełnie inne składniki.",
+          "catalogTaskId": "set-5-task-14",
+          "isSpecial": false
+        },
+        {
+          "order": 15,
+          "text": "Dziś jest Dzień Karmelizowanych Orzechów — podgrzej na patelni garść orzechów z odrobiną cukru, cynamonu i szczyptą soli. Po ostygnięciu przełóż je do małej miseczki i podaj jak przekąskę z jarmarku.",
+          "catalogTaskId": "set-5-task-15",
+          "isSpecial": true
+        },
+        {
+          "order": 16,
+          "text": "Dziś jest Dzień Małych Kanapek — przygotuj trzy niewielkie kanapki, każdą z innymi dodatkami, i ułóż je na talerzu jak małe menu degustacyjne. Jednej nadaj najbardziej świąteczny wygląd.",
+          "catalogTaskId": "set-5-task-16",
+          "isSpecial": false
+        },
+        {
+          "order": 17,
+          "text": "Dziś jest Dzień Świątecznego Koktajlu Bezalkoholowego — połącz sok jabłkowy lub żurawinowy z wodą gazowaną i plastrem cytrusa. Podaj napój w ładnej szklance lub kieliszku i nadaj mu własną świąteczną nazwę.",
+          "catalogTaskId": "set-5-task-17",
+          "isSpecial": true
+        },
+        {
+          "order": 18,
+          "text": "Dziś jest Dzień Zupy, Która Rozgrzewa — przygotuj prostą zupę krem albo ulubioną zimową zupę. Podaj ją z grzankami i potraktuj jak główny punkt chłodnego wieczoru.",
+          "catalogTaskId": "set-5-task-18",
+          "isSpecial": false
+        },
+        {
+          "order": 19,
+          "text": "Dziś jest Dzień Kulinarnej Niespodzianki — wybierz dobrze znane danie i dodaj mu jeden świąteczny akcent: korzenną przyprawę, żurawinę, pomarańczę, orzechy albo nietypowy sposób podania.",
+          "catalogTaskId": "set-5-task-19",
+          "isSpecial": false
+        },
+        {
+          "order": 20,
+          "text": "Dziś jest Dzień Małej Degustacji Herbat — zaparz dwie różne herbaty i spróbuj ich bez pośpiechu. Do jednej dodaj plaster cytrusa, do drugiej wybraną przyprawę, a potem zdecyduj, która zostaje „herbatą tych świąt”.",
+          "catalogTaskId": "set-5-task-20",
+          "isSpecial": true
+        },
+        {
+          "order": 21,
+          "text": "Dziś jest Dzień Świątecznej Grzanki — przygotuj grzankę z serem i dodatkiem, którego zwykle nie używasz, np. żurawiną, gruszką albo odrobiną miodu. Sprawdź, czy słodko-słone połączenie trafi do Twojego świątecznego menu.",
+          "catalogTaskId": "set-5-task-21",
+          "isSpecial": false
+        },
+        {
+          "order": 22,
+          "text": "Dziś jest Dzień Jadalnego Prezentu — przygotuj mały słoiczek lub woreczek z domową mieszanką: orzechami, ciasteczkami albo porcją składników do kakao. Dodaj ręcznie napisaną etykietę.",
+          "catalogTaskId": "set-5-task-22",
+          "isSpecial": true
+        },
+        {
+          "order": 23,
+          "text": "Dziś jest Dzień Świątecznego Śniadania — niezależnie od tego, co jesz, podaj śniadanie odrobinę ładniej niż zwykle. Wystarczą serwetka, ciepły napój i jeden grudniowy detal na stole.",
+          "catalogTaskId": "set-5-task-23",
+          "isSpecial": false
+        },
+        {
+          "order": 24,
+          "text": "Dziś jest Dzień Ciasteczkowego Pojedynku — wybierz dwa rodzaje ciastek lub pierników i zrób degustację w ciemno. Zwycięski smak otrzymuje tytuł „Oficjalnego Smaku Grudnia”.",
+          "catalogTaskId": "set-5-task-24",
+          "isSpecial": true
+        }
+      ]
+    },
+    {
+      "setNumber": 6,
+      "title": "Refleksja i relaks",
+      "description": "Zadania na spokojne chwile refleksji i relaksu w grudniu.",
+      "tasks": [
+        {
+          "order": 1,
+          "text": "Dziś jest Dzień Listu do Przyszłego Siebie — napisz pół strony do siebie i schowaj ją do przyszłego grudnia. Zapisz, czego dziś pragniesz, co zaprząta Ci głowę i jaką wiadomość chcesz przekazać sobie na kolejne święta.",
+          "catalogTaskId": "set-6-task-1",
+          "isSpecial": true
+        },
+        {
+          "order": 2,
+          "text": "Dziś jest Dzień Trzech Dobrych Scen — zapisz trzy konkretne chwile z mijającego roku, do których chcesz kiedyś wrócić pamięcią. Zamiast całych wydarzeń opisz po jednej scenie: miejsce, ludzi, zapach albo zdanie, które zostało w głowie.",
+          "catalogTaskId": "set-6-task-2",
+          "isSpecial": true
+        },
+        {
+          "order": 3,
+          "text": "Dziś jest Dzień Roku w Sześciu Słowach — spróbuj opisać mijający rok dokładnie sześcioma słowami. Potem dodaj siódme — takie, które chcesz zabrać ze sobą w nowy rok.",
+          "catalogTaskId": "set-6-task-3",
+          "isSpecial": true
+        },
+        {
+          "order": 4,
+          "text": "Dziś jest Dzień Zdjęcia Roku — przejrzyj galerię i wybierz jedno zdjęcie, które najlepiej opowiada historię Twojego roku. Dopisz do niego krótki podpis tylko dla siebie i nie publikuj go nigdzie.",
+          "catalogTaskId": "set-6-task-4",
+          "isSpecial": true
+        },
+        {
+          "order": 5,
+          "text": "Dziś jest Dzień Zimowego Spaceru Pięciu Zmysłów — podczas krótkiego spaceru świadomie uruchom wszystkie zmysły: wypatrz jeden szczegół, wsłuchaj się w jeden dźwięk, rozpoznaj jeden zapach i dotknij powierzchni o ciekawej fakturze. Po powrocie zwróć jeszcze uwagę na smak pierwszego łyku ciepłego napoju.",
+          "catalogTaskId": "set-6-task-5",
+          "isSpecial": true
+        },
+        {
+          "order": 6,
+          "text": "Dziś jest Dzień Jednej Rzeczy Mniej — zapisz coś, czego nie chcesz zabierać ze sobą do kolejnego roku: nawyk, zobowiązanie, sposób myślenia albo niepotrzebną presję. Nie musisz dziś niczego rozwiązywać — wystarczy to nazwać.",
+          "catalogTaskId": "set-6-task-6",
+          "isSpecial": false
+        },
+        {
+          "order": 7,
+          "text": "Dziś jest Dzień Cichej Herbaty — przygotuj ciepły napój i przez pierwsze dziesięć minut nie włączaj muzyki, telewizora ani telefonu. Zadaj sobie tylko jedno pytanie: „Czego najbardziej potrzebuję tej zimy?”",
+          "catalogTaskId": "set-6-task-7",
+          "isSpecial": false
+        },
+        {
+          "order": 8,
+          "text": "Dziś jest Dzień Dobrych Ludzi — zapisz imiona trzech osób, które w tym roku wniosły coś dobrego do Twojego życia. Przy każdej dopisz jedno konkretne zdanie o tym, za co ją cenisz.",
+          "catalogTaskId": "set-6-task-8",
+          "isSpecial": true
+        },
+        {
+          "order": 9,
+          "text": "Dziś jest Dzień Wspomnienia z Dzieciństwa — przypomnij sobie jeden grudniowy moment sprzed lat i zapisz tyle szczegółów, ile potrafisz przywołać. Nie oceniaj, czy był ważny — po prostu sprawdź, co z niego zostało w pamięci.",
+          "catalogTaskId": "set-6-task-9",
+          "isSpecial": false
+        },
+        {
+          "order": 10,
+          "text": "Dziś jest Dzień Godziny Bez Powiadomień — wycisz telefon na godzinę i wcześniej zdecyduj, czym chcesz wypełnić ten czas: książką, spacerem, rozmową, puzzlami albo spokojnym siedzeniem przy stole. Niech to będzie świadoma przerwa, a nie tylko brak ekranu.",
+          "catalogTaskId": "set-6-task-10",
+          "isSpecial": true
+        },
+        {
+          "order": 11,
+          "text": "Dziś jest Dzień Dziesięciu Małych Radości — wypisz dziesięć drobiazgów, które ostatnio poprawiły Ci humor. Jeśli przy siódmym zacznie brakować pomysłów, nie kończ — właśnie wtedy warto poszukać tych mniej oczywistych.",
+          "catalogTaskId": "set-6-task-11",
+          "isSpecial": true
+        },
+        {
+          "order": 12,
+          "text": "Dziś jest Dzień Powodu do Dumy — zapisz jedną rzecz z tego roku, która daje Ci poczucie satysfakcji, nawet jeśli nikt poza Tobą jej nie zauważył.",
+          "catalogTaskId": "set-6-task-12",
+          "isSpecial": false
+        },
+        {
+          "order": 13,
+          "text": "Dziś jest Dzień Rozmowy o Dawnych Świętach — zapytaj bliską osobę: „Jak wyglądały święta w Twoim dzieciństwie?” Posłuchaj odpowiedzi bez poprawiania, dopowiadania i porównywania jej ze swoimi wspomnieniami.",
+          "catalogTaskId": "set-6-task-13",
+          "isSpecial": false
+        },
+        {
+          "order": 14,
+          "text": "Dziś jest Dzień Świątecznej Intencji — wybierz jedno słowo, które ma opisywać tegoroczne święta: „spokój”, „bliskość”, „zabawa”, „wdzięczność” albo dowolne inne. Wróć do niego myślami, gdy przedświąteczny pośpiech zacznie przejmować kontrolę.",
+          "catalogTaskId": "set-6-task-14",
+          "isSpecial": true
+        },
+        {
+          "order": 15,
+          "text": "Dziś jest Dzień Starej Kartki — jeśli masz zachowaną świąteczną kartkę, list lub wiadomość sprzed lat, przeczytaj ją jeszcze raz. Zwróć uwagę na to, co dziś odbierasz inaczej niż w chwili, gdy ta wiadomość powstała.",
+          "catalogTaskId": "set-6-task-15",
+          "isSpecial": false
+        },
+        {
+          "order": 16,
+          "text": "Dziś jest Dzień Jednego Marzenia — zapisz jedno doświadczenie, które naprawdę chcesz przeżyć w przyszłym roku. Obok dopisz najmniejszy możliwy krok, który może przybliżyć Cię do niego już po świętach.",
+          "catalogTaskId": "set-6-task-16",
+          "isSpecial": false
+        },
+        {
+          "order": 17,
+          "text": "Dziś jest Dzień Domowego Zachodu — znajdź miejsce przy oknie i przez kilka minut obserwuj, jak pod koniec dnia zmienia się światło. Zdjęcie zrób dopiero na sam koniec — najpierw po prostu popatrz.",
+          "catalogTaskId": "set-6-task-17",
+          "isSpecial": false
+        },
+        {
+          "order": 18,
+          "text": "Dziś jest Dzień Własnej Tradycji — wypisz trzy świąteczne zwyczaje, które pielęgnuje się w Twoim domu, i wybierz ten, który najbardziej chcesz zachować na kolejne lata. Dopisz jedno zdanie wyjaśniające, dlaczego właśnie ten.",
+          "catalogTaskId": "set-6-task-18",
+          "isSpecial": true
+        },
+        {
+          "order": 19,
+          "text": "Dziś jest Dzień Głosu do Przyszłości — nagraj minutową wiadomość głosową do siebie i zachowaj ją do kolejnych świąt. Powiedz, co jest teraz ważne w Twoim życiu i czego nie chcesz zapomnieć.",
+          "catalogTaskId": "set-6-task-19",
+          "isSpecial": false
+        },
+        {
+          "order": 20,
+          "text": "Dziś jest Dzień Jednego Dobrego Zdania — zapisz zdanie, które dobrze byłoby usłyszeć w trudniejszym dniu. Potem przeczytaj je sobie na głos tak, jakby ktoś naprawdę kierował te słowa właśnie do Ciebie.",
+          "catalogTaskId": "set-6-task-20",
+          "isSpecial": false
+        },
+        {
+          "order": 21,
+          "text": "Dziś jest Dzień Powolnego Śniadania — zjedz jeden posiłek bez telefonu i robienia czegokolwiek równocześnie. Przez pierwsze pięć minut skup się wyłącznie na smaku, zapachu i chwili przy stole.",
+          "catalogTaskId": "set-6-task-21",
+          "isSpecial": false
+        },
+        {
+          "order": 22,
+          "text": "Dziś jest Dzień Rodzinnego „Pamiętasz?” — wybierz jedno wspólne wydarzenie z mijającego roku i poproś domowników, aby każdy opowiedział, co zapamiętał z niego najbardziej. Zobaczcie, jak różne mogą być wspomnienia tej samej chwili.",
+          "catalogTaskId": "set-6-task-22",
+          "isSpecial": false
+        },
+        {
+          "order": 23,
+          "text": "Dziś jest Dzień Małej Kapsuły Czasu — włóż do koperty krótką notatkę o tym, co obecnie lubisz, czym żyjesz i czego najczęściej słuchasz. Dopisz datę i otwórz kopertę za rok.",
+          "catalogTaskId": "set-6-task-23",
+          "isSpecial": true
+        },
+        {
+          "order": 24,
+          "text": "Dziś jest Dzień Pięciu Minut Przy Oknie — usiądź przy oknie i przez pięć minut po prostu patrz na zewnątrz. Jeśli chcesz, weź coś ciepłego do picia. Na koniec zapisz jedną rzecz, która wcześniej umykała Twojej uwadze.",
+          "catalogTaskId": "set-6-task-24",
+          "isSpecial": false
+        }
+      ]
+    }
+  ],
+  "textToCatalogTaskId": {
+    "dziś jest dzień świątecznych brzmień — wybierz dziesięć piosenek, które naprawdę kojarzą ci się ze świętami, i ułóż z nich własną playlistę. na koniec dodaj jeden utwór, który od dziś będzie „piosenką tych świąt”.": "set-1-task-1",
+    "dziś jest dzień kolędowego zgadywania — odtwórz pierwsze pięć sekund kilku świątecznych piosenek i sprawdź, kto pierwszy odgadnie tytuł. za każdą poprawną odpowiedź przyznaj jeden „piernikowy punkt”.": "set-1-task-2",
+    "dziś jest dzień świątecznego karaoke — wybierz piosenkę, której refren zna prawie każdy, i zaśpiewaj go samodzielnie albo razem z kimś bliskim. talent nie jest wymagany — liczy się wykonanie z pełnym przekonaniem.": "set-1-task-3",
+    "dziś jest dzień jarmarkowej misji — wybierz się na jarmark lub świątecznie udekorowany rynek i znajdź trzy rzeczy: najładniejszą dekorację, najbardziej świąteczny zapach i drobiazg, który najmocniej przypomina ci dzieciństwo.": "set-1-task-4",
+    "dziś jest dzień bożonarodzeniowego quizu — przygotuj pięć pytań o bożym narodzeniu i urządź domowy turniej. niech jedno pytanie będzie podchwytliwe, a zwycięzca wybierze dzisiejszy świąteczny film albo deser.": "set-1-task-5",
+    "dziś jest dzień dorosłego listu do mikołaja — zapisz trzy rzeczy, których naprawdę sobie życzysz: jedną materialną, jedną związaną z przeżyciem lub doświadczeniem oraz jedną, której nie da się kupić.": "set-1-task-6",
+    "dziś jest dzień świątecznego bingo — wypisz dziewięć rzeczy, które możesz zobaczyć podczas grudniowego spaceru, np. renifera, dużą gwiazdę, czerwony wieniec czy migające lampki. spróbuj znaleźć tyle z nich, by skreślić cały rząd.": "set-1-task-7",
+    "dziś jest dzień nietypowego zdjęcia — zrób świąteczne zdjęcie w miejscu, które na co dzień wcale nie kojarzy się ze świętami. im większy kontrast między miejscem a świątecznym akcentem, tym ciekawszy efekt.": "set-1-task-8",
+    "dziś jest dzień domowej wioski — zbuduj miniaturową świąteczną scenkę z rzeczy, które już masz: pudełek, figurek, waty, klocków albo papieru. wieczorem podświetl ją małą lampką lub lampkami led.": "set-1-task-9",
+    "dziś jest dzień świątecznej reklamy — wybierz zwykły domowy przedmiot i w 30 sekund zareklamuj go jako najbardziej ekskluzywny prezent bożonarodzeniowy. im bardziej poważna prezentacja, tym zabawniejszy efekt.": "set-1-task-10",
+    "dziś jest dzień świątecznej ciekawostki — znajdź jeden zaskakujący fakt o tradycjach bożonarodzeniowych w dowolnym kraju i opowiedz go komuś bliskiemu. wybierz coś, co będzie nowością także dla ciebie.": "set-1-task-11",
+    "dziś jest dzień świątecznej parodii — wybierz znany refren i zmień kilka słów tak, żeby opowiadał o choince, piernikach albo pakowaniu prezentów. potem koniecznie wykonaj swoją wersję na głos.": "set-1-task-12",
+    "dziś jest dzień dawnej kolędy — posłuchaj starej polskiej kolędy w tradycyjnym wykonaniu i sprawdź, ile jej zwrotek znasz. wybierz jeden wers, który najmocniej przywołuje świąteczny obraz lub wspomnienie.": "set-1-task-13",
+    "dziś jest dzień filmowego seansu specjalnego — wybierz świąteczny film, przygotuj coś ciepłego do picia i zgaś główne światło. na czas seansu odłóż telefon poza zasięg ręki.": "set-1-task-14",
+    "dziś jest dzień polowania na iluminacje — wybierz się po zmroku na 20-minutowy spacer i przyznawaj punkty mijanym dekoracjom: jeden za lampki, dwa za renifera i trzy za naprawdę efektownie udekorowany dom lub witrynę.": "set-1-task-15",
+    "dziś jest dzień świątecznego stroju — załóż jeden świąteczny element i wymyśl jego historię: skąd „przybył”, do kogo wcześniej należał albo jaką magiczną moc mógłby mieć.": "set-1-task-16",
+    "dziś jest dzień fotograficznego powrotu — znajdź stare grudniowe zdjęcie i spróbuj odtworzyć je dziś w podobnym miejscu lub w podobnej pozie. na koniec zestaw oba ujęcia obok siebie.": "set-1-task-17",
+    "dziś jest dzień najdziwniejszej bombki — wybierz najbardziej nietypową ozdobę, jaką masz, i wymyśl jej krótką legendę. jeśli żadna się nie wyróżnia, wskaż zwykły domowy przedmiot, który mógłby zostać bombką, i uzasadnij swój wybór.": "set-1-task-18",
+    "dziś jest dzień świątecznego alfabetu — zagraj z kimś bliskim: na zmianę wymieniajcie świąteczne słowa zaczynające się od kolejnych liter alfabetu. osoba, która nie poda hasła w ciągu pięciu sekund, odpada z rundy.": "set-1-task-19",
+    "dziś jest dzień mikołajowego komunikatu — nagraj krótką wiadomość głosem świętego mikołaja i wyślij ją komuś bliskiemu. może być zabawna, ale niech zawiera też jedno naprawdę miłe zdanie.": "set-1-task-20",
+    "dziś jest dzień tajnej misji elfa — wybierz jednego domownika i w ciągu dnia zrób dla niego trzy drobne, miłe rzeczy tak, aby nie od razu było wiadomo, kto za nimi stoi.": "set-1-task-21",
+    "dziś jest dzień świątecznych kalamburów — wylosuj świąteczne hasło, pokaż je bez słów, a reszta zgaduje, zanim minie minuta. potem losuj kolejne: w tej rundzie hasła się nie powtarzają. tytuł „kevin sam w domu” możesz potraktować jako poziom trudny.": "set-1-task-22",
+    "dziś jest dzień prezentowego detektywa — wybierz zapakowany prezent albo zamknięte pudełko i razem z kimś spróbujcie odgadnąć jego zawartość wyłącznie po kształcie, wadze i dźwięku. bez podglądania.": "set-1-task-23",
+    "dziś jest dzień grudniowego rankingu — ułóż ranking pięciu ulubionych świątecznych filmów, potraw, piosenek albo tradycji. porównaj go z rankingiem kogoś bliskiego i znajdź przynajmniej jedną wspólną pozycję.": "set-1-task-24",
+    "dziś jest dzień świątecznej stacji pakowania — zbierz w jednym miejscu papier, taśmę, nożyczki, wstążki i etykiety. dzięki temu przy kolejnym pakowaniu prezentów wszystko będzie pod ręką.": "set-2-task-1",
+    "dziś jest dzień testu lampek — sprawdź wszystkie świąteczne lampki, zanim naprawdę będą potrzebne. rozplącz przewody, wymień baterie i odłóż osobno te zestawy, które wymagają naprawy.": "set-2-task-2",
+    "dziś jest dzień choinkowej przestrzeni — przygotuj miejsce na drzewko albo uporządkuj przestrzeń wokół już stojącej choinki. zostaw obok trochę wolnego miejsca na prezenty i rodzinne zdjęcia.": "set-2-task-3",
+    "dziś jest dzień pudełka awaryjnego — przygotuj mały zestaw z taśmą, nożyczkami, bateriami, zapasowymi haczykami, sznurkiem i kilkoma torebkami prezentowymi. w grudniu taki zestaw potrafi uratować niejedną sytuację.": "set-2-task-4",
+    "dziś jest dzień listy bez paniki — zapisz wszystkie osoby, dla których planujesz prezenty, a przy każdym imieniu dopisz jedną konkretną rzecz do zrobienia. jeden prosty plan jest lepszy niż próba pamiętania o wszystkim naraz.": "set-2-task-5",
+    "dziś jest dzień świątecznej spiżarni — sprawdź zapasy mąki, cukru, kakao, przypraw, bakalii i innych produktów, które zwykle przydają się w grudniu. na listę zakupów dopisz tylko to, czego rzeczywiście brakuje.": "set-2-task-6",
+    "dziś jest dzień wolnej półki — opróżnij jedną półkę albo fragment blatu i przeznacz to miejsce na świąteczne rzeczy: słodycze, herbaty, serwetki lub produkty do pieczenia. dzięki temu nie będą porozkładane po całym domu.": "set-2-task-7",
+    "dziś jest dzień prezentowego magazynu — wyznacz jedno dyskretne miejsce na prezenty i rzeczy czekające na zapakowanie. dodaj tam torbę lub pudełko na małe drobiazgi, które łatwo zgubić.": "set-2-task-8",
+    "dziś jest dzień papierowej kontroli — przejrzyj papier, torby i dodatki do pakowania prezentów. zachowaj wstążki, pudełka i większe kawałki papieru, które można wykorzystać ponownie, a pozbądź się tylko tego, co naprawdę nieprzydatne.": "set-2-task-9",
+    "dziś jest dzień stołowej próby generalnej — wyjmij obrus, serwetki i naczynia, których chcesz użyć podczas świąt. przygotuj jedno próbne nakrycie — od razu zobaczysz, czy czegoś brakuje.": "set-2-task-10",
+    "dziś jest dzień kuchennej przestrzeni — zwolnij fragment blatu i przeznacz go na świąteczne gotowanie lub pieczenie. nawet niewielka wolna powierzchnia potrafi później oszczędzić sporo nerwów.": "set-2-task-11",
+    "dziś jest dzień lodówkowego planu — usuń przeterminowane produkty i wyznacz jedną półkę na świąteczne zapasy. dzięki temu przed wigilią łatwiej będzie znaleźć miejsce na przygotowane potrawy.": "set-2-task-12",
+    "dziś jest dzień zamrażarkowego oddechu — sprawdź zawartość zamrażarki i zrób trochę miejsca na świąteczne przygotowania. wybierz dwie rzeczy, które warto zużyć w najbliższych dniach.": "set-2-task-13",
+    "dziś jest dzień dekoracyjnego serwisu — obejrzyj ulubione ozdoby i napraw jeden drobiazg: urwany sznurek, luźną kokardę, brakujący haczyk albo odklejony element. kilka minut pracy może przedłużyć życie dekoracji o kolejne sezony.": "set-2-task-14",
+    "dziś jest dzień gościnnego wieszaka — jeśli spodziewasz się gości, przygotuj kilka wolnych wieszaków i trochę miejsca na kurtki. to niewielki detal, który w świąteczny dzień naprawdę ułatwia życie.": "set-2-task-15",
+    "dziś jest dzień ciepłego wejścia — uporządkuj przedpokój i dodaj w nim jeden świąteczny akcent. to pierwsze miejsce, które widzisz po powrocie do domu, i jedno z pierwszych, które zobaczą goście.": "set-2-task-16",
+    "dziś jest dzień obrusowej gotowości — sprawdź wcześniej świąteczny obrus lub bieżnik. jeśli wymaga prania albo prasowania, zrób to dziś i odłóż go gotowego do użycia.": "set-2-task-17",
+    "dziś jest dzień prezentowych etykiet — przygotuj karteczki z imionami osób, które chcesz obdarować. podczas pakowania unikniesz później zgadywania, które podobne pudełko jest dla kogo.": "set-2-task-18",
+    "dziś jest dzień grudniowego kalendarza — wpisz w jedno miejsce ważne terminy: spotkania, dostawy, zakupy, szkolne wydarzenia i rodzinne plany. zostaw przynajmniej jeden wieczór całkowicie wolny.": "set-2-task-19",
+    "dziś jest dzień świątecznego menu — spisz potrawy, które naprawdę chcesz przygotować, i zaznacz te, które można zrobić wcześniej. im mniej decyzji zostawisz na ostatnią chwilę, tym więcej czasu podczas świąt zostanie dla ciebie.": "set-2-task-20",
+    "dziś jest dzień naczyń specjalnych — sprawdź półmiski, miski, dzbanki i tace, które zwykle wyjmujesz tylko na wyjątkowe okazje. umyj potrzebne rzeczy i odłóż je razem w łatwo dostępnym miejscu.": "set-2-task-21",
+    "dziś jest dzień baterii mikołaja — sprawdź, czy masz zapas baterii do lampek, zabawek i drobnych dekoracji. kilka dodatkowych sztuk może uratować sytuację dokładnie wtedy, gdy sklepy będą już zamknięte.": "set-2-task-22",
+    "dziś jest dzień małych zapasów — sprawdź, czy masz pod ręką serwetki, worki na śmieci, ręczniki papierowe i zapasowe lampki lub świece led. to mało świąteczne zakupy, ale bardzo świąteczny spokój.": "set-2-task-23",
+    "dziś jest dzień awaryjnej listy prezentów — zapisz trzy uniwersalne drobiazgi, które można szybko kupić lub przygotować. taka lista przyda się, jeśli pojawi się niespodziewany gość albo przypomnisz sobie o kimś w ostatniej chwili.": "set-2-task-24",
+    "dziś jest dzień tajemniczego elfa — zrób komuś drobną przysługę anonimowo i nie zdradzaj się do końca dnia. może to być posprzątane miejsce, przygotowany napój albo mały upominek zostawiony z karteczką „dla ciebie”.": "set-3-task-1",
+    "dziś jest dzień prawdziwego „dziękuję” — wybierz jedną osobę i napisz jej, za co konkretnie chcesz podziękować. zamiast ogólnego „dzięki za wszystko” przywołaj jedną sytuację, która naprawdę została ci w pamięci.": "set-3-task-2",
+    "dziś jest dzień ciepłego telefonu — zadzwoń do kogoś, z kim od dawna nie masz kontaktu, bez żadnej sprawy do załatwienia. jedyny cel: dowiedzieć się, co naprawdę u tej osoby słychać.": "set-3-task-3",
+    "dziś jest dzień starego zdjęcia — znajdź wspólne zdjęcie sprzed lat i wyślij je osobie, która na nim jest. dodaj jedno zdanie o tym, co najbardziej pamiętasz z tamtego dnia.": "set-3-task-4",
+    "dziś jest dzień dobrego kubka — przygotuj komuś ulubioną kawę, herbatę albo kakao bez wcześniejszej zapowiedzi i podaj napój tak, jakby był małym prezentem.": "set-3-task-5",
+    "dziś jest dzień komplementu z uzasadnieniem — powiedz komuś coś miłego i od razu dodaj, dlaczego tak uważasz. konkretne, szczere słowa zostają w pamięci dłużej niż samo „ładnie wyglądasz”.": "set-3-task-6",
+    "dziś jest dzień ręcznej kartki — przygotuj prostą kartkę świąteczną dla konkretnej osoby i dopisz kilka zdań własnymi słowami. nie musi być idealna — ważne, żeby była osobista.": "set-3-task-7",
+    "dziś jest dzień pomocnego elfa — wybierz obowiązek, którego ktoś bliski nie lubi, i wykonaj go bez zapowiedzi. najlepiej tak, aby efekt był miłą niespodzianką zauważoną dopiero po chwili.": "set-3-task-8",
+    "dziś jest dzień małej paczuszki — przygotuj drobiazg dla osoby, która raczej nie spodziewa się prezentu: kilka słodyczy, herbatę, mandarynkę albo domowe ciastko. dodaj krótką, serdeczną karteczkę.": "set-3-task-9",
+    "dziś jest dzień dobrego słowa dla nieznajomego — podziękuj komuś, kogo zwykle mijasz bez dłuższej rozmowy: kurierowi, kasjerowi, kierowcy, ochroniarzowi albo osobie sprzątającej. wystarczy jedno proste i szczere zdanie.": "set-3-task-10",
+    "dziś jest dzień świątecznej darowizny — wybierz jedną rzecz w dobrym stanie, której już nie potrzebujesz, i przekaż ją komuś lub organizacji, która rzeczywiście może z niej skorzystać.": "set-3-task-11",
+    "dziś jest dzień jednej pełnej torby — podczas zakupów wybierz kilka trwałych produktów na lokalną zbiórkę żywności lub dla miejsca pomagającego osobom w potrzebie. nie musi być ich dużo — liczy się świadomy gest.": "set-3-task-12",
+    "dziś jest dzień łańcucha dobra — zrób dla kogoś coś miłego i poproś tylko o jedno: aby przy najbliższej okazji przekazać podobny gest dalej.": "set-3-task-13",
+    "dziś jest dzień wiadomości bez powodu — napisz do kogoś: „pomyślałem dziś o tobie i chcę ci tylko życzyć dobrego dnia”. bez pytania, prośby ani ukrytego celu.": "set-3-task-14",
+    "dziś jest dzień domowego ratunku — zapytaj bliską osobę: „co mogę ci dziś zdjąć z głowy?” wybierz jedną rzecz z odpowiedzi i naprawdę się nią zajmij.": "set-3-task-15",
+    "dziś jest dzień słodkiego dzielenia — przygotuj lub kup coś niewielkiego do jedzenia i podziel się z sąsiadem, współpracownikiem albo inną osobą, którą regularnie spotykasz.": "set-3-task-16",
+    "dziś jest dzień głosu wdzięczności — nagraj krótką wiadomość głosową dla ważnej osoby i powiedz, za co ją cenisz. głos potrafi przekazać znacznie więcej ciepła niż samo emoji.": "set-3-task-17",
+    "dziś jest dzień dobrego wspomnienia — przypomnij komuś historię, w której zrobił dla ciebie coś ważnego. dla tej osoby mógł to być drobiazg, ale tobie ten gest zapadł w pamięć.": "set-3-task-18",
+    "dziś jest dzień trzech uśmiechów — spróbuj poprawić dziś humor trzem osobom: żartem, pomocą, komplementem albo małą niespodzianką. każdy gest może być inny.": "set-3-task-19",
+    "dziś jest dzień sąsiedzkiego „cześć” — przywitaj się lub zamień kilka zdań z sąsiadem, którego zwykle mijasz w pośpiechu. grudzień to dobry moment, żeby choć trochę przełamać codzienną anonimowość.": "set-3-task-20",
+    "dziś jest dzień prezentu z czasu — podaruj komuś 20 minut pełnej uwagi. bez telefonu i robienia kilku rzeczy naraz — po prostu porozmawiaj albo posłuchaj.": "set-3-task-21",
+    "dziś jest dzień pomocy przy prezentach — zaproponuj komuś pomoc w pakowaniu, wyborze upominku, odebraniu paczki lub innym przedświątecznym drobiazgu. mała pomoc może komuś oszczędzić sporo stresu.": "set-3-task-22",
+    "dziś jest dzień dobrej opinii — jeśli masz dobre doświadczenie z małą firmą, lokalnym sklepem, restauracją albo usługodawcą, zostaw uczciwą pozytywną opinię. tobie zajmie to kilka minut, a dla małego biznesu może mieć duże znaczenie.": "set-3-task-23",
+    "dziś jest dzień rodzinnych wspomnień — zadzwoń lub odwiedź starszą osobę w rodzinie i poproś o jedno świąteczne wspomnienie z dzieciństwa. dziś to jej opowieść jest najważniejsza.": "set-3-task-24",
+    "dziś jest dzień bombki z historią — zrób prostą ozdobę i zapisz na jej odwrocie rok oraz jedno słowo opisujące ten grudzień. za kilka lat może być czymś więcej niż tylko dekoracją.": "set-4-task-1",
+    "dziś jest dzień własnego papieru prezentowego — użyj zwykłego papieru i ozdób go powtarzalnym wzorem wykonanym flamastrem, stemplem albo końcówką gumki od ołówka. nawet prosty motyw powtórzony wiele razy daje świetny efekt.": "set-4-task-2",
+    "dziś jest dzień eleganckiej etykietki — wytnij z grubszego papieru kilka prostych etykiet, zrób w nich otwory i przewlecz cienki sznurek. jedną ozdób małą gałązką albo narysowaną gwiazdką.": "set-4-task-3",
+    "dziś jest dzień świątecznej pocztówki — stwórz kartkę inspirowaną miejscem, w którym mieszkasz. dodaj charakterystyczny element miasta lub okolicy, ale pokaż go w zimowej, świątecznej wersji.": "set-4-task-4",
+    "dziś jest dzień papierowej wioski — z papieru lub cienkiego kartonu wytnij trzy proste domki z okienkami. ustaw je przed lampkami led i zobacz, jak po zmroku zmieniają się w małe świąteczne miasteczko.": "set-4-task-5",
+    "dziś jest dzień masy solnej — zrób jedną lub kilka prostych zawieszek, odciskając w masie gałązkę, koronkę albo wzór z foremki. po wyschnięciu dodaj sznurek, aby można było je zawiesić.": "set-4-task-6",
+    "dziś jest dzień świątecznego stempla — przygotuj prosty stempel z ziemniaka, gąbki albo gumki i użyj go do ozdobienia papieru, koperty lub etykiet prezentowych. najlepiej wybierz jeden łatwy do powtarzania motyw.": "set-4-task-7",
+    "dziś jest dzień zimowego kolażu — wybierz kilka zdjęć, fragmentów papieru i napisów kojarzących ci się z grudniem, a następnie ułóż z nich jedną kompozycję zatytułowaną „mój świąteczny klimat”.": "set-4-task-8",
+    "dziś jest dzień zdjęcia jak z pocztówki — ustaw niewielki świąteczny kadr z rzeczy, które masz w domu, i zrób mu zdjęcie. spróbuj wykorzystać światło padające z boku zamiast lampy błyskowej.": "set-4-task-9",
+    "dziś jest dzień ozdobnej koperty — weź zwykłą kopertę i dodaj jeden charakterystyczny detal: ręcznie narysowaną ramkę, pieczątkę, naklejkę albo małą ilustrację w rogu. czasem jeden motyw wystarczy, żeby całość wyglądała wyjątkowo.": "set-4-task-10",
+    "dziś jest dzień świątecznej zakładki — z kawałka grubszego papieru zrób zakładkę do książki i dodaj krótkie grudniowe hasło. taki drobiazg powstaje w kilka minut, a może służyć przez cały rok.": "set-4-task-11",
+    "dziś jest dzień małego wianka — z kilku elastycznych gałązek, drucika albo papieru wykonaj niewielki wianek. dodaj tylko jeden akcent: kokardkę, gwiazdkę lub szyszkę.": "set-4-task-12",
+    "dziś jest dzień papierowego renifera — z kartonu lub papieru zrób prostą sylwetkę renifera i dodaj czerwony nos. gotową postać wykorzystaj jako dekorację, etykietę albo element kartki.": "set-4-task-13",
+    "dziś jest dzień świątecznej typografii — napisz „poczuj magię świąt” lub inne ulubione zdanie w trzech różnych stylach. wybierz wersję, która najbardziej nadaje się do oprawienia albo wykorzystania jako dekoracja.": "set-4-task-14",
+    "dziś jest dzień pudełka z charakterem — ozdób zwykłe pudełko po butach lub przesyłce tak, aby wyglądało jak świąteczne opakowanie. wystarczą papier, sznurek i jeden powtarzający się motyw.": "set-4-task-15",
+    "dziś jest dzień origami — z jednej kartki złóż prostą choinkę, gwiazdkę albo postać mikołaja. wybierz wzór, który można wykonać w mniej niż 15 minut.": "set-4-task-16",
+    "dziś jest dzień świątecznej ramki — wybierz rodzinne zdjęcie i przygotuj dla niego papierową ramkę z datą oraz krótkim podpisem. nie musi być perfekcyjna — ważne, żeby miała osobisty charakter.": "set-4-task-17",
+    "dziś jest dzień rysunku jedną linią — spróbuj narysować choinkę, renifera albo bombkę bez odrywania długopisu od kartki. zrób trzy próby i zachowaj tę, która wyszła najciekawiej lub najzabawniej.": "set-4-task-18",
+    "dziś jest dzień prezentowej pieczęci — zaprojektuj prosty symbol do oznaczania prezentów, np. gwiazdkę z inicjałem. powtórz go na wszystkich etykietach, których dziś używasz, jak własny znak pracowni mikołaja.": "set-4-task-19",
+    "dziś jest dzień świątecznego komiksu — narysuj cztery kadry pokazujące największy problem świętego mikołaja w tym roku. nie przejmuj się poziomem rysunków — patyczaki są całkowicie dozwolone.": "set-4-task-20",
+    "dziś jest dzień łańcucha wspomnień — przygotuj kilka papierowych pasków i na każdym zapisz jedno dobre wspomnienie z mijającego roku. połącz paski w mały łańcuch i zachowaj go do wigilii.": "set-4-task-21",
+    "dziś jest dzień kartonowej gwiazdy — wytnij gwiazdę z niepotrzebnego pudełka, a następnie oklej ją papierem albo pomaluj. dodaj otwór i sznurek, aby mogła zawisnąć jak pełnoprawna ozdoba.": "set-4-task-22",
+    "dziś jest dzień świątecznego monogramu — zaprojektuj swój inicjał albo inicjał bliskiej osoby w świątecznym stylu. dodaj do litery gałązkę, gwiazdkę, czapkę mikołaja lub drobny ornament.": "set-4-task-23",
+    "dziś jest dzień papierowego mikołaja — stwórz postać mikołaja wyłącznie z prostych figur: kół, trójkątów i prostokątów. sprawdź, jak niewiele elementów potrzeba, aby postać była od razu rozpoznawalna.": "set-4-task-24",
+    "dziś jest dzień tosta-gwiazdki — przygotuj tost lub grzankę i wytnij z pieczywa gwiazdkę foremką albo nożem. dodaj ulubione składniki i zamień zwykłe śniadanie w mały grudniowy rytuał.": "set-5-task-1",
+    "dziś jest dzień czekoladowej degustacji — wybierz trzy różne czekolady, połam je na małe kawałki i spróbuj w ciemno. oceń każdą pod względem zapachu, smaku i tego, jak bardzo kojarzy ci się ze świętami.": "set-5-task-2",
+    "dziś jest dzień zimowych naleśników — przygotuj naleśniki z jabłkiem i cynamonem albo dodaj te składniki do ulubionego nadzienia. na koniec oprósz całość odrobiną cukru pudru jak świeżym śniegiem.": "set-5-task-3",
+    "dziś jest dzień trufli bez pieczenia — pokrusz herbatniki, połącz je z serkiem lub masą czekoladową i uformuj niewielkie kulki. obtocz je w kakao, wiórkach kokosowych albo posiekanych orzechach.": "set-5-task-4",
+    "dziś jest dzień piernikowego testu — udekoruj trzy pierniki w trzech różnych stylach: eleganckim, zabawnym i celowo przesadzonym. przed zjedzeniem ustaw je obok siebie i zrób pamiątkowe zdjęcie.": "set-5-task-5",
+    "dziś jest dzień świątecznej deski — ułóż na jednym talerzu kilka przekąsek w czerwieni, zieleni i złocie: owoce, sery, orzechy, krakersy albo słodycze. dziś liczy się przede wszystkim kompozycja.": "set-5-task-6",
+    "dziś jest dzień zimowej owsianki — dodaj do owsianki jabłko, cynamon i odrobinę miodu lub syropu. na wierzchu ułóż prosty wzór z orzechów, rodzynek albo plasterków owoców.": "set-5-task-7",
+    "dziś jest dzień cynamonowych ślimaczków — wykorzystaj gotowe ciasto francuskie: posmaruj je masłem, posyp cukrem i cynamonem, zwiń w rulon, pokrój na kawałki i upiecz małe ślimaczki.": "set-5-task-8",
+    "dziś jest dzień gorącej czekolady na bogato — przygotuj kakao albo gorącą czekoladę i dodaj jeden kawiarniany akcent: piankę mleczną, bitą śmietanę, startą czekoladę lub szczyptę cynamonu.": "set-5-task-9",
+    "dziś jest dzień świątecznego popcornu — do gotowego popcornu dodaj odrobinę cynamonu i cukru albo polej część ziaren roztopioną czekoladą. przełóż wszystko do dużej miski i podaj podczas filmu.": "set-5-task-10",
+    "dziś jest dzień jabłka z pieca — wydrąż lub przekrój jabłko, dodaj cynamon, odrobinę miodu i kilka orzechów, a następnie piecz do miękkości. to prosty deser, który przy okazji wypełni dom przyjemnym zapachem.": "set-5-task-11",
+    "dziś jest dzień deseru w szklance — przygotuj prosty deser warstwowy z tego, co masz pod ręką: jogurtu, kremu, pokruszonych ciastek i owoców. dziś ważniejszy od przepisu jest efekt widocznych warstw.": "set-5-task-12",
+    "dziś jest dzień korzennego ciasta w kubku — przygotuj szybkie ciasto w kubku i dodaj odrobinę cynamonu albo przyprawy piernikowej. cały deser powinien powstać w jednym naczyniu i bez długiego pieczenia.": "set-5-task-13",
+    "dziś jest dzień czerwono-zielonego talerza — przygotuj posiłek, w którym pojawią się oba świąteczne kolory. możesz wykorzystać pomidory, paprykę, szpinak, pesto, winogrona albo zupełnie inne składniki.": "set-5-task-14",
+    "dziś jest dzień karmelizowanych orzechów — podgrzej na patelni garść orzechów z odrobiną cukru, cynamonu i szczyptą soli. po ostygnięciu przełóż je do małej miseczki i podaj jak przekąskę z jarmarku.": "set-5-task-15",
+    "dziś jest dzień małych kanapek — przygotuj trzy niewielkie kanapki, każdą z innymi dodatkami, i ułóż je na talerzu jak małe menu degustacyjne. jednej nadaj najbardziej świąteczny wygląd.": "set-5-task-16",
+    "dziś jest dzień świątecznego koktajlu bezalkoholowego — połącz sok jabłkowy lub żurawinowy z wodą gazowaną i plastrem cytrusa. podaj napój w ładnej szklance lub kieliszku i nadaj mu własną świąteczną nazwę.": "set-5-task-17",
+    "dziś jest dzień zupy, która rozgrzewa — przygotuj prostą zupę krem albo ulubioną zimową zupę. podaj ją z grzankami i potraktuj jak główny punkt chłodnego wieczoru.": "set-5-task-18",
+    "dziś jest dzień kulinarnej niespodzianki — wybierz dobrze znane danie i dodaj mu jeden świąteczny akcent: korzenną przyprawę, żurawinę, pomarańczę, orzechy albo nietypowy sposób podania.": "set-5-task-19",
+    "dziś jest dzień małej degustacji herbat — zaparz dwie różne herbaty i spróbuj ich bez pośpiechu. do jednej dodaj plaster cytrusa, do drugiej wybraną przyprawę, a potem zdecyduj, która zostaje „herbatą tych świąt”.": "set-5-task-20",
+    "dziś jest dzień świątecznej grzanki — przygotuj grzankę z serem i dodatkiem, którego zwykle nie używasz, np. żurawiną, gruszką albo odrobiną miodu. sprawdź, czy słodko-słone połączenie trafi do twojego świątecznego menu.": "set-5-task-21",
+    "dziś jest dzień jadalnego prezentu — przygotuj mały słoiczek lub woreczek z domową mieszanką: orzechami, ciasteczkami albo porcją składników do kakao. dodaj ręcznie napisaną etykietę.": "set-5-task-22",
+    "dziś jest dzień świątecznego śniadania — niezależnie od tego, co jesz, podaj śniadanie odrobinę ładniej niż zwykle. wystarczą serwetka, ciepły napój i jeden grudniowy detal na stole.": "set-5-task-23",
+    "dziś jest dzień ciasteczkowego pojedynku — wybierz dwa rodzaje ciastek lub pierników i zrób degustację w ciemno. zwycięski smak otrzymuje tytuł „oficjalnego smaku grudnia”.": "set-5-task-24",
+    "dziś jest dzień listu do przyszłego siebie — napisz pół strony do siebie i schowaj ją do przyszłego grudnia. zapisz, czego dziś pragniesz, co zaprząta ci głowę i jaką wiadomość chcesz przekazać sobie na kolejne święta.": "set-6-task-1",
+    "dziś jest dzień trzech dobrych scen — zapisz trzy konkretne chwile z mijającego roku, do których chcesz kiedyś wrócić pamięcią. zamiast całych wydarzeń opisz po jednej scenie: miejsce, ludzi, zapach albo zdanie, które zostało w głowie.": "set-6-task-2",
+    "dziś jest dzień roku w sześciu słowach — spróbuj opisać mijający rok dokładnie sześcioma słowami. potem dodaj siódme — takie, które chcesz zabrać ze sobą w nowy rok.": "set-6-task-3",
+    "dziś jest dzień zdjęcia roku — przejrzyj galerię i wybierz jedno zdjęcie, które najlepiej opowiada historię twojego roku. dopisz do niego krótki podpis tylko dla siebie i nie publikuj go nigdzie.": "set-6-task-4",
+    "dziś jest dzień zimowego spaceru pięciu zmysłów — podczas krótkiego spaceru świadomie uruchom wszystkie zmysły: wypatrz jeden szczegół, wsłuchaj się w jeden dźwięk, rozpoznaj jeden zapach i dotknij powierzchni o ciekawej fakturze. po powrocie zwróć jeszcze uwagę na smak pierwszego łyku ciepłego napoju.": "set-6-task-5",
+    "dziś jest dzień jednej rzeczy mniej — zapisz coś, czego nie chcesz zabierać ze sobą do kolejnego roku: nawyk, zobowiązanie, sposób myślenia albo niepotrzebną presję. nie musisz dziś niczego rozwiązywać — wystarczy to nazwać.": "set-6-task-6",
+    "dziś jest dzień cichej herbaty — przygotuj ciepły napój i przez pierwsze dziesięć minut nie włączaj muzyki, telewizora ani telefonu. zadaj sobie tylko jedno pytanie: „czego najbardziej potrzebuję tej zimy?”": "set-6-task-7",
+    "dziś jest dzień dobrych ludzi — zapisz imiona trzech osób, które w tym roku wniosły coś dobrego do twojego życia. przy każdej dopisz jedno konkretne zdanie o tym, za co ją cenisz.": "set-6-task-8",
+    "dziś jest dzień wspomnienia z dzieciństwa — przypomnij sobie jeden grudniowy moment sprzed lat i zapisz tyle szczegółów, ile potrafisz przywołać. nie oceniaj, czy był ważny — po prostu sprawdź, co z niego zostało w pamięci.": "set-6-task-9",
+    "dziś jest dzień godziny bez powiadomień — wycisz telefon na godzinę i wcześniej zdecyduj, czym chcesz wypełnić ten czas: książką, spacerem, rozmową, puzzlami albo spokojnym siedzeniem przy stole. niech to będzie świadoma przerwa, a nie tylko brak ekranu.": "set-6-task-10",
+    "dziś jest dzień dziesięciu małych radości — wypisz dziesięć drobiazgów, które ostatnio poprawiły ci humor. jeśli przy siódmym zacznie brakować pomysłów, nie kończ — właśnie wtedy warto poszukać tych mniej oczywistych.": "set-6-task-11",
+    "dziś jest dzień powodu do dumy — zapisz jedną rzecz z tego roku, która daje ci poczucie satysfakcji, nawet jeśli nikt poza tobą jej nie zauważył.": "set-6-task-12",
+    "dziś jest dzień rozmowy o dawnych świętach — zapytaj bliską osobę: „jak wyglądały święta w twoim dzieciństwie?” posłuchaj odpowiedzi bez poprawiania, dopowiadania i porównywania jej ze swoimi wspomnieniami.": "set-6-task-13",
+    "dziś jest dzień świątecznej intencji — wybierz jedno słowo, które ma opisywać tegoroczne święta: „spokój”, „bliskość”, „zabawa”, „wdzięczność” albo dowolne inne. wróć do niego myślami, gdy przedświąteczny pośpiech zacznie przejmować kontrolę.": "set-6-task-14",
+    "dziś jest dzień starej kartki — jeśli masz zachowaną świąteczną kartkę, list lub wiadomość sprzed lat, przeczytaj ją jeszcze raz. zwróć uwagę na to, co dziś odbierasz inaczej niż w chwili, gdy ta wiadomość powstała.": "set-6-task-15",
+    "dziś jest dzień jednego marzenia — zapisz jedno doświadczenie, które naprawdę chcesz przeżyć w przyszłym roku. obok dopisz najmniejszy możliwy krok, który może przybliżyć cię do niego już po świętach.": "set-6-task-16",
+    "dziś jest dzień domowego zachodu — znajdź miejsce przy oknie i przez kilka minut obserwuj, jak pod koniec dnia zmienia się światło. zdjęcie zrób dopiero na sam koniec — najpierw po prostu popatrz.": "set-6-task-17",
+    "dziś jest dzień własnej tradycji — wypisz trzy świąteczne zwyczaje, które pielęgnuje się w twoim domu, i wybierz ten, który najbardziej chcesz zachować na kolejne lata. dopisz jedno zdanie wyjaśniające, dlaczego właśnie ten.": "set-6-task-18",
+    "dziś jest dzień głosu do przyszłości — nagraj minutową wiadomość głosową do siebie i zachowaj ją do kolejnych świąt. powiedz, co jest teraz ważne w twoim życiu i czego nie chcesz zapomnieć.": "set-6-task-19",
+    "dziś jest dzień jednego dobrego zdania — zapisz zdanie, które dobrze byłoby usłyszeć w trudniejszym dniu. potem przeczytaj je sobie na głos tak, jakby ktoś naprawdę kierował te słowa właśnie do ciebie.": "set-6-task-20",
+    "dziś jest dzień powolnego śniadania — zjedz jeden posiłek bez telefonu i robienia czegokolwiek równocześnie. przez pierwsze pięć minut skup się wyłącznie na smaku, zapachu i chwili przy stole.": "set-6-task-21",
+    "dziś jest dzień rodzinnego „pamiętasz?” — wybierz jedno wspólne wydarzenie z mijającego roku i poproś domowników, aby każdy opowiedział, co zapamiętał z niego najbardziej. zobaczcie, jak różne mogą być wspomnienia tej samej chwili.": "set-6-task-22",
+    "dziś jest dzień małej kapsuły czasu — włóż do koperty krótką notatkę o tym, co obecnie lubisz, czym żyjesz i czego najczęściej słuchasz. dopisz datę i otwórz kopertę za rok.": "set-6-task-23",
+    "dziś jest dzień pięciu minut przy oknie — usiądź przy oknie i przez pięć minut po prostu patrz na zewnątrz. jeśli chcesz, weź coś ciepłego do picia. na koniec zapisz jedną rzecz, która wcześniej umykała twojej uwadze.": "set-6-task-24"
+  },
+  "catalogTaskById": {
+    "set-1-task-1": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 1,
+      "title": "Świątecznych Brzmień",
+      "text": "Dziś jest Dzień Świątecznych Brzmień — wybierz dziesięć piosenek, które naprawdę kojarzą Ci się ze świętami, i ułóż z nich własną playlistę. Na koniec dodaj jeden utwór, który od dziś będzie „piosenką tych świąt”.",
+      "isSpecial": false
+    },
+    "set-1-task-2": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 2,
+      "title": "Kolędowego Zgadywania",
+      "text": "Dziś jest Dzień Kolędowego Zgadywania — odtwórz pierwsze pięć sekund kilku świątecznych piosenek i sprawdź, kto pierwszy odgadnie tytuł. Za każdą poprawną odpowiedź przyznaj jeden „piernikowy punkt”.",
+      "isSpecial": false
+    },
+    "set-1-task-3": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 3,
+      "title": "Świątecznego Karaoke",
+      "text": "Dziś jest Dzień Świątecznego Karaoke — wybierz piosenkę, której refren zna prawie każdy, i zaśpiewaj go samodzielnie albo razem z kimś bliskim. Talent nie jest wymagany — liczy się wykonanie z pełnym przekonaniem.",
+      "isSpecial": false
+    },
+    "set-1-task-4": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 4,
+      "title": "Jarmarkowej Misji",
+      "text": "Dziś jest Dzień Jarmarkowej Misji — wybierz się na jarmark lub świątecznie udekorowany rynek i znajdź trzy rzeczy: najładniejszą dekorację, najbardziej świąteczny zapach i drobiazg, który najmocniej przypomina Ci dzieciństwo.",
+      "isSpecial": false
+    },
+    "set-1-task-5": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 5,
+      "title": "Bożonarodzeniowego Quizu",
+      "text": "Dziś jest Dzień Bożonarodzeniowego Quizu — przygotuj pięć pytań o Bożym Narodzeniu i urządź domowy turniej. Niech jedno pytanie będzie podchwytliwe, a zwycięzca wybierze dzisiejszy świąteczny film albo deser.",
+      "isSpecial": true
+    },
+    "set-1-task-6": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 6,
+      "title": "Dorosłego Listu do Mikołaja",
+      "text": "Dziś jest Dzień Dorosłego Listu do Mikołaja — zapisz trzy rzeczy, których naprawdę sobie życzysz: jedną materialną, jedną związaną z przeżyciem lub doświadczeniem oraz jedną, której nie da się kupić.",
+      "isSpecial": true
+    },
+    "set-1-task-7": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 7,
+      "title": "Świątecznego Bingo",
+      "text": "Dziś jest Dzień Świątecznego Bingo — wypisz dziewięć rzeczy, które możesz zobaczyć podczas grudniowego spaceru, np. renifera, dużą gwiazdę, czerwony wieniec czy migające lampki. Spróbuj znaleźć tyle z nich, by skreślić cały rząd.",
+      "isSpecial": true
+    },
+    "set-1-task-8": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 8,
+      "title": "Nietypowego Zdjęcia",
+      "text": "Dziś jest Dzień Nietypowego Zdjęcia — zrób świąteczne zdjęcie w miejscu, które na co dzień wcale nie kojarzy się ze świętami. Im większy kontrast między miejscem a świątecznym akcentem, tym ciekawszy efekt.",
+      "isSpecial": false
+    },
+    "set-1-task-9": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 9,
+      "title": "Domowej Wioski",
+      "text": "Dziś jest Dzień Domowej Wioski — zbuduj miniaturową świąteczną scenkę z rzeczy, które już masz: pudełek, figurek, waty, klocków albo papieru. Wieczorem podświetl ją małą lampką lub lampkami LED.",
+      "isSpecial": true
+    },
+    "set-1-task-10": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 10,
+      "title": "Świątecznej Reklamy",
+      "text": "Dziś jest Dzień Świątecznej Reklamy — wybierz zwykły domowy przedmiot i w 30 sekund zareklamuj go jako najbardziej ekskluzywny prezent bożonarodzeniowy. Im bardziej poważna prezentacja, tym zabawniejszy efekt.",
+      "isSpecial": false
+    },
+    "set-1-task-11": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 11,
+      "title": "Świątecznej Ciekawostki",
+      "text": "Dziś jest Dzień Świątecznej Ciekawostki — znajdź jeden zaskakujący fakt o tradycjach bożonarodzeniowych w dowolnym kraju i opowiedz go komuś bliskiemu. Wybierz coś, co będzie nowością także dla Ciebie.",
+      "isSpecial": true
+    },
+    "set-1-task-12": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 12,
+      "title": "Świątecznej Parodii",
+      "text": "Dziś jest Dzień Świątecznej Parodii — wybierz znany refren i zmień kilka słów tak, żeby opowiadał o choince, piernikach albo pakowaniu prezentów. Potem koniecznie wykonaj swoją wersję na głos.",
+      "isSpecial": false
+    },
+    "set-1-task-13": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 13,
+      "title": "Dawnej Kolędy",
+      "text": "Dziś jest Dzień Dawnej Kolędy — posłuchaj starej polskiej kolędy w tradycyjnym wykonaniu i sprawdź, ile jej zwrotek znasz. Wybierz jeden wers, który najmocniej przywołuje świąteczny obraz lub wspomnienie.",
+      "isSpecial": false
+    },
+    "set-1-task-14": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 14,
+      "title": "Filmowego Seansu Specjalnego",
+      "text": "Dziś jest Dzień Filmowego Seansu Specjalnego — wybierz świąteczny film, przygotuj coś ciepłego do picia i zgaś główne światło. Na czas seansu odłóż telefon poza zasięg ręki.",
+      "isSpecial": false
+    },
+    "set-1-task-15": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 15,
+      "title": "Polowania na Iluminacje",
+      "text": "Dziś jest Dzień Polowania na Iluminacje — wybierz się po zmroku na 20-minutowy spacer i przyznawaj punkty mijanym dekoracjom: jeden za lampki, dwa za renifera i trzy za naprawdę efektownie udekorowany dom lub witrynę.",
+      "isSpecial": true
+    },
+    "set-1-task-16": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 16,
+      "title": "Świątecznego Stroju",
+      "text": "Dziś jest Dzień Świątecznego Stroju — załóż jeden świąteczny element i wymyśl jego historię: skąd „przybył”, do kogo wcześniej należał albo jaką magiczną moc mógłby mieć.",
+      "isSpecial": false
+    },
+    "set-1-task-17": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 17,
+      "title": "Fotograficznego Powrotu",
+      "text": "Dziś jest Dzień Fotograficznego Powrotu — znajdź stare grudniowe zdjęcie i spróbuj odtworzyć je dziś w podobnym miejscu lub w podobnej pozie. Na koniec zestaw oba ujęcia obok siebie.",
+      "isSpecial": true
+    },
+    "set-1-task-18": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 18,
+      "title": "Najdziwniejszej Bombki",
+      "text": "Dziś jest Dzień Najdziwniejszej Bombki — wybierz najbardziej nietypową ozdobę, jaką masz, i wymyśl jej krótką legendę. Jeśli żadna się nie wyróżnia, wskaż zwykły domowy przedmiot, który mógłby zostać bombką, i uzasadnij swój wybór.",
+      "isSpecial": false
+    },
+    "set-1-task-19": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 19,
+      "title": "Świątecznego Alfabetu",
+      "text": "Dziś jest Dzień Świątecznego Alfabetu — zagraj z kimś bliskim: na zmianę wymieniajcie świąteczne słowa zaczynające się od kolejnych liter alfabetu. Osoba, która nie poda hasła w ciągu pięciu sekund, odpada z rundy.",
+      "isSpecial": false
+    },
+    "set-1-task-20": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 20,
+      "title": "Mikołajowego Komunikatu",
+      "text": "Dziś jest Dzień Mikołajowego Komunikatu — nagraj krótką wiadomość głosem Świętego Mikołaja i wyślij ją komuś bliskiemu. Może być zabawna, ale niech zawiera też jedno naprawdę miłe zdanie.",
+      "isSpecial": false
+    },
+    "set-1-task-21": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 21,
+      "title": "Tajnej Misji Elfa",
+      "text": "Dziś jest Dzień Tajnej Misji Elfa — wybierz jednego domownika i w ciągu dnia zrób dla niego trzy drobne, miłe rzeczy tak, aby nie od razu było wiadomo, kto za nimi stoi.",
+      "isSpecial": true
+    },
+    "set-1-task-22": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 22,
+      "title": "Świątecznych Kalamburów",
+      "text": "Dziś jest Dzień Świątecznych Kalamburów — wylosuj świąteczne hasło, pokaż je bez słów, a reszta zgaduje, zanim minie minuta. Potem losuj kolejne: w tej rundzie hasła się nie powtarzają. Tytuł „Kevin sam w domu” możesz potraktować jako poziom trudny.",
+      "isSpecial": true
+    },
+    "set-1-task-23": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 23,
+      "title": "Prezentowego Detektywa",
+      "text": "Dziś jest Dzień Prezentowego Detektywa — wybierz zapakowany prezent albo zamknięte pudełko i razem z kimś spróbujcie odgadnąć jego zawartość wyłącznie po kształcie, wadze i dźwięku. Bez podglądania.",
+      "isSpecial": true
+    },
+    "set-1-task-24": {
+      "setNumber": 1,
+      "setTitle": "Świąteczny nastrój i zabawa",
+      "order": 24,
+      "title": "Grudniowego Rankingu",
+      "text": "Dziś jest Dzień Grudniowego Rankingu — ułóż ranking pięciu ulubionych świątecznych filmów, potraw, piosenek albo tradycji. Porównaj go z rankingiem kogoś bliskiego i znajdź przynajmniej jedną wspólną pozycję.",
+      "isSpecial": true
+    },
+    "set-2-task-1": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 1,
+      "title": "Świątecznej Stacji Pakowania",
+      "text": "Dziś jest Dzień Świątecznej Stacji Pakowania — zbierz w jednym miejscu papier, taśmę, nożyczki, wstążki i etykiety. Dzięki temu przy kolejnym pakowaniu prezentów wszystko będzie pod ręką.",
+      "isSpecial": true
+    },
+    "set-2-task-2": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 2,
+      "title": "Testu Lampek",
+      "text": "Dziś jest Dzień Testu Lampek — sprawdź wszystkie świąteczne lampki, zanim naprawdę będą potrzebne. Rozplącz przewody, wymień baterie i odłóż osobno te zestawy, które wymagają naprawy.",
+      "isSpecial": false
+    },
+    "set-2-task-3": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 3,
+      "title": "Choinkowej Przestrzeni",
+      "text": "Dziś jest Dzień Choinkowej Przestrzeni — przygotuj miejsce na drzewko albo uporządkuj przestrzeń wokół już stojącej choinki. Zostaw obok trochę wolnego miejsca na prezenty i rodzinne zdjęcia.",
+      "isSpecial": false
+    },
+    "set-2-task-4": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 4,
+      "title": "Pudełka Awaryjnego",
+      "text": "Dziś jest Dzień Pudełka Awaryjnego — przygotuj mały zestaw z taśmą, nożyczkami, bateriami, zapasowymi haczykami, sznurkiem i kilkoma torebkami prezentowymi. W grudniu taki zestaw potrafi uratować niejedną sytuację.",
+      "isSpecial": true
+    },
+    "set-2-task-5": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 5,
+      "title": "Listy Bez Paniki",
+      "text": "Dziś jest Dzień Listy Bez Paniki — zapisz wszystkie osoby, dla których planujesz prezenty, a przy każdym imieniu dopisz jedną konkretną rzecz do zrobienia. Jeden prosty plan jest lepszy niż próba pamiętania o wszystkim naraz.",
+      "isSpecial": true
+    },
+    "set-2-task-6": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 6,
+      "title": "Świątecznej Spiżarni",
+      "text": "Dziś jest Dzień Świątecznej Spiżarni — sprawdź zapasy mąki, cukru, kakao, przypraw, bakalii i innych produktów, które zwykle przydają się w grudniu. Na listę zakupów dopisz tylko to, czego rzeczywiście brakuje.",
+      "isSpecial": true
+    },
+    "set-2-task-7": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 7,
+      "title": "Wolnej Półki",
+      "text": "Dziś jest Dzień Wolnej Półki — opróżnij jedną półkę albo fragment blatu i przeznacz to miejsce na świąteczne rzeczy: słodycze, herbaty, serwetki lub produkty do pieczenia. Dzięki temu nie będą porozkładane po całym domu.",
+      "isSpecial": false
+    },
+    "set-2-task-8": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 8,
+      "title": "Prezentowego Magazynu",
+      "text": "Dziś jest Dzień Prezentowego Magazynu — wyznacz jedno dyskretne miejsce na prezenty i rzeczy czekające na zapakowanie. Dodaj tam torbę lub pudełko na małe drobiazgi, które łatwo zgubić.",
+      "isSpecial": false
+    },
+    "set-2-task-9": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 9,
+      "title": "Papierowej Kontroli",
+      "text": "Dziś jest Dzień Papierowej Kontroli — przejrzyj papier, torby i dodatki do pakowania prezentów. Zachowaj wstążki, pudełka i większe kawałki papieru, które można wykorzystać ponownie, a pozbądź się tylko tego, co naprawdę nieprzydatne.",
+      "isSpecial": true
+    },
+    "set-2-task-10": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 10,
+      "title": "Stołowej Próby Generalnej",
+      "text": "Dziś jest Dzień Stołowej Próby Generalnej — wyjmij obrus, serwetki i naczynia, których chcesz użyć podczas świąt. Przygotuj jedno próbne nakrycie — od razu zobaczysz, czy czegoś brakuje.",
+      "isSpecial": false
+    },
+    "set-2-task-11": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 11,
+      "title": "Kuchennej Przestrzeni",
+      "text": "Dziś jest Dzień Kuchennej Przestrzeni — zwolnij fragment blatu i przeznacz go na świąteczne gotowanie lub pieczenie. Nawet niewielka wolna powierzchnia potrafi później oszczędzić sporo nerwów.",
+      "isSpecial": false
+    },
+    "set-2-task-12": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 12,
+      "title": "Lodówkowego Planu",
+      "text": "Dziś jest Dzień Lodówkowego Planu — usuń przeterminowane produkty i wyznacz jedną półkę na świąteczne zapasy. Dzięki temu przed Wigilią łatwiej będzie znaleźć miejsce na przygotowane potrawy.",
+      "isSpecial": false
+    },
+    "set-2-task-13": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 13,
+      "title": "Zamrażarkowego Oddechu",
+      "text": "Dziś jest Dzień Zamrażarkowego Oddechu — sprawdź zawartość zamrażarki i zrób trochę miejsca na świąteczne przygotowania. Wybierz dwie rzeczy, które warto zużyć w najbliższych dniach.",
+      "isSpecial": false
+    },
+    "set-2-task-14": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 14,
+      "title": "Dekoracyjnego Serwisu",
+      "text": "Dziś jest Dzień Dekoracyjnego Serwisu — obejrzyj ulubione ozdoby i napraw jeden drobiazg: urwany sznurek, luźną kokardę, brakujący haczyk albo odklejony element. Kilka minut pracy może przedłużyć życie dekoracji o kolejne sezony.",
+      "isSpecial": false
+    },
+    "set-2-task-15": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 15,
+      "title": "Gościnnego Wieszaka",
+      "text": "Dziś jest Dzień Gościnnego Wieszaka — jeśli spodziewasz się gości, przygotuj kilka wolnych wieszaków i trochę miejsca na kurtki. To niewielki detal, który w świąteczny dzień naprawdę ułatwia życie.",
+      "isSpecial": false
+    },
+    "set-2-task-16": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 16,
+      "title": "Ciepłego Wejścia",
+      "text": "Dziś jest Dzień Ciepłego Wejścia — uporządkuj przedpokój i dodaj w nim jeden świąteczny akcent. To pierwsze miejsce, które widzisz po powrocie do domu, i jedno z pierwszych, które zobaczą goście.",
+      "isSpecial": false
+    },
+    "set-2-task-17": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 17,
+      "title": "Obrusowej Gotowości",
+      "text": "Dziś jest Dzień Obrusowej Gotowości — sprawdź wcześniej świąteczny obrus lub bieżnik. Jeśli wymaga prania albo prasowania, zrób to dziś i odłóż go gotowego do użycia.",
+      "isSpecial": false
+    },
+    "set-2-task-18": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 18,
+      "title": "Prezentowych Etykiet",
+      "text": "Dziś jest Dzień Prezentowych Etykiet — przygotuj karteczki z imionami osób, które chcesz obdarować. Podczas pakowania unikniesz później zgadywania, które podobne pudełko jest dla kogo.",
+      "isSpecial": true
+    },
+    "set-2-task-19": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 19,
+      "title": "Grudniowego Kalendarza",
+      "text": "Dziś jest Dzień Grudniowego Kalendarza — wpisz w jedno miejsce ważne terminy: spotkania, dostawy, zakupy, szkolne wydarzenia i rodzinne plany. Zostaw przynajmniej jeden wieczór całkowicie wolny.",
+      "isSpecial": true
+    },
+    "set-2-task-20": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 20,
+      "title": "Świątecznego Menu",
+      "text": "Dziś jest Dzień Świątecznego Menu — spisz potrawy, które naprawdę chcesz przygotować, i zaznacz te, które można zrobić wcześniej. Im mniej decyzji zostawisz na ostatnią chwilę, tym więcej czasu podczas świąt zostanie dla Ciebie.",
+      "isSpecial": true
+    },
+    "set-2-task-21": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 21,
+      "title": "Naczyń Specjalnych",
+      "text": "Dziś jest Dzień Naczyń Specjalnych — sprawdź półmiski, miski, dzbanki i tace, które zwykle wyjmujesz tylko na wyjątkowe okazje. Umyj potrzebne rzeczy i odłóż je razem w łatwo dostępnym miejscu.",
+      "isSpecial": false
+    },
+    "set-2-task-22": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 22,
+      "title": "Baterii Mikołaja",
+      "text": "Dziś jest Dzień Baterii Mikołaja — sprawdź, czy masz zapas baterii do lampek, zabawek i drobnych dekoracji. Kilka dodatkowych sztuk może uratować sytuację dokładnie wtedy, gdy sklepy będą już zamknięte.",
+      "isSpecial": false
+    },
+    "set-2-task-23": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 23,
+      "title": "Małych Zapasów",
+      "text": "Dziś jest Dzień Małych Zapasów — sprawdź, czy masz pod ręką serwetki, worki na śmieci, ręczniki papierowe i zapasowe lampki lub świece LED. To mało świąteczne zakupy, ale bardzo świąteczny spokój.",
+      "isSpecial": false
+    },
+    "set-2-task-24": {
+      "setNumber": 2,
+      "setTitle": "Porządki i przygotowania",
+      "order": 24,
+      "title": "Awaryjnej Listy Prezentów",
+      "text": "Dziś jest Dzień Awaryjnej Listy Prezentów — zapisz trzy uniwersalne drobiazgi, które można szybko kupić lub przygotować. Taka lista przyda się, jeśli pojawi się niespodziewany gość albo przypomnisz sobie o kimś w ostatniej chwili.",
+      "isSpecial": true
+    },
+    "set-3-task-1": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 1,
+      "title": "Tajemniczego Elfa",
+      "text": "Dziś jest Dzień Tajemniczego Elfa — zrób komuś drobną przysługę anonimowo i nie zdradzaj się do końca dnia. Może to być posprzątane miejsce, przygotowany napój albo mały upominek zostawiony z karteczką „dla Ciebie”.",
+      "isSpecial": true
+    },
+    "set-3-task-2": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 2,
+      "title": "Prawdziwego „Dziękuję”",
+      "text": "Dziś jest Dzień Prawdziwego „Dziękuję” — wybierz jedną osobę i napisz jej, za co konkretnie chcesz podziękować. Zamiast ogólnego „dzięki za wszystko” przywołaj jedną sytuację, która naprawdę została Ci w pamięci.",
+      "isSpecial": true
+    },
+    "set-3-task-3": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 3,
+      "title": "Ciepłego Telefonu",
+      "text": "Dziś jest Dzień Ciepłego Telefonu — zadzwoń do kogoś, z kim od dawna nie masz kontaktu, bez żadnej sprawy do załatwienia. Jedyny cel: dowiedzieć się, co naprawdę u tej osoby słychać.",
+      "isSpecial": false
+    },
+    "set-3-task-4": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 4,
+      "title": "Starego Zdjęcia",
+      "text": "Dziś jest Dzień Starego Zdjęcia — znajdź wspólne zdjęcie sprzed lat i wyślij je osobie, która na nim jest. Dodaj jedno zdanie o tym, co najbardziej pamiętasz z tamtego dnia.",
+      "isSpecial": false
+    },
+    "set-3-task-5": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 5,
+      "title": "Dobrego Kubka",
+      "text": "Dziś jest Dzień Dobrego Kubka — przygotuj komuś ulubioną kawę, herbatę albo kakao bez wcześniejszej zapowiedzi i podaj napój tak, jakby był małym prezentem.",
+      "isSpecial": false
+    },
+    "set-3-task-6": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 6,
+      "title": "Komplementu z Uzasadnieniem",
+      "text": "Dziś jest Dzień Komplementu z Uzasadnieniem — powiedz komuś coś miłego i od razu dodaj, dlaczego tak uważasz. Konkretne, szczere słowa zostają w pamięci dłużej niż samo „ładnie wyglądasz”.",
+      "isSpecial": false
+    },
+    "set-3-task-7": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 7,
+      "title": "Ręcznej Kartki",
+      "text": "Dziś jest Dzień Ręcznej Kartki — przygotuj prostą kartkę świąteczną dla konkretnej osoby i dopisz kilka zdań własnymi słowami. Nie musi być idealna — ważne, żeby była osobista.",
+      "isSpecial": true
+    },
+    "set-3-task-8": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 8,
+      "title": "Pomocnego Elfa",
+      "text": "Dziś jest Dzień Pomocnego Elfa — wybierz obowiązek, którego ktoś bliski nie lubi, i wykonaj go bez zapowiedzi. Najlepiej tak, aby efekt był miłą niespodzianką zauważoną dopiero po chwili.",
+      "isSpecial": false
+    },
+    "set-3-task-9": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 9,
+      "title": "Małej Paczuszki",
+      "text": "Dziś jest Dzień Małej Paczuszki — przygotuj drobiazg dla osoby, która raczej nie spodziewa się prezentu: kilka słodyczy, herbatę, mandarynkę albo domowe ciastko. Dodaj krótką, serdeczną karteczkę.",
+      "isSpecial": true
+    },
+    "set-3-task-10": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 10,
+      "title": "Dobrego Słowa dla Nieznajomego",
+      "text": "Dziś jest Dzień Dobrego Słowa dla Nieznajomego — podziękuj komuś, kogo zwykle mijasz bez dłuższej rozmowy: kurierowi, kasjerowi, kierowcy, ochroniarzowi albo osobie sprzątającej. Wystarczy jedno proste i szczere zdanie.",
+      "isSpecial": false
+    },
+    "set-3-task-11": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 11,
+      "title": "Świątecznej Darowizny",
+      "text": "Dziś jest Dzień Świątecznej Darowizny — wybierz jedną rzecz w dobrym stanie, której już nie potrzebujesz, i przekaż ją komuś lub organizacji, która rzeczywiście może z niej skorzystać.",
+      "isSpecial": false
+    },
+    "set-3-task-12": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 12,
+      "title": "Jednej Pełnej Torby",
+      "text": "Dziś jest Dzień Jednej Pełnej Torby — podczas zakupów wybierz kilka trwałych produktów na lokalną zbiórkę żywności lub dla miejsca pomagającego osobom w potrzebie. Nie musi być ich dużo — liczy się świadomy gest.",
+      "isSpecial": false
+    },
+    "set-3-task-13": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 13,
+      "title": "Łańcucha Dobra",
+      "text": "Dziś jest Dzień Łańcucha Dobra — zrób dla kogoś coś miłego i poproś tylko o jedno: aby przy najbliższej okazji przekazać podobny gest dalej.",
+      "isSpecial": true
+    },
+    "set-3-task-14": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 14,
+      "title": "Wiadomości Bez Powodu",
+      "text": "Dziś jest Dzień Wiadomości Bez Powodu — napisz do kogoś: „Pomyślałem dziś o Tobie i chcę Ci tylko życzyć dobrego dnia”. Bez pytania, prośby ani ukrytego celu.",
+      "isSpecial": false
+    },
+    "set-3-task-15": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 15,
+      "title": "Domowego Ratunku",
+      "text": "Dziś jest Dzień Domowego Ratunku — zapytaj bliską osobę: „Co mogę Ci dziś zdjąć z głowy?” Wybierz jedną rzecz z odpowiedzi i naprawdę się nią zajmij.",
+      "isSpecial": false
+    },
+    "set-3-task-16": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 16,
+      "title": "Słodkiego Dzielenia",
+      "text": "Dziś jest Dzień Słodkiego Dzielenia — przygotuj lub kup coś niewielkiego do jedzenia i podziel się z sąsiadem, współpracownikiem albo inną osobą, którą regularnie spotykasz.",
+      "isSpecial": false
+    },
+    "set-3-task-17": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 17,
+      "title": "Głosu Wdzięczności",
+      "text": "Dziś jest Dzień Głosu Wdzięczności — nagraj krótką wiadomość głosową dla ważnej osoby i powiedz, za co ją cenisz. Głos potrafi przekazać znacznie więcej ciepła niż samo emoji.",
+      "isSpecial": false
+    },
+    "set-3-task-18": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 18,
+      "title": "Dobrego Wspomnienia",
+      "text": "Dziś jest Dzień Dobrego Wspomnienia — przypomnij komuś historię, w której zrobił dla Ciebie coś ważnego. Dla tej osoby mógł to być drobiazg, ale Tobie ten gest zapadł w pamięć.",
+      "isSpecial": false
+    },
+    "set-3-task-19": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 19,
+      "title": "Trzech Uśmiechów",
+      "text": "Dziś jest Dzień Trzech Uśmiechów — spróbuj poprawić dziś humor trzem osobom: żartem, pomocą, komplementem albo małą niespodzianką. Każdy gest może być inny.",
+      "isSpecial": true
+    },
+    "set-3-task-20": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 20,
+      "title": "Sąsiedzkiego „Cześć”",
+      "text": "Dziś jest Dzień Sąsiedzkiego „Cześć” — przywitaj się lub zamień kilka zdań z sąsiadem, którego zwykle mijasz w pośpiechu. Grudzień to dobry moment, żeby choć trochę przełamać codzienną anonimowość.",
+      "isSpecial": false
+    },
+    "set-3-task-21": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 21,
+      "title": "Prezentu z Czasu",
+      "text": "Dziś jest Dzień Prezentu z Czasu — podaruj komuś 20 minut pełnej uwagi. Bez telefonu i robienia kilku rzeczy naraz — po prostu porozmawiaj albo posłuchaj.",
+      "isSpecial": false
+    },
+    "set-3-task-22": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 22,
+      "title": "Pomocy Przy Prezentach",
+      "text": "Dziś jest Dzień Pomocy Przy Prezentach — zaproponuj komuś pomoc w pakowaniu, wyborze upominku, odebraniu paczki lub innym przedświątecznym drobiazgu. Mała pomoc może komuś oszczędzić sporo stresu.",
+      "isSpecial": false
+    },
+    "set-3-task-23": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 23,
+      "title": "Dobrej Opinii",
+      "text": "Dziś jest Dzień Dobrej Opinii — jeśli masz dobre doświadczenie z małą firmą, lokalnym sklepem, restauracją albo usługodawcą, zostaw uczciwą pozytywną opinię. Tobie zajmie to kilka minut, a dla małego biznesu może mieć duże znaczenie.",
+      "isSpecial": false
+    },
+    "set-3-task-24": {
+      "setNumber": 3,
+      "setTitle": "Dobre uczynki i życzliwość",
+      "order": 24,
+      "title": "Rodzinnych Wspomnień",
+      "text": "Dziś jest Dzień Rodzinnych Wspomnień — zadzwoń lub odwiedź starszą osobę w rodzinie i poproś o jedno świąteczne wspomnienie z dzieciństwa. Dziś to jej opowieść jest najważniejsza.",
+      "isSpecial": true
+    },
+    "set-4-task-1": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 1,
+      "title": "Bombki z Historią",
+      "text": "Dziś jest Dzień Bombki z Historią — zrób prostą ozdobę i zapisz na jej odwrocie rok oraz jedno słowo opisujące ten grudzień. Za kilka lat może być czymś więcej niż tylko dekoracją.",
+      "isSpecial": false
+    },
+    "set-4-task-2": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 2,
+      "title": "Własnego Papieru Prezentowego",
+      "text": "Dziś jest Dzień Własnego Papieru Prezentowego — użyj zwykłego papieru i ozdób go powtarzalnym wzorem wykonanym flamastrem, stemplem albo końcówką gumki od ołówka. Nawet prosty motyw powtórzony wiele razy daje świetny efekt.",
+      "isSpecial": true
+    },
+    "set-4-task-3": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 3,
+      "title": "Eleganckiej Etykietki",
+      "text": "Dziś jest Dzień Eleganckiej Etykietki — wytnij z grubszego papieru kilka prostych etykiet, zrób w nich otwory i przewlecz cienki sznurek. Jedną ozdób małą gałązką albo narysowaną gwiazdką.",
+      "isSpecial": true
+    },
+    "set-4-task-4": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 4,
+      "title": "Świątecznej Pocztówki",
+      "text": "Dziś jest Dzień Świątecznej Pocztówki — stwórz kartkę inspirowaną miejscem, w którym mieszkasz. Dodaj charakterystyczny element miasta lub okolicy, ale pokaż go w zimowej, świątecznej wersji.",
+      "isSpecial": true
+    },
+    "set-4-task-5": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 5,
+      "title": "Papierowej Wioski",
+      "text": "Dziś jest Dzień Papierowej Wioski — z papieru lub cienkiego kartonu wytnij trzy proste domki z okienkami. Ustaw je przed lampkami LED i zobacz, jak po zmroku zmieniają się w małe świąteczne miasteczko.",
+      "isSpecial": true
+    },
+    "set-4-task-6": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 6,
+      "title": "Masy Solnej",
+      "text": "Dziś jest Dzień Masy Solnej — zrób jedną lub kilka prostych zawieszek, odciskając w masie gałązkę, koronkę albo wzór z foremki. Po wyschnięciu dodaj sznurek, aby można było je zawiesić.",
+      "isSpecial": true
+    },
+    "set-4-task-7": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 7,
+      "title": "Świątecznego Stempla",
+      "text": "Dziś jest Dzień Świątecznego Stempla — przygotuj prosty stempel z ziemniaka, gąbki albo gumki i użyj go do ozdobienia papieru, koperty lub etykiet prezentowych. Najlepiej wybierz jeden łatwy do powtarzania motyw.",
+      "isSpecial": true
+    },
+    "set-4-task-8": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 8,
+      "title": "Zimowego Kolażu",
+      "text": "Dziś jest Dzień Zimowego Kolażu — wybierz kilka zdjęć, fragmentów papieru i napisów kojarzących Ci się z grudniem, a następnie ułóż z nich jedną kompozycję zatytułowaną „Mój świąteczny klimat”.",
+      "isSpecial": false
+    },
+    "set-4-task-9": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 9,
+      "title": "Zdjęcia Jak z Pocztówki",
+      "text": "Dziś jest Dzień Zdjęcia Jak z Pocztówki — ustaw niewielki świąteczny kadr z rzeczy, które masz w domu, i zrób mu zdjęcie. Spróbuj wykorzystać światło padające z boku zamiast lampy błyskowej.",
+      "isSpecial": false
+    },
+    "set-4-task-10": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 10,
+      "title": "Ozdobnej Koperty",
+      "text": "Dziś jest Dzień Ozdobnej Koperty — weź zwykłą kopertę i dodaj jeden charakterystyczny detal: ręcznie narysowaną ramkę, pieczątkę, naklejkę albo małą ilustrację w rogu. Czasem jeden motyw wystarczy, żeby całość wyglądała wyjątkowo.",
+      "isSpecial": true
+    },
+    "set-4-task-11": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 11,
+      "title": "Świątecznej Zakładki",
+      "text": "Dziś jest Dzień Świątecznej Zakładki — z kawałka grubszego papieru zrób zakładkę do książki i dodaj krótkie grudniowe hasło. Taki drobiazg powstaje w kilka minut, a może służyć przez cały rok.",
+      "isSpecial": true
+    },
+    "set-4-task-12": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 12,
+      "title": "Małego Wianka",
+      "text": "Dziś jest Dzień Małego Wianka — z kilku elastycznych gałązek, drucika albo papieru wykonaj niewielki wianek. Dodaj tylko jeden akcent: kokardkę, gwiazdkę lub szyszkę.",
+      "isSpecial": false
+    },
+    "set-4-task-13": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 13,
+      "title": "Papierowego Renifera",
+      "text": "Dziś jest Dzień Papierowego Renifera — z kartonu lub papieru zrób prostą sylwetkę renifera i dodaj czerwony nos. Gotową postać wykorzystaj jako dekorację, etykietę albo element kartki.",
+      "isSpecial": true
+    },
+    "set-4-task-14": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 14,
+      "title": "Świątecznej Typografii",
+      "text": "Dziś jest Dzień Świątecznej Typografii — napisz „Poczuj magię świąt” lub inne ulubione zdanie w trzech różnych stylach. Wybierz wersję, która najbardziej nadaje się do oprawienia albo wykorzystania jako dekoracja.",
+      "isSpecial": false
+    },
+    "set-4-task-15": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 15,
+      "title": "Pudełka z Charakterem",
+      "text": "Dziś jest Dzień Pudełka z Charakterem — ozdób zwykłe pudełko po butach lub przesyłce tak, aby wyglądało jak świąteczne opakowanie. Wystarczą papier, sznurek i jeden powtarzający się motyw.",
+      "isSpecial": false
+    },
+    "set-4-task-16": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 16,
+      "title": "Origami",
+      "text": "Dziś jest Dzień Origami — z jednej kartki złóż prostą choinkę, gwiazdkę albo postać Mikołaja. Wybierz wzór, który można wykonać w mniej niż 15 minut.",
+      "isSpecial": true
+    },
+    "set-4-task-17": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 17,
+      "title": "Świątecznej Ramki",
+      "text": "Dziś jest Dzień Świątecznej Ramki — wybierz rodzinne zdjęcie i przygotuj dla niego papierową ramkę z datą oraz krótkim podpisem. Nie musi być perfekcyjna — ważne, żeby miała osobisty charakter.",
+      "isSpecial": true
+    },
+    "set-4-task-18": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 18,
+      "title": "Rysunku Jedną Linią",
+      "text": "Dziś jest Dzień Rysunku Jedną Linią — spróbuj narysować choinkę, renifera albo bombkę bez odrywania długopisu od kartki. Zrób trzy próby i zachowaj tę, która wyszła najciekawiej lub najzabawniej.",
+      "isSpecial": false
+    },
+    "set-4-task-19": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 19,
+      "title": "Prezentowej Pieczęci",
+      "text": "Dziś jest Dzień Prezentowej Pieczęci — zaprojektuj prosty symbol do oznaczania prezentów, np. gwiazdkę z inicjałem. Powtórz go na wszystkich etykietach, których dziś używasz, jak własny znak pracowni Mikołaja.",
+      "isSpecial": false
+    },
+    "set-4-task-20": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 20,
+      "title": "Świątecznego Komiksu",
+      "text": "Dziś jest Dzień Świątecznego Komiksu — narysuj cztery kadry pokazujące największy problem Świętego Mikołaja w tym roku. Nie przejmuj się poziomem rysunków — patyczaki są całkowicie dozwolone.",
+      "isSpecial": true
+    },
+    "set-4-task-21": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 21,
+      "title": "Łańcucha Wspomnień",
+      "text": "Dziś jest Dzień Łańcucha Wspomnień — przygotuj kilka papierowych pasków i na każdym zapisz jedno dobre wspomnienie z mijającego roku. Połącz paski w mały łańcuch i zachowaj go do Wigilii.",
+      "isSpecial": true
+    },
+    "set-4-task-22": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 22,
+      "title": "Kartonowej Gwiazdy",
+      "text": "Dziś jest Dzień Kartonowej Gwiazdy — wytnij gwiazdę z niepotrzebnego pudełka, a następnie oklej ją papierem albo pomaluj. Dodaj otwór i sznurek, aby mogła zawisnąć jak pełnoprawna ozdoba.",
+      "isSpecial": false
+    },
+    "set-4-task-23": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 23,
+      "title": "Świątecznego Monogramu",
+      "text": "Dziś jest Dzień Świątecznego Monogramu — zaprojektuj swój inicjał albo inicjał bliskiej osoby w świątecznym stylu. Dodaj do litery gałązkę, gwiazdkę, czapkę Mikołaja lub drobny ornament.",
+      "isSpecial": false
+    },
+    "set-4-task-24": {
+      "setNumber": 4,
+      "setTitle": "Kreatywne i artystyczne",
+      "order": 24,
+      "title": "Papierowego Mikołaja",
+      "text": "Dziś jest Dzień Papierowego Mikołaja — stwórz postać Mikołaja wyłącznie z prostych figur: kół, trójkątów i prostokątów. Sprawdź, jak niewiele elementów potrzeba, aby postać była od razu rozpoznawalna.",
+      "isSpecial": false
+    },
+    "set-5-task-1": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 1,
+      "title": "Tosta-Gwiazdki",
+      "text": "Dziś jest Dzień Tosta-Gwiazdki — przygotuj tost lub grzankę i wytnij z pieczywa gwiazdkę foremką albo nożem. Dodaj ulubione składniki i zamień zwykłe śniadanie w mały grudniowy rytuał.",
+      "isSpecial": false
+    },
+    "set-5-task-2": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 2,
+      "title": "Czekoladowej Degustacji",
+      "text": "Dziś jest Dzień Czekoladowej Degustacji — wybierz trzy różne czekolady, połam je na małe kawałki i spróbuj w ciemno. Oceń każdą pod względem zapachu, smaku i tego, jak bardzo kojarzy Ci się ze świętami.",
+      "isSpecial": true
+    },
+    "set-5-task-3": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 3,
+      "title": "Zimowych Naleśników",
+      "text": "Dziś jest Dzień Zimowych Naleśników — przygotuj naleśniki z jabłkiem i cynamonem albo dodaj te składniki do ulubionego nadzienia. Na koniec oprósz całość odrobiną cukru pudru jak świeżym śniegiem.",
+      "isSpecial": false
+    },
+    "set-5-task-4": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 4,
+      "title": "Trufli Bez Pieczenia",
+      "text": "Dziś jest Dzień Trufli Bez Pieczenia — pokrusz herbatniki, połącz je z serkiem lub masą czekoladową i uformuj niewielkie kulki. Obtocz je w kakao, wiórkach kokosowych albo posiekanych orzechach.",
+      "isSpecial": true
+    },
+    "set-5-task-5": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 5,
+      "title": "Piernikowego Testu",
+      "text": "Dziś jest Dzień Piernikowego Testu — udekoruj trzy pierniki w trzech różnych stylach: eleganckim, zabawnym i celowo przesadzonym. Przed zjedzeniem ustaw je obok siebie i zrób pamiątkowe zdjęcie.",
+      "isSpecial": true
+    },
+    "set-5-task-6": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 6,
+      "title": "Świątecznej Deski",
+      "text": "Dziś jest Dzień Świątecznej Deski — ułóż na jednym talerzu kilka przekąsek w czerwieni, zieleni i złocie: owoce, sery, orzechy, krakersy albo słodycze. Dziś liczy się przede wszystkim kompozycja.",
+      "isSpecial": true
+    },
+    "set-5-task-7": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 7,
+      "title": "Zimowej Owsianki",
+      "text": "Dziś jest Dzień Zimowej Owsianki — dodaj do owsianki jabłko, cynamon i odrobinę miodu lub syropu. Na wierzchu ułóż prosty wzór z orzechów, rodzynek albo plasterków owoców.",
+      "isSpecial": false
+    },
+    "set-5-task-8": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 8,
+      "title": "Cynamonowych Ślimaczków",
+      "text": "Dziś jest Dzień Cynamonowych Ślimaczków — wykorzystaj gotowe ciasto francuskie: posmaruj je masłem, posyp cukrem i cynamonem, zwiń w rulon, pokrój na kawałki i upiecz małe ślimaczki.",
+      "isSpecial": true
+    },
+    "set-5-task-9": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 9,
+      "title": "Gorącej Czekolady na Bogato",
+      "text": "Dziś jest Dzień Gorącej Czekolady na Bogato — przygotuj kakao albo gorącą czekoladę i dodaj jeden kawiarniany akcent: piankę mleczną, bitą śmietanę, startą czekoladę lub szczyptę cynamonu.",
+      "isSpecial": true
+    },
+    "set-5-task-10": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 10,
+      "title": "Świątecznego Popcornu",
+      "text": "Dziś jest Dzień Świątecznego Popcornu — do gotowego popcornu dodaj odrobinę cynamonu i cukru albo polej część ziaren roztopioną czekoladą. Przełóż wszystko do dużej miski i podaj podczas filmu.",
+      "isSpecial": false
+    },
+    "set-5-task-11": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 11,
+      "title": "Jabłka z Pieca",
+      "text": "Dziś jest Dzień Jabłka z Pieca — wydrąż lub przekrój jabłko, dodaj cynamon, odrobinę miodu i kilka orzechów, a następnie piecz do miękkości. To prosty deser, który przy okazji wypełni dom przyjemnym zapachem.",
+      "isSpecial": false
+    },
+    "set-5-task-12": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 12,
+      "title": "Deseru w Szklance",
+      "text": "Dziś jest Dzień Deseru w Szklance — przygotuj prosty deser warstwowy z tego, co masz pod ręką: jogurtu, kremu, pokruszonych ciastek i owoców. Dziś ważniejszy od przepisu jest efekt widocznych warstw.",
+      "isSpecial": false
+    },
+    "set-5-task-13": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 13,
+      "title": "Korzennego Ciasta w Kubku",
+      "text": "Dziś jest Dzień Korzennego Ciasta w Kubku — przygotuj szybkie ciasto w kubku i dodaj odrobinę cynamonu albo przyprawy piernikowej. Cały deser powinien powstać w jednym naczyniu i bez długiego pieczenia.",
+      "isSpecial": false
+    },
+    "set-5-task-14": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 14,
+      "title": "Czerwono-Zielonego Talerza",
+      "text": "Dziś jest Dzień Czerwono-Zielonego Talerza — przygotuj posiłek, w którym pojawią się oba świąteczne kolory. Możesz wykorzystać pomidory, paprykę, szpinak, pesto, winogrona albo zupełnie inne składniki.",
+      "isSpecial": false
+    },
+    "set-5-task-15": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 15,
+      "title": "Karmelizowanych Orzechów",
+      "text": "Dziś jest Dzień Karmelizowanych Orzechów — podgrzej na patelni garść orzechów z odrobiną cukru, cynamonu i szczyptą soli. Po ostygnięciu przełóż je do małej miseczki i podaj jak przekąskę z jarmarku.",
+      "isSpecial": true
+    },
+    "set-5-task-16": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 16,
+      "title": "Małych Kanapek",
+      "text": "Dziś jest Dzień Małych Kanapek — przygotuj trzy niewielkie kanapki, każdą z innymi dodatkami, i ułóż je na talerzu jak małe menu degustacyjne. Jednej nadaj najbardziej świąteczny wygląd.",
+      "isSpecial": false
+    },
+    "set-5-task-17": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 17,
+      "title": "Świątecznego Koktajlu Bezalkoholowego",
+      "text": "Dziś jest Dzień Świątecznego Koktajlu Bezalkoholowego — połącz sok jabłkowy lub żurawinowy z wodą gazowaną i plastrem cytrusa. Podaj napój w ładnej szklance lub kieliszku i nadaj mu własną świąteczną nazwę.",
+      "isSpecial": true
+    },
+    "set-5-task-18": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 18,
+      "title": "Zupy, Która Rozgrzewa",
+      "text": "Dziś jest Dzień Zupy, Która Rozgrzewa — przygotuj prostą zupę krem albo ulubioną zimową zupę. Podaj ją z grzankami i potraktuj jak główny punkt chłodnego wieczoru.",
+      "isSpecial": false
+    },
+    "set-5-task-19": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 19,
+      "title": "Kulinarnej Niespodzianki",
+      "text": "Dziś jest Dzień Kulinarnej Niespodzianki — wybierz dobrze znane danie i dodaj mu jeden świąteczny akcent: korzenną przyprawę, żurawinę, pomarańczę, orzechy albo nietypowy sposób podania.",
+      "isSpecial": false
+    },
+    "set-5-task-20": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 20,
+      "title": "Małej Degustacji Herbat",
+      "text": "Dziś jest Dzień Małej Degustacji Herbat — zaparz dwie różne herbaty i spróbuj ich bez pośpiechu. Do jednej dodaj plaster cytrusa, do drugiej wybraną przyprawę, a potem zdecyduj, która zostaje „herbatą tych świąt”.",
+      "isSpecial": true
+    },
+    "set-5-task-21": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 21,
+      "title": "Świątecznej Grzanki",
+      "text": "Dziś jest Dzień Świątecznej Grzanki — przygotuj grzankę z serem i dodatkiem, którego zwykle nie używasz, np. żurawiną, gruszką albo odrobiną miodu. Sprawdź, czy słodko-słone połączenie trafi do Twojego świątecznego menu.",
+      "isSpecial": false
+    },
+    "set-5-task-22": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 22,
+      "title": "Jadalnego Prezentu",
+      "text": "Dziś jest Dzień Jadalnego Prezentu — przygotuj mały słoiczek lub woreczek z domową mieszanką: orzechami, ciasteczkami albo porcją składników do kakao. Dodaj ręcznie napisaną etykietę.",
+      "isSpecial": true
+    },
+    "set-5-task-23": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 23,
+      "title": "Świątecznego Śniadania",
+      "text": "Dziś jest Dzień Świątecznego Śniadania — niezależnie od tego, co jesz, podaj śniadanie odrobinę ładniej niż zwykle. Wystarczą serwetka, ciepły napój i jeden grudniowy detal na stole.",
+      "isSpecial": false
+    },
+    "set-5-task-24": {
+      "setNumber": 5,
+      "setTitle": "Kuchenne i kulinarne",
+      "order": 24,
+      "title": "Ciasteczkowego Pojedynku",
+      "text": "Dziś jest Dzień Ciasteczkowego Pojedynku — wybierz dwa rodzaje ciastek lub pierników i zrób degustację w ciemno. Zwycięski smak otrzymuje tytuł „Oficjalnego Smaku Grudnia”.",
+      "isSpecial": true
+    },
+    "set-6-task-1": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 1,
+      "title": "Listu do Przyszłego Siebie",
+      "text": "Dziś jest Dzień Listu do Przyszłego Siebie — napisz pół strony do siebie i schowaj ją do przyszłego grudnia. Zapisz, czego dziś pragniesz, co zaprząta Ci głowę i jaką wiadomość chcesz przekazać sobie na kolejne święta.",
+      "isSpecial": true
+    },
+    "set-6-task-2": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 2,
+      "title": "Trzech Dobrych Scen",
+      "text": "Dziś jest Dzień Trzech Dobrych Scen — zapisz trzy konkretne chwile z mijającego roku, do których chcesz kiedyś wrócić pamięcią. Zamiast całych wydarzeń opisz po jednej scenie: miejsce, ludzi, zapach albo zdanie, które zostało w głowie.",
+      "isSpecial": true
+    },
+    "set-6-task-3": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 3,
+      "title": "Roku w Sześciu Słowach",
+      "text": "Dziś jest Dzień Roku w Sześciu Słowach — spróbuj opisać mijający rok dokładnie sześcioma słowami. Potem dodaj siódme — takie, które chcesz zabrać ze sobą w nowy rok.",
+      "isSpecial": true
+    },
+    "set-6-task-4": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 4,
+      "title": "Zdjęcia Roku",
+      "text": "Dziś jest Dzień Zdjęcia Roku — przejrzyj galerię i wybierz jedno zdjęcie, które najlepiej opowiada historię Twojego roku. Dopisz do niego krótki podpis tylko dla siebie i nie publikuj go nigdzie.",
+      "isSpecial": true
+    },
+    "set-6-task-5": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 5,
+      "title": "Zimowego Spaceru Pięciu Zmysłów",
+      "text": "Dziś jest Dzień Zimowego Spaceru Pięciu Zmysłów — podczas krótkiego spaceru świadomie uruchom wszystkie zmysły: wypatrz jeden szczegół, wsłuchaj się w jeden dźwięk, rozpoznaj jeden zapach i dotknij powierzchni o ciekawej fakturze. Po powrocie zwróć jeszcze uwagę na smak pierwszego łyku ciepłego napoju.",
+      "isSpecial": true
+    },
+    "set-6-task-6": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 6,
+      "title": "Jednej Rzeczy Mniej",
+      "text": "Dziś jest Dzień Jednej Rzeczy Mniej — zapisz coś, czego nie chcesz zabierać ze sobą do kolejnego roku: nawyk, zobowiązanie, sposób myślenia albo niepotrzebną presję. Nie musisz dziś niczego rozwiązywać — wystarczy to nazwać.",
+      "isSpecial": false
+    },
+    "set-6-task-7": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 7,
+      "title": "Cichej Herbaty",
+      "text": "Dziś jest Dzień Cichej Herbaty — przygotuj ciepły napój i przez pierwsze dziesięć minut nie włączaj muzyki, telewizora ani telefonu. Zadaj sobie tylko jedno pytanie: „Czego najbardziej potrzebuję tej zimy?”",
+      "isSpecial": false
+    },
+    "set-6-task-8": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 8,
+      "title": "Dobrych Ludzi",
+      "text": "Dziś jest Dzień Dobrych Ludzi — zapisz imiona trzech osób, które w tym roku wniosły coś dobrego do Twojego życia. Przy każdej dopisz jedno konkretne zdanie o tym, za co ją cenisz.",
+      "isSpecial": true
+    },
+    "set-6-task-9": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 9,
+      "title": "Wspomnienia z Dzieciństwa",
+      "text": "Dziś jest Dzień Wspomnienia z Dzieciństwa — przypomnij sobie jeden grudniowy moment sprzed lat i zapisz tyle szczegółów, ile potrafisz przywołać. Nie oceniaj, czy był ważny — po prostu sprawdź, co z niego zostało w pamięci.",
+      "isSpecial": false
+    },
+    "set-6-task-10": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 10,
+      "title": "Godziny Bez Powiadomień",
+      "text": "Dziś jest Dzień Godziny Bez Powiadomień — wycisz telefon na godzinę i wcześniej zdecyduj, czym chcesz wypełnić ten czas: książką, spacerem, rozmową, puzzlami albo spokojnym siedzeniem przy stole. Niech to będzie świadoma przerwa, a nie tylko brak ekranu.",
+      "isSpecial": true
+    },
+    "set-6-task-11": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 11,
+      "title": "Dziesięciu Małych Radości",
+      "text": "Dziś jest Dzień Dziesięciu Małych Radości — wypisz dziesięć drobiazgów, które ostatnio poprawiły Ci humor. Jeśli przy siódmym zacznie brakować pomysłów, nie kończ — właśnie wtedy warto poszukać tych mniej oczywistych.",
+      "isSpecial": true
+    },
+    "set-6-task-12": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 12,
+      "title": "Powodu do Dumy",
+      "text": "Dziś jest Dzień Powodu do Dumy — zapisz jedną rzecz z tego roku, która daje Ci poczucie satysfakcji, nawet jeśli nikt poza Tobą jej nie zauważył.",
+      "isSpecial": false
+    },
+    "set-6-task-13": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 13,
+      "title": "Rozmowy o Dawnych Świętach",
+      "text": "Dziś jest Dzień Rozmowy o Dawnych Świętach — zapytaj bliską osobę: „Jak wyglądały święta w Twoim dzieciństwie?” Posłuchaj odpowiedzi bez poprawiania, dopowiadania i porównywania jej ze swoimi wspomnieniami.",
+      "isSpecial": false
+    },
+    "set-6-task-14": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 14,
+      "title": "Świątecznej Intencji",
+      "text": "Dziś jest Dzień Świątecznej Intencji — wybierz jedno słowo, które ma opisywać tegoroczne święta: „spokój”, „bliskość”, „zabawa”, „wdzięczność” albo dowolne inne. Wróć do niego myślami, gdy przedświąteczny pośpiech zacznie przejmować kontrolę.",
+      "isSpecial": true
+    },
+    "set-6-task-15": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 15,
+      "title": "Starej Kartki",
+      "text": "Dziś jest Dzień Starej Kartki — jeśli masz zachowaną świąteczną kartkę, list lub wiadomość sprzed lat, przeczytaj ją jeszcze raz. Zwróć uwagę na to, co dziś odbierasz inaczej niż w chwili, gdy ta wiadomość powstała.",
+      "isSpecial": false
+    },
+    "set-6-task-16": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 16,
+      "title": "Jednego Marzenia",
+      "text": "Dziś jest Dzień Jednego Marzenia — zapisz jedno doświadczenie, które naprawdę chcesz przeżyć w przyszłym roku. Obok dopisz najmniejszy możliwy krok, który może przybliżyć Cię do niego już po świętach.",
+      "isSpecial": false
+    },
+    "set-6-task-17": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 17,
+      "title": "Domowego Zachodu",
+      "text": "Dziś jest Dzień Domowego Zachodu — znajdź miejsce przy oknie i przez kilka minut obserwuj, jak pod koniec dnia zmienia się światło. Zdjęcie zrób dopiero na sam koniec — najpierw po prostu popatrz.",
+      "isSpecial": false
+    },
+    "set-6-task-18": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 18,
+      "title": "Własnej Tradycji",
+      "text": "Dziś jest Dzień Własnej Tradycji — wypisz trzy świąteczne zwyczaje, które pielęgnuje się w Twoim domu, i wybierz ten, który najbardziej chcesz zachować na kolejne lata. Dopisz jedno zdanie wyjaśniające, dlaczego właśnie ten.",
+      "isSpecial": true
+    },
+    "set-6-task-19": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 19,
+      "title": "Głosu do Przyszłości",
+      "text": "Dziś jest Dzień Głosu do Przyszłości — nagraj minutową wiadomość głosową do siebie i zachowaj ją do kolejnych świąt. Powiedz, co jest teraz ważne w Twoim życiu i czego nie chcesz zapomnieć.",
+      "isSpecial": false
+    },
+    "set-6-task-20": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 20,
+      "title": "Jednego Dobrego Zdania",
+      "text": "Dziś jest Dzień Jednego Dobrego Zdania — zapisz zdanie, które dobrze byłoby usłyszeć w trudniejszym dniu. Potem przeczytaj je sobie na głos tak, jakby ktoś naprawdę kierował te słowa właśnie do Ciebie.",
+      "isSpecial": false
+    },
+    "set-6-task-21": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 21,
+      "title": "Powolnego Śniadania",
+      "text": "Dziś jest Dzień Powolnego Śniadania — zjedz jeden posiłek bez telefonu i robienia czegokolwiek równocześnie. Przez pierwsze pięć minut skup się wyłącznie na smaku, zapachu i chwili przy stole.",
+      "isSpecial": false
+    },
+    "set-6-task-22": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 22,
+      "title": "Rodzinnego „Pamiętasz?”",
+      "text": "Dziś jest Dzień Rodzinnego „Pamiętasz?” — wybierz jedno wspólne wydarzenie z mijającego roku i poproś domowników, aby każdy opowiedział, co zapamiętał z niego najbardziej. Zobaczcie, jak różne mogą być wspomnienia tej samej chwili.",
+      "isSpecial": false
+    },
+    "set-6-task-23": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 23,
+      "title": "Małej Kapsuły Czasu",
+      "text": "Dziś jest Dzień Małej Kapsuły Czasu — włóż do koperty krótką notatkę o tym, co obecnie lubisz, czym żyjesz i czego najczęściej słuchasz. Dopisz datę i otwórz kopertę za rok.",
+      "isSpecial": true
+    },
+    "set-6-task-24": {
+      "setNumber": 6,
+      "setTitle": "Refleksja i relaks",
+      "order": 24,
+      "title": "Pięciu Minut Przy Oknie",
+      "text": "Dziś jest Dzień Pięciu Minut Przy Oknie — usiądź przy oknie i przez pięć minut po prostu patrz na zewnątrz. Jeśli chcesz, weź coś ciepłego do picia. Na koniec zapisz jedną rzecz, która wcześniej umykała Twojej uwadze.",
+      "isSpecial": false
+    }
+  }
+}

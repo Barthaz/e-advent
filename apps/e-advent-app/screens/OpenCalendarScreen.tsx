@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { openCalendarDay, ORDER_CALENDAR_URL } from '../api/api';
+import type { OpenedCalendarWindow } from '@e-advent/types';
 import { useProfile } from '../contexts/ProfileContext';
 import CalendarGrid from '../components/calendar/CalendarGrid';
 import WindowOpenAnimation, {
@@ -23,8 +24,9 @@ import WindowOpenAnimation, {
   type WindowRect,
 } from '../components/calendar/WindowOpenAnimation';
 import { calendarTheme } from '../components/calendar/calendarTheme';
+import SpecialWindowShell from '../special-windows/SpecialWindowShell';
 
-const logo = require('../assets/logo.png');
+const logo = require('../assets/eadvent-logo.png');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { STORAGE_KEYS } = require('../utils/accessSession');
@@ -73,6 +75,7 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [days, setDays] = useState<CalendarDay[]>([]);
   const [openingDay, setOpeningDay] = useState<number | null>(null);
+  const [openedWindows, setOpenedWindows] = useState<Record<number, OpenedCalendarWindow>>({});
   const [showUnlinkModal, setShowUnlinkModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -88,8 +91,24 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
   useEffect(() => {
     if (calendar?.tasks) {
       setDays(buildDaysFromCalendar(calendar.tasks));
+      const hydrated: Record<number, OpenedCalendarWindow> = {};
+      for (const apiTask of calendar.tasks) {
+        if (apiTask.status === 'opened' && apiTask.isSpecial && apiTask.special) {
+          hydrated[apiTask.day] = {
+            taskId: apiTask.catalogTaskId || '',
+            day: apiTask.day,
+            state: 'OPENED',
+            title: apiTask.title,
+            text: apiTask.title,
+            isSpecial: true,
+            special: apiTask.special,
+          };
+        }
+      }
+      setOpenedWindows((prev) => ({ ...hydrated, ...prev }));
     } else if (!isLoggedIn) {
       setDays([]);
+      setOpenedWindows({});
     }
   }, [calendar, isLoggedIn]);
 
@@ -282,7 +301,10 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
     setIsAnimating(true);
 
     try {
-      await openCalendarDay(calendar.id, day, accessCode || undefined);
+      const res = await openCalendarDay(calendar.id, day, accessCode || undefined);
+      if (res.openedWindow) {
+        setOpenedWindows((prev) => ({ ...prev, [day]: res.openedWindow! }));
+      }
       markDayOpened(day);
       setOpeningDay(null);
       openTaskPresentation(day, 'zoom', rect);
@@ -449,6 +471,14 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
           duration={selectedDayData?.duration}
           sourceRect={sourceRect}
           onRequestClose={handleCloseTaskPanel}
+          specialContent={
+            selectedDay !== null && calendar && openedWindows[selectedDay]?.isSpecial ? (
+              <SpecialWindowShell
+                calendarId={calendar.id}
+                openedWindow={openedWindows[selectedDay]}
+              />
+            ) : null
+          }
         />
 
         <Modal

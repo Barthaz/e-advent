@@ -111,7 +111,7 @@ export default function FilterBar({ filters, onChange, onReset, activeCount }: F
             <input
               type="text"
               className="input-field !pl-[2.75rem]"
-              placeholder="Email, nazwisko lub ID zamówienia…"
+              placeholder="Email, nazwisko lub numer zamówienia…"
               value={filters.search ?? ''}
               onChange={(e) => onChange('search', e.target.value)}
             />

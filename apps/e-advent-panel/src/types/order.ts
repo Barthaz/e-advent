@@ -14,10 +14,19 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   calendarId?: string | null;
+  metadata?: {
+    childName?: string;
+  };
+  /** Etykieta do wyświetlenia (np. CERTYFIKAT - Imię) */
+  displayName?: string;
 }
 
 export interface OrderListItem {
   id: string;
+  /** Kolejny numer zamówienia (1, 2, …) */
+  order_number: number | null;
+  /** Numer dla klienta, np. 000001 */
+  order_number_display: string | null;
   calendar_id: string | null;
   stripe_payment_intent_id: string | null;
   status: PaymentStatus;

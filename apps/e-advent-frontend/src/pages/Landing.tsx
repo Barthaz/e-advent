@@ -8,7 +8,7 @@ import SEOHead from '../components/SEOHead';
 import ProductCard from '../components/products/ProductCard';
 import { PRODUCT_FAMILIES } from '../config/products';
 import { getDaysUntilChristmas, formatCountdown } from '../utils/countdown';
-import logo from '../assets/logo.png';
+import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
 export default function Landing() {
   const [countdown, setCountdown] = useState(formatCountdown(getDaysUntilChristmas()));

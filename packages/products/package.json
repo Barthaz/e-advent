@@ -8,8 +8,8 @@
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
+      "import": "./src/index.mjs",
       "require": "./src/index.js",
-      "import": "./src/index.js",
       "default": "./src/index.js"
     }
   },
@@ -17,7 +17,7 @@
     "src"
   ],
   "scripts": {
-    "build": "echo \"@e-advent/products is plain CJS\""
+    "build": "echo \"@e-advent/products is plain CJS + ESM bridge\""
   },
   "dependencies": {
     "@e-advent/types": "1.0.0"

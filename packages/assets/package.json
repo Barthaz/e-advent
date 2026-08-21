@@ -10,8 +10,13 @@
       "types": "./src/index.d.ts",
       "default": "./src/index.js"
     },
+    "./brand/eadvent-logo.png": "./../../assets/brand/eadvent-logo.png",
+    "./brand/eadvent-mark.png": "./../../assets/brand/eadvent-mark.png",
+    "./backgrounds/christmas-ambient-landscape.webp": "./../../assets/backgrounds/christmas-ambient-landscape.webp",
+    "./backgrounds/christmas-ambient-square.webp": "./../../assets/backgrounds/christmas-ambient-square.webp",
+    "./backgrounds/christmas-ambient-portrait.webp": "./../../assets/backgrounds/christmas-ambient-portrait.webp",
     "./background.png": "./../../assets/background.png",
-    "./logo.png": "./../../assets/logo.png",
+    "./logo.png": "./../../assets/brand/eadvent-logo.png",
     "./files/*": "./../../assets/*"
   },
   "files": [

@@ -5,6 +5,17 @@ const AdminUser = require('../models/AdminUser');
 const authAdmin = require('../middleware/authAdmin');
 const { loginLimiter } = require('../middleware/rateLimits');
 const { query } = require('../config/database');
+const Calendar = require('../models/Calendar');
+const EmailSend = require('../models/EmailSend');
+const {
+    sendPaidOrderEmailsById,
+    sendShippingEmailById,
+    sendDailyWindowEmail,
+    sendTodaysDailyWindows,
+    previewTodaysDailyWindows,
+} = require('../services/orderMailer');
+const { listEmailTemplates, getEmailTemplatePreview } = require('../services/emailTemplates');
+const { formatOrderNumber, parseOrderNumberSearch } = require('../utils/orderNumber');
 
 // ── POST /admin/login ──────────────────────────────────────────────────────────
 
@@ -104,7 +115,7 @@ router.get('/orders', authAdmin, [
             conditions.push(`(
               o.product_type = 'letter'
               OR ((o.product_type IS NULL OR o.product_type = '') AND IFNULL(o.sku, '') LIKE 'santa%')
-              OR o.id IN (SELECT order_id FROM order_items WHERE product_type = 'letter' OR sku = 'santa-letter')
+              OR o.id IN (SELECT order_id FROM order_items WHERE product_type = 'letter' OR sku LIKE 'santa%')
             )`);
         } else if (product_type) {
             conditions.push('o.product_type = ?');
@@ -123,9 +134,19 @@ router.get('/orders', authAdmin, [
             vals.push(to);
         }
         if (search) {
-            conditions.push('(o.customer_email LIKE ? OR o.customer_name LIKE ? OR o.id LIKE ?)');
             const like = `%${search}%`;
-            vals.push(like, like, like);
+            const orderNum = parseOrderNumberSearch(search);
+            if (orderNum != null) {
+                conditions.push(
+                    '(o.customer_email LIKE ? OR o.customer_name LIKE ? OR o.id LIKE ? OR o.order_number = ? OR LPAD(o.order_number, 6, \'0\') LIKE ?)'
+                );
+                vals.push(like, like, like, orderNum, like);
+            } else {
+                conditions.push(
+                    '(o.customer_email LIKE ? OR o.customer_name LIKE ? OR o.id LIKE ? OR LPAD(o.order_number, 6, \'0\') LIKE ?)'
+                );
+                vals.push(like, like, like, like);
+            }
         }
 
         const where = conditions.join(' AND ');
@@ -140,7 +161,7 @@ router.get('/orders', authAdmin, [
         // Data
         const [rows] = await query(
             `SELECT
-               o.id, o.created_at, o.status, o.fulfillment_status,
+               o.id, o.order_number, o.created_at, o.status, o.fulfillment_status,
                o.product_type, o.sku, o.amount, o.shipping_amount, o.currency,
                o.customer_email, o.customer_name,
                o.delivery_type, o.shipping_city,
@@ -155,7 +176,13 @@ router.get('/orders', authAdmin, [
             [...vals, parseInt(limit, 10), parseInt(offset, 10)]
         );
 
-        res.json({ orders: rows, total, page: parseInt(page, 10), limit: parseInt(limit, 10) });
+        const orders = rows.map((row) => ({
+            ...row,
+            order_number: row.order_number != null ? Number(row.order_number) : null,
+            order_number_display: formatOrderNumber(row.order_number),
+        }));
+
+        res.json({ orders, total, page: parseInt(page, 10), limit: parseInt(limit, 10) });
     } catch (error) {
         console.error('Admin orders list error:', error);
         res.status(500).json({ error: 'Failed to fetch orders', message: error.message });
@@ -202,6 +229,8 @@ router.get('/orders/:id', authAdmin, async (req, res) => {
 
         const order = {
             id:                        row.id,
+            orderNumber:               row.order_number != null ? Number(row.order_number) : null,
+            orderNumberDisplay:        formatOrderNumber(row.order_number),
             calendarId:                row.calendar_id,
             stripePaymentIntentId:     row.stripe_payment_intent_id,
             amount:                    parseFloat(row.amount),
@@ -344,24 +373,7 @@ router.get('/calendars/:id', authAdmin, async (req, res) => {
 
         const row = rows[0];
         res.json({
-            calendar: {
-                id:               row.id,
-                title:            row.title,
-                author:           row.author,
-                email:            row.email,
-                productType:      row.product_type,
-                sku:              row.sku,
-                format:           row.format,
-                designUrl:        row.design_url,
-                tasks:            typeof row.tasks === 'string' ? JSON.parse(row.tasks) : (row.tasks || []),
-                status:           row.status,
-                accessCode:       row.access_code,
-                isFree:           !!row.is_free,
-                fulfillmentStatus: row.fulfillment_status,
-                fulfillmentNotes:  row.fulfillment_notes,
-                createdAt:        row.created_at,
-                updatedAt:        row.updated_at,
-            },
+            calendar: calendarToAdminJson(row),
         });
     } catch (error) {
         console.error('Admin calendar detail error:', error);
@@ -450,29 +462,125 @@ router.patch('/calendars/:id', authAdmin, [
         const row = updated[0];
         res.json({
             success: true,
-            calendar: {
-                id:                row.id,
-                title:             row.title,
-                author:            row.author,
-                email:             row.email,
-                productType:       row.product_type,
-                sku:               row.sku,
-                format:            row.format,
-                designUrl:         row.design_url,
-                tasks:             typeof row.tasks === 'string' ? JSON.parse(row.tasks) : (row.tasks || []),
-                status:            row.status,
-                accessCode:        row.access_code,
-                isFree:            !!row.is_free,
-                fulfillmentStatus: row.fulfillment_status,
-                fulfillmentNotes:  row.fulfillment_notes,
-                createdAt:         row.created_at,
-                updatedAt:         row.updated_at,
-            },
+            calendar: calendarToAdminJson(row),
         });
     } catch (error) {
         console.error('Admin calendar patch error:', error);
         res.status(500).json({ error: 'Failed to update calendar', message: error.message });
     }
+});
+
+function calendarToAdminJson(row) {
+    return {
+        id:                row.id,
+        title:             row.title,
+        author:            row.author,
+        email:             row.email,
+        productType:       row.product_type,
+        sku:               row.sku,
+        format:            row.format,
+        designUrl:         row.design_url,
+        tasks:             typeof row.tasks === 'string' ? JSON.parse(row.tasks) : (row.tasks || []),
+        status:            row.status,
+        accessCode:        row.access_code,
+        isFree:            !!row.is_free,
+        fulfillmentStatus: row.fulfillment_status,
+        fulfillmentNotes:  row.fulfillment_notes,
+        openingMethod:     row.opening_method || null,
+        dailyContentEmail: row.daily_content_email || null,
+        createdAt:         row.created_at,
+        updatedAt:         row.updated_at,
+    };
+}
+
+function mailerErrorResponse(res, error) {
+    const status = error.status || 500;
+    return res.status(status).json({
+        error: error.code || 'MAILER_ERROR',
+        message: error.message,
+    });
+}
+
+router.get('/orders/:id/emails', authAdmin, async (req, res) => {
+    try {
+        const emails = await EmailSend.listByOrderId(req.params.id);
+        res.json({ emails });
+    } catch (error) {
+        console.error('Admin order emails error:', error);
+        res.status(500).json({ error: 'Failed to fetch emails', message: error.message });
+    }
+});
+
+router.post('/orders/:id/emails/paid', authAdmin, async (req, res) => {
+    try {
+        const result = await sendPaidOrderEmailsById(req.params.id, 'admin');
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Admin send paid email error:', error);
+        return mailerErrorResponse(res, error);
+    }
+});
+
+router.post('/orders/:id/emails/shipping', authAdmin, async (req, res) => {
+    try {
+        const result = await sendShippingEmailById(req.params.id, 'admin');
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Admin send shipping email error:', error);
+        return mailerErrorResponse(res, error);
+    }
+});
+
+router.post('/calendars/:id/emails/day/:day', authAdmin, async (req, res) => {
+    try {
+        const calendar = await Calendar.findCalendarById(req.params.id);
+        if (!calendar) {
+            return res.status(404).json({ error: 'Calendar not found' });
+        }
+        const result = await sendDailyWindowEmail(calendar, req.params.day, {
+            force: req.body?.force !== false,
+            triggeredBy: 'admin',
+        });
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Admin send daily window error:', error);
+        return mailerErrorResponse(res, error);
+    }
+});
+
+router.get('/emails/daily-today/preview', authAdmin, async (req, res) => {
+    try {
+        const preview = await previewTodaysDailyWindows();
+        res.json(preview);
+    } catch (error) {
+        console.error('Admin daily preview error:', error);
+        res.status(500).json({ error: 'Failed to preview daily emails', message: error.message });
+    }
+});
+
+router.post('/emails/daily-today', authAdmin, async (req, res) => {
+    try {
+        const force = !!req.body?.force;
+        const result = await sendTodaysDailyWindows({ force, triggeredBy: 'admin' });
+        res.json({ success: true, ...result });
+    } catch (error) {
+        console.error('Admin daily bulk send error:', error);
+        return mailerErrorResponse(res, error);
+    }
+});
+
+// ── Szablony e-mail (katalog + podgląd z mockami) ──────────────────────────────
+
+router.get('/email-templates', authAdmin, (_req, res) => {
+    res.json({ templates: listEmailTemplates() });
+});
+
+router.get('/email-templates/:id/preview', authAdmin, (req, res) => {
+    const preview = getEmailTemplatePreview(req.params.id);
+    if (!preview) {
+        return res.status(404).json({ error: 'Email template not found' });
+    }
+    res.json({ preview });
 });
 
 module.exports = router;

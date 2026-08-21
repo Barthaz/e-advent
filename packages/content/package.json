@@ -1,0 +1,36 @@
+{
+  "name": "@e-advent/content",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Calendar catalog, content packs and build scripts for e-advent special windows",
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./catalog": {
+      "import": "./catalog/e-advent-calendars-data.json"
+    },
+    "./creator-index": {
+      "import": "./generated/creator-index.json"
+    },
+    "./special-registry": {
+      "import": "./generated/special-config-registry.json"
+    },
+    "./packs/*": "./packs/*.json"
+  },
+  "scripts": {
+    "build": "node scripts/build-creator-catalog.mjs && node scripts/build-special-registry.mjs",
+    "build:catalog": "node scripts/build-creator-catalog.mjs",
+    "build:registry": "node scripts/build-special-registry.mjs"
+  },
+  "files": [
+    "catalog",
+    "generated",
+    "packs",
+    "src",
+    "scripts"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@e-advent/render-schema",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "echo \"@e-advent/render-schema is source-only\""
+  },
+  "dependencies": {
+    "@e-advent/design-tokens": "*"
+  }
+}

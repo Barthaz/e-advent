@@ -18,7 +18,7 @@ import {
   trackSantaTrackingReset,
   trackSantaTrackingStarted,
 } from '../utils/santa/analytics';
-import logo from '../assets/logo.png';
+import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
 const SANTA_JSON_LD = {
   '@context': 'https://schema.org',

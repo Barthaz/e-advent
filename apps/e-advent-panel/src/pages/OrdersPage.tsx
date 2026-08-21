@@ -10,6 +10,7 @@ import type { OrderListItem } from '../types/order';
 import {
   formatDate,
   formatAmount,
+  formatOrderNumber,
   getPaymentStatusLabel,
   getFulfillmentStatusLabel,
   getDeliveryTypeLabel,
@@ -26,10 +27,12 @@ export default function OrdersPage() {
 
   const columns: Column<OrderListItem>[] = [
     {
-      key: 'id',
-      header: 'ID',
+      key: 'order_number',
+      header: 'Numer',
       render: (row) => (
-        <span className="font-mono text-xs font-semibold text-gray-600">#{row.id}</span>
+        <span className="font-mono text-xs font-semibold text-gray-700">
+          #{row.order_number_display ?? formatOrderNumber(row.order_number)}
+        </span>
       ),
     },
     {

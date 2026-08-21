@@ -7,4 +7,5 @@ export type {
   CreatorFormData,
   OrderCalendarData,
   FulfillmentStatus,
+  OpeningMethod,
 } from '@e-advent/types';

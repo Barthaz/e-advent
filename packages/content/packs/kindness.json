@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "packs": {
+    "thank-you-card-prompts-v1": {
+      "prompts": ["Za co dziś dziękujesz?", "Komu chcesz to powiedzieć?", "Jedno zdanie od serca"]
+    },
+    "secret-elf-kindness-missions-v1": {
+      "missions": ["Zostaw komuś miłą notatkę", "Podaj drzwi", "Uśmiechnij się do nieznajomego"]
+    }
+  }
+}

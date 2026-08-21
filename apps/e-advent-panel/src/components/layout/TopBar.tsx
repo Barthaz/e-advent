@@ -14,13 +14,19 @@ function useBreadcrumbs(): Breadcrumb[] {
   if (segments[0] === 'orders') {
     crumbs.push({ label: 'Zamówienia', to: '/orders' });
     if (segments[1]) {
-      crumbs.push({ label: `Zamówienie #${segments[1]}` });
+      crumbs.push({ label: 'Szczegóły zamówienia' });
     }
   } else if (segments[0] === 'calendars') {
     crumbs.push({ label: 'Kalendarz' });
     if (segments[1]) {
       crumbs.push({ label: segments[1] });
     }
+  } else if (segments[0] === 'emails') {
+    crumbs.push({ label: 'Wysyłki' });
+  } else if (segments[0] === 'email-templates') {
+    crumbs.push({ label: 'Szablony e-mail' });
+  } else if (segments[0] === 'tasks') {
+    crumbs.push({ label: 'Zadania' });
   }
 
   return crumbs;

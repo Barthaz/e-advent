@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "packs": {
+    "chocolate-tasting-v1": {
+      "samples": ["Mleczna", "Gorzka 70%", "Biała", "Orzechowa"],
+      "scale": 5
+    },
+    "recipe-truffles-v1": {
+      "title": "Trufle czekoladowe",
+      "servings": 20,
+      "ingredients": ["200 g czekolady", "100 ml śmietanki"],
+      "steps": ["Podgrzej śmietankę", "Wymieszaj z czekoladą", "Formuj kulki"]
+    },
+    "recipe-cinnamon-rolls-v1": {
+      "title": "Cynamonowe ślimaczki",
+      "servings": 12,
+      "ingredients": ["Mąka", "Drożdże", "Cynamon", "Masło"],
+      "steps": ["Zagnieć ciasto", "Posmaruj nadzieniem", "Piecz 20 min"]
+    }
+  }
+}

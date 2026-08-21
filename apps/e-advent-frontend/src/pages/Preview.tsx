@@ -6,6 +6,7 @@ import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
 import LoadingState from '../components/LoadingState';
 import { buildCalendarTasks } from '../utils/calendarGenerator';
+import { textToCatalogTaskId } from '../utils/catalogTaskIds';
 import examplesData from '../data/examples.json';
 // Import wszystkich ikon adwentowych do preloadowania
 import icon1 from '../assets/advent/1.png';
@@ -74,7 +75,8 @@ function generateCalendarFallback(
   const generated = buildCalendarTasks(
     data.tasks || [],
     examples,
-    data.selectedExampleSets || []
+    data.selectedExampleSets || [],
+    textToCatalogTaskId
   );
 
   return generated.map(({ day, task, latestDay }) => ({
@@ -314,7 +316,7 @@ export default function Preview() {
               
               return (
                 <>
-                  <p className="text-4xl md:text-5xl mb-4 text-christmas-gold-light font-bold drop-shadow-lg px-4 font-task">
+                  <p className="text-2xl md:text-4xl mb-4 text-christmas-gold-light drop-shadow-lg px-4 font-task">
                     {taskText}
                   </p>
                   {duration && duration > 0 && (

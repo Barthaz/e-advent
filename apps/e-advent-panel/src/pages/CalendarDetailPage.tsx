@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetCalendarQuery, usePatchCalendarMutation } from '../api/calendarsApi';
+import { useSendCalendarDayEmailMutation } from '../api/emailsApi';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { useToast } from '../hooks/useToast';
 import { formatDate } from '../utils/formatters';
+import { OPENING_METHOD_LABELS } from '../utils/constants';
 import type { CalendarTaskDetail } from '../types/calendar';
 
 const TASK_STATUS_CONFIG: Record<string, { label: string; icon: string; cls: string }> = {
@@ -28,8 +30,10 @@ export default function CalendarDetailPage() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const { data: calendar, isLoading, isError } = useGetCalendarQuery(id ?? '', { skip: !id });
+  const { data: calendar, isLoading, isError, refetch } = useGetCalendarQuery(id ?? '', { skip: !id });
   const [patchCalendar, { isLoading: isSaving }] = usePatchCalendarMutation();
+  const [sendDayEmail, { isLoading: isSendingDay }] = useSendCalendarDayEmailMutation();
+  const [sendingDay, setSendingDay] = useState<number | null>(null);
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -78,6 +82,35 @@ export default function CalendarDetailPage() {
       setIsDirty(false);
     } catch {
       toast.error('Nie udało się zapisać zmian kalendarza.');
+    }
+  };
+
+  const handleSendDay = async (day: number) => {
+    if (!id) return;
+    setSendingDay(day);
+    try {
+      const result = await sendDayEmail({ calendarId: id, day, force: true }).unwrap();
+      const to = result.recipient
+        || calendar?.daily_content_email
+        || calendar?.customer_email
+        || '';
+      if (result.skipped) {
+        toast.info(`Okienko dnia ${day} było już wysłane${to ? ` na ${to}` : ''}.`);
+      } else if (result.success === false) {
+        const failMsg = (result as { error?: string }).error
+          || result.results?.[0]?.error
+          || `Wysyłka dnia ${day} nie powiodła się${to ? ` (${to})` : ''}.`;
+        toast.error(failMsg);
+      } else {
+        toast.success(`Wysłano okienko dnia ${day}${to ? ` na ${to}` : ''}.`);
+      }
+      await refetch();
+    } catch (err) {
+      const message = (err as { data?: { message?: string } })?.data?.message
+        || `Nie udało się wysłać okienka dnia ${day}.`;
+      toast.error(message);
+    } finally {
+      setSendingDay(null);
     }
   };
 
@@ -165,6 +198,16 @@ export default function CalendarDetailPage() {
               {calendar.customer_email && (
                 <DetailRow label="Email klienta" value={calendar.customer_email} />
               )}
+              <DetailRow
+                label="Sposób otwierania"
+                value={OPENING_METHOD_LABELS[calendar.opening_method ?? ''] ?? calendar.opening_method ?? '—'}
+              />
+              {calendar.opening_method === 'email' && (
+                <DetailRow
+                  label="Adres codziennej treści"
+                  value={calendar.daily_content_email || calendar.customer_email || '—'}
+                />
+              )}
               {calendar.design_url && (
                 <DetailRow
                   label="Design URL"
@@ -215,7 +258,34 @@ export default function CalendarDetailPage() {
                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
                           Dzień {task.day}
                         </p>
-                        <TaskStatusBadge status={task.status} />
+                        <div className="flex items-center gap-2">
+                          <TaskStatusBadge status={task.status} />
+                          <button
+                            type="button"
+                            onClick={() => handleSendDay(task.day)}
+                            disabled={
+                              calendar.opening_method !== 'email'
+                              || !(calendar.daily_content_email || calendar.customer_email)
+                              || sendingDay === task.day
+                              || isSendingDay
+                            }
+                            className="btn-secondary px-2 py-1 text-xs disabled:opacity-40"
+                            title={
+                              calendar.opening_method !== 'email'
+                                ? 'Kalendarz nie ma wybranej wysyłki mailowej'
+                                : !(calendar.daily_content_email || calendar.customer_email)
+                                  ? 'Brak adresu codziennej treści'
+                                  : `Wyślij okienko dnia ${task.day}`
+                            }
+                          >
+                            {sendingDay === task.day ? (
+                              <span className="spinner spinner-sm" />
+                            ) : (
+                              <i className="fa-solid fa-envelope" />
+                            )}
+                            Wyślij
+                          </button>
+                        </div>
                       </div>
                       <textarea
                         rows={2}

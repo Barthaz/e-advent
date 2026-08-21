@@ -4,7 +4,7 @@
     "slug": "e-advent-app",
     "version": "2.0.0",
     "orientation": "portrait",
-    "icon": "./assets/app_logo.png",
+    "icon": "./assets/eadvent-mark.png",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
@@ -15,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/app_logo.png",
+        "foregroundImage": "./assets/eadvent-mark.png",
         "backgroundColor": "#0f5132"
       },
       "package": "com.eadvent.app"
@@ -26,7 +26,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/logo.png",
+          "image": "./assets/eadvent-logo.png",
           "resizeMode": "contain",
           "backgroundColor": "#0f5132"
         }
@@ -37,7 +37,13 @@
           "enableBackgroundPlayback": true
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Aplikacja potrzebuje zdjęć, żeby zestawić ujęcie „wtedy” i „dziś”."
+        }
+      ]
     ],
     "extra": {
       "eas": {

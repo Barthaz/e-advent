@@ -1,0 +1,1754 @@
+{
+  "version": 1,
+  "entries": {
+    "set-1-task-5": {
+      "configId": "set-1-task-5-v1",
+      "engine": "QUIZ",
+      "version": 1,
+      "headline": "Quiz wiedzy o Bożym Narodzeniu",
+      "description": "Gotowy Bożonarodzeniowy Quiz",
+      "contentKey": "christmas-quiz-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-1-task-6": {
+      "configId": "set-1-task-6-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "List do Mikołaja dla dorosłych",
+      "description": "List do Mikołaja dla dorosłych",
+      "contentKey": "adult-santa-letter-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "santa-adult-letter-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-1-task-7": {
+      "configId": "set-1-task-7-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Świąteczne bingo na grudniowy spacer",
+      "description": "Świąteczne Bingo 3×3",
+      "contentKey": "christmas-bingo-v1",
+      "variant": "BINGO",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "bingo-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-1-task-9": {
+      "configId": "set-1-task-9-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Miniaturowa świąteczna wioska",
+      "description": "Papierowa świąteczna wioska",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "paper-village-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-1-task-11": {
+      "configId": "set-1-task-11-v1",
+      "engine": "RANDOMIZER_TIMER",
+      "version": 1,
+      "headline": "Świąteczna ciekawostka dnia",
+      "description": "Świąteczna ciekawostka dnia",
+      "contentKey": "christmas-trivia-v1",
+      "variant": "DECK",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-1-task-15": {
+      "configId": "set-1-task-15-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Polowanie na iluminacje",
+      "description": "Polowanie na iluminacje",
+      "contentKey": "illumination-hunt-v1",
+      "variant": "SCORE",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "score-summary-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-1-task-17": {
+      "configId": "set-1-task-17-v1",
+      "engine": "IMAGE_CARD",
+      "version": 1,
+      "headline": "Fotograficzny powrót — wtedy i dziś",
+      "description": "Fotograficzny powrót — przed i po",
+      "contentKey": "photo-then-now-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "then-now-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-1-task-21": {
+      "configId": "set-1-task-21-v1",
+      "engine": "RANDOMIZER_TIMER",
+      "version": 1,
+      "headline": "Tajna misja elfa",
+      "description": "Tajna misja elfa",
+      "contentKey": "secret-elf-missions-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-1-task-22": {
+      "configId": "set-1-task-22-v1",
+      "engine": "RANDOMIZER_TIMER",
+      "version": 1,
+      "headline": "Świąteczne kalambury",
+      "description": "Świąteczne kalambury",
+      "contentKey": "christmas-charades-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-1-task-23": {
+      "configId": "set-1-task-23-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Raport Prezentowego Detektywa",
+      "description": "Karta Prezentowego Detektywa",
+      "contentKey": "gift-detective-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "detective-report-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-1-task-24": {
+      "configId": "set-1-task-24-v1",
+      "engine": "SORTABLE_LIST",
+      "version": 1,
+      "headline": "Grudniowy ranking filmów świątecznych",
+      "description": "Grudniowy ranking TOP 5",
+      "contentKey": "december-ranking-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "ranking-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-1-task-28": {
+      "configId": "set-1-task-28-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Świąteczna przepowiednia na Wigilię",
+      "description": "Świąteczna prognoza",
+      "contentKey": "christmas-prediction-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": true
+      },
+      "config": {},
+      "document": {
+        "templateId": "prediction-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-1-task-29": {
+      "configId": "set-1-task-29-v1",
+      "engine": "RANDOMIZER_TIMER",
+      "version": 1,
+      "headline": "Reniferowe wyzwanie bez słów",
+      "description": "Reniferowe wyzwanie",
+      "contentKey": "reindeer-challenge-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-2-task-1": {
+      "configId": "set-2-task-1-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Checklista świątecznej stacji pakowania",
+      "description": "Świąteczna stacja pakowania — checklista",
+      "contentKey": "packing-station-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "DOCUMENT"
+      },
+      "document": {
+        "templateId": "checklist-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-4": {
+      "configId": "set-2-task-4-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Lista pudełka awaryjnego",
+      "description": "Pudełko awaryjne — gotowa lista",
+      "contentKey": "emergency-box-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "checklist-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-5": {
+      "configId": "set-2-task-5-v1",
+      "engine": "PLANNER",
+      "version": 1,
+      "headline": "Planer prezentów bez paniki",
+      "description": "Planer prezentów",
+      "contentKey": "gift-planner-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "gift-planner-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-6": {
+      "configId": "set-2-task-6-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Checklista świątecznej spiżarni",
+      "description": "Świąteczna spiżarnia",
+      "contentKey": "pantry-checklist-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "checklist-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-9": {
+      "configId": "set-2-task-9-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Inwentaryzacja papieru i wstążek",
+      "description": "Inwentaryzacja materiałów do pakowania",
+      "contentKey": "wrapping-inventory-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "inventory-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-18": {
+      "configId": "set-2-task-18-v1",
+      "engine": "TEMPLATE_PERSONALIZER",
+      "version": 1,
+      "headline": "Etykiety prezentowe do druku",
+      "description": "Prezentowe etykiety e‑Advent",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "DOCUMENT"
+      },
+      "document": {
+        "templateId": "labels-sheet-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-19": {
+      "configId": "set-2-task-19-v1",
+      "engine": "MONTH_PLANNER",
+      "version": 1,
+      "headline": "Kalendarz grudniowych terminów",
+      "description": "Grudniowy planer",
+      "contentKey": "december-planner-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "month-planner-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-20": {
+      "configId": "set-2-task-20-v1",
+      "engine": "PLANNER",
+      "version": 1,
+      "headline": "Planer świątecznego menu",
+      "description": "Planer świątecznego menu",
+      "contentKey": "christmas-menu-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "planner-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-24": {
+      "configId": "set-2-task-24-v1",
+      "engine": "OPTION_CONFIGURATOR",
+      "version": 1,
+      "headline": "Awaryjna lista uniwersalnych prezentów",
+      "description": "Awaryjne prezenty — gotowa baza pomysłów",
+      "contentKey": "emergency-gift-ideas-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "suggestion-list-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-2-task-30": {
+      "configId": "set-2-task-30-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Ostatnia kontrola przed Wigilią",
+      "description": "Ostatnia kontrola przed świętami",
+      "contentKey": "final-audit-v1",
+      "variant": "AUDIT",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "audit-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-3-task-1": {
+      "configId": "set-3-task-1-v1",
+      "engine": "RANDOMIZER_TIMER",
+      "version": 1,
+      "headline": "Misja Tajemniczego Elfa",
+      "description": "Tajemniczy Elf — misja dobra",
+      "contentKey": "secret-elf-kindness-missions-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-3-task-2": {
+      "configId": "set-3-task-2-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Karta prawdziwego „dziękuję”",
+      "description": "Karta prawdziwego „Dziękuję”",
+      "contentKey": "thank-you-card-prompts-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "form-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-3-task-7": {
+      "configId": "set-3-task-7-v1",
+      "engine": "TEMPLATE_PERSONALIZER",
+      "version": 1,
+      "headline": "Osobista kartka świąteczna",
+      "description": "Świąteczna kartka e‑Advent",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "DOCUMENT"
+      },
+      "document": {
+        "templateId": "greeting-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-3-task-9": {
+      "configId": "set-3-task-9-v1",
+      "engine": "TEMPLATE_PERSONALIZER",
+      "version": 1,
+      "headline": "Etykietka do małej paczuszki",
+      "description": "Etykietka do małej paczuszki",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "labels-sheet-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-3-task-13": {
+      "configId": "set-3-task-13-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Łańcuch dobra",
+      "description": "Łańcuch dobra",
+      "contentKey": "pay-it-forward-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "form-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-3-task-19": {
+      "configId": "set-3-task-19-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Trzy uśmiechy na dziś",
+      "description": "Trzy uśmiechy",
+      "contentKey": "three-smiles-v1",
+      "variant": "STEPS",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "steps-summary-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-3-task-24": {
+      "configId": "set-3-task-24-v1",
+      "engine": "RANDOMIZER_TIMER",
+      "version": 1,
+      "headline": "Karta rodzinnych wspomnień",
+      "description": "Rodzinne wspomnienia — karta rozmowy",
+      "contentKey": "family-memory-prompts-v1",
+      "variant": "PROMPT_DECK",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "DOCUMENT"
+      },
+      "document": {
+        "templateId": "prompt-sheet-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-3-task-27": {
+      "configId": "set-3-task-27-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Życzenia napisane własnymi słowami",
+      "description": "Życzenia bez kopiowania",
+      "contentKey": "personal-wishes-prompts-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "greeting-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-2": {
+      "configId": "set-4-task-2-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Wzory na własny papier prezentowy",
+      "description": "Własny papier prezentowy — wzory",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "wrapping-pattern-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-3": {
+      "configId": "set-4-task-3-v1",
+      "engine": "TEMPLATE_PERSONALIZER",
+      "version": 1,
+      "headline": "Eleganckie etykiety prezentowe",
+      "description": "Eleganckie etykiety prezentowe",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "DOCUMENT"
+      },
+      "document": {
+        "templateId": "labels-sheet-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-4": {
+      "configId": "set-4-task-4-v1",
+      "engine": "TEMPLATE_PERSONALIZER",
+      "version": 1,
+      "headline": "Świąteczna pocztówka z Twojego miejsca",
+      "description": "Świąteczna pocztówka z Twojego miejsca",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "postcard-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-5": {
+      "configId": "set-4-task-5-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Szablon papierowej wioski",
+      "description": "Papierowa wioska",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "paper-village-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-6": {
+      "configId": "set-4-task-6-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Zawieszki z masy solnej",
+      "description": "Masa solna — wzory zawieszek",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "salt-dough-guide-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-7": {
+      "configId": "set-4-task-7-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Wzory świątecznych stempli",
+      "description": "Świąteczne stemple — karta wzorów",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "stamp-guide-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-10": {
+      "configId": "set-4-task-10-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Ozdobna koperta",
+      "description": "Ozdobna koperta",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "envelope-decor-guide-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-11": {
+      "configId": "set-4-task-11-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Świąteczna zakładka do książki",
+      "description": "Świąteczna zakładka",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "bookmarks-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-13": {
+      "configId": "set-4-task-13-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Papierowy renifer",
+      "description": "Papierowy renifer",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "paper-reindeer-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-16": {
+      "configId": "set-4-task-16-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Świąteczne origami",
+      "description": "Origami świąteczne",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "origami-guide-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-17": {
+      "configId": "set-4-task-17-v1",
+      "engine": "IMAGE_CARD",
+      "version": 1,
+      "headline": "Świąteczna ramka na zdjęcie",
+      "description": "Świąteczna ramka na zdjęcie",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-4-task-20": {
+      "configId": "set-4-task-20-v1",
+      "engine": "TEMPLATE_PERSONALIZER",
+      "version": 1,
+      "headline": "Świąteczny komiks w czterech kadrach",
+      "description": "Świąteczny komiks — 4 kadry",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "DOCUMENT"
+      },
+      "document": {
+        "templateId": "comic-sheet-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-21": {
+      "configId": "set-4-task-21-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Łańcuch wspomnień",
+      "description": "Łańcuch wspomnień",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "memory-chain-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-25": {
+      "configId": "set-4-task-25-v1",
+      "engine": "DOCUMENT",
+      "version": 1,
+      "headline": "Mała girlanda do druku",
+      "description": "Mała girlanda",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "garland-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-4-task-28": {
+      "configId": "set-4-task-28-v1",
+      "engine": "TEMPLATE_PERSONALIZER",
+      "version": 1,
+      "headline": "Kupony-prezent z papieru",
+      "description": "Prezent z papieru — kupony",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "coupon-sheet-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-2": {
+      "configId": "set-5-task-2-v1",
+      "engine": "SCORECARD",
+      "version": 1,
+      "headline": "Karta czekoladowej degustacji",
+      "description": "Czekoladowa degustacja",
+      "contentKey": "chocolate-tasting-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "scorecard-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-4": {
+      "configId": "set-5-task-4-v1",
+      "engine": "RECIPE",
+      "version": 1,
+      "headline": "Przepis na trufle bez pieczenia",
+      "description": "Trufle bez pieczenia",
+      "contentKey": "recipe-truffles-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "recipe-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-5": {
+      "configId": "set-5-task-5-v1",
+      "engine": "IMAGE_CARD",
+      "version": 1,
+      "headline": "Piernikowy test dekoracji",
+      "description": "Piernikowy test dekoracji",
+      "contentKey": "gingerbread-test-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "SCORECARD"
+      }
+    },
+    "set-5-task-6": {
+      "configId": "set-5-task-6-v1",
+      "engine": "OPTION_CONFIGURATOR",
+      "version": 1,
+      "headline": "Konfigurator świątecznej deski",
+      "description": "Świąteczna deska",
+      "contentKey": "christmas-board-builder-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "configured-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-8": {
+      "configId": "set-5-task-8-v1",
+      "engine": "RECIPE",
+      "version": 1,
+      "headline": "Przepis na cynamonowe ślimaczki",
+      "description": "Cynamonowe ślimaczki",
+      "contentKey": "recipe-cinnamon-rolls-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "recipe-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-9": {
+      "configId": "set-5-task-9-v1",
+      "engine": "OPTION_CONFIGURATOR",
+      "version": 1,
+      "headline": "Gorąca czekolada na bogato",
+      "description": "Gorąca czekolada na bogato",
+      "contentKey": "hot-chocolate-builder-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "RECIPE"
+      },
+      "document": {
+        "templateId": "recipe-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-15": {
+      "configId": "set-5-task-15-v1",
+      "engine": "RECIPE",
+      "version": 1,
+      "headline": "Przepis na karmelizowane orzechy",
+      "description": "Karmelizowane orzechy",
+      "contentKey": "recipe-caramelized-nuts-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "recipe-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-17": {
+      "configId": "set-5-task-17-v1",
+      "engine": "OPTION_CONFIGURATOR",
+      "version": 1,
+      "headline": "Świąteczny koktajl bezalkoholowy",
+      "description": "Świąteczny koktajl bezalkoholowy",
+      "contentKey": "mocktail-builder-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "configured-recipe-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-20": {
+      "configId": "set-5-task-20-v1",
+      "engine": "SCORECARD",
+      "version": 1,
+      "headline": "Karta degustacji herbat",
+      "description": "Mała degustacja herbat",
+      "contentKey": "tea-tasting-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "scorecard-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-22": {
+      "configId": "set-5-task-22-v1",
+      "engine": "RECIPE",
+      "version": 1,
+      "headline": "Jadalny prezent — przepis i etykieta",
+      "description": "Jadalny prezent",
+      "contentKey": "edible-gift-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "TEMPLATE_PERSONALIZER"
+      },
+      "document": {
+        "templateId": "recipe-gift-label-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-24": {
+      "configId": "set-5-task-24-v1",
+      "engine": "SCORECARD",
+      "version": 1,
+      "headline": "Ciasteczkowy pojedynek",
+      "description": "Ciasteczkowy pojedynek",
+      "contentKey": "cookie-duel-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "scorecard-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-5-task-27": {
+      "configId": "set-5-task-27-v1",
+      "engine": "RECIPE",
+      "version": 1,
+      "headline": "Rodzinny przepis — kuchenna pamiątka",
+      "description": "Kuchenna pamiątka — rodzinny przepis",
+      "contentKey": "family-recipe-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {
+        "secondaryEngine": "CARD_FORM"
+      },
+      "document": {
+        "templateId": "family-recipe-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-1": {
+      "configId": "set-6-task-1-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "List do przyszłego siebie",
+      "description": "List do przyszłego siebie",
+      "contentKey": "future-self-letter-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": true
+      },
+      "config": {},
+      "document": {
+        "templateId": "private-letter-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-2": {
+      "configId": "set-6-task-2-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Trzy dobre sceny tego roku",
+      "description": "Trzy dobre sceny",
+      "contentKey": "three-good-scenes-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "memory-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-3": {
+      "configId": "set-6-task-3-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Rok w sześciu słowach",
+      "description": "Rok w sześciu słowach",
+      "contentKey": "year-in-six-words-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "typographic-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-4": {
+      "configId": "set-6-task-4-v1",
+      "engine": "IMAGE_CARD",
+      "version": 1,
+      "headline": "Zdjęcie roku",
+      "description": "Zdjęcie roku",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-6-task-5": {
+      "configId": "set-6-task-5-v1",
+      "engine": "CHECKLIST",
+      "version": 1,
+      "headline": "Zimowy spacer pięciu zmysłów",
+      "description": "Spacer pięciu zmysłów",
+      "contentKey": "five-senses-walk-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "checklist-summary-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-8": {
+      "configId": "set-6-task-8-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Karta wdzięczności dla dobrych ludzi",
+      "description": "Dobrzy ludzie",
+      "contentKey": "good-people-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "gratitude-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-10": {
+      "configId": "set-6-task-10-v1",
+      "engine": "RANDOMIZER_TIMER",
+      "version": 1,
+      "headline": "Godzina bez powiadomień",
+      "description": "Godzina bez powiadomień",
+      "contentKey": "no-notifications-hour-v1",
+      "variant": "TIMER_ONLY",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-6-task-11": {
+      "configId": "set-6-task-11-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Dziesięć małych radości grudnia",
+      "description": "Dziesięć małych radości",
+      "contentKey": "ten-small-joys-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": true,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "memory-list-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-14": {
+      "configId": "set-6-task-14-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Świąteczna intencja",
+      "description": "Świąteczna intencja",
+      "contentKey": "christmas-intention-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
+    },
+    "set-6-task-18": {
+      "configId": "set-6-task-18-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Nasza świąteczna tradycja",
+      "description": "Karta „Nasza świąteczna tradycja”",
+      "contentKey": "our-tradition-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "tradition-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-23": {
+      "configId": "set-6-task-23-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Mała kapsuła czasu",
+      "description": "Mała kapsuła czasu",
+      "contentKey": "time-capsule-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": true
+      },
+      "config": {},
+      "document": {
+        "templateId": "time-capsule-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    },
+    "set-6-task-30": {
+      "configId": "set-6-task-30-v1",
+      "engine": "CARD_FORM",
+      "version": 1,
+      "headline": "Grudniowe domknięcie roku",
+      "description": "Grudniowe domknięcie",
+      "contentKey": "december-closure-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canShareImage": true,
+        "canPrint": true,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {},
+      "document": {
+        "templateId": "closure-card-v1",
+        "version": 1,
+        "variants": [
+          "COLOR",
+          "INK_SAVER"
+        ],
+        "defaultPage": "A5"
+      }
+    }
+  }
+}

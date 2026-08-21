@@ -19,6 +19,8 @@ export interface CalendarDetail {
   access_code: string | null;
   fulfillment_status: string;
   status: string;
+  opening_method: string | null;
+  daily_content_email: string | null;
   tasks: CalendarTaskDetail[];
   created_at: string;
   updated_at: string;
