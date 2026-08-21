@@ -327,6 +327,83 @@
         "Z przeżyć naprawdę warto dostać",
         "A czego nie kupi się w żadnym sklepie —"
       ]
+    },
+    "december-ranking-v1": {
+      "ctaLabel": "Ułóż ranking",
+      "itemNoun": "Film",
+      "rankLabel": "Miejsce",
+      "notes": [
+        "Ułóż własną listę ulubionych filmów świątecznych — od ulubionego na górze.",
+        "Możesz nadpisać gotowe tytuły albo zostawić tylko swoje. Potem porównaj ranking z kimś bliskim."
+      ],
+      "items": [
+        "Kevin sam w domu",
+        "Kevin sam w Nowym Jorku",
+        "To właśnie miłość",
+        "Gremlins",
+        "Elf",
+        "Świąteczna opowieść",
+        "Polarny ekspres",
+        "Cud na 34. ulicy",
+        "Die Hard / Szklana pułapka",
+        "Opowieść wigilijna"
+      ]
+    },
+    "christmas-theatre-v1": {
+      "ctaLabel": "Losuj scenkę",
+      "itemNoun": "Scenka",
+      "uniqueDraw": true,
+      "timerSeconds": 60,
+      "timerLabel": "Minuta na scenkę",
+      "promptHint": "Wylosujcie trójkę: kto, jaki problem i gdzie. Odegrajcie krótką scenkę, zanim minie minuta.",
+      "drawLabel": "Losuj",
+      "nextLabel": "Następna scenka",
+      "newRoundLabel": "Nowa runda",
+      "emptyLabel": "Losuj scenkę",
+      "exhaustedLabel": "To była ostatnia scenka tej rundy",
+      "notes": [
+        "Każda scenka to trzy elementy: postać, problem i miejsce.",
+        "Macie 60 sekund na krótką improwizację — bez scenariusza, tylko z wylosowaną trójką."
+      ],
+      "sets": [
+        ["Mikołaj", "spóźniony renifer", "zagubiony prezent"],
+        ["Elf", "zepsute lampki", "warsztat na biegunie"],
+        ["Renifer Rudolf", "zgubiony dzwonek", "dach kamienicy"],
+        ["Anioł", "zbyt ciężka gwiazda", "czubek choinki"],
+        ["Pasterz", "ucieka owca", "szopka betlejemska"],
+        ["Śnieżynka", "topnieje za szybko", "ciepła kuchnia"],
+        ["Piernikowy ludzik", "brakuje guzika", "blat cukierniczy"],
+        ["Gwiazdor", "dziurawy worek", "przed drzwiami domu"],
+        ["Kucharz wigilijny", "karp ucieka", "wanna w łazience"],
+        ["Listonosz", "mokry list do Mikołaja", "śnieżna skrzynka"],
+        ["Babcia", "za mało opłatka", "stół wigilijny"],
+        ["Dziadek", "zgubione okulary", "pod choinką"],
+        ["Kot domowy", "poluje na bombkę", "gałąź choinki"],
+        ["Pies", "zjada piernika", "próg kuchni"],
+        ["Sąsiadka", "za głośne kolędy", "klatka schodowa"],
+        ["Kurier", "paczka bez adresu", "zaśnieżony podjazd"],
+        ["Uczennica", "zepsuty wieniec", "sala szkolna"],
+        ["Nauczyciel", "brakuje świec", "aula na akademię"],
+        ["Sprzedawca z jarmarku", "zamarznięty kubek kakao", "stoisko z piernikami"],
+        ["Fotograf", "rozładowany aparat", "rodzinne zdjęcie grupowe"],
+        ["Sklepowa", "kolejka po karpie", "supermarket w Wigilię"],
+        ["Taksówkarz", "pasażer z choinką", "zatłoczona ulica"],
+        ["Muzealnik", "ożywiona szopka", "nocna wystawa"],
+        ["Strażak", "dym z kominka", "dach z synami Mikołaja"]
+      ]
+    },
+    "christmas-alphabet-v1": {
+      "ctaLabel": "Start alfabetu",
+      "timerSeconds": 5,
+      "playerCount": 2,
+      "scoredLabel": "Zaliczone",
+      "missLabel": "Brak odpowiedzi",
+      "finishLabel": "Koniec alfabetu",
+      "replayLabel": "Zagrajcie jeszcze raz",
+      "notes": [
+        "Na zmianę podawajcie świąteczne słowa od kolejnych liter alfabetu.",
+        "Macie tylko 5 sekund na hasło — kto nie zdąży, traci punkt w tej rundzie."
+      ]
     }
   }
 }

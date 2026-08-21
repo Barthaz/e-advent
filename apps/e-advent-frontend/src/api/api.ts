@@ -835,20 +835,23 @@ function specialHeaders(): Record<string, string> {
 export async function getSpecialProgress(
   calendarId: string,
   day: number
-): Promise<SpecialWindowProgress | null> {
+): Promise<{ progress: SpecialWindowProgress | null; dateGate?: { revealed: boolean; revealAt: string | null } }> {
   const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/progress`, {
     headers: specialHeaders(),
   });
-  if (!res.ok) return null;
+  if (!res.ok) return { progress: null };
   const data = await res.json();
-  return data.progress ?? null;
+  return {
+    progress: data.progress ?? null,
+    dateGate: data.dateGate,
+  };
 }
 
 export async function saveSpecialProgress(
   calendarId: string,
   day: number,
-  body: Partial<SpecialWindowProgress>
-): Promise<SpecialWindowProgress> {
+  body: Partial<SpecialWindowProgress> & { seal?: boolean; revealAt?: string }
+): Promise<{ progress: SpecialWindowProgress; dateGate?: { revealed: boolean; revealAt: string | null } }> {
   const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/progress`, {
     method: 'PUT',
     headers: specialHeaders(),
@@ -856,7 +859,7 @@ export async function saveSpecialProgress(
   });
   if (!res.ok) throw new Error('Autosave failed');
   const data = await res.json();
-  return data.progress;
+  return { progress: data.progress, dateGate: data.dateGate };
 }
 
 export async function uploadSpecialImage(

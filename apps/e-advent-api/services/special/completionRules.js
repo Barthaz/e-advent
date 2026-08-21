@@ -68,11 +68,46 @@ function canCompleteEngine({ engine, completionRule, payload }) {
       return { canComplete: false, reason: 'Ustaw wymaganą liczbę pozycji' };
     }
 
+    case 'OPTION_CONFIGURATOR': {
+      const selections =
+        payload.selections && typeof payload.selections === 'object' && !Array.isArray(payload.selections)
+          ? payload.selections
+          : {};
+      const required = completionRule?.requiredFields ?? [];
+      if (required.length) {
+        const missing = required.filter((key) => !String(selections[key] ?? '').trim());
+        if (missing.length) {
+          return { canComplete: false, reason: 'Wybierz opcje we wszystkich sekcjach' };
+        }
+        return { canComplete: true };
+      }
+      if (Object.keys(selections).length > 0 || payload.started === true) {
+        return { canComplete: true };
+      }
+      return { canComplete: false, reason: 'Wybierz przynajmniej jedną opcję' };
+    }
+
+    case 'TEMPLATE_PERSONALIZER': {
+      const fields =
+        payload.fields && typeof payload.fields === 'object' && !Array.isArray(payload.fields)
+          ? payload.fields
+          : {};
+      const filled = Object.values(fields).filter((v) => String(v ?? '').trim()).length;
+      if (filled >= (completionRule?.minItems ?? 1) || payload.started === true) {
+        return { canComplete: true };
+      }
+      return { canComplete: false, reason: 'Uzupełnij pola personalizacji' };
+    }
+
+    case 'TURN_BASED_GAME': {
+      if (payload.roundFinished === true || payload.finished === true || payload.started === true) {
+        return { canComplete: true };
+      }
+      return { canComplete: false, reason: 'Rozpocznij rundę' };
+    }
+
     case 'DOCUMENT':
     case 'RANDOMIZER_TIMER':
-    case 'OPTION_CONFIGURATOR':
-    case 'TURN_BASED_GAME':
-    case 'TEMPLATE_PERSONALIZER':
     case 'RECIPE':
       return payload.started === true
         ? { canComplete: true }

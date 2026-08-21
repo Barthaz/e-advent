@@ -8,7 +8,9 @@ export function specialCtaLabel(descriptor: SpecialWindowDescriptor): string {
 
   if (engine === 'CHECKLIST' && variant === 'BINGO') return 'Zagraj w bingo';
   if (engine === 'RANDOMIZER_TIMER' && variant === 'TIMER_ONLY') return 'Uruchom timer';
-  const fromPack = packCtaLabel(resolvePack(descriptor.contentKey));
+  const fromPack = packCtaLabel(
+    resolvePack(descriptor.contentKey, descriptor.document?.templateId)
+  );
   if (fromPack) return fromPack;
   if (engine === 'RANDOMIZER_TIMER' && variant === 'DECK') return 'Odkryj kartę';
 

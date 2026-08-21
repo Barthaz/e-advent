@@ -32,7 +32,7 @@ export default function SpecialWindowShell({
   );
   const descriptor = openedWindow.special;
 
-  const { progress, updatePayload, saveState } = useSpecialProgress(
+  const { progress, updatePayload, saveState, sealProgress, dateGate } = useSpecialProgress(
     calendarId,
     openedWindow.day,
     descriptor ?? null
@@ -72,6 +72,10 @@ export default function SpecialWindowShell({
   const cta = started ? specialResumeLabel(descriptor) : specialCtaLabel(descriptor);
   const printableHint = specialPrintableHint(descriptor);
   const canPrint = !!descriptor.capabilities?.canPrint && !!descriptor.document;
+  const dateGateLocked = !!descriptor.capabilities?.dateGate
+    && !!dateGate
+    && !dateGate.revealed
+    && (!!progress?.payload?.dateGateLocked || !!progress?.payload?.sealed);
   const lockedPdfLayout: PdfLayout | null =
     descriptor.document?.templateId === 'then-now-v1' ? 'LANDSCAPE' : null;
 
@@ -139,13 +143,26 @@ export default function SpecialWindowShell({
             </header>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-7 md:py-5">
-              <EngineRouter
-                descriptor={descriptor}
-                progress={progress}
-                onUpdate={updatePayload}
-                calendarId={calendarId}
-                day={openedWindow.day}
-              />
+              {dateGateLocked ? (
+                <div className="space-y-3 p-4 text-center text-white">
+                  <p className="font-display text-2xl text-christmas-gold-light">Treść zapieczętowana</p>
+                  <p className="text-sm text-white/75">
+                    Otworzy się{' '}
+                    {dateGate?.revealAt
+                      ? new Date(dateGate.revealAt).toLocaleString('pl-PL')
+                      : 'we wskazanym terminie'}
+                    .
+                  </p>
+                </div>
+              ) : (
+                <EngineRouter
+                  descriptor={descriptor}
+                  progress={progress}
+                  onUpdate={updatePayload}
+                  calendarId={calendarId}
+                  day={openedWindow.day}
+                />
+              )}
             </div>
 
             <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-christmas-gold/20 px-5 py-3 md:px-7">
@@ -156,6 +173,15 @@ export default function SpecialWindowShell({
                 {saveState === 'error' && 'Zapis lokalny — spróbuj ponownie później'}
               </span>
               <div className="flex flex-wrap items-center gap-2">
+                {descriptor.capabilities?.dateGate && !dateGateLocked ? (
+                  <button
+                    type="button"
+                    className="rounded-lg border border-christmas-gold/40 px-4 py-2 text-sm text-christmas-gold-light"
+                    onClick={() => sealProgress()}
+                  >
+                    Zapieczętuj do terminu
+                  </button>
+                ) : null}
                 {canPrint && (
                   <>
                     {!lockedPdfLayout ? (

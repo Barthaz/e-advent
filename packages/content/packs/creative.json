@@ -1,4 +1,226 @@
 {
   "version": 1,
-  "packs": {}
+  "packs": {
+    "wrapping-pattern-v1": {
+      "intro": "Wydrukuj wzory i owiń prezent własnym papierem e‑Advent.",
+      "ctaLabel": "Otwórz wzory papieru",
+      "printHint": "Drukuj na zwykłym A4/A5; sklej arkusze taśmą od spodu, jeśli paczka jest większa.",
+      "notes": [
+        "Wybierz jeden motyw albo mieszaj paski wzorów na jednej paczce."
+      ],
+      "steps": [
+        "Wydrukuj wybrane strony ze wzorem.",
+        "Owiń prezent jak zwykłym papierem prezentowym.",
+        "Dodaj sznurek, etykietę albo gałązkę."
+      ],
+      "cutLabels": ["Linia cięcia", "Margines sklejania"]
+    },
+    "labels-personalizer-v1": {
+      "ctaLabel": "Spersonalizuj etykiety",
+      "themeLabel": "Motyw",
+      "previewLabel": "Podgląd etykiet",
+      "notes": [
+        "Uzupełnij pola — arkusz etykiet ułoży się do druku."
+      ],
+      "fields": ["Dla", "Od", "Krótka dedykacja"],
+      "themes": ["Kraft i sznurek", "Złoty ornament", "Czerwona kokarda", "Śnieg i granat"]
+    },
+    "labels-sheet-v1": {
+      "ctaLabel": "Spersonalizuj etykiety",
+      "themeLabel": "Motyw",
+      "previewLabel": "Podgląd etykiet",
+      "notes": [
+        "Uzupełnij pola — arkusz etykiet ułoży się do druku."
+      ],
+      "fields": ["Dla", "Od", "Krótka dedykacja"],
+      "themes": ["Kraft i sznurek", "Złoty ornament", "Czerwona kokarda", "Śnieg i granat"]
+    },
+    "postcard-personalizer-v1": {
+      "ctaLabel": "Wypełnij pocztówkę",
+      "themeLabel": "Motyw",
+      "previewLabel": "Podgląd pocztówki",
+      "notes": [
+        "Napisz wiadomość jak z podróży — nawet jeśli wysyłasz ją tylko przez stół."
+      ],
+      "fields": ["Do", "Miejsce / skąd piszę", "Wiadomość", "Podpis"],
+      "themes": ["Zimowy krajobraz", "Miasto w lampkach", "Domowe święta", "Minimalna typografia"]
+    },
+    "postcard-v1": {
+      "ctaLabel": "Wypełnij pocztówkę",
+      "themeLabel": "Motyw",
+      "previewLabel": "Podgląd pocztówki",
+      "notes": [
+        "Napisz wiadomość jak z podróży — nawet jeśli wysyłasz ją tylko przez stół."
+      ],
+      "fields": ["Do", "Miejsce / skąd piszę", "Wiadomość", "Podpis"],
+      "themes": ["Zimowy krajobraz", "Miasto w lampkach", "Domowe święta", "Minimalna typografia"]
+    },
+    "paper-village-v1": {
+      "intro": "Wytnij i złóż miniaturową świąteczną wioskę z papieru.",
+      "ctaLabel": "Otwórz szablon wioski",
+      "printHint": "Najlepiej na nieco grubszym papierze (160–200 g). Linie przerywane to zgięcia.",
+      "notes": [
+        "Domki możesz pomalować kredkami albo zostawić w kolorze wydruku."
+      ],
+      "steps": [
+        "Wydrukuj arkusz z domkami.",
+        "Wytnij po liniach cięcia.",
+        "Zagnij po liniach przerywanych i sklej ścianki.",
+        "Ustaw wioskę i podświetl małą lampką LED."
+      ],
+      "cutLabels": ["Wytnij", "Zagnij", "Sklej"]
+    },
+    "salt-dough-guide-v1": {
+      "intro": "Zrób zawieszki z masy solnej według prostego przepisu i wzorów.",
+      "ctaLabel": "Otwórz przewodnik masy solnej",
+      "printHint": "Wydrukuj wzory jako szablony do obrysowania na cieście.",
+      "notes": [
+        "Proporcja masy: 2 części mąki, 1 część soli, ok. 1 część wody."
+      ],
+      "steps": [
+        "Zagnieć masę solną do gładkości.",
+        "Rozwałkuj na grubość ok. 5–7 mm.",
+        "Wytnij kształty według szablonów i zrób dziurkę na sznurek.",
+        "Susz na powietrzu lub piecz w niskiej temperaturze, potem pomaluj."
+      ],
+      "cutLabels": ["Obrysuj", "Wytnij", "Otwór na sznurek"]
+    },
+    "stamp-guide-v1": {
+      "intro": "Wytnij stemple ze ziemniaka lub gumki i odbij świąteczne motywy.",
+      "ctaLabel": "Otwórz kartę stempli",
+      "printHint": "Wzory możesz przyłożyć do ziemniaka jako podpowiedź kształtu.",
+      "notes": [
+        "Farba plakatowa albo tusz do stempli działa najlepiej na papierze kraft."
+      ],
+      "steps": [
+        "Wybierz prosty motyw: gwiazda, choinka, serce, śnieżynka.",
+        "Wytnij stempel z ziemniaka lub gumki.",
+        "Odbij na papierze, etykietach albo torebkach.",
+        "Pozostaw do wyschnięcia przed pakowaniem."
+      ],
+      "cutLabels": ["Kształt stempla"]
+    },
+    "envelope-decor-guide-v1": {
+      "intro": "Ozdób kopertę: linie zgięć, miejsce na adres i świąteczny ornament.",
+      "ctaLabel": "Otwórz przewodnik koperty",
+      "printHint": "Drukuj jednostronnie; ozdoby możesz dorysować ręcznie po wydruku.",
+      "notes": [
+        "Sprawdź, czy po złożeniu adres nadal jest czytelny."
+      ],
+      "steps": [
+        "Wydrukuj szablon lub arkusz dekoracji.",
+        "Złóż kopertę według linii zgięć albo przyklej ozdoby na gotową.",
+        "Dopisz adres i krótkie życzenia.",
+        "Zamknij woskiem, naklejką albo zwykłą taśmą."
+      ],
+      "cutLabels": ["Zagnij", "Sklej klapkę"]
+    },
+    "bookmarks-v1": {
+      "intro": "Wytnij świąteczne zakładki do książki — dla siebie albo jako drobny prezent.",
+      "ctaLabel": "Otwórz zakładki",
+      "printHint": "Drukuj na grubszym papierze; możesz zalaminować dla trwałości.",
+      "notes": [
+        "Zostaw pasek na dziurkę i wstążkę u góry zakładki."
+      ],
+      "steps": [
+        "Wydrukuj arkusz zakładek.",
+        "Wytnij po liniach.",
+        "Zrób dziurkę i przewlecz wstążkę.",
+        "Wpisz imię albo krótkie życzenie na odwrocie."
+      ],
+      "cutLabels": ["Wytnij zakładkę", "Otwór na wstążkę"]
+    },
+    "paper-reindeer-v1": {
+      "intro": "Wytnij i złóż papierowego renifera — stoi samodzielnie na półce.",
+      "ctaLabel": "Otwórz szablon renifera",
+      "printHint": "Papier 160–200 g; linie przerywane to zgięcia.",
+      "notes": [
+        "Możesz dorysować czerwoną kropkę nosa po złożeniu."
+      ],
+      "steps": [
+        "Wydrukuj szablon.",
+        "Wytnij elementy po liniach ciągłych.",
+        "Zagnij i złącz korpus z nogami według oznaczeń.",
+        "Wsuń poroże i ustaw renifera na równej powierzchni."
+      ],
+      "cutLabels": ["Wytnij", "Zagnij", "Wsuń / złącz"]
+    },
+    "origami-guide-v1": {
+      "intro": "Złóż świąteczne origami: gwiazdę, choinkę albo prostą bombkę z papieru.",
+      "ctaLabel": "Otwórz przewodnik origami",
+      "printHint": "Kwadratowy papier; możesz wyciąć kwadrat z A4 według oznaczeń.",
+      "notes": [
+        "Zaczynaj od prostej gwiazdy — kolejne modele dodawaj, gdy ręka złapie rytm."
+      ],
+      "steps": [
+        "Przygotuj kwadratowy arkusz.",
+        "Wykonuj zgięcia według kolejnych kroków na karcie.",
+        "Wygładzaj krawędzie paznokciem dla ostrzejszego kształtu.",
+        "Powieś model na nitce albo połóż pod choinką."
+      ],
+      "cutLabels": ["Kwadrat startowy"]
+    },
+    "photo-frame-v1": {
+      "ctaLabel": "Dodaj zdjęcie do ramki",
+      "kicker": "Świąteczna ramka",
+      "captionField": "Podpis pod zdjęciem",
+      "formatsHint": "Wczytaj zdjęcie JPG, PNG, WEBP lub GIF (do 10 MB).",
+      "notes": [
+        "Dodaj jedno zdjęcie, które chcesz oprawić w świąteczną ramkę e‑Advent."
+      ],
+      "slots": [
+        { "id": "photo", "label": "Zdjęcie do ramki" }
+      ]
+    },
+    "comic-sheet-v1": {
+      "ctaLabel": "Wypełnij komiks",
+      "themeLabel": "Styl kadrów",
+      "previewLabel": "Podgląd komiksu",
+      "notes": [
+        "Cztery kadry — krótka świąteczna historyjka słowami albo dymkami."
+      ],
+      "fields": ["Kadr 1", "Kadr 2", "Kadr 3", "Kadr 4", "Tytuł historii"],
+      "themes": ["Klasyczne dymki", "Cicho bez dymków", "Złota ramka", "Gazetowy szkic"]
+    },
+    "memory-chain-v1": {
+      "intro": "Wytnij ogniwa łańcucha i napisz na każdym krótkie wspomnienie.",
+      "ctaLabel": "Otwórz łańcuch wspomnień",
+      "printHint": "Wytnij paski, sklej w ogniwa i połącz w łańcuch.",
+      "notes": [
+        "Jedno wspomnienie na ogniwo — łańcuch rośnie z każdym grudniem."
+      ],
+      "steps": [
+        "Wydrukuj arkusz z paskami.",
+        "Na każdym pasku napisz krótkie wspomnienie lub imię.",
+        "Sklej pierwszy pasek w kółko.",
+        "Przewlekaj kolejne paski i sklejaj, aż powstanie łańcuch."
+      ],
+      "cutLabels": ["Wytnij pasek", "Sklej ogniwo"]
+    },
+    "garland-v1": {
+      "intro": "Wytnij flagi i litery na małą girlandę do pokoju albo nad stołem.",
+      "ctaLabel": "Otwórz girlandę",
+      "printHint": "Wytnij flagi, przewlecz sznurek przez otwory u góry.",
+      "notes": [
+        "Możesz napisać „WESOŁYCH” albo imiona domowników."
+      ],
+      "steps": [
+        "Wydrukuj flagi girlandy.",
+        "Wytnij po liniach i zrób otwory na sznurek.",
+        "Dopisz litery lub krótkie słowa.",
+        "Przewlecz sznurek i powieś girlandę."
+      ],
+      "cutLabels": ["Wytnij flagę", "Otwór na sznurek"]
+    },
+    "coupon-sheet-v1": {
+      "ctaLabel": "Wypełnij kupony-prezent",
+      "themeLabel": "Motyw kuponu",
+      "previewLabel": "Podgląd kuponów",
+      "notes": [
+        "Kupony na wspólny czas: spacer, kakao, film, pomoc w kuchni."
+      ],
+      "fields": ["Dla kogo", "Kupon 1", "Kupon 2", "Kupon 3", "Podpis"],
+      "themes": ["Bilet do kina domowego", "Zaproszenie na kakao", "Pomoc w domu", "Spacer w lampkach"]
+    }
+  }
 }

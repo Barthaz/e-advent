@@ -23,6 +23,11 @@ import {
   readScoreHouses,
   scoreHuntTotal,
   scoreHuntTitle,
+  resolveOptionConfiguratorConfig,
+  formatOptionSelections,
+  resolveTemplatePersonalizerConfig,
+  resolveTurnBasedGameConfig,
+  nextTurnLetter,
 } from '@e-advent/special-core';
 import type { SpecialWindowDescriptor } from '@e-advent/types';
 import { specialCtaLabel, specialPrintableHint } from './specialCta';
@@ -501,6 +506,60 @@ describe('resolveScoreHuntConfig', () => {
     expect(scoreHuntTotal(houses)).toBe(5);
     expect(scoreHuntTitle(config.titles, 0)).toBe('Początek tropu');
     expect(scoreHuntTitle(config.titles, 12)).toBe('Mistrz iluminacji');
+  });
+});
+
+describe('new universal engines', () => {
+  it('resolves option configurator sections from preparations pack', () => {
+    const config = resolveOptionConfiguratorConfig(resolvePack('emergency-gift-ideas-v1'));
+    expect(config.sections.length).toBeGreaterThanOrEqual(2);
+    const summary = formatOptionSelections(config, {
+      [config.sections[0].id]: config.sections[0].options[0],
+    });
+    expect(summary[0]).toContain(config.sections[0].label);
+  });
+
+  it('resolves template personalizer fields and themes', () => {
+    const config = resolveTemplatePersonalizerConfig(resolvePack('labels-personalizer-v1'));
+    expect(config.fields).toContain('Dla');
+    expect(config.themeOptions.length).toBeGreaterThan(0);
+  });
+
+  it('resolves turn-based alphabet game', () => {
+    const config = resolveTurnBasedGameConfig(resolvePack('christmas-alphabet-v1'));
+    expect(config.timerSeconds).toBe(5);
+    expect(config.playerCount).toBeGreaterThanOrEqual(2);
+    const first = nextTurnLetter(config.letters, 0);
+    expect(first.letter).toBeTruthy();
+    expect(first.finished).toBe(false);
+  });
+
+  it('resolves theatre sets for randomizer', () => {
+    const config = resolveRandomizerConfig(resolvePack('christmas-theatre-v1'));
+    expect(config.sets.length).toBeGreaterThanOrEqual(20);
+    expect(config.timerSeconds).toBe(60);
+  });
+
+  it('loads creative DIY packs by content key', () => {
+    expect(resolvePack('paper-reindeer-v1')?.steps).toBeTruthy();
+    expect(resolvePack('origami-guide-v1')?.printHint).toBeTruthy();
+  });
+
+  it('completes OPTION_CONFIGURATOR and TURN_BASED_GAME', () => {
+    expect(
+      canCompleteEngine({
+        engine: 'OPTION_CONFIGURATOR',
+        completionRule: { type: 'DEFAULT' },
+        payload: { selections: { a: 'x' }, started: true },
+      }).canComplete
+    ).toBe(true);
+    expect(
+      canCompleteEngine({
+        engine: 'TURN_BASED_GAME',
+        completionRule: { type: 'DEFAULT' },
+        payload: { roundFinished: true },
+      }).canComplete
+    ).toBe(true);
   });
 });
 

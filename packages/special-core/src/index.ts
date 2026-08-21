@@ -82,11 +82,49 @@ export function canCompleteEngine(args: {
       return { canComplete: false, reason: 'Ustaw wymaganą liczbę pozycji' };
     }
 
+    case 'OPTION_CONFIGURATOR': {
+      const selections =
+        payload.selections && typeof payload.selections === 'object' && !Array.isArray(payload.selections)
+          ? (payload.selections as Record<string, unknown>)
+          : {};
+      const required = completionRule.requiredFields ?? [];
+      if (required.length) {
+        const missing = required.filter((key) => !String(selections[key] ?? '').trim());
+        if (missing.length) {
+          return { canComplete: false, reason: 'Wybierz opcje we wszystkich sekcjach' };
+        }
+        return { canComplete: true };
+      }
+      if (Object.keys(selections).length > 0 || payload.started === true) {
+        return { canComplete: true };
+      }
+      return { canComplete: false, reason: 'Wybierz przynajmniej jedną opcję' };
+    }
+
+    case 'TEMPLATE_PERSONALIZER': {
+      const fields =
+        payload.fields && typeof payload.fields === 'object' && !Array.isArray(payload.fields)
+          ? (payload.fields as Record<string, unknown>)
+          : {};
+      const filled = Object.values(fields).filter((v) => String(v ?? '').trim()).length;
+      if (filled >= (completionRule.minItems ?? 1) || payload.started === true) {
+        return { canComplete: true };
+      }
+      return { canComplete: false, reason: 'Uzupełnij pola personalizacji' };
+    }
+
+    case 'TURN_BASED_GAME': {
+      if (payload.roundFinished === true || payload.finished === true) {
+        return { canComplete: true };
+      }
+      if (payload.started === true) {
+        return { canComplete: true };
+      }
+      return { canComplete: false, reason: 'Rozpocznij rundę' };
+    }
+
     case 'DOCUMENT':
     case 'RANDOMIZER_TIMER':
-    case 'OPTION_CONFIGURATOR':
-    case 'TURN_BASED_GAME':
-    case 'TEMPLATE_PERSONALIZER':
     case 'RECIPE':
       return payload.started === true
         ? { canComplete: true }
@@ -475,6 +513,15 @@ export function formatRandomizerProgress(noun: string, n: number, total: number)
 export function packCtaLabel(pack: Record<string, unknown> | null | undefined): string | null {
   const explicit = readString(pack, 'ctaLabel');
   if (explicit) return explicit;
+  if (Array.isArray(pack?.sections) && pack.sections.length) {
+    return resolveOptionConfiguratorConfig(pack).ctaLabel;
+  }
+  if (
+    (Array.isArray(pack?.themes) && pack.themes.length)
+    || (Array.isArray(pack?.themeOptions) && pack.themeOptions.length)
+  ) {
+    return resolveTemplatePersonalizerConfig(pack).ctaLabel;
+  }
   const config = resolveRandomizerConfig(pack);
   return config.pool.length ? config.copy.ctaLabel : null;
 }
@@ -832,4 +879,164 @@ export function readQuizSession(value: unknown, fallback: QuizQuestion[]): QuizQ
 export function formatQuizResult(resultLabel: string, score: number, total: number): string {
   const label = String(resultLabel || 'Wynik').trim() || 'Wynik';
   return `${label}: ${score}/${total}`;
+}
+
+export type OptionSection = {
+  id: string;
+  label: string;
+  options: string[];
+  multi?: boolean;
+};
+
+export type OptionConfiguratorConfig = {
+  sections: OptionSection[];
+  notes: string[];
+  resultLabel: string;
+  ctaLabel: string;
+  emptyLabel: string;
+};
+
+export function resolveOptionConfiguratorConfig(
+  pack: Record<string, unknown> | null | undefined
+): OptionConfiguratorConfig {
+  const rawSections = Array.isArray(pack?.sections) ? pack.sections : [];
+  const sections: OptionSection[] = rawSections.flatMap((item, index) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return [];
+    const row = item as Record<string, unknown>;
+    const options = readStringList(row.options);
+    if (!options.length) return [];
+    return [
+      {
+        id: String(row.id ?? `section-${index + 1}`),
+        label: String(row.label ?? `Sekcja ${index + 1}`).trim() || `Sekcja ${index + 1}`,
+        options,
+        multi: row.multi === true,
+      },
+    ];
+  });
+
+  // Flat list fallback: treat pack.options or pack.items as one section
+  if (!sections.length) {
+    const options = readStringList(pack?.options).length
+      ? readStringList(pack?.options)
+      : readStringList(pack?.items);
+    if (options.length) {
+      sections.push({
+        id: 'main',
+        label: readString(pack, 'sectionLabel', 'Wybierz'),
+        options,
+        multi: pack?.multi === true,
+      });
+    }
+  }
+
+  return {
+    sections,
+    notes: readNotes(pack),
+    resultLabel: readString(pack, 'resultLabel', 'Twój wybór'),
+    ctaLabel: readString(pack, 'ctaLabel', 'Skonfiguruj'),
+    emptyLabel: readString(pack, 'emptyLabel', 'Wybierz opcje'),
+  };
+}
+
+export function formatOptionSelections(
+  config: OptionConfiguratorConfig,
+  selections: Record<string, unknown>
+): string[] {
+  return config.sections.flatMap((section) => {
+    const raw = selections[section.id];
+    const values = Array.isArray(raw)
+      ? raw.map((v) => String(v ?? '').trim()).filter(Boolean)
+      : String(raw ?? '').trim()
+        ? [String(raw).trim()]
+        : [];
+    if (!values.length) return [];
+    return [`${section.label}: ${values.join(', ')}`];
+  });
+}
+
+export type TemplatePersonalizerConfig = {
+  fields: string[];
+  notes: string[];
+  themeOptions: string[];
+  themeLabel: string;
+  ctaLabel: string;
+  previewLabel: string;
+};
+
+export function resolveTemplatePersonalizerConfig(
+  pack: Record<string, unknown> | null | undefined
+): TemplatePersonalizerConfig {
+  const fields = readStringList(pack?.fields).length
+    ? readStringList(pack?.fields)
+    : readStringList(pack?.prompts).length
+      ? readStringList(pack?.prompts)
+      : ['Dla kogo', 'Dedycacja', 'Podpis'];
+  return {
+    fields,
+    notes: readNotes(pack),
+    themeOptions: readStringList(pack?.themes).length
+      ? readStringList(pack?.themes)
+      : readStringList(pack?.themeOptions),
+    themeLabel: readString(pack, 'themeLabel', 'Motyw'),
+    ctaLabel: readString(pack, 'ctaLabel', 'Personalizuj'),
+    previewLabel: readString(pack, 'previewLabel', 'Podgląd na karcie'),
+  };
+}
+
+export type TurnBasedGameConfig = {
+  letters: string[];
+  timerSeconds: number;
+  playerCount: number;
+  playerNames: string[];
+  skipHardLetters: boolean;
+  notes: string[];
+  ctaLabel: string;
+  scoredLabel: string;
+  missLabel: string;
+  nextLabel: string;
+  finishLabel: string;
+  replayLabel: string;
+};
+
+const DEFAULT_ALPHABET = 'AĄBCĆDEĘFGHIJKLŁMNŃOÓPRSŚTUWYZŹŻ'.split('');
+
+export function resolveTurnBasedGameConfig(
+  pack: Record<string, unknown> | null | undefined
+): TurnBasedGameConfig {
+  const letters = readStringList(pack?.letters).length
+    ? readStringList(pack?.letters)
+    : DEFAULT_ALPHABET;
+  const playerNames = readStringList(pack?.playerNames);
+  const playerCount = Math.max(
+    2,
+    Math.floor(readNumber(pack, 'playerCount', playerNames.length || 2))
+  );
+  return {
+    letters,
+    timerSeconds: Math.floor(readNumber(pack, 'timerSeconds', 5)) || 5,
+    playerCount,
+    playerNames:
+      playerNames.length >= 2
+        ? playerNames.slice(0, playerCount)
+        : Array.from({ length: playerCount }, (_, i) => `Gracz ${i + 1}`),
+    skipHardLetters: pack?.skipHardLetters === true,
+    notes: readNotes(pack),
+    ctaLabel: readString(pack, 'ctaLabel', 'Start rundy'),
+    scoredLabel: readString(pack, 'scoredLabel', 'Zaliczone'),
+    missLabel: readString(pack, 'missLabel', 'Brak odpowiedzi'),
+    nextLabel: readString(pack, 'nextLabel', 'Dalej'),
+    finishLabel: readString(pack, 'finishLabel', 'Koniec rundy'),
+    replayLabel: readString(pack, 'replayLabel', 'Rewanż'),
+  };
+}
+
+export function nextTurnLetter(
+  letters: string[],
+  index: number
+): { letter: string | null; nextIndex: number; finished: boolean } {
+  if (!letters.length || index >= letters.length) {
+    return { letter: null, nextIndex: index, finished: true };
+  }
+  return { letter: letters[index], nextIndex: index + 1, finished: false };
 }

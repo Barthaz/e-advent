@@ -79,6 +79,7 @@
       "version": 1,
       "headline": "Miniaturowa świąteczna wioska",
       "description": "Papierowa świąteczna wioska",
+      "contentKey": "paper-village-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -97,6 +98,23 @@
         ],
         "defaultPage": "A5"
       }
+    },
+    "set-1-task-10": {
+      "configId": "set-1-task-10-v1",
+      "engine": "RANDOMIZER_TIMER",
+      "version": 1,
+      "headline": "Świąteczny teatrzyk",
+      "description": "Generator świątecznego teatrzyku",
+      "contentKey": "christmas-theatre-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
     },
     "set-1-task-11": {
       "configId": "set-1-task-11-v1",
@@ -169,6 +187,23 @@
         ],
         "defaultPage": "A5"
       }
+    },
+    "set-1-task-19": {
+      "configId": "set-1-task-19-v1",
+      "engine": "TURN_BASED_GAME",
+      "version": 1,
+      "headline": "Świąteczny alfabet",
+      "description": "Świąteczny alfabet",
+      "contentKey": "christmas-alphabet-v1",
+      "completionRule": {
+        "type": "MANUAL_OR_ENGINE_DEFAULT"
+      },
+      "capabilities": {
+        "canPrint": false,
+        "canPrintMobile": false,
+        "dateGate": false
+      },
+      "config": {}
     },
     "set-1-task-21": {
       "configId": "set-1-task-21-v1",
@@ -440,6 +475,7 @@
       "version": 1,
       "headline": "Etykiety prezentowe do druku",
       "description": "Prezentowe etykiety e‑Advent",
+      "contentKey": "labels-personalizer-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -616,6 +652,7 @@
       "version": 1,
       "headline": "Osobista kartka świąteczna",
       "description": "Świąteczna kartka e‑Advent",
+      "contentKey": "greeting-card-fields-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -643,6 +680,7 @@
       "version": 1,
       "headline": "Etykietka do małej paczuszki",
       "description": "Etykietka do małej paczuszki",
+      "contentKey": "gift-label-fields-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -778,6 +816,7 @@
       "version": 1,
       "headline": "Wzory na własny papier prezentowy",
       "description": "Własny papier prezentowy — wzory",
+      "contentKey": "wrapping-pattern-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -803,6 +842,7 @@
       "version": 1,
       "headline": "Eleganckie etykiety prezentowe",
       "description": "Eleganckie etykiety prezentowe",
+      "contentKey": "labels-personalizer-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -830,6 +870,7 @@
       "version": 1,
       "headline": "Świąteczna pocztówka z Twojego miejsca",
       "description": "Świąteczna pocztówka z Twojego miejsca",
+      "contentKey": "postcard-personalizer-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -855,6 +896,7 @@
       "version": 1,
       "headline": "Szablon papierowej wioski",
       "description": "Papierowa wioska",
+      "contentKey": "paper-village-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -880,6 +922,7 @@
       "version": 1,
       "headline": "Zawieszki z masy solnej",
       "description": "Masa solna — wzory zawieszek",
+      "contentKey": "salt-dough-guide-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -905,6 +948,7 @@
       "version": 1,
       "headline": "Wzory świątecznych stempli",
       "description": "Świąteczne stemple — karta wzorów",
+      "contentKey": "stamp-guide-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -930,6 +974,7 @@
       "version": 1,
       "headline": "Ozdobna koperta",
       "description": "Ozdobna koperta",
+      "contentKey": "envelope-decor-guide-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -955,6 +1000,7 @@
       "version": 1,
       "headline": "Świąteczna zakładka do książki",
       "description": "Świąteczna zakładka",
+      "contentKey": "bookmarks-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -980,6 +1026,7 @@
       "version": 1,
       "headline": "Papierowy renifer",
       "description": "Papierowy renifer",
+      "contentKey": "paper-reindeer-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -1005,6 +1052,7 @@
       "version": 1,
       "headline": "Świąteczne origami",
       "description": "Origami świąteczne",
+      "contentKey": "origami-guide-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -1030,6 +1078,7 @@
       "version": 1,
       "headline": "Świąteczna ramka na zdjęcie",
       "description": "Świąteczna ramka na zdjęcie",
+      "contentKey": "photo-frame-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -1047,6 +1096,7 @@
       "version": 1,
       "headline": "Świąteczny komiks w czterech kadrach",
       "description": "Świąteczny komiks — 4 kadry",
+      "contentKey": "comic-sheet-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -1074,6 +1124,7 @@
       "version": 1,
       "headline": "Łańcuch wspomnień",
       "description": "Łańcuch wspomnień",
+      "contentKey": "memory-chain-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -1099,6 +1150,7 @@
       "version": 1,
       "headline": "Mała girlanda do druku",
       "description": "Mała girlanda",
+      "contentKey": "garland-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -1124,6 +1176,7 @@
       "version": 1,
       "headline": "Kupony-prezent z papieru",
       "description": "Prezent z papieru — kupony",
+      "contentKey": "coupon-sheet-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
@@ -1542,6 +1595,7 @@
       "version": 1,
       "headline": "Zdjęcie roku",
       "description": "Zdjęcie roku",
+      "contentKey": "photo-frame-v1",
       "completionRule": {
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },

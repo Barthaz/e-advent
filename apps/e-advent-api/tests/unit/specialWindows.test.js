@@ -84,6 +84,36 @@ describe('completionRules', () => {
     });
     expect(result.canComplete).toBe(true);
   });
+
+  test('option configurator completes with selections', () => {
+    expect(
+      canCompleteEngine({
+        engine: 'OPTION_CONFIGURATOR',
+        completionRule: { type: 'DEFAULT' },
+        payload: { selections: { budget: 'do 50 zł' }, started: true },
+      }).canComplete
+    ).toBe(true);
+  });
+
+  test('turn based game completes when round finished', () => {
+    expect(
+      canCompleteEngine({
+        engine: 'TURN_BASED_GAME',
+        completionRule: { type: 'DEFAULT' },
+        payload: { roundFinished: true },
+      }).canComplete
+    ).toBe(true);
+  });
+
+  test('template personalizer completes with filled fields', () => {
+    expect(
+      canCompleteEngine({
+        engine: 'TEMPLATE_PERSONALIZER',
+        completionRule: { type: 'DEFAULT', minItems: 1 },
+        payload: { fields: { 'Dla kogo': 'Ania' } },
+      }).canComplete
+    ).toBe(true);
+  });
 });
 
 describe('DocumentRegistry', () => {
@@ -315,7 +345,7 @@ describe('special headlines', () => {
       .filter(([, entry]) => !entry.headline)
       .map(([id]) => id);
     expect(missing).toEqual([]);
-    expect(Object.keys(registry.entries)).toHaveLength(70);
+    expect(Object.keys(registry.entries)).toHaveLength(72);
   });
 
   test('quiz and live games are not printable', () => {
@@ -324,8 +354,12 @@ describe('special headlines', () => {
     expect(registry.entries['set-1-task-11'].capabilities.canPrint).toBe(false);
     expect(registry.entries['set-1-task-11'].document).toBeUndefined();
     expect(registry.entries['set-1-task-22'].capabilities.canPrint).toBe(false);
-    expect(registry.entries['set-1-task-10']).toBeUndefined();
-    expect(registry.entries['set-1-task-19']).toBeUndefined();
+    expect(registry.entries['set-1-task-10'].engine).toBe('RANDOMIZER_TIMER');
+    expect(registry.entries['set-1-task-10'].contentKey).toBe('christmas-theatre-v1');
+    expect(registry.entries['set-1-task-10'].capabilities.canPrint).toBe(false);
+    expect(registry.entries['set-1-task-19'].engine).toBe('TURN_BASED_GAME');
+    expect(registry.entries['set-1-task-19'].contentKey).toBe('christmas-alphabet-v1');
+    expect(registry.entries['set-1-task-19'].capabilities.canPrint).toBe(false);
     expect(registry.entries['set-1-task-7'].capabilities.canPrint).toBe(true);
   });
 
@@ -364,5 +398,81 @@ describe('special preview export', () => {
     expect(getPreviewExportDescriptor('set-1-task-5')).toBeNull();
     expect(getPreviewExportDescriptor('set-1-task-22')).toBeNull();
     expect(getPreviewExportDescriptor('set-1-task-7')?.document.templateId).toBe('bingo-v1');
+  });
+});
+
+describe('DateGateService', () => {
+  const { resolveRevealAt } = require('../../services/special/DateGateService');
+
+  test('resolves next-christmas to Dec 24 18:00', () => {
+    const reveal = resolveRevealAt('next-christmas');
+    expect(reveal.getMonth()).toBe(11);
+    expect(reveal.getDate()).toBe(24);
+    expect(reveal.getHours()).toBe(18);
+  });
+
+  test('resolves numeric days from now', () => {
+    const before = Date.now();
+    const reveal = resolveRevealAt(3);
+    expect(reveal.getTime()).toBeGreaterThan(before + 2 * 24 * 60 * 60 * 1000);
+  });
+});
+
+describe('DocumentRegistry families', () => {
+  const { buildDocumentDefinition } = require('../../services/special/DocumentRegistry');
+
+  test('checklist family uses CheckboxList kicker', () => {
+    const definition = buildDocumentDefinition(
+      {
+        headline: 'Lista pudełka awaryjnego',
+        contentKey: 'emergency-box-v1',
+        document: { templateId: 'checklist-v1', defaultPage: 'A5', version: 1 },
+      },
+      { checked: {} },
+      'COLOR',
+    );
+    expect(definition.nodes.some((n) => n.type === 'Kicker' && n.text === 'Lista')).toBe(true);
+    expect(definition.nodes.some((n) => n.type === 'CheckboxList')).toBe(true);
+  });
+
+  test('craft DIY includes steps and cut line', () => {
+    const definition = buildDocumentDefinition(
+      {
+        headline: 'Papierowy renifer',
+        contentKey: 'paper-reindeer-v1',
+        document: { templateId: 'paper-reindeer-v1', defaultPage: 'A5', version: 1 },
+      },
+      {},
+      'COLOR',
+    );
+    expect(definition.nodes.some((n) => n.type === 'CutLine')).toBe(true);
+    expect(definition.nodes.some((n) => n.type === 'Kicker' && n.text === 'DIY')).toBe(true);
+  });
+
+  test('labels sheet prints personalized rows', () => {
+    const definition = buildDocumentDefinition(
+      {
+        headline: 'Etykiety prezentowe',
+        contentKey: 'labels-personalizer-v1',
+        document: { templateId: 'labels-sheet-v1', defaultPage: 'A5', version: 1 },
+      },
+      { fields: { Dla: 'Babcia', 'Krótka dedykacja': 'Wesołych Świąt' }, theme: 'Złoto' },
+      'COLOR',
+    );
+    expect(definition.nodes.some((n) => n.type === 'CutLine')).toBe(true);
+    expect(definition.nodes.some((n) => String(n.text || '').includes('Babcia'))).toBe(true);
+  });
+
+  test('configured option result appears on recipe-like PDF', () => {
+    const definition = buildDocumentDefinition(
+      {
+        headline: 'Gorąca czekolada',
+        contentKey: 'hot-chocolate-builder-v1',
+        document: { templateId: 'recipe-v1', defaultPage: 'A5', version: 1 },
+      },
+      { result: ['Baza: mleko', 'Dodatek: pianki'] },
+      'COLOR',
+    );
+    expect(definition.nodes.some((n) => n.text === 'Baza: mleko')).toBe(true);
   });
 });

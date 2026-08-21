@@ -378,15 +378,241 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
     return base;
   }
 
-  if (DIY_TEMPLATES.has(templateId)) {
-    const extra = payloadNodes(data).filter((node) => node.type !== 'CheckboxList' || (node.items || []).some(Boolean));
+  const CARD_TEMPLATES = new Set([
+    'form-card-v1',
+    'gratitude-card-v1',
+    'memory-card-v1',
+    'tradition-card-v1',
+    'closure-card-v1',
+    'typographic-card-v1',
+    'private-letter-v1',
+    'time-capsule-v1',
+    'greeting-card-v1',
+    'postcard-v1',
+    'memory-list-v1',
+  ]);
+
+  const CHECKLIST_TEMPLATES = new Set([
+    'checklist-v1',
+    'inventory-v1',
+    'audit-v1',
+    'steps-summary-v1',
+    'checklist-summary-v1',
+  ]);
+
+  const PLANNER_TEMPLATES = new Set([
+    'gift-planner-v1',
+    'planner-v1',
+    'month-planner-v1',
+  ]);
+
+  const RECIPE_TEMPLATES = new Set([
+    'recipe-v1',
+    'scorecard-v1',
+    'family-recipe-v1',
+    'recipe-gift-label-v1',
+    'configured-card-v1',
+    'configured-recipe-v1',
+  ]);
+
+  const LABEL_SHEET_TEMPLATES = new Set([
+    'labels-sheet-v1',
+    'coupon-sheet-v1',
+    'comic-sheet-v1',
+    'prompt-sheet-v1',
+    'suggestion-list-v1',
+  ]);
+
+  if (CARD_TEMPLATES.has(templateId)) {
+    const cards = formCardsFromPayload(pack, payload);
+    const theme = String(payload.theme || '').trim();
+    const kickerMap = {
+      'gratitude-card-v1': 'Wdzięczność',
+      'memory-card-v1': 'Wspomnienie',
+      'tradition-card-v1': 'Tradycja',
+      'closure-card-v1': 'Domknięcie',
+      'typographic-card-v1': 'Słowa roku',
+      'private-letter-v1': 'List prywatny',
+      'time-capsule-v1': 'Kapsuła czasu',
+      'greeting-card-v1': 'Kartka świąteczna',
+      'postcard-v1': 'Pocztówka',
+      'memory-list-v1': 'Lista radości',
+    };
+    const nodes = [
+      { type: 'Kicker', text: kickerMap[templateId] || 'Karta' },
+      heading,
+      theme ? { type: 'Text', text: `Motyw: ${theme}`, style: 'muted' } : null,
+      { type: 'Divider' },
+    ].filter(Boolean);
+    cards.forEach((card, index) => {
+      if (card.name) nodes.push({ type: 'Heading', text: card.name, level: 2 });
+      card.fields.forEach((field) => {
+        nodes.push({ type: 'Text', text: field.label, style: 'muted' });
+        nodes.push({ type: 'Text', text: field.value || '………………', style: field.value ? 'accent' : 'muted' });
+      });
+      if (index < cards.length - 1) nodes.push({ type: 'Divider' });
+    });
+    if (payload.fields && typeof payload.fields === 'object' && !cards[0]?.fields?.some((f) => f.value)) {
+      Object.entries(payload.fields).forEach(([label, value]) => {
+        nodes.push({ type: 'Text', text: label, style: 'muted' });
+        nodes.push({ type: 'Text', text: String(value || '………………'), style: value ? 'accent' : 'muted' });
+      });
+    }
+    nodes.push(footer);
+    base.nodes = nodes;
+    return base;
+  }
+
+  if (CHECKLIST_TEMPLATES.has(templateId)) {
+    const items = Array.isArray(data.items) ? data.items : [];
+    const checkedMap = payload.checked && typeof payload.checked === 'object' ? payload.checked : {};
+    const kicker = templateId === 'audit-v1'
+      ? 'Kontrola'
+      : templateId === 'inventory-v1'
+        ? 'Inwentaryzacja'
+        : templateId === 'steps-summary-v1'
+          ? 'Kroki'
+          : 'Lista';
     base.nodes = [
+      { type: 'Kicker', text: kicker },
       ...intro,
-      { type: 'Text', text: 'Instrukcja DIY — wydrukuj w skali 100%. Linie cięcia i zgięcia oznaczone na arkuszu.' },
-      { type: 'CutLine', label: 'CIĘCIE' },
-      ...extra,
+      {
+        type: 'CheckboxList',
+        items,
+        checked: items.map((item) => !!checkedMap[item] || !!checkedMap[String(item)]),
+      },
       footer,
     ];
+    return base;
+  }
+
+  if (PLANNER_TEMPLATES.has(templateId)) {
+    const columns = data.columns
+      || (Array.isArray(data.rows?.[0]) ? data.rows[0].map((_, i) => `Kolumna ${i + 1}`) : ['Pozycja']);
+    const rows = Array.isArray(data.rows) && data.rows.length
+      ? data.rows
+      : Array.from({ length: templateId === 'month-planner-v1' ? 8 : 5 }, () => columns.map(() => ''));
+    base.nodes = [
+      { type: 'Kicker', text: templateId === 'month-planner-v1' ? 'Kalendarz' : 'Planer' },
+      ...intro,
+      { type: 'Table', columns, rows },
+      footer,
+    ];
+    return base;
+  }
+
+  if (RECIPE_TEMPLATES.has(templateId)) {
+    const nodes = [
+      { type: 'Kicker', text: templateId.includes('score') ? 'Degustacja' : 'Przepis' },
+      ...intro,
+    ];
+    if (Array.isArray(payload.result) && payload.result.length) {
+      nodes.push({ type: 'Heading', text: 'Twój wybór', level: 2 });
+      payload.result.forEach((line) => nodes.push({ type: 'Text', text: String(line), style: 'accent' }));
+      nodes.push({ type: 'Divider' });
+    }
+    if (Array.isArray(data.ingredients) && data.ingredients.length) {
+      nodes.push({ type: 'Heading', text: 'Składniki', level: 2 });
+      data.ingredients.forEach((item) => nodes.push({ type: 'Text', text: `• ${item}` }));
+    }
+    if (Array.isArray(data.steps) && data.steps.length) {
+      nodes.push({ type: 'Heading', text: 'Kroki', level: 2 });
+      data.steps.forEach((step, idx) => nodes.push({ type: 'Text', text: `${idx + 1}. ${step}` }));
+    }
+    if (data.scores && typeof data.scores === 'object') {
+      const rows = Object.entries(data.scores).map(([name, value]) => [name, String(value)]);
+      if (rows.length) nodes.push({ type: 'Table', columns: ['Próbka', 'Ocena'], rows });
+    }
+    if (Array.isArray(pack.samples) && pack.samples.length && (!data.scores || !Object.keys(data.scores).length)) {
+      nodes.push({
+        type: 'Table',
+        columns: ['Próbka', 'Ocena'],
+        rows: pack.samples.map((sample) => [String(sample), '']),
+      });
+    }
+    if (payload.fields && typeof payload.fields === 'object') {
+      nodes.push({ type: 'Divider' });
+      Object.entries(payload.fields).forEach(([label, value]) => {
+        nodes.push({ type: 'Text', text: `${label}: ${value || '………………'}` });
+      });
+    }
+    nodes.push(footer);
+    base.nodes = nodes;
+    return base;
+  }
+
+  if (LABEL_SHEET_TEMPLATES.has(templateId)) {
+    const fields = payload.fields && typeof payload.fields === 'object' ? payload.fields : {};
+    const theme = String(payload.theme || '').trim();
+    const labelCount = Math.max(4, Math.floor(Number(pack.labelCount) || 6));
+    const primary = String(fields[Object.keys(fields)[0]] || fields['Dla kogo'] || fields.Dla || '').trim();
+    const dedication = String(fields[Object.keys(fields)[1]] || fields.Dedycacja || fields.Tekst || '').trim();
+    const nodes = [
+      { type: 'Kicker', text: templateId === 'coupon-sheet-v1' ? 'Kupony' : templateId === 'comic-sheet-v1' ? 'Komiks' : 'Etykiety' },
+      heading,
+      theme ? { type: 'Text', text: `Motyw: ${theme}`, style: 'muted' } : null,
+      { type: 'Divider' },
+    ].filter(Boolean);
+    if (templateId === 'suggestion-list-v1' && Array.isArray(payload.result)) {
+      payload.result.forEach((line) => nodes.push({ type: 'Text', text: String(line), style: 'accent' }));
+    } else if (templateId === 'prompt-sheet-v1') {
+      const prompts = Array.isArray(pack.prompts) ? pack.prompts : [];
+      prompts.slice(0, 12).forEach((prompt, idx) => {
+        nodes.push({ type: 'Text', text: `${idx + 1}. ${prompt}` });
+      });
+    } else if (templateId === 'comic-sheet-v1') {
+      nodes.push({
+        type: 'Table',
+        columns: ['Kadr 1', 'Kadr 2'],
+        rows: [
+          [dedication || primary || '………………', '………………'],
+          ['………………', '………………'],
+        ],
+      });
+    } else {
+      for (let i = 0; i < labelCount; i += 1) {
+        nodes.push({
+          type: 'Text',
+          text: `□ ${primary || 'Dla: …………'} — ${dedication || '………………'}`,
+          style: 'accent',
+        });
+      }
+    }
+    nodes.push({ type: 'CutLine', label: 'CIĘCIE' });
+    nodes.push(footer);
+    base.nodes = nodes;
+    return base;
+  }
+
+  if (DIY_TEMPLATES.has(templateId)) {
+    const steps = Array.isArray(pack.steps) ? pack.steps : [];
+    const notes = Array.isArray(pack.notes) ? pack.notes : [];
+    const printHint = String(pack.printHint || 'Wydrukuj w skali 100%. Linie cięcia oznaczone na arkuszu.').trim();
+    const cutLabel = String(pack.cutLabel || 'CIĘCIE').trim();
+    const nodes = [
+      { type: 'Kicker', text: 'DIY' },
+      ...intro,
+      { type: 'Text', text: printHint, style: 'muted' },
+    ];
+    notes.forEach((note) => nodes.push({ type: 'Text', text: String(note), style: 'muted' }));
+    if (steps.length) {
+      nodes.push({ type: 'Heading', text: 'Instrukcja', level: 2 });
+      steps.forEach((step, idx) => nodes.push({ type: 'Text', text: `${idx + 1}. ${step}` }));
+    }
+    if (templateId === 'paper-village-v1' || templateId === 'paper-reindeer-v1') {
+      nodes.push({ type: 'Text', text: '[Szablon do wycięcia — obrys na arkuszu]', style: 'accent' });
+    }
+    if (templateId === 'wrapping-pattern-v1') {
+      nodes.push({ type: 'Text', text: '◈ ◆ ★ · ◈ ◆ ★ · ◈ ◆ ★', style: 'accent' });
+      nodes.push({ type: 'Text', text: '★ · ◈ ◆ ★ · ◈ ◆ ★ · ◈', style: 'accent' });
+    }
+    if (templateId === 'origami-guide-v1' || templateId === 'garland-v1' || templateId === 'memory-chain-v1') {
+      nodes.push({ type: 'Text', text: '□ □ □ □ □ □', style: 'accent' });
+    }
+    nodes.push({ type: 'CutLine', label: cutLabel });
+    nodes.push(...payloadNodes(data).filter((node) => node.type !== 'CheckboxList' || (node.items || []).some(Boolean)));
+    nodes.push(footer);
+    base.nodes = nodes;
     return base;
   }
 

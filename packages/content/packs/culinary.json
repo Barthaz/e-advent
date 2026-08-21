@@ -3,19 +3,213 @@
   "packs": {
     "chocolate-tasting-v1": {
       "samples": ["Mleczna", "Gorzka 70%", "Biała", "Orzechowa"],
-      "scale": 5
+      "scale": 5,
+      "ctaLabel": "Oceń czekolady",
+      "notes": [
+        "Spróbuj po kolei i przyznaj punkty — zwycięzca trafia na świąteczny stół."
+      ]
     },
     "recipe-truffles-v1": {
       "title": "Trufle czekoladowe",
       "servings": 20,
       "ingredients": ["200 g czekolady", "100 ml śmietanki"],
-      "steps": ["Podgrzej śmietankę", "Wymieszaj z czekoladą", "Formuj kulki"]
+      "steps": ["Podgrzej śmietankę", "Wymieszaj z czekoladą", "Formuj kulki"],
+      "ctaLabel": "Otwórz przepis na trufle"
     },
     "recipe-cinnamon-rolls-v1": {
       "title": "Cynamonowe ślimaczki",
       "servings": 12,
       "ingredients": ["Mąka", "Drożdże", "Cynamon", "Masło"],
-      "steps": ["Zagnieć ciasto", "Posmaruj nadzieniem", "Piecz 20 min"]
+      "steps": ["Zagnieć ciasto", "Posmaruj nadzieniem", "Piecz 20 min"],
+      "ctaLabel": "Otwórz przepis na ślimaczki"
+    },
+    "gingerbread-test-v1": {
+      "ctaLabel": "Oceń pierniki",
+      "kicker": "Piernikowy test",
+      "scale": 5,
+      "notes": [
+        "Udekorujcie kilka pierników, potem oceńcie wygląd i smak każdej próbki.",
+        "Możecie dodać zdjęcie ulubionego egzemplarza jako pamiątkę z testu."
+      ],
+      "samples": [
+        "Klasyczny ludzik",
+        "Gwiazdka z lukrem",
+        "Serce z posypką",
+        "Choinka kolorowa",
+        "Eksperyment domowy"
+      ],
+      "slots": [
+        { "id": "favorite", "label": "Ulubiony piernik" }
+      ],
+      "captionField": "Kto wygrał degustację"
+    },
+    "christmas-board-builder-v1": {
+      "ctaLabel": "Złóż świąteczną deskę",
+      "resultLabel": "Twoja deska",
+      "emptyLabel": "Wybierz coś z każdej sekcji",
+      "notes": [
+        "Wybierz po kilka elementów — powstanie gotowa lista na deskę serów i przekąsek."
+      ],
+      "sections": [
+        {
+          "id": "cheese",
+          "label": "Sery",
+          "multi": true,
+          "options": ["Camembert", "Cheddar", "Kozi", "Pleśniowy niebieski", "Wędzony"]
+        },
+        {
+          "id": "fruit",
+          "label": "Owoce i świeże",
+          "multi": true,
+          "options": ["Winogrono", "Gruszka", "Jabłko", "Figi świeże lub suszone", "Granat"]
+        },
+        {
+          "id": "sweet",
+          "label": "Słodkie",
+          "multi": true,
+          "options": ["Pierniczki", "Czekolada", "Daktyle", "Miód", "Konfitura"]
+        },
+        {
+          "id": "savory",
+          "label": "Słone",
+          "multi": true,
+          "options": ["Orzechy", "Oliwki", "Krakersy", "Chleb tostowy", "Szynka / salami"]
+        }
+      ]
+    },
+    "hot-chocolate-builder-v1": {
+      "ctaLabel": "Skonfiguruj kakao",
+      "resultLabel": "Twoje kakao",
+      "emptyLabel": "Wybierz bazę, topping i przyprawę",
+      "notes": [
+        "Złóż własną wersję gorącej czekolady — potem możesz odtworzyć ją w kuchni."
+      ],
+      "sections": [
+        {
+          "id": "base",
+          "label": "Baza",
+          "options": ["Mleko", "Napój roślinny", "Śmietanka rozcieńczona", "Woda + kakao na gęsto"]
+        },
+        {
+          "id": "topping",
+          "label": "Topping",
+          "options": ["Bitą śmietana", "Marshmallows", "Starta czekolada", "Karmel", "Bez niczego"]
+        },
+        {
+          "id": "spice",
+          "label": "Przyprawa",
+          "options": ["Cynamon", "Wanilia", "Chili", "Imbir", "Skórka pomarańczy"]
+        }
+      ]
+    },
+    "recipe-caramelized-nuts-v1": {
+      "title": "Karmelizowane orzechy",
+      "servings": 8,
+      "ctaLabel": "Otwórz przepis na orzechy",
+      "notes": [
+        "Chrupiąca przekąska do miseczek albo jako dodatek do deserów."
+      ],
+      "ingredients": [
+        "200 g mieszanki orzechów",
+        "100 g cukru",
+        "2 łyżki wody",
+        "szczypta soli",
+        "opcjonalnie: cynamon"
+      ],
+      "steps": [
+        "Rozgrzej suchą patelnię i podsmaż orzechy 2–3 minuty.",
+        "Dodaj cukier i wodę; mieszaj, aż powstanie złoty karmel.",
+        "Dopraw solą (i cynamonem), rozłóż na papierze do wystygnięcia.",
+        "Po stwardnieniu połam na kawałki i przechowuj w słoiku."
+      ]
+    },
+    "mocktail-builder-v1": {
+      "ctaLabel": "Złóż mocktail",
+      "resultLabel": "Twój napój",
+      "emptyLabel": "Wybierz bazę, smak i dekorację",
+      "notes": [
+        "Bez alkoholu, z świątecznym charakterem — wybierz trzy elementy i wymieszaj."
+      ],
+      "sections": [
+        {
+          "id": "base",
+          "label": "Baza",
+          "options": ["Woda gazowana", "Sok jabłkowy", "Herbata owocowa schłodzona", "Tonic"]
+        },
+        {
+          "id": "flavor",
+          "label": "Smak",
+          "options": ["Żurawina", "Pomarańcza", "Imbir", "Granat", "Gruszka"]
+        },
+        {
+          "id": "garnish",
+          "label": "Dekoracja",
+          "options": ["Gałązka rozmarynu", "Plaster cytrusów", "Żurawina na wykałaczce", "Lód z cynamonem", "Cukier na brzegu szklanki"]
+        }
+      ]
+    },
+    "tea-tasting-v1": {
+      "samples": ["Czarna klasyczna", "Earl Grey", "Owocowa", "Zimowa korzenna", "Zielona z cytrusem"],
+      "scale": 5,
+      "ctaLabel": "Oceń herbaty",
+      "notes": [
+        "Parz po małej ilości każdej herbaty i przyznawaj punkty za aromat i smak."
+      ]
+    },
+    "edible-gift-v1": {
+      "title": "Słoiczek słodkiego prezentu",
+      "servings": 1,
+      "ctaLabel": "Przygotuj jadalny prezent",
+      "notes": [
+        "Ugotuj prosty zapas do słoika, potem uzupełnij etykietę dla obdarowanej osoby."
+      ],
+      "ingredients": [
+        "200 g orzechów lub bakalii",
+        "150 g czekolady",
+        "szczypta soli",
+        "opcjonalnie: skórka pomarańczy"
+      ],
+      "steps": [
+        "Rozpuść czekoladę w kąpieli wodnej.",
+        "Wymieszaj z orzechami i solą.",
+        "Przełóż do czystego słoika i ostudź.",
+        "Przyklej etykietę z dedykacją."
+      ],
+      "fields": ["Dla", "Od", "Nazwa prezentu", "Krótka dedykacja"],
+      "themes": ["Kraftowy słoik", "Złota etykieta", "Czerwona wstążka"]
+    },
+    "cookie-duel-v1": {
+      "samples": ["Ciasteczko A", "Ciasteczko B", "Ciasteczko C", "Ciasteczko D"],
+      "scale": 5,
+      "ctaLabel": "Rozstrzygnij pojedynek",
+      "notes": [
+        "Każda osoba piecze albo przynosi swoją wersję — oceniacie smak, chrupkość i wygląd."
+      ]
+    },
+    "family-recipe-v1": {
+      "title": "Rodzinny przepis",
+      "servings": 6,
+      "ctaLabel": "Zapisz kulinarną pamiątkę",
+      "notes": [
+        "Uzupełnij przepis i historię — powstanie karta, którą warto zachować na kolejne święta."
+      ],
+      "ingredients": [
+        "Składnik 1",
+        "Składnik 2",
+        "Składnik 3",
+        "Składnik 4"
+      ],
+      "steps": [
+        "Zapisz kolejność przygotowania tak, jak robi to ktoś z rodziny.",
+        "Dopisz triki, bez których „nie smakuje tak samo”.",
+        "Odnotuj, ile osób przepis realnie karmi."
+      ],
+      "fields": [
+        "Skąd wziął się ten przepis",
+        "Kto go przekazał",
+        "Jakie wspomnienie się z nim łączy",
+        "Co warto wiedzieć na przyszłość"
+      ]
     }
   }
 }

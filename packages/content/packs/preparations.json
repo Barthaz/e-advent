@@ -2,13 +2,164 @@
   "version": 1,
   "packs": {
     "packing-station-v1": {
-      "items": ["Taśma", "Nożyczki", "Papier", "Etykiety", "Kurier", "Lista prezentów"]
+      "items": ["Taśma", "Nożyczki", "Papier", "Etykiety", "Kurier", "Lista prezentów"],
+      "ctaLabel": "Otwórz stację pakowania",
+      "notes": [
+        "Sprawdź, czy masz wszystko pod ręką, zanim zaczniesz pakować."
+      ]
     },
     "gift-planner-v1": {
-      "columns": ["Osoba", "Pomysł", "Budżet", "Kupione", "Zapakowane"]
+      "columns": ["Osoba", "Pomysł", "Budżet", "Kupione", "Zapakowane"],
+      "ctaLabel": "Uzupełnij planer prezentów",
+      "notes": [
+        "Dodaj osoby i pomysły — odhaczaj, gdy prezent jest kupiony i zapakowany."
+      ]
     },
     "december-planner-v1": {
-      "days": 31
+      "days": 31,
+      "ctaLabel": "Otwórz grudniowy kalendarz",
+      "notes": [
+        "Wpisz ważne terminy: dostawy, zakupy, spotkania i szkolne wydarzenia.",
+        "Zostaw przynajmniej jeden wieczór całkowicie wolny."
+      ],
+      "eventHints": [
+        "Dostawa paczki",
+        "Zakupy spożywcze",
+        "Spotkanie rodzinne",
+        "Szkoła / praca",
+        "Wolny wieczór",
+        "Pieczenie",
+        "Pakowanie prezentów",
+        "Jarmark",
+        "Wigilia",
+        "Pasterka"
+      ]
+    },
+    "emergency-box-v1": {
+      "ctaLabel": "Sprawdź pudełko awaryjne",
+      "notes": [
+        "Zbierz drobiazgi, które ratują Wigilię, gdy coś się zepsuje albo zabraknie."
+      ],
+      "items": [
+        "Baterie AA/AAA",
+        "Latarka albo powerbank",
+        "Taśma klejąca",
+        "Taśma izolacyjna",
+        "Zapasowa żarówka",
+        "Zapałki / zapalniczka",
+        "Świece",
+        "Leki przeciwbólowe",
+        "Plastry",
+        "Chusteczki",
+        "Zapasowe worki na śmieci",
+        "Ładowarka uniwersalna",
+        "Igła i nici",
+        "Mały notes i długopis"
+      ]
+    },
+    "pantry-checklist-v1": {
+      "ctaLabel": "Sprawdź spiżarnię",
+      "notes": [
+        "Odznacz, czego brakuje przed świątecznymi zakupami — mniej paniki w sklepie."
+      ],
+      "items": [
+        "Mąka",
+        "Cukier",
+        "Masło",
+        "Jajka",
+        "Mleko / śmietanka",
+        "Czekolada",
+        "Kakao",
+        "Cynamon",
+        "Goździki",
+        "Imbir",
+        "Orzechy",
+        "Rodzynki / żurawina",
+        "Miód",
+        "Mak",
+        "Barszcz / zakwas",
+        "Uszka / pierogi (mrożone)",
+        "Ryba na Wigilię",
+        "Chleb / pieczywo",
+        "Herbata",
+        "Kawa",
+        "Napój dla gości",
+        "Opłatek"
+      ]
+    },
+    "wrapping-inventory-v1": {
+      "ctaLabel": "Policz materiały do pakowania",
+      "notes": [
+        "Zapisz, ile masz papieru, wstążek i etykiet — unikniesz niedoboru w ostatniej chwili."
+      ],
+      "items": [
+        "Papier prezentowy (rolki)",
+        "Papier kraft",
+        "Wstążki / sznurki",
+        "Kokardy",
+        "Etykiety / bileciki",
+        "Taśma przezroczysta",
+        "Taśma dwustronna",
+        "Nożyczki",
+        "Torebki prezentowe",
+        "Bibuła / wypełniacz",
+        "Naklejki świąteczne",
+        "Szablony do ozdób"
+      ]
+    },
+    "christmas-menu-v1": {
+      "columns": ["Danie", "Kto gotuje", "Zakupy", "Gotowe"],
+      "ctaLabel": "Ułóż świąteczne menu",
+      "notes": [
+        "Dopisz potrawy, kto je robi i czy zakupy są domknięte.",
+        "Oznacz „Gotowe”, gdy danie można odhaczyć przed Wigilią."
+      ]
+    },
+    "emergency-gift-ideas-v1": {
+      "ctaLabel": "Dobierz awaryjny prezent",
+      "resultLabel": "Twoja awaryjna lista",
+      "emptyLabel": "Wybierz budżet, odbiorcę i zainteresowanie",
+      "notes": [
+        "Wybierz budżet, typ osoby i zainteresowanie — dostaniesz praktyczne, uniwersalne pomysły."
+      ],
+      "sections": [
+        {
+          "id": "budget",
+          "label": "Budżet",
+          "options": ["do 30 zł", "30–70 zł", "70–150 zł", "powyżej 150 zł"]
+        },
+        {
+          "id": "recipient",
+          "label": "Dla kogo",
+          "options": ["dziecko", "nastolatek", "koleżanka / kolega", "rodzic", "partner / partnerka", "współpracownik", "niespodziewany gość"]
+        },
+        {
+          "id": "interest",
+          "label": "Zainteresowanie",
+          "options": ["jedzenie i słodycze", "dom i klimat", "czytanie", "herbata / kawa", "uroda / pielęgnacja", "gry i zabawa", "doświadczenie zamiast rzeczy"]
+        }
+      ]
+    },
+    "final-audit-v1": {
+      "ctaLabel": "Zrób ostatnią kontrolę",
+      "notes": [
+        "Przejdź listę dzień lub dwa przed Wigilią — złap braki, zanim zrobi się gorąco."
+      ],
+      "items": [
+        "Menu ustalone",
+        "Zakupy spożywcze zrobione",
+        "Opłatek jest w domu",
+        "Prezenty kupione",
+        "Prezenty zapakowane",
+        "Choinka ubrana / gotowa",
+        "Lampki działają",
+        "Stół: obrus, nakrycia, świece",
+        "Wolne miejsce dla gościa",
+        "Śmieci i zmywarka ogarnięte",
+        "Ładowarki i baterie sprawdzone",
+        "Plan dojazdu / parkowania dla gości",
+        "Czas na spokojny wieczór wolny"
+      ]
     }
   }
 }

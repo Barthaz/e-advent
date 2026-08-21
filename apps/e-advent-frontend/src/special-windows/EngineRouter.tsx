@@ -7,13 +7,18 @@ import {
   emptyFormCard,
   formatQuizResult,
   formatRandomizerProgress,
+  formatOptionSelections,
   nextUniqueDraw,
+  nextTurnLetter,
   pickQuizSession,
   readFormCards,
   readQuizSession,
   resolveCardFormConfig,
   resolveQuizConfig,
   resolveRandomizerConfig,
+  resolveOptionConfiguratorConfig,
+  resolveTemplatePersonalizerConfig,
+  resolveTurnBasedGameConfig,
   splitSetDraw,
   resolveImageCardConfig,
   photoSrc,
@@ -784,11 +789,21 @@ function ScorecardEngine({ descriptor, progress, onUpdate }: EngineProps) {
   );
 }
 
-function SortableListEngine({ progress, onUpdate }: EngineProps) {
-  const items = (progress?.payload?.items as string[]) || ['', '', '', '', ''];
+function SortableListEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey, descriptor.document?.templateId);
+  const starter = Array.isArray(pack?.items)
+    ? (pack.items as string[]).map((item) => String(item ?? ''))
+    : ['', '', '', '', ''];
+  const items = (progress?.payload?.items as string[]) || starter;
+  const notes = Array.isArray(pack?.notes) ? (pack.notes as string[]) : [];
 
   return (
     <div className="space-y-2 p-2">
+      {notes.map((note) => (
+        <p key={note} className="text-sm text-christmas-gold-light/90">
+          {note}
+        </p>
+      ))}
       {items.map((item, i) => (
         <div key={i} className="flex gap-2">
           <span className="text-christmas-gold-light w-6">{i + 1}.</span>
@@ -799,7 +814,7 @@ function SortableListEngine({ progress, onUpdate }: EngineProps) {
             onChange={(e) => {
               const next = [...items];
               next[i] = e.target.value;
-              onUpdate({ items: next });
+              onUpdate({ items: next, started: true });
             }}
           />
         </div>
@@ -829,17 +844,286 @@ function RecipeEngine({ descriptor, progress, onUpdate }: EngineProps) {
   );
 }
 
-function DocumentEngine({ descriptor }: EngineProps) {
+function DocumentEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey, descriptor.document?.templateId);
+  const steps = Array.isArray(pack?.steps) ? (pack.steps as string[]) : [];
+  const notes = Array.isArray(pack?.notes) ? (pack.notes as string[]) : [];
+  const printHint = typeof pack?.printHint === 'string' ? pack.printHint : '';
+
+  React.useEffect(() => {
+    if (!progress?.payload?.started) {
+      onUpdate({ started: true });
+    }
+  }, []);
+
   return (
-    <div className="p-4 text-center text-white space-y-3">
-      <p>{descriptor.description || 'Materiał do pobrania i wydruku'}</p>
+    <div className="space-y-3 p-4 text-center text-white">
+      <p>{descriptor.description || String(pack?.intro || 'Materiał do pobrania i wydruku')}</p>
+      {notes.map((note) => (
+        <p key={note} className="text-sm text-christmas-gold-light/85">
+          {note}
+        </p>
+      ))}
+      {steps.length ? (
+        <ol className="list-decimal space-y-1 pl-5 text-left text-sm text-white/85">
+          {steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      ) : null}
+      {printHint ? <p className="text-xs text-white/50">{printHint}</p> : null}
       <p className="text-xs text-white/50">Układ i PDF znajdziesz na dole karty.</p>
     </div>
   );
 }
 
-function ImageCardEngine({ descriptor, progress, onUpdate, calendarId, day }: EngineProps) {
+function OptionConfiguratorEngine({ descriptor, progress, onUpdate }: EngineProps) {
   const pack = resolvePack(descriptor.contentKey);
+  const config = resolveOptionConfiguratorConfig(pack);
+  const selections = (progress?.payload?.selections as Record<string, unknown>) || {};
+
+  const setSelection = (sectionId: string, value: string | string[]) => {
+    const next = { ...selections, [sectionId]: value };
+    onUpdate({
+      selections: next,
+      result: formatOptionSelections(config, next),
+      started: true,
+    });
+  };
+
+  if (!config.sections.length) {
+    return <p className="p-4 text-center text-white/70">Brak opcji w konfiguracji</p>;
+  }
+
+  const summary = formatOptionSelections(config, selections);
+
+  return (
+    <div className="space-y-4 p-2 text-white">
+      {config.notes.map((note) => (
+        <p key={note} className="text-sm text-christmas-gold-light/90">
+          {note}
+        </p>
+      ))}
+      {config.sections.map((section) => {
+        const current = selections[section.id];
+        const selected = Array.isArray(current)
+          ? current.map(String)
+          : current
+            ? [String(current)]
+            : [];
+        return (
+          <div key={section.id} className="space-y-2">
+            <p className="text-sm font-medium text-christmas-gold-light">{section.label}</p>
+            <div className="flex flex-wrap gap-2">
+              {section.options.map((option) => {
+                const active = selected.includes(option);
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`rounded-lg border px-3 py-1.5 text-sm ${
+                      active
+                        ? 'border-christmas-gold bg-christmas-gold/25 text-christmas-gold-light'
+                        : 'border-white/20 bg-white/5 text-white/85 hover:bg-white/10'
+                    }`}
+                    onClick={() => {
+                      if (section.multi) {
+                        setSelection(
+                          section.id,
+                          active ? selected.filter((item) => item !== option) : [...selected, option]
+                        );
+                      } else {
+                        setSelection(section.id, option);
+                      }
+                    }}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+      {summary.length ? (
+        <div className="rounded-xl border border-christmas-gold/30 bg-white/5 px-4 py-3 text-left">
+          <p className="mb-1 text-xs uppercase tracking-wide text-christmas-gold-light/70">
+            {config.resultLabel}
+          </p>
+          {summary.map((line) => (
+            <p key={line} className="text-sm text-white/90">
+              {line}
+            </p>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-white/50">{config.emptyLabel}</p>
+      )}
+    </div>
+  );
+}
+
+function TemplatePersonalizerEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey, descriptor.document?.templateId);
+  const config = resolveTemplatePersonalizerConfig(pack);
+  const fields =
+    (progress?.payload?.fields as Record<string, string>) ||
+    Object.fromEntries(config.fields.map((label) => [label, '']));
+  const theme = String(progress?.payload?.theme || '');
+
+  return (
+    <div className="space-y-4 p-2 text-white">
+      {config.notes.map((note) => (
+        <p key={note} className="text-sm text-christmas-gold-light/90">
+          {note}
+        </p>
+      ))}
+      {config.themeOptions.length ? (
+        <div>
+          <label className="mb-1 block text-sm text-white/80">{config.themeLabel}</label>
+          <div className="flex flex-wrap gap-2">
+            {config.themeOptions.map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={`rounded-lg border px-3 py-1.5 text-sm ${
+                  theme === option
+                    ? 'border-christmas-gold bg-christmas-gold/25 text-christmas-gold-light'
+                    : 'border-white/20 bg-white/5'
+                }`}
+                onClick={() => onUpdate({ fields, theme: option, started: true })}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {config.fields.map((label) => (
+        <div key={label}>
+          <label className="mb-1 block text-sm text-white/80">{label}</label>
+          <input
+            className="w-full rounded-lg border border-white/20 bg-white/10 p-2 text-white"
+            value={fields[label] || ''}
+            onChange={(e) =>
+              onUpdate({ fields: { ...fields, [label]: e.target.value }, theme, started: true })
+            }
+          />
+        </div>
+      ))}
+      <p className="text-xs text-white/50">{config.previewLabel} — PDF na dole karty.</p>
+    </div>
+  );
+}
+
+function TurnBasedGameEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey);
+  const config = resolveTurnBasedGameConfig(pack);
+  const letterIndex = Number(progress?.payload?.letterIndex ?? 0) || 0;
+  const scores =
+    (progress?.payload?.scores as Record<string, number>) ||
+    Object.fromEntries(config.playerNames.map((name) => [name, 0]));
+  const currentPlayer = Number(progress?.payload?.currentPlayer ?? 0) || 0;
+  const roundFinished = progress?.payload?.roundFinished === true;
+  const timerStartedAt = String(progress?.payload?.timerStartedAt || '');
+  const current = nextTurnLetter(config.letters, letterIndex);
+
+  const startRound = () => {
+    onUpdate({
+      started: true,
+      letterIndex: 0,
+      currentPlayer: 0,
+      scores: Object.fromEntries(config.playerNames.map((name) => [name, 0])),
+      roundFinished: false,
+      timerStartedAt: new Date().toISOString(),
+    });
+  };
+
+  const resolveTurn = (scored: boolean) => {
+    const playerName = config.playerNames[currentPlayer % config.playerNames.length];
+    const nextScores = {
+      ...scores,
+      [playerName]: (scores[playerName] || 0) + (scored ? 1 : 0),
+    };
+    const next = nextTurnLetter(config.letters, letterIndex + 1);
+    if (next.finished) {
+      onUpdate({
+        scores: nextScores,
+        letterIndex: config.letters.length,
+        roundFinished: true,
+        finished: true,
+        timerStartedAt: '',
+      });
+      return;
+    }
+    onUpdate({
+      scores: nextScores,
+      letterIndex: letterIndex + 1,
+      currentPlayer: (currentPlayer + 1) % config.playerNames.length,
+      timerStartedAt: new Date().toISOString(),
+    });
+  };
+
+  if (!progress?.payload?.started && !roundFinished) {
+    return (
+      <div className="space-y-4 p-4 text-center text-white">
+        {config.notes.map((note) => (
+          <p key={note} className="text-sm text-christmas-gold-light/90">
+            {note}
+          </p>
+        ))}
+        <button type="button" className="btn-gold px-7 py-2.5" onClick={startRound}>
+          {config.ctaLabel}
+        </button>
+      </div>
+    );
+  }
+
+  if (roundFinished || current.finished) {
+    return (
+      <div className="space-y-4 p-4 text-center text-white">
+        <p className="font-display text-2xl text-christmas-gold-light">{config.finishLabel}</p>
+        {config.playerNames.map((name) => (
+          <p key={name}>
+            {name}: {scores[name] || 0}
+          </p>
+        ))}
+        <button type="button" className="btn-gold px-7 py-2.5" onClick={startRound}>
+          {config.replayLabel}
+        </button>
+      </div>
+    );
+  }
+
+  const playerName = config.playerNames[currentPlayer % config.playerNames.length];
+
+  return (
+    <div className="space-y-4 p-4 text-center text-white">
+      <p className="text-sm text-white/70">
+        {playerName} · litera {letterIndex + 1}/{config.letters.length}
+      </p>
+      <p className="font-display text-6xl text-christmas-gold-light">{current.letter}</p>
+      {timerStartedAt ? (
+        <PromptTimer startedAt={timerStartedAt} duration={config.timerSeconds} />
+      ) : null}
+      <div className="flex flex-wrap justify-center gap-2">
+        <button type="button" className="btn-gold px-5 py-2" onClick={() => resolveTurn(true)}>
+          {config.scoredLabel}
+        </button>
+        <button
+          type="button"
+          className="rounded-lg border border-white/30 px-5 py-2 text-white/85"
+          onClick={() => resolveTurn(false)}
+        >
+          {config.missLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ImageCardEngine({ descriptor, progress, onUpdate, calendarId, day }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey, descriptor.document?.templateId);
   const config = resolveImageCardConfig(pack);
   const photos = (progress?.payload?.photos as Record<string, unknown>) || {};
   const caption = String(progress?.payload?.caption || '');
@@ -954,9 +1238,9 @@ const ENGINE_MAP: Partial<Record<SpecialEngineType, React.ComponentType<EnginePr
   RECIPE: RecipeEngine,
   DOCUMENT: DocumentEngine,
   IMAGE_CARD: ImageCardEngine,
-  OPTION_CONFIGURATOR: GenericEngine,
-  TURN_BASED_GAME: RandomizerTimerEngine,
-  TEMPLATE_PERSONALIZER: CardFormEngine,
+  OPTION_CONFIGURATOR: OptionConfiguratorEngine,
+  TURN_BASED_GAME: TurnBasedGameEngine,
+  TEMPLATE_PERSONALIZER: TemplatePersonalizerEngine,
 };
 
 export default function EngineRouter(props: EngineProps) {

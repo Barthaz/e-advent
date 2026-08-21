@@ -5,6 +5,11 @@ import { isPreviewCalendarId } from './previewCalendar';
 
 const STORAGE_PREFIX = 'e-advent-special-progress';
 
+export type DateGateState = {
+  revealed: boolean;
+  revealAt: string | null;
+};
+
 function storageKey(calendarId: string, taskId: string) {
   return `${STORAGE_PREFIX}:${calendarId}:${taskId}`;
 }
@@ -15,6 +20,7 @@ export function useSpecialProgress(
   descriptor: SpecialWindowDescriptor | null
 ) {
   const [progress, setProgress] = useState<SpecialWindowProgress | null>(null);
+  const [dateGate, setDateGate] = useState<DateGateState | null>(null);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -31,10 +37,22 @@ export function useSpecialProgress(
           /* ignore */
         }
       }
-      const remote = isPreviewCalendarId(calendarId)
-        ? null
-        : await getSpecialProgress(calendarId, day);
-      if (!cancelled && remote) setProgress(remote);
+      if (isPreviewCalendarId(calendarId)) {
+        if (!cancelled && !local) {
+          setProgress({
+            taskId: descriptor.configId,
+            configId: descriptor.configId,
+            status: 'NOT_STARTED',
+            payloadVersion: 1,
+            payload: { started: true },
+            updatedAt: new Date().toISOString(),
+          });
+        }
+        return;
+      }
+      const remote = await getSpecialProgress(calendarId, day);
+      if (!cancelled && remote.progress) setProgress(remote.progress);
+      if (!cancelled && remote.dateGate) setDateGate(remote.dateGate);
       else if (!cancelled && !local) {
         setProgress({
           taskId: descriptor.configId,
@@ -53,22 +71,37 @@ export function useSpecialProgress(
   }, [calendarId, day, descriptor]);
 
   const persist = useCallback(
-    (next: SpecialWindowProgress) => {
+    async (next: SpecialWindowProgress, extras?: { seal?: boolean; revealAt?: string }) => {
       setProgress(next);
       localStorage.setItem(storageKey(calendarId, next.configId), JSON.stringify(next));
       setSaveState('saving');
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(async () => {
+
+      const runSave = async () => {
         if (isPreviewCalendarId(calendarId)) {
           setSaveState('saved');
           return;
         }
         try {
-          await saveSpecialProgress(calendarId, day, next);
+          const saved = await saveSpecialProgress(calendarId, day, {
+            ...next,
+            ...(extras?.seal ? { seal: true, revealAt: extras.revealAt } : {}),
+          });
+          if (saved.progress) setProgress(saved.progress);
+          if (saved.dateGate) setDateGate(saved.dateGate);
           setSaveState('saved');
         } catch {
           setSaveState('error');
         }
+      };
+
+      if (extras?.seal) {
+        await runSave();
+        return;
+      }
+
+      debounceRef.current = setTimeout(() => {
+        void runSave();
       }, 800);
     },
     [calendarId, day]
@@ -77,7 +110,7 @@ export function useSpecialProgress(
   const updatePayload = useCallback(
     (patch: Record<string, unknown>) => {
       if (!progress) return;
-      persist({
+      void persist({
         ...progress,
         status: 'IN_PROGRESS',
         payload: { ...progress.payload, ...patch, started: true },
@@ -87,5 +120,21 @@ export function useSpecialProgress(
     [persist, progress]
   );
 
-  return { progress, updatePayload, persist, saveState };
+  const sealProgress = useCallback(
+    (revealAt?: string) => {
+      if (!progress) return;
+      void persist(
+        {
+          ...progress,
+          status: 'IN_PROGRESS',
+          payload: { ...progress.payload, sealed: true },
+          updatedAt: new Date().toISOString(),
+        },
+        { seal: true, revealAt }
+      );
+    },
+    [persist, progress]
+  );
+
+  return { progress, updatePayload, persist, sealProgress, dateGate, saveState };
 }

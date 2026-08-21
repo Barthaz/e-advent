@@ -15,13 +15,18 @@ import {
   emptyFormCard,
   formatQuizResult,
   formatRandomizerProgress,
+  formatOptionSelections,
   nextUniqueDraw,
+  nextTurnLetter,
   pickQuizSession,
   readFormCards,
   readQuizSession,
   resolveCardFormConfig,
   resolveQuizConfig,
   resolveRandomizerConfig,
+  resolveOptionConfiguratorConfig,
+  resolveTemplatePersonalizerConfig,
+  resolveTurnBasedGameConfig,
   splitSetDraw,
   resolveImageCardConfig,
   photoSrc,
@@ -910,10 +915,20 @@ function PlannerEngine({ descriptor, progress, onUpdate }: EngineProps) {
   );
 }
 
-function SortableListEngine({ progress, onUpdate }: EngineProps) {
-  const items = (progress?.payload?.items as string[]) || ['', '', '', '', ''];
+function SortableListEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey, descriptor.document?.templateId);
+  const starter = Array.isArray(pack?.items)
+    ? (pack.items as string[]).map((item) => String(item ?? ''))
+    : ['', '', '', '', ''];
+  const items = (progress?.payload?.items as string[]) || starter;
+  const notes = Array.isArray(pack?.notes) ? (pack.notes as string[]) : [];
   return (
     <View style={{ gap: 8 }}>
+      {notes.map((note) => (
+        <Text key={note} style={{ color: 'rgba(246,221,158,0.9)', lineHeight: 20 }}>
+          {note}
+        </Text>
+      ))}
       {items.map((item, i) => (
         <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Text style={{ color: calendarTheme.goldBright, width: 24 }}>{i + 1}.</Text>
@@ -923,7 +938,7 @@ function SortableListEngine({ progress, onUpdate }: EngineProps) {
             onChangeText={(value) => {
               const next = [...items];
               next[i] = value;
-              onUpdate({ items: next });
+              onUpdate({ items: next, started: true });
             }}
           />
         </View>
@@ -982,7 +997,7 @@ function ScorecardEngine({ descriptor, progress, onUpdate }: EngineProps) {
 }
 
 function ImageCardEngine({ descriptor, progress, onUpdate, calendarId, day }: EngineProps) {
-  const pack = resolvePack(descriptor.contentKey);
+  const pack = resolvePack(descriptor.contentKey, descriptor.document?.templateId);
   const config = resolveImageCardConfig(pack);
   const photos = (progress?.payload?.photos as Record<string, unknown>) || {};
   const caption = String(progress?.payload?.caption || '');
@@ -1099,6 +1114,327 @@ function ImageCardEngine({ descriptor, progress, onUpdate, calendarId, day }: En
   );
 }
 
+function DocumentEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey, descriptor.document?.templateId);
+  const steps = Array.isArray(pack?.steps) ? (pack.steps as string[]) : [];
+  const notes = Array.isArray(pack?.notes) ? (pack.notes as string[]) : [];
+  const printHint = typeof pack?.printHint === 'string' ? pack.printHint : '';
+
+  React.useEffect(() => {
+    if (!progress?.payload?.started) {
+      onUpdate({ started: true });
+    }
+  }, []);
+
+  return (
+    <View style={{ alignItems: 'center', gap: 12 }}>
+      <Text style={{ color: '#fff', textAlign: 'center' }}>
+        {descriptor.description || String(pack?.intro || 'Materiał do pobrania i wydruku')}
+      </Text>
+      {notes.map((note) => (
+        <Text key={note} style={{ color: 'rgba(246,221,158,0.85)', textAlign: 'center', lineHeight: 20 }}>
+          {note}
+        </Text>
+      ))}
+      {steps.length ? (
+        <View style={{ alignSelf: 'stretch', gap: 6 }}>
+          {steps.map((step, index) => (
+            <Text key={step} style={{ color: 'rgba(255,255,255,0.85)', lineHeight: 20 }}>
+              {index + 1}. {step}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+      {printHint ? (
+        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, textAlign: 'center' }}>{printHint}</Text>
+      ) : null}
+      <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, textAlign: 'center' }}>
+        Układ i PDF znajdziesz na dole karty.
+      </Text>
+    </View>
+  );
+}
+
+function OptionConfiguratorEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey);
+  const config = resolveOptionConfiguratorConfig(pack);
+  const selections = (progress?.payload?.selections as Record<string, unknown>) || {};
+
+  const setSelection = (sectionId: string, value: string | string[]) => {
+    const next = { ...selections, [sectionId]: value };
+    onUpdate({
+      selections: next,
+      result: formatOptionSelections(config, next),
+      started: true,
+    });
+  };
+
+  if (!config.sections.length) {
+    return (
+      <Text style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center' }}>Brak opcji w konfiguracji</Text>
+    );
+  }
+
+  const summary = formatOptionSelections(config, selections);
+
+  return (
+    <View style={{ gap: 14 }}>
+      {config.notes.map((note) => (
+        <Text key={note} style={{ color: 'rgba(246,221,158,0.9)', lineHeight: 20 }}>
+          {note}
+        </Text>
+      ))}
+      {config.sections.map((section) => {
+        const current = selections[section.id];
+        const selected = Array.isArray(current)
+          ? current.map(String)
+          : current
+            ? [String(current)]
+            : [];
+        return (
+          <View key={section.id} style={{ gap: 8 }}>
+            <Text style={{ color: calendarTheme.goldBright, fontWeight: '600' }}>{section.label}</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {section.options.map((option) => {
+                const active = selected.includes(option);
+                return (
+                  <Pressable
+                    key={option}
+                    onPress={() => {
+                      if (section.multi) {
+                        setSelection(
+                          section.id,
+                          active ? selected.filter((item) => item !== option) : [...selected, option]
+                        );
+                      } else {
+                        setSelection(section.id, option);
+                      }
+                    }}
+                    style={{
+                      borderRadius: 10,
+                      borderWidth: 1,
+                      borderColor: active ? calendarTheme.gold : 'rgba(255,255,255,0.2)',
+                      backgroundColor: active ? 'rgba(244,208,63,0.25)' : 'rgba(255,255,255,0.05)',
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                    }}
+                  >
+                    <Text style={{ color: active ? calendarTheme.goldBright : 'rgba(255,255,255,0.85)' }}>
+                      {option}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        );
+      })}
+      {summary.length ? (
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: 'rgba(244,208,63,0.3)',
+            backgroundColor: 'rgba(255,255,255,0.05)',
+            borderRadius: 12,
+            padding: 12,
+            gap: 4,
+          }}
+        >
+          <Text
+            style={{
+              color: 'rgba(246,221,158,0.7)',
+              fontSize: 11,
+              letterSpacing: 1.2,
+              textTransform: 'uppercase',
+              marginBottom: 4,
+            }}
+          >
+            {config.resultLabel}
+          </Text>
+          {summary.map((line) => (
+            <Text key={line} style={{ color: 'rgba(255,255,255,0.9)', lineHeight: 20 }}>
+              {line}
+            </Text>
+          ))}
+        </View>
+      ) : (
+        <Text style={{ color: 'rgba(255,255,255,0.5)' }}>{config.emptyLabel}</Text>
+      )}
+    </View>
+  );
+}
+
+function TemplatePersonalizerEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey, descriptor.document?.templateId);
+  const config = resolveTemplatePersonalizerConfig(pack);
+  const fields =
+    (progress?.payload?.fields as Record<string, string>) ||
+    Object.fromEntries(config.fields.map((label) => [label, '']));
+  const theme = String(progress?.payload?.theme || '');
+
+  return (
+    <View style={{ gap: 12 }}>
+      {config.notes.map((note) => (
+        <Text key={note} style={{ color: 'rgba(246,221,158,0.9)', lineHeight: 20 }}>
+          {note}
+        </Text>
+      ))}
+      {config.themeOptions.length ? (
+        <View>
+          <Text style={{ color: 'rgba(255,255,255,0.8)', marginBottom: 6 }}>{config.themeLabel}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {config.themeOptions.map((option) => (
+              <Pressable
+                key={option}
+                onPress={() => onUpdate({ fields, theme: option, started: true })}
+                style={{
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: theme === option ? calendarTheme.gold : 'rgba(255,255,255,0.2)',
+                  backgroundColor: theme === option ? 'rgba(244,208,63,0.25)' : 'rgba(255,255,255,0.05)',
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                }}
+              >
+                <Text style={{ color: theme === option ? calendarTheme.goldBright : '#fff' }}>{option}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      ) : null}
+      {config.fields.map((label) => (
+        <View key={label}>
+          <Text style={{ color: 'rgba(255,255,255,0.8)', marginBottom: 4 }}>{label}</Text>
+          <TextInput
+            value={fields[label] || ''}
+            onChangeText={(value) =>
+              onUpdate({ fields: { ...fields, [label]: value }, theme, started: true })
+            }
+            style={{ ...field, minHeight: 44 }}
+            placeholderTextColor="rgba(255,255,255,0.35)"
+          />
+        </View>
+      ))}
+      <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
+        {config.previewLabel} — PDF na dole karty.
+      </Text>
+    </View>
+  );
+}
+
+function TurnBasedGameEngine({ descriptor, progress, onUpdate }: EngineProps) {
+  const pack = resolvePack(descriptor.contentKey);
+  const config = resolveTurnBasedGameConfig(pack);
+  const letterIndex = Number(progress?.payload?.letterIndex ?? 0) || 0;
+  const scores =
+    (progress?.payload?.scores as Record<string, number>) ||
+    Object.fromEntries(config.playerNames.map((name) => [name, 0]));
+  const currentPlayer = Number(progress?.payload?.currentPlayer ?? 0) || 0;
+  const roundFinished = progress?.payload?.roundFinished === true;
+  const timerStartedAt = String(progress?.payload?.timerStartedAt || '');
+  const current = nextTurnLetter(config.letters, letterIndex);
+
+  const startRound = () => {
+    onUpdate({
+      started: true,
+      letterIndex: 0,
+      currentPlayer: 0,
+      scores: Object.fromEntries(config.playerNames.map((name) => [name, 0])),
+      roundFinished: false,
+      timerStartedAt: new Date().toISOString(),
+    });
+  };
+
+  const resolveTurn = (scored: boolean) => {
+    const playerName = config.playerNames[currentPlayer % config.playerNames.length];
+    const nextScores = {
+      ...scores,
+      [playerName]: (scores[playerName] || 0) + (scored ? 1 : 0),
+    };
+    const next = nextTurnLetter(config.letters, letterIndex + 1);
+    if (next.finished) {
+      onUpdate({
+        scores: nextScores,
+        letterIndex: config.letters.length,
+        roundFinished: true,
+        finished: true,
+        timerStartedAt: '',
+      });
+      return;
+    }
+    onUpdate({
+      scores: nextScores,
+      letterIndex: letterIndex + 1,
+      currentPlayer: (currentPlayer + 1) % config.playerNames.length,
+      timerStartedAt: new Date().toISOString(),
+    });
+  };
+
+  if (!progress?.payload?.started && !roundFinished) {
+    return (
+      <View style={{ alignItems: 'center', gap: 14 }}>
+        {config.notes.map((note) => (
+          <Text key={note} style={{ color: 'rgba(246,221,158,0.9)', textAlign: 'center', lineHeight: 20 }}>
+            {note}
+          </Text>
+        ))}
+        <Pressable style={goldBtn} onPress={startRound}>
+          <Text style={goldBtnText}>{config.ctaLabel}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (roundFinished || current.finished) {
+    return (
+      <View style={{ alignItems: 'center', gap: 12 }}>
+        <Text style={{ color: calendarTheme.goldBright, fontSize: 22, fontWeight: '700', textAlign: 'center' }}>
+          {config.finishLabel}
+        </Text>
+        {config.playerNames.map((name) => (
+          <Text key={name} style={{ color: '#fff' }}>
+            {name}: {scores[name] || 0}
+          </Text>
+        ))}
+        <Pressable style={goldBtn} onPress={startRound}>
+          <Text style={goldBtnText}>{config.replayLabel}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const playerName = config.playerNames[currentPlayer % config.playerNames.length];
+
+  return (
+    <View style={{ alignItems: 'center', gap: 14 }}>
+      <Text style={{ color: 'rgba(255,255,255,0.7)' }}>
+        {playerName} · litera {letterIndex + 1}/{config.letters.length}
+      </Text>
+      <Text style={{ color: calendarTheme.goldBright, fontSize: 56, fontWeight: '700' }}>{current.letter}</Text>
+      {timerStartedAt ? <PromptTimer startedAt={timerStartedAt} duration={config.timerSeconds} /> : null}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
+        <Pressable style={goldBtn} onPress={() => resolveTurn(true)}>
+          <Text style={goldBtnText}>{config.scoredLabel}</Text>
+        </Pressable>
+        <Pressable
+          style={{
+            borderRadius: 10,
+            paddingVertical: 12,
+            paddingHorizontal: 20,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.3)',
+          }}
+          onPress={() => resolveTurn(false)}
+        >
+          <Text style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '700', fontSize: 16 }}>
+            {config.missLabel}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function GenericEngine({ descriptor, onUpdate }: EngineProps) {
   return (
     <View style={{ alignItems: 'center', gap: 12 }}>
@@ -1122,11 +1458,11 @@ const ENGINE_MAP: Partial<Record<SpecialEngineType, React.ComponentType<EnginePr
   SORTABLE_LIST: SortableListEngine,
   RECIPE: RecipeEngine,
   SCORECARD: ScorecardEngine,
-  DOCUMENT: GenericEngine,
+  DOCUMENT: DocumentEngine,
   IMAGE_CARD: ImageCardEngine,
-  OPTION_CONFIGURATOR: GenericEngine,
-  TURN_BASED_GAME: RandomizerTimerEngine,
-  TEMPLATE_PERSONALIZER: CardFormEngine,
+  OPTION_CONFIGURATOR: OptionConfiguratorEngine,
+  TURN_BASED_GAME: TurnBasedGameEngine,
+  TEMPLATE_PERSONALIZER: TemplatePersonalizerEngine,
 };
 
 export default function EngineRouter(props: EngineProps) {

@@ -3,13 +3,120 @@
   "packs": {
     "future-self-letter-v1": {
       "fields": ["List do siebie za rok", "Co chcę pamiętać?", "Czego się uczę?"],
-      "revealAt": "next-christmas"
+      "revealAt": "next-christmas",
+      "ctaLabel": "Napisz list do siebie",
+      "notes": [
+        "Zapieczętuj myśli na kolejny grudzień — otworzysz je za rok."
+      ]
     },
     "three-good-scenes-v1": {
-      "fields": ["Scena 1", "Scena 2", "Scena 3"]
+      "fields": ["Scena 1", "Scena 2", "Scena 3"],
+      "ctaLabel": "Zapisz trzy sceny",
+      "notes": [
+        "Trzy krótkie kadry z tego roku, które warto zapamiętać."
+      ]
     },
     "five-senses-walk-v1": {
-      "items": ["Co widzę", "Co słyszę", "Co czuję zapachem", "Co dotykam", "Co smakuję"]
+      "items": ["Co widzę", "Co słyszę", "Co czuję zapachem", "Co dotykam", "Co smakuję"],
+      "ctaLabel": "Idź na spacer zmysłów",
+      "notes": [
+        "Na spacerze zatrzymaj się przy każdym zmysłku i zapisz jedno spostrzeżenie."
+      ]
+    },
+    "year-in-six-words-v1": {
+      "ctaLabel": "Zapisz sześć słów",
+      "fieldNoun": "Słowo",
+      "fieldCount": 6,
+      "notes": [
+        "Sześć słów, które streszczają Twój rok — bez pełnych zdań."
+      ]
+    },
+    "good-people-v1": {
+      "ctaLabel": "Podziękuj dobrym ludziom",
+      "notes": [
+        "Wymień osoby, które zrobiły ten rok lżejszym, i za co im dziękujesz."
+      ],
+      "fields": [
+        "Osoba 1",
+        "Za co jej / jemu dziękuję",
+        "Osoba 2",
+        "Za co jej / jemu dziękuję",
+        "Jedno zdanie wdzięczności na koniec"
+      ]
+    },
+    "no-notifications-hour-v1": {
+      "ctaLabel": "Uruchom godzinę ciszy",
+      "timerSeconds": 3600,
+      "timerLabel": "Godzina bez powiadomień",
+      "timerDoneLabel": "Godzina minęła",
+      "itemNoun": "Przypomnienie",
+      "uniqueDraw": false,
+      "emptyLabel": "Wycisz telefon i uruchom timer",
+      "promptHint": "Na godzinę wycisz powiadomienia. Bądź tam, gdzie jesteś.",
+      "notes": [
+        "Timer odlicza 60 minut. Telefon może poczekać — Ty nie musisz być dostępny/a bez przerwy.",
+        "Możesz zostawić telefon w innym pokoju albo w trybie Nie przeszkadzać."
+      ],
+      "prompts": [
+        "Wycisz powiadomienia i zostań przy sobie albo przy bliskich."
+      ]
+    },
+    "ten-small-joys-v1": {
+      "ctaLabel": "Zapisz dziesięć radości",
+      "fieldNoun": "Radość",
+      "fieldCount": 10,
+      "notes": [
+        "Dziesięć drobnych rzeczy z grudnia, które Cię rozjaśniły — nawet na chwilę."
+      ]
+    },
+    "christmas-intention-v1": {
+      "ctaLabel": "Zapisz intencję",
+      "notes": [
+        "Jedna jasna intencja na święta — nie lista postanowień."
+      ],
+      "fields": [
+        "Moja świąteczna intencja",
+        "Jak chcę się nią opiekować",
+        "Czego świadomie nie biorę na siebie"
+      ]
+    },
+    "our-tradition-v1": {
+      "ctaLabel": "Opisz naszą tradycję",
+      "notes": [
+        "Zapiszcie tradycję, którą naprawdę praktykujecie — albo taką, którą chcecie zacząć."
+      ],
+      "fields": [
+        "Nazwa tradycji",
+        "Kiedy ją robimy",
+        "Jak wygląda krok po kroku",
+        "Dlaczego jest dla nas ważna"
+      ]
+    },
+    "time-capsule-v1": {
+      "ctaLabel": "Zapieczętuj kapsułę",
+      "revealAt": "next-christmas",
+      "notes": [
+        "Wypełnij kapsułę i „zapieczętuj” ją do następnych świąt.",
+        "Treść wraca przy kolejnym Bożym Narodzeniu — nie zaglądaj wcześniej."
+      ],
+      "fields": [
+        "Co dzieje się u nas teraz",
+        "Czego się spodziewam za rok",
+        "Życzenie do otwarcia za rok",
+        "Mały szczegół, który chcę sobie przypomnieć"
+      ]
+    },
+    "december-closure-v1": {
+      "ctaLabel": "Domknij grudzień",
+      "notes": [
+        "Kilka pytań na spokojne domknięcie roku — bez rozliczania się z każdą porażką."
+      ],
+      "fields": [
+        "Co w tym roku było dobre",
+        "Czego się nauczyłem / nauczyłam",
+        "Co zostawiam za sobą",
+        "Z czym chcę wejść w kolejny rok"
+      ]
     }
   }
 }

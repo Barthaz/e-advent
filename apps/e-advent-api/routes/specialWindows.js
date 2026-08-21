@@ -11,11 +11,89 @@ const SpecialProgressStore = require('../services/special/SpecialProgressStore')
 const { findTaskByDay } = require('../services/special/taskSanitizer');
 const { renderSpecialPdf, resolveContentPack } = require('../services/special/DocumentRegistry');
 const { canCompleteEngine } = require('../services/special/completionRules');
+const {
+  sealContent,
+  getSealedContent,
+  resolveRevealAt,
+} = require('../services/special/DateGateService');
 const { uploadLimiter } = require('../middleware/rateLimits');
 const { imageUpload, storeImage } = require('../services/imageStore');
 const { sniffImageFormat, uploadRejectMessage, HEIC_ERROR, FORMAT_ERROR } = require('../services/imageFormat');
 
 const router = express.Router({ mergeParams: true });
+
+function hasDateGate(descriptor) {
+  return !!descriptor?.capabilities?.dateGate;
+}
+
+function payloadHasSealedContent(payload) {
+  if (!payload || typeof payload !== 'object') return false;
+  const fields = payload.fields;
+  if (fields && typeof fields === 'object' && Object.values(fields).some((v) => String(v || '').trim())) {
+    return true;
+  }
+  if (typeof payload.name === 'string' && payload.name.trim()) return true;
+  if (Array.isArray(payload.cards) && payload.cards.some((card) => {
+    if (!card || typeof card !== 'object') return false;
+    if (String(card.name || '').trim()) return true;
+    const cardFields = card.fields;
+    return !!(cardFields && typeof cardFields === 'object'
+      && Object.values(cardFields).some((v) => String(v || '').trim()));
+  })) {
+    return true;
+  }
+  return false;
+}
+
+function redactDateGatedPayload(payload) {
+  if (!payload || typeof payload !== 'object') return { dateGateLocked: true };
+  const next = { ...payload, dateGateLocked: true };
+  if (next.fields && typeof next.fields === 'object') {
+    next.fields = Object.fromEntries(Object.keys(next.fields).map((key) => [key, '']));
+  }
+  if (typeof next.name === 'string') next.name = '';
+  if (Array.isArray(next.cards)) {
+    next.cards = next.cards.map((card) => {
+      if (!card || typeof card !== 'object') return card;
+      const redacted = { ...card };
+      if (typeof redacted.name === 'string') redacted.name = '';
+      if (redacted.fields && typeof redacted.fields === 'object') {
+        redacted.fields = Object.fromEntries(Object.keys(redacted.fields).map((key) => [key, '']));
+      }
+      return redacted;
+    });
+  }
+  return next;
+}
+
+function redactDateGatedProgress(progress) {
+  if (!progress) return progress;
+  return {
+    ...progress,
+    payload: redactDateGatedPayload(progress.payload),
+  };
+}
+
+async function attachDateGate(calendarId, taskId, descriptor, progress) {
+  if (!hasDateGate(descriptor)) {
+    return { progress, dateGate: undefined };
+  }
+  const sealed = await getSealedContent(calendarId, taskId);
+  const dateGate = {
+    revealed: sealed.revealed,
+    revealAt: sealed.revealAt || null,
+  };
+  if (sealed.sealed && !sealed.revealed) {
+    return { progress: redactDateGatedProgress(progress), dateGate };
+  }
+  return { progress, dateGate };
+}
+
+function resolveSealRevealAt(body, descriptor) {
+  const pack = descriptor?.contentKey ? resolveContentPack(descriptor.contentKey) : null;
+  const raw = body?.revealAt ?? pack?.revealAt;
+  return resolveRevealAt(raw);
+}
 
 async function authorizeCalendar(req, res) {
   const { id } = req.params;
@@ -48,8 +126,17 @@ router.get('/:id/days/:day/special/progress', async (req, res) => {
       return res.status(404).json({ error: 'No special progress for this day' });
     }
 
+    const descriptor = getSpecialDescriptor(task.catalogTaskId);
     const progress = await SpecialProgressStore.getProgress(calendar.id, task.catalogTaskId);
-    res.json({ success: true, progress });
+    const { progress: safeProgress, dateGate } = await attachDateGate(
+      calendar.id,
+      task.catalogTaskId,
+      descriptor,
+      progress,
+    );
+    const body = { success: true, progress: safeProgress };
+    if (dateGate) body.dateGate = dateGate;
+    res.json(body);
   } catch (error) {
     console.error('GET special progress:', error);
     res.status(500).json({ error: 'Failed to load progress', message: error.message });
@@ -72,15 +159,32 @@ router.put('/:id/days/:day/special/progress', async (req, res) => {
     }
 
     const descriptor = getSpecialDescriptor(task.catalogTaskId);
+    const body = req.body || {};
     const progress = await SpecialProgressStore.upsertProgress(
       calendar.id,
       dayNum,
       task.catalogTaskId,
       descriptor?.configId || task.catalogTaskId,
-      req.body || {},
+      body,
     );
 
-    res.json({ success: true, progress });
+    let responseProgress = progress;
+    let dateGate;
+    if (hasDateGate(descriptor) && body.seal === true) {
+      const revealAt = resolveSealRevealAt(body, descriptor);
+      const sealedPayload = progress?.payload || body.payload || {};
+      const sealed = await sealContent(calendar.id, task.catalogTaskId, revealAt, sealedPayload);
+      dateGate = { revealed: false, revealAt: sealed.revealAt };
+      responseProgress = redactDateGatedProgress(progress);
+    } else if (hasDateGate(descriptor)) {
+      const attached = await attachDateGate(calendar.id, task.catalogTaskId, descriptor, progress);
+      responseProgress = attached.progress;
+      dateGate = attached.dateGate;
+    }
+
+    const resBody = { success: true, progress: responseProgress };
+    if (dateGate) resBody.dateGate = dateGate;
+    res.json(resBody);
   } catch (error) {
     console.error('PUT special progress:', error);
     res.status(500).json({ error: 'Failed to save progress', message: error.message });
@@ -114,8 +218,25 @@ router.post('/:id/days/:day/special/complete', async (req, res) => {
       return res.status(400).json({ error: 'Cannot complete', reason: completion.reason });
     }
 
+    if (hasDateGate(descriptor)) {
+      const sealed = await getSealedContent(calendar.id, task.catalogTaskId);
+      const payload = progress?.payload || req.body?.payload || {};
+      if (!sealed.sealed && payloadHasSealedContent(payload)) {
+        const revealAt = resolveSealRevealAt(req.body || {}, descriptor);
+        await sealContent(calendar.id, task.catalogTaskId, revealAt, payload);
+      }
+    }
+
     const updated = await SpecialProgressStore.markCompleted(calendar.id, task.catalogTaskId);
-    res.json({ success: true, progress: updated });
+    const { progress: safeProgress, dateGate } = await attachDateGate(
+      calendar.id,
+      task.catalogTaskId,
+      descriptor,
+      updated,
+    );
+    const resBody = { success: true, progress: safeProgress };
+    if (dateGate) resBody.dateGate = dateGate;
+    res.json(resBody);
   } catch (error) {
     console.error('POST special complete:', error);
     res.status(500).json({ error: 'Failed to complete', message: error.message });

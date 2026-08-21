@@ -2,10 +2,128 @@
   "version": 1,
   "packs": {
     "thank-you-card-prompts-v1": {
-      "prompts": ["Za co dziś dziękujesz?", "Komu chcesz to powiedzieć?", "Jedno zdanie od serca"]
+      "prompts": ["Za co dziś dziękujesz?", "Komu chcesz to powiedzieć?", "Jedno zdanie od serca"],
+      "ctaLabel": "Napisz podziękowanie",
+      "notes": [
+        "Trzy krótkie odpowiedzi wystarczą, żeby kartka była prawdziwa — nie idealna."
+      ]
     },
     "secret-elf-kindness-missions-v1": {
-      "missions": ["Zostaw komuś miłą notatkę", "Podaj drzwi", "Uśmiechnij się do nieznajomego"]
+      "missions": [
+        "Zostaw komuś miłą notatkę",
+        "Podaj drzwi nieznajomemu",
+        "Uśmiechnij się do nieznajomego",
+        "Pochwal kogoś szczerze",
+        "Zrób komuś herbatę albo kawę",
+        "Przepuść kogoś w kolejce",
+        "Napisz wiadomość „myślę o Tobie”",
+        "Podnieś coś, co ktoś upuścił",
+        "Podziękuj głośno za drobną pomoc",
+        "Zostaw anonimowy komplement na kartce"
+      ],
+      "ctaLabel": "Wylosuj misję dobra",
+      "itemNoun": "Misja",
+      "uniqueDraw": true,
+      "notes": [
+        "Wylosuj jedną prostą misję i wykonaj ją dzisiaj — bez fanfar."
+      ]
+    },
+    "pay-it-forward-v1": {
+      "ctaLabel": "Zapisz łańcuch dobra",
+      "notes": [
+        "Opisz gest, który dostałaś/dostałeś, i ten, który przekazujesz dalej."
+      ],
+      "fields": [
+        "Co dobrego dostałam / dostałem",
+        "Od kogo (opcjonalnie)",
+        "Jaki gest przekazuję dalej",
+        "Komu chcę go podarować",
+        "Jedno zdanie, które zostawiam na kartce"
+      ]
+    },
+    "three-smiles-v1": {
+      "ctaLabel": "Odznacz trzy uśmiechy",
+      "notes": [
+        "Trzy małe kroki — każdy ma wywołać czyjś uśmiech jeszcze dziś."
+      ],
+      "items": [
+        "Uśmiechnij się do kogoś z bliska",
+        "Powiedz komuś coś miłego na głos",
+        "Zrób drobny gest, który rozjaśni komuś dzień"
+      ]
+    },
+    "family-memory-prompts-v1": {
+      "ctaLabel": "Wylosuj wspomnienie",
+      "itemNoun": "Pytanie",
+      "uniqueDraw": true,
+      "drawLabel": "Losuj",
+      "nextLabel": "Następne pytanie",
+      "newRoundLabel": "Nowa runda",
+      "emptyLabel": "Wylosuj pytanie o wspomnienia",
+      "exhaustedLabel": "To było ostatnie pytanie tej rundy",
+      "promptHint": "Wylosuj pytanie i opowiedzcie rodzinne wspomnienie — bez pośpiechu.",
+      "notes": [
+        "Każde pytanie to pretekst do krótkiej historii przy stole albo na kanapie."
+      ],
+      "prompts": [
+        "Jakie było Twoje najśmieszniejsze świąteczne nieporozumienie?",
+        "Który zapach najbardziej pachnie Ci świętami z dzieciństwa?",
+        "Jaką kolędę śpiewaliście najgłośniej?",
+        "Kto zawsze spóźniał się do stołu i z jakim tłumaczeniem?",
+        "Jaki prezent najbardziej Was zaskoczył?",
+        "Które danie „musi” być na stole, nawet jeśli nikt go nie kończy?",
+        "Jak wyglądał Wasz pierwszy wspólny grudzień?",
+        "Kto najlepiej pakował prezenty w rodzinie?",
+        "Jakie zdjęcie ze świąt warto wyciągnąć dziś z albumu?",
+        "Jaką tradycję chcielibyście przekazać dalej?",
+        "Co zawsze kończyło się śmiechem przy Wigilii?",
+        "Który film albo bajka odpalała sezon świąteczny?",
+        "Jakie życzenia przy opłatku zapadły Wam w pamięć?",
+        "Gdzie najchętniej spędzaliście Boże Narodzenie?",
+        "Jaką drobną rzecz z dawnych świąt chcielibyście przywrócić w tym roku?"
+      ]
+    },
+    "personal-wishes-prompts-v1": {
+      "ctaLabel": "Napisz własne życzenia",
+      "notes": [
+        "Bez kopiowania z internetu — trzy szczere myśli wystarczą na kartkę."
+      ],
+      "fields": [
+        "Dla kogo są te życzenia",
+        "Czego życzę tej osobie najbardziej",
+        "Za co jestem wdzięczny / wdzięczna",
+        "Jedno zdanie na koniec kartki"
+      ]
+    },
+    "greeting-card-fields-v1": {
+      "ctaLabel": "Spersonalizuj kartkę",
+      "themeLabel": "Motyw",
+      "previewLabel": "Podgląd na karcie",
+      "notes": [
+        "Uzupełnij pola — PDF ułoży życzenia w świątecznej ramce."
+      ],
+      "fields": ["Dla kogo", "Życzenia", "Podpis"],
+      "themes": ["Klasyczna złota", "Śnieg i czerwień", "Minimalna z gwiazdą", "Ciepła z choinką"]
+    },
+    "greeting-card-v1": {
+      "ctaLabel": "Spersonalizuj kartkę",
+      "themeLabel": "Motyw",
+      "previewLabel": "Podgląd na karcie",
+      "notes": [
+        "Uzupełnij pola — PDF ułoży życzenia w świątecznej ramce."
+      ],
+      "fields": ["Dla kogo", "Życzenia", "Podpis"],
+      "themes": ["Klasyczna złota", "Śnieg i czerwień", "Minimalna z gwiazdą", "Ciepła z choinką"]
+    },
+    "gift-label-fields-v1": {
+      "ctaLabel": "Wypełnij etykietę",
+      "themeLabel": "Motyw",
+      "previewLabel": "Podgląd etykiety",
+      "notes": [
+        "Krótka dedykacja i podpis — etykieta gotowa do druku."
+      ],
+      "fields": ["Dla", "Od", "Krótka dedykacja"],
+      "themes": ["Kraft i sznurek", "Złoty ornament", "Czerwona kokarda", "Prosta czarno-biała"]
     }
   }
 }

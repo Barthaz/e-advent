@@ -290,15 +290,18 @@
         {
           "id": "set-1-task-10",
           "order": 10,
-          "title": "Świątecznej Reklamy",
-          "text": "Dziś jest Dzień Świątecznej Reklamy — wybierz zwykły domowy przedmiot i w 30 sekund zareklamuj go jako najbardziej ekskluzywny prezent bożonarodzeniowy. Im bardziej poważna prezentacja, tym zabawniejszy efekt.",
-          "isSpecial": false,
-          "status": "ZWYKŁE OKIENKO",
-          "standard": {
-            "addon": "brak osobnego dodatku premium.",
-            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
-            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
-            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          "title": "Świątecznego Teatrzyku",
+          "text": "Dziś jest Dzień Świątecznego Teatrzyku — razem z domownikami wylosujcie trzy hasła, np. „Mikołaj”, „spóźniony renifer” i „zagubiony prezent”, a potem odegrajcie minutową scenkę bez wcześniejszego przygotowania.",
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Generator świątecznego teatrzyku",
+            "format": "Losowanie 3 haseł + timer",
+            "preparation": "Przygotować 3 pule po min. 20 elementów: postać, problem, przedmiot/miejsce.",
+            "interaction": "Klik „Losuj scenkę” pokazuje 3 hasła; przycisk start uruchamia 60 s; możliwość ponownego losowania.",
+            "endEffect": "Gotowa spontaniczna scenka bez wymyślania haseł przez użytkownika.",
+            "effort": "`S`",
+            "implementationNotes": "RandomizerTimerEngine z wariantem zestawów."
           }
         },
         {
@@ -427,13 +430,16 @@
           "order": 19,
           "title": "Świątecznego Alfabetu",
           "text": "Dziś jest Dzień Świątecznego Alfabetu — zagraj z kimś bliskim: na zmianę wymieniajcie świąteczne słowa zaczynające się od kolejnych liter alfabetu. Osoba, która nie poda hasła w ciągu pięciu sekund, odpada z rundy.",
-          "isSpecial": false,
-          "status": "ZWYKŁE OKIENKO",
-          "standard": {
-            "addon": "brak osobnego dodatku premium.",
-            "interaction": "treść zadania + standardowy przycisk **„Oznacz jako wykonane”**.",
-            "workRequired": "brak dodatkowego assetu lub modułu; wystarczy obecna treść, standardowa ilustracja/ikona kategorii i obsługa statusu wykonania.",
-            "endEffect": "użytkownik realizuje zadanie poza aplikacją i może oznaczyć dzień jako wykonany."
+          "isSpecial": true,
+          "status": "OKIENKO SPECJALNE",
+          "special": {
+            "addon": "Świąteczny alfabet",
+            "format": "Interaktywna gra literowa",
+            "preparation": "Przygotować kolejkę liter, licznik czasu 5 s i punktację dla 2+ graczy.",
+            "interaction": "Start rundy pokazuje literę i odlicza 5 s; przyciski „zaliczone / brak odpowiedzi”; system przechodzi dalej.",
+            "endEffect": "Wynik rundy i możliwość rewanżu.",
+            "effort": "`M`",
+            "implementationNotes": "TurnBasedGameEngine."
           }
         },
         {
