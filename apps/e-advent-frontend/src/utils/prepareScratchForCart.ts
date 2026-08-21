@@ -1,27 +1,31 @@
 import { createCalendar, type InternalCalendarData } from '../api/api';
-import type { CalendarFormat, CalendarTaskInput, DesignSelection, ProductType } from '../types/order';
-import { buildCalendarTasks } from './calendarGenerator';
-import { textToCatalogTaskId } from './catalogTaskIds';
+import type {
+  CalendarFormat,
+  CalendarTaskInput,
+  DesignSelection,
+  ProductType,
+  ScratchContentMode,
+} from '../types/order';
+import {
+  buildScratchCalendarTasks,
+  type ScratchPreset,
+} from './scratchCalendarGenerator';
 import {
   clearPendingCalendarSession,
   getReusablePendingCalendarId,
   getStorageKeys,
   setPendingCalendarSession,
 } from './creatorStorage';
-import examplesData from '../data/examples.json';
-
-interface ExampleSet {
-  title: string;
-  description: string;
-  tasks: string[];
-}
+import scratchPresetsData from '../data/scratch-presets.json';
 
 export interface ScratchCartPrepareInput {
   name: string;
   email: string;
   calendarTitle: string;
   tasks: CalendarTaskInput[];
-  selectedExampleSets: number[];
+  scratchContentMode: ScratchContentMode;
+  selectedScratchPreset: number | null;
+  shuffleCustomTasks: boolean;
   dailyEmailReminders?: boolean;
   productType: ProductType;
   sku: string;
@@ -36,15 +40,13 @@ export async function prepareScratchCalendarForCart(input: ScratchCartPrepareInp
   calendarId: string;
   editToken: string;
 }> {
-  const examples = examplesData as ExampleSet[];
+  const presets = scratchPresetsData as ScratchPreset[];
   const keys = getStorageKeys(input.productType);
 
   let generatedTasks: Array<{
     day: number;
     task: string;
-    duration?: number;
-    lockedDay?: number;
-    latestDay?: number;
+    title?: string;
   }> = [];
 
   const savedGenerated = localStorage.getItem(keys.generatedCalendar)
@@ -55,14 +57,12 @@ export async function prepareScratchCalendarForCart(input: ScratchCartPrepareInp
       const parsed = JSON.parse(savedGenerated) as Array<{
         day: number;
         task: string;
-        duration?: number;
-        latestDay?: number;
+        title?: string;
       }>;
-      generatedTasks = parsed.map(({ day, task, duration, latestDay }) => ({
+      generatedTasks = parsed.map(({ day, task, title }) => ({
         day,
         task,
-        duration,
-        ...(latestDay !== undefined ? { latestDay } : {}),
+        ...(title?.trim() ? { title: title.trim() } : {}),
       }));
     } catch {
       generatedTasks = [];
@@ -70,7 +70,13 @@ export async function prepareScratchCalendarForCart(input: ScratchCartPrepareInp
   }
 
   if (generatedTasks.length === 0) {
-    generatedTasks = buildCalendarTasks(input.tasks, examples, input.selectedExampleSets, textToCatalogTaskId);
+    generatedTasks = buildScratchCalendarTasks({
+      presets,
+      mode: input.scratchContentMode,
+      selectedPreset: input.selectedScratchPreset,
+      customTasks: input.tasks,
+      shuffleCustomTasks: input.shuffleCustomTasks,
+    });
   }
 
   generatedTasks = generatedTasks.sort((a, b) => a.day - b.day);

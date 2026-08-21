@@ -10,11 +10,12 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import PriceBreakdown from '../components/PriceBreakdown';
 import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals } from '../config/products';
-import ShippingForm, { emptyShippingAddress, validateShippingAddress } from '../components/checkout/ShippingForm';
+import ShippingForm, { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../components/checkout/ShippingForm';
 import type { ProductType, ShippingAddress } from '../types/order';
 import { getActiveProduct, getStorageKeys, loadShipping, saveShipping, loadCheckoutCalendarData, resolveCheckoutProduct, getReusablePendingCalendarId, getPendingCalendarSession, setPendingCalendarSession, getPurchasedCalendarIds, markCalendarPurchased, PENDING_EDIT_TOKEN_KEY, PURCHASED_CALENDAR_IDS_KEY } from '../utils/creatorStorage';
 import { CART_STORAGE_KEY, loadCart, getCartTotals, cartItemCheckoutKey, cartItemToCheckoutItem, getCartItemDisplayName, type CartItem } from '../utils/cartStorage';
 import { trackBeginCheckout, saveGaPurchasePayload } from '../utils/analytics';
+import { saveOrderSummary, cartItemsToOrderLines } from '../utils/orderSummary';
 
 /** Survives React Strict Mode remounts — prevents duplicate create-payment-intent calls */
 const checkoutPaymentInitCache: {
@@ -245,7 +246,15 @@ function PaymentForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {!isFree && (
         <div className="panel-bordered">
-          <PaymentElement />
+          <PaymentElement
+            options={{
+              fields: {
+                billingDetails: {
+                  address: 'never',
+                },
+              },
+            }}
+          />
         </div>
       )}
       
@@ -434,7 +443,7 @@ export default function Checkout() {
 
       const savedShipping = loadShipping('letter') || loadShipping('scratch');
       if (savedShipping) {
-        setShippingAddress(savedShipping);
+        setShippingAddress(normalizeShippingAddress(savedShipping));
       }
       if (cookieConsent) localStorage.setItem('cookieConsent', cookieConsent);
       if (savedCartRaw) localStorage.setItem(CART_STORAGE_KEY, savedCartRaw);
@@ -541,8 +550,8 @@ export default function Checkout() {
     setShippingErrors(errors);
     const valid = Object.keys(errors).length === 0;
     if (valid) {
-      saveShipping(cartMode ? 'scratch' : productType, shippingAddress);
-      if (cartMode) saveShipping('letter', shippingAddress);
+      saveShipping(cartMode ? 'scratch' : productType, normalizeShippingAddress(shippingAddress));
+      if (cartMode) saveShipping('letter', normalizeShippingAddress(shippingAddress));
     }
   }, [shippingAddress, isPhysical, productType, cartMode, calendarData]);
 
@@ -645,7 +654,7 @@ export default function Checkout() {
             orderId,
             ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
             items,
-            shippingAddress,
+            shippingAddress: normalizeShippingAddress(shippingAddress),
             metadata: {
               productType: productType,
               sku,
@@ -661,16 +670,23 @@ export default function Checkout() {
           }
           localStorage.setItem('orderAmount', String(totalPrice));
           localStorage.setItem('e-advent-sku', sku);
+          const gaItems = cartItems.map((i) => ({
+            sku: i.sku,
+            name: i.label || getProduct(i.sku)?.name || i.sku,
+            price: i.unitPrice ?? getProduct(i.sku)?.basePrice ?? 0,
+            quantity: i.quantity,
+          }));
           saveGaPurchasePayload({
             transactionId: paymentIntent.paymentIntentId,
             value: totalPrice,
             shipping: shippingCost,
-            items: cartItems.map((i) => ({
-              sku: i.sku,
-              name: i.label || getProduct(i.sku)?.name || i.sku,
-              price: i.unitPrice ?? getProduct(i.sku)?.basePrice ?? 0,
-              quantity: i.quantity,
-            })),
+            items: gaItems,
+          });
+          saveOrderSummary({
+            items: cartItemsToOrderLines(cartItems),
+            shipping: normalizeShippingAddress(shippingAddress),
+            orderNumber: paymentIntent.orderNumber || undefined,
+            customerEmail: calendarData.email,
           });
           return {
             clientSecret: paymentIntent.clientSecret,
@@ -962,7 +978,7 @@ export default function Checkout() {
         orderId,
         ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
         items,
-        shippingAddress,
+        shippingAddress: normalizeShippingAddress(shippingAddress),
         metadata: {
           productType,
           sku,

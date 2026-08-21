@@ -146,9 +146,7 @@ export default function StepTasks({
           Możesz też dodać własne zadania
         </p>
         <p className="text-parchment-muted text-sm">
-          {productType === 'scratch'
-            ? 'Każde zadanie trafi pod jedno okienko zdrapki — odkryjesz je zdrapując każdego dnia.'
-            : 'Dodaj własne zadania lub zablokuj je na konkretnym dniu grudnia.'}
+          Dodaj własne zadania lub zablokuj je na konkretnym dniu grudnia.
         </p>
       </div>
 

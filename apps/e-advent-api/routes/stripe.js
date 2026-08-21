@@ -231,15 +231,23 @@ router.post('/create-payment-intent', async (req, res) => {
         }
 
         const metadataWithIP = { ...metadata, clientIP, clientOrderId: orderId };
-        const orderItemsPayload = items.map((item) => ({
-            sku: item.sku,
-            productType: item.productType,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            calendarId: item.calendarId,
-            requiresShipping: item.requiresShipping,
-            ...(item.metadata ? { metadata: item.metadata } : {}),
-        }));
+        const orderItemsPayload = items.map((item, index) => {
+            const line = totals.lines?.[index];
+            return {
+                sku: item.sku,
+                productType: item.productType,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                vatRate: line?.vatRate ?? totals.vatRate,
+                unitPriceNetto: line?.unitPriceNetto,
+                lineNetto: line?.lineNetto,
+                lineVat: line?.lineVat,
+                lineBrutto: line?.lineBrutto,
+                calendarId: item.calendarId,
+                requiresShipping: item.requiresShipping,
+                ...(item.metadata ? { metadata: item.metadata } : {}),
+            };
+        });
 
         let savedOrder = null;
         try {
@@ -281,6 +289,11 @@ router.post('/create-payment-intent', async (req, res) => {
                     stripePaymentIntentId: paymentIntent.id,
                     amount,
                     shippingAmount: totals.shipping,
+                    amountNetto: totals.amountNetto,
+                    vatAmount: totals.vatAmount,
+                    shippingNetto: totals.shippingNetto,
+                    shippingVat: totals.shippingVat,
+                    vatRate: totals.vatRate,
                     currency,
                     status: 'pending',
                     customerEmail,
@@ -299,6 +312,11 @@ router.post('/create-payment-intent', async (req, res) => {
                     stripePaymentIntentId: paymentIntent.id,
                     amount,
                     shippingAmount: totals.shipping,
+                    amountNetto: totals.amountNetto,
+                    vatAmount: totals.vatAmount,
+                    shippingNetto: totals.shippingNetto,
+                    shippingVat: totals.shippingVat,
+                    vatRate: totals.vatRate,
                     currency,
                     status: 'pending',
                     customerEmail,

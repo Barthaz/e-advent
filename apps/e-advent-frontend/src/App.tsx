@@ -20,6 +20,7 @@ import Preview from './pages/Preview';
 import WindowPreviewPage from './pages/WindowPreviewPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
+import ShippingAndReturns from './pages/ShippingAndReturns';
 import NotFound from './pages/NotFound';
 import SantaTracker from './pages/SantaTracker';
 import CartPage from './pages/CartPage';
@@ -74,6 +75,7 @@ function AppContent() {
           <Route path="/podglad-okienka/:catalogTaskId" element={<WindowPreviewPage />} />
           <Route path="/polityka-prywatnosci" element={<PrivacyPolicy />} />
           <Route path="/regulamin" element={<Terms />} />
+          <Route path="/dostawa-i-zwroty" element={<ShippingAndReturns />} />
           <Route path="/sledz-mikolaja" element={<SantaTracker />} />
           <Route path="/track-santa" element={<Navigate to="/sledz-mikolaja" replace />} />
           <Route path="/create" element={<Creator />} />
@@ -83,6 +85,8 @@ function AppContent() {
           <Route path="/preview" element={<Preview />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<Terms />} />
+          <Route path="/shipping" element={<ShippingAndReturns />} />
+          <Route path="/returns" element={<ShippingAndReturns />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

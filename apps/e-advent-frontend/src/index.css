@@ -1140,6 +1140,55 @@ html.embed-window-preview #root {
   border-radius: 0.25rem;
 }
 
+.option-card input[type='radio'] {
+  margin-top: 0.2rem;
+  margin-right: 0.75rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  accent-color: var(--color-christmas-green);
+}
+
+.scratch-expand-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 1.5px solid color-mix(in srgb, var(--color-christmas-green) 35%, transparent);
+  background: color-mix(in srgb, var(--color-christmas-green) 8%, white);
+  color: var(--color-christmas-green);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.scratch-expand-btn:hover {
+  background: color-mix(in srgb, var(--color-christmas-green) 16%, white);
+  border-color: var(--color-christmas-green);
+}
+
+.scratch-expand-btn--open {
+  background: var(--color-christmas-green);
+  border-color: var(--color-christmas-green);
+  color: #fff;
+}
+
+.scratch-expand-btn i {
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.scratch-adventure-more {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-parchment-dark) 18%, transparent);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--color-parchment-muted);
+}
+
 .creator-form-well {
   background: var(--color-cream);
   border: 1px solid color-mix(in srgb, var(--color-parchment-dark) 15%, transparent);

@@ -12,7 +12,13 @@ export interface OrderItem {
   sku: string;
   productType: ProductType | string;
   quantity: number;
+  /** Cena jednostkowa brutto */
   unitPrice: number;
+  vatRate?: number;
+  unitPriceNetto?: number;
+  lineNetto?: number;
+  lineVat?: number;
+  lineBrutto?: number;
   calendarId?: string | null;
   metadata?: {
     childName?: string;
@@ -36,9 +42,14 @@ export interface OrderListItem {
   customer_name: string | null;
   customer_email: string | null;
   customer_phone: string | null;
-  /** Kwota w jednostkach głównych waluty (np. PLN), nie w groszach */
+  /** Kwota brutto w jednostkach głównych waluty (np. PLN), nie w groszach */
   amount: number;
   shipping_amount?: number;
+  amount_netto?: number;
+  vat_amount?: number;
+  shipping_netto?: number;
+  shipping_vat?: number;
+  vat_rate?: number;
   currency: string;
   tracking_number: string | null;
   shipping_city: string | null;

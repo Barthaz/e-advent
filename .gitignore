@@ -28,6 +28,8 @@ _backup_env/
 *.pem
 .turbo/
 *.tsbuildinfo
+.tmp-npm/
+apps/e-advent-api/tmp-scratch-smoke/
 
 # Accidental local copies (OS / Explorer)
 *kopia*

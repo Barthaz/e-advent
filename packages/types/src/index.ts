@@ -14,13 +14,20 @@ export type TaskWindowStatus = 'opened' | 'closed';
 export type OpeningMethod = 'app' | 'email' | 'online';
 
 export interface ShippingAddress {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   street: string;
   city: string;
   postalCode: string;
   phone: string;
   country: string;
+  /**
+   * Złożone imię+nazwisko (API / e-mail / DB `customer_name`).
+   * Ustawiane przy zapisie; przy starych danych może być jedynym polem nazwy.
+   */
+  fullName?: string;
 }
+
 
 export interface DesignSelection {
   source: 'preset' | 'custom';
@@ -30,13 +37,19 @@ export interface DesignSelection {
 }
 
 export interface CalendarTaskInput {
+  /** Treść zadania / opis dnia */
   task: string;
+  /** Opcjonalny tytuł dnia (kalendarz zdrapka) */
+  title?: string;
   day?: number;
   catalogTaskId?: string;
   duration?: number;
   lockedDay?: number;
   latestDay?: number;
 }
+
+/** Tryb treści kalendarza zdrapki: gotowa przygoda albo własne zadania. */
+export type ScratchContentMode = 'preset' | 'custom';
 
 export interface CreatorFormData {
   name: string;
@@ -56,15 +69,30 @@ export interface OrderCalendarData extends CreatorFormData {
   design?: DesignSelection;
   shippingAddress?: ShippingAddress;
   tasks: CalendarTaskInput[];
+  /** Interaktywny: indeksy zestawów z examples.json */
   selectedExampleSets?: number[];
+  /** Zdrapka: indeks jednej predefiniowanej przygody (0–2) */
+  selectedScratchPreset?: number | null;
+  /** Zdrapka: tryb treści */
+  scratchContentMode?: ScratchContentMode;
+  /** Zdrapka (własne): czy przetasować kolejność zadań */
+  shuffleCustomTasks?: boolean;
   dates?: string[];
 }
 
 /** API calendar task shape (mobile / storefront access). */
 export interface CalendarApiTask {
+  /**
+   * Interaktywny: treść okienka.
+   * Zdrapka: opcjonalny tytuł dnia (gdy jest też `description` / `text`).
+   */
   title: string;
   day: number;
   status: TaskWindowStatus;
+  /** Zdrapka: treść pod tytułem (gdy ustawione, `title` = nagłówek dnia). */
+  description?: string;
+  /** Alias treści ciała (zdrapka / eksport). */
+  text?: string;
   latestDay?: number;
   duration?: number;
   /** Set server-side; never exposed before window open for premium metadata */

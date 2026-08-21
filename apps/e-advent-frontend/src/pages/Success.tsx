@@ -3,8 +3,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
 import ParchmentCard from '../components/ParchmentCard';
 import LoadingState from '../components/LoadingState';
-import { getCalendar, updateCalendarAcceptance, type GetCalendarResponse } from '../api/api';
-import { isPhysicalProduct, getProduct, PHYSICAL_FULFILLMENT_TIME } from '../config/products';
+import {
+  getCalendar,
+  getPaymentByIntentId,
+  updateCalendarAcceptance,
+  type GetCalendarResponse,
+} from '../api/api';
+import { isPhysicalProduct, getProduct, PHYSICAL_FULFILLMENT_TIME, formatPrice } from '../config/products';
 import { OPENING_METHOD_LABELS } from '../components/creator/StepOpeningMethod';
 import type { OpeningMethod } from '../types/order';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
@@ -15,6 +20,16 @@ import {
   type AnalyticsItem,
 } from '../utils/analytics';
 import { loadCart, CART_STORAGE_KEY } from '../utils/cartStorage';
+import { loadShipping } from '../utils/creatorStorage';
+import {
+  clearOrderSummary,
+  loadOrderSummary,
+  mergeOrderItems,
+  paymentItemsToOrderLines,
+  saveOrderSummary,
+  toOrderLineItems,
+  type OrderLineItem,
+} from '../utils/orderSummary';
 
 const ANDROID_APK_URL = 'https://e-advent.pl/download/e-advent.apk';
 
@@ -50,6 +65,15 @@ function resolvePurchaseItemsFallback(): AnalyticsItem[] {
       quantity: i.quantity,
     }));
   }
+  const summary = loadOrderSummary();
+  if (summary?.items?.length) {
+    return summary.items.map((i) => ({
+      sku: i.sku,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+    }));
+  }
   const sku = localStorage.getItem('e-advent-sku') || 'order';
   const product = getProduct(sku);
   return [{
@@ -63,13 +87,31 @@ function resolvePurchaseItemsFallback(): AnalyticsItem[] {
 function firePurchaseOnce(paymentIntent?: string | null) {
   try {
     const snapshot = loadGaPurchasePayload();
+    const summary = loadOrderSummary();
     const transactionId =
       snapshot?.transactionId
       || paymentIntent
       || localStorage.getItem('paymentIntentId')
       || 'unknown';
     const value = snapshot?.value ?? (Number(localStorage.getItem('orderAmount') || 0) || 0);
-    const items = snapshot?.items?.length ? snapshot.items : resolvePurchaseItemsFallback();
+    const fromSummary = summary?.items?.length
+      ? summary.items.map((i) => ({
+        sku: i.sku,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+      }))
+      : [];
+    const fromGa = snapshot?.items?.length ? snapshot.items : [];
+    const items = mergeOrderItems(
+      toOrderLineItems(fromGa.length ? fromGa : resolvePurchaseItemsFallback()),
+      fromSummary.length ? fromSummary.map((i) => ({ ...i })) : [],
+    ).map((i) => ({
+      sku: i.sku,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+    }));
     const shipping = snapshot?.shipping;
 
     trackPurchase({
@@ -95,8 +137,8 @@ export default function Success() {
   const [isPhysicalOrder, setIsPhysicalOrder] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   const [linkCopied, setLinkCopied] = useState(false);
+  const [orderItems, setOrderItems] = useState<OrderLineItem[]>([]);
   const [physicalDetails, setPhysicalDetails] = useState<{
-    sku?: string;
     format?: string;
     designUrl?: string;
     shipping?: { fullName?: string; street?: string; city?: string; postalCode?: string; phone?: string };
@@ -117,6 +159,94 @@ export default function Success() {
       const paymentIntent = searchParams.get('payment_intent');
       const redirectStatus = searchParams.get('redirect_status');
       const paymentStatus = searchParams.get('payment_status');
+
+      // Local fallbacks (checkout snapshot / GA / cart) — may be incomplete after redirect
+      const localSummary = loadOrderSummary();
+      const gaSnapshot = loadGaPurchasePayload();
+      let localItems = mergeOrderItems(
+        localSummary?.items || [],
+        toOrderLineItems(gaSnapshot?.items?.length ? gaSnapshot.items : resolvePurchaseItemsFallback()),
+      );
+
+      // Source of truth: order rows from API by payment_intent
+      if (paymentIntent) {
+        try {
+          const paymentRes = await getPaymentByIntentId(paymentIntent);
+          const payment = paymentRes.payment;
+          const apiItems = Array.isArray(payment.items) && payment.items.length > 0
+            ? paymentItemsToOrderLines(payment.items)
+            : [];
+          localItems = mergeOrderItems(apiItems, localItems);
+
+          let resolvedOrderNumber = '';
+          if (payment.orderNumberDisplay) {
+            resolvedOrderNumber = payment.orderNumberDisplay;
+          } else if (payment.orderNumber != null) {
+            resolvedOrderNumber = String(payment.orderNumber);
+          }
+          if (resolvedOrderNumber) {
+            setOrderNumber(resolvedOrderNumber);
+          }
+
+          if (payment.shippingAddress) {
+            setPhysicalDetails((prev) => ({
+              ...prev,
+              shipping: payment.shippingAddress || undefined,
+            }));
+          }
+
+          const isPhysical =
+            ['scratch', 'letter'].includes(String(payment.productType || ''))
+            || (payment.sku ? isPhysicalProduct(payment.sku) : false)
+            || localItems.some((i) => isPhysicalProduct(i.sku));
+          if (isPhysical) setIsPhysicalOrder(true);
+
+          if (payment.customerEmail) {
+            setCalendarData((prev) => prev || {
+              name: payment.customerName || '',
+              email: payment.customerEmail || '',
+              calendarTitle: 'Zamówienie e-Advent',
+              tasks: [],
+              dailyEmailReminders: false,
+              dates: [],
+            });
+          }
+
+          saveOrderSummary({
+            items: localItems,
+            shipping: payment.shippingAddress || localSummary?.shipping || null,
+            orderNumber: payment.orderNumberDisplay || String(payment.orderNumber || ''),
+            customerEmail: payment.customerEmail || undefined,
+          });
+        } catch (err) {
+          console.warn('[Success] Nie udało się pobrać zamówienia z API:', err);
+        }
+      }
+
+      setOrderItems(localItems);
+      if (localItems.length > 0) {
+        saveOrderSummary({
+          items: localItems,
+          shipping: localSummary?.shipping
+            || loadShipping('scratch')
+            || loadShipping('letter')
+            || null,
+          orderNumber: localSummary?.orderNumber,
+          customerEmail: localSummary?.customerEmail,
+        });
+      }
+
+      const savedShipping =
+        localSummary?.shipping
+        || loadShipping('scratch')
+        || loadShipping('letter')
+        || null;
+      if (savedShipping) {
+        setPhysicalDetails((prev) => ({
+          ...prev,
+          shipping: prev.shipping || savedShipping,
+        }));
+      }
 
       if (isFree) {
         setPaymentVerified(true);
@@ -145,9 +275,16 @@ export default function Success() {
       const isPhysicalSku =
         orderSku === 'santa-letter'
         || orderSku === 'santa-certificate'
-        || orderSku.startsWith('scratch');
+        || orderSku.startsWith('scratch')
+        || localItems.some((i) => isPhysicalProduct(i.sku));
 
       if (!calendarId && !isPhysicalSku) {
+        // Still have items from payment API — show physical success without calendar
+        if (localItems.length > 0 && localItems.some((i) => isPhysicalProduct(i.sku))) {
+          setIsPhysicalOrder(true);
+          setOrderNumber((prev) => prev || localStorage.getItem('orderNumber') || '');
+          return;
+        }
         navigate('/stworz-kalendarz');
         return;
       }
@@ -156,7 +293,7 @@ export default function Success() {
         setIsPhysicalOrder(true);
         setPaymentVerified(true);
         setIsVerifyingPayment(false);
-        setOrderNumber(localStorage.getItem('orderNumber') || '');
+        setOrderNumber((prev) => prev || localStorage.getItem('orderNumber') || '');
         return;
       }
 
@@ -177,21 +314,39 @@ export default function Success() {
         calendarResponse = await getCalendar(calendarId);
       } catch (error) {
         console.error('[Success] Błąd podczas pobierania kalendarza z API:', error);
+        // If we already have physical items from payment, stay on success
+        if (localItems.some((i) => isPhysicalProduct(i.sku))) {
+          setIsPhysicalOrder(true);
+          return;
+        }
         navigate('/stworz-kalendarz');
         return;
       }
 
       const apiCalendar = calendarResponse.calendar;
-      const physical = isPhysicalProduct(apiCalendar.sku || localStorage.getItem('e-advent-sku') || 'interactive');
+      const physical = isPhysicalProduct(apiCalendar.sku || localStorage.getItem('e-advent-sku') || 'interactive')
+        || localItems.some((i) => isPhysicalProduct(i.sku));
       setIsPhysicalOrder(physical);
-      setOrderNumber(localStorage.getItem('orderNumber') || '');
+      setOrderNumber((prev) => prev || localStorage.getItem('orderNumber') || '');
+
       if (physical) {
-        setPhysicalDetails({
-          sku: apiCalendar.sku,
-          format: apiCalendar.format,
-          designUrl: apiCalendar.design?.imageUrl,
-          shipping: apiCalendar.shippingAddress,
-        });
+        setPhysicalDetails((prev) => ({
+          format: apiCalendar.format || prev.format,
+          designUrl: apiCalendar.design?.imageUrl || prev.designUrl,
+          shipping: prev.shipping || apiCalendar.shippingAddress,
+        }));
+
+        // Never collapse multi-item order to a single calendar SKU
+        if (localItems.length === 0 && (apiCalendar.sku || orderSku)) {
+          const single = toOrderLineItems([{
+            sku: apiCalendar.sku || orderSku,
+            name: getProduct(apiCalendar.sku || orderSku)?.name || apiCalendar.sku || orderSku,
+            price: getProduct(apiCalendar.sku || orderSku)?.basePrice ?? 0,
+            quantity: 1,
+          }]);
+          setOrderItems(single);
+          saveOrderSummary({ items: single });
+        }
       }
 
       const openingMethod = isOpeningMethod(apiCalendar.openingMethod)
@@ -250,6 +405,7 @@ export default function Success() {
     };
 
     checkPayment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per success URL
   }, [navigate, searchParams]);
 
   const copyLink = async () => {
@@ -272,6 +428,8 @@ export default function Success() {
 
   const openingMethod = calendarData?.openingMethod || null;
   const contentEmail = calendarData?.dailyContentEmail || calendarData?.email || '';
+  const totalItemQty = orderItems.reduce((sum, i) => sum + i.quantity, 0);
+  const productsHeading = totalItemQty <= 1 && orderItems.length <= 1 ? 'Produkt' : 'Produkty';
 
   return (
     <FestivePage maxWidth="md" showLogo={false}>
@@ -296,9 +454,14 @@ export default function Success() {
           <p className="text-base md:text-lg text-parchment-muted mb-8">
             {isPhysicalOrder ? (
               <>
-                Twoje zamówienie{' '}
-                <span className="font-semibold text-christmas-red">{calendarData?.calendarTitle}</span>{' '}
-                zostało przyjęte do realizacji.
+                Twoje zamówienie
+                {calendarData?.calendarTitle ? (
+                  <>
+                    {' '}
+                    <span className="font-semibold text-christmas-red">{calendarData.calendarTitle}</span>
+                  </>
+                ) : null}
+                {' '}zostało przyjęte do realizacji.
               </>
             ) : (
               <>
@@ -311,10 +474,37 @@ export default function Success() {
 
           {isPhysicalOrder ? (
             <div className="success-panel text-left mb-8">
-              <p className="mb-2">
-                <strong>Produkt:</strong>{' '}
-                {getProduct(physicalDetails.sku || '')?.name || physicalDetails.sku}
-              </p>
+              <div className="mb-3">
+                <p className="mb-2">
+                  <strong>{productsHeading}:</strong>
+                </p>
+                {orderItems.length === 0 ? (
+                  <p className="text-parchment-muted text-sm">Brak szczegółów produktów w sesji.</p>
+                ) : orderItems.length === 1 && orderItems[0].quantity === 1 ? (
+                  <p className="text-parchment-text">{orderItems[0].name}</p>
+                ) : (
+                  <ul className="space-y-1.5 ml-0 list-none">
+                    {orderItems.map((item, index) => (
+                      <li
+                        key={`${item.sku}-${index}`}
+                        className="flex items-start justify-between gap-3 text-parchment-text"
+                      >
+                        <span>
+                          {item.name}
+                          {item.quantity > 1 ? (
+                            <span className="text-parchment-muted"> × {item.quantity}</span>
+                          ) : null}
+                        </span>
+                        {item.price > 0 && (
+                          <span className="text-sm text-parchment-muted whitespace-nowrap">
+                            {formatPrice(item.price * item.quantity)}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               {physicalDetails.format && (
                 <p className="mb-2"><strong>Format:</strong> {physicalDetails.format}</p>
               )}
@@ -343,8 +533,10 @@ export default function Success() {
                 </div>
               )}
               <p className="text-sm text-parchment-muted mt-4">
-                Przygotujemy Twój kalendarz w ciągu {PHYSICAL_FULFILLMENT_TIME} i wyślemy go na podany adres.
-                Potwierdzenie wysłaliśmy na {calendarData?.email}.
+                Przygotujemy Twoje zamówienie w ciągu {PHYSICAL_FULFILLMENT_TIME} i wyślemy je na podany adres.
+                {calendarData?.email
+                  ? <> Potwierdzenie wysłaliśmy na {calendarData.email}.</>
+                  : null}
               </p>
             </div>
           ) : (
@@ -472,7 +664,11 @@ export default function Success() {
           )}
 
           {isPhysicalOrder && (
-            <Link to="/" className="btn-green inline-flex py-3 px-8 text-base">
+            <Link
+              to="/"
+              className="btn-green inline-flex py-3 px-8 text-base"
+              onClick={() => clearOrderSummary()}
+            >
               <i className="fas fa-home mr-2" />
               Strona główna
             </Link>

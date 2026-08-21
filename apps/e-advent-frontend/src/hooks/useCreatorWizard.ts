@@ -1,8 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import examplesData from '../data/examples.json';
+import scratchPresetsData from '../data/scratch-presets.json';
 import { buildCalendarTasks, validateExampleSetsCoverage } from '../utils/calendarGenerator';
+import {
+  buildScratchCalendarTasks,
+  validateScratchTasksStep,
+  type ScratchPreset,
+} from '../utils/scratchCalendarGenerator';
 import { textToCatalogTaskId } from '../utils/catalogTaskIds';
-import type { CalendarFormat, CalendarTaskInput, DesignSelection, OpeningMethod, ProductType } from '../types/order';
+import type {
+  CalendarFormat,
+  CalendarTaskInput,
+  DesignSelection,
+  OpeningMethod,
+  ProductType,
+  ScratchContentMode,
+} from '../types/order';
 import {
   loadFormData,
   loadTasks,
@@ -17,6 +30,12 @@ import {
   saveFormat,
   setActiveProduct,
   getStorageKeys,
+  loadScratchPreset,
+  saveScratchPreset,
+  loadScratchMode,
+  saveScratchMode,
+  loadScratchShuffle,
+  saveScratchShuffle,
 } from '../utils/creatorStorage';
 import { getSkuForTypeAndFormat } from '../config/products';
 
@@ -44,11 +63,16 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
   const [dailyContentEmail, setDailyContentEmail] = useState('');
   const [tasks, setTasks] = useState<CalendarTaskInput[]>([]);
   const [selectedExampleSets, setSelectedExampleSets] = useState<number[]>([]);
+  const [scratchContentMode, setScratchContentMode] = useState<ScratchContentMode>('preset');
+  const [selectedScratchPreset, setSelectedScratchPreset] = useState<number | null>(null);
+  const [shuffleCustomTasks, setShuffleCustomTasks] = useState(false);
   const [format, setFormatState] = useState<CalendarFormat>('A4');
   const [design, setDesignState] = useState<DesignSelection | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const examples = examplesData as ExampleSet[];
+  const scratchPresets = scratchPresetsData as ScratchPreset[];
+  const isScratch = productType === 'scratch';
 
   useEffect(() => {
     const form = loadFormData(productType);
@@ -63,7 +87,14 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
       setDailyContentEmail(form.email);
     }
     setTasks(loadTasks(productType));
-    setSelectedExampleSets(loadSelectedExamples(productType));
+    if (isScratch) {
+      setScratchContentMode(loadScratchMode(productType));
+      setSelectedScratchPreset(loadScratchPreset(productType));
+      setShuffleCustomTasks(loadScratchShuffle(productType));
+      setSelectedExampleSets([]);
+    } else {
+      setSelectedExampleSets(loadSelectedExamples(productType));
+    }
     if (requiresDesign) {
       const savedFormat = loadFormat(productType);
       if (savedFormat) setFormatState(savedFormat);
@@ -71,7 +102,7 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
       if (savedDesign) setDesignState(savedDesign);
     }
     setIsInitialLoad(false);
-  }, [productType, requiresDesign]);
+  }, [productType, requiresDesign, isScratch]);
 
   useEffect(() => {
     if (isInitialLoad) return;
@@ -91,9 +122,23 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
   }, [tasks, productType, isInitialLoad]);
 
   useEffect(() => {
-    if (isInitialLoad) return;
+    if (isInitialLoad || isScratch) return;
     saveSelectedExamples(productType, selectedExampleSets);
-  }, [selectedExampleSets, productType, isInitialLoad]);
+  }, [selectedExampleSets, productType, isInitialLoad, isScratch]);
+
+  useEffect(() => {
+    if (isInitialLoad || !isScratch) return;
+    saveScratchMode(productType, scratchContentMode);
+    saveScratchPreset(productType, selectedScratchPreset);
+    saveScratchShuffle(productType, shuffleCustomTasks);
+  }, [
+    scratchContentMode,
+    selectedScratchPreset,
+    shuffleCustomTasks,
+    productType,
+    isInitialLoad,
+    isScratch,
+  ]);
 
   useEffect(() => {
     if (isInitialLoad) return;
@@ -107,11 +152,36 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
 
   useEffect(() => {
     if (isInitialLoad) return;
-    if (selectedExampleSets.length === 0 && tasks.length < 24) return;
 
+    if (isScratch) {
+      if (scratchContentMode === 'preset' && selectedScratchPreset == null) return;
+      if (scratchContentMode === 'custom' && tasks.length === 0) return;
+      const preview = buildScratchCalendarTasks({
+        presets: scratchPresets,
+        mode: scratchContentMode,
+        selectedPreset: selectedScratchPreset,
+        customTasks: tasks,
+        shuffleCustomTasks,
+      });
+      saveGeneratedCalendar(productType, preview);
+      return;
+    }
+
+    if (selectedExampleSets.length === 0 && tasks.length < 24) return;
     const preview = buildCalendarTasks(tasks, examples, selectedExampleSets, textToCatalogTaskId);
     saveGeneratedCalendar(productType, preview);
-  }, [tasks, selectedExampleSets, isInitialLoad, examples, productType]);
+  }, [
+    tasks,
+    selectedExampleSets,
+    isInitialLoad,
+    examples,
+    productType,
+    isScratch,
+    scratchContentMode,
+    selectedScratchPreset,
+    shuffleCustomTasks,
+    scratchPresets,
+  ]);
 
   const validateBasicStep = useCallback(() => {
     if (!name.trim() || !email.trim()) {
@@ -127,6 +197,21 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
   }, [name, email]);
 
   const validateTasksStep = useCallback(() => {
+    if (isScratch) {
+      const validation = validateScratchTasksStep({
+        presets: scratchPresets,
+        mode: scratchContentMode,
+        selectedPreset: selectedScratchPreset,
+        customTasks: tasks,
+      });
+      if (!validation.valid) {
+        setValidationError(validation.error || 'Nie można wygenerować kalendarza.');
+        return false;
+      }
+      setValidationError(null);
+      return true;
+    }
+
     const validation = validateExampleSetsCoverage(tasks, examples, selectedExampleSets);
     if (!validation.valid) {
       setValidationError(validation.error || 'Nie można wygenerować kalendarza.');
@@ -134,7 +219,15 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     }
     setValidationError(null);
     return true;
-  }, [tasks, selectedExampleSets, examples]);
+  }, [
+    tasks,
+    selectedExampleSets,
+    examples,
+    isScratch,
+    scratchPresets,
+    scratchContentMode,
+    selectedScratchPreset,
+  ]);
 
   const validateDesignStep = useCallback(() => {
     if (!design?.imageUrl) {
@@ -198,7 +291,10 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
       dailyEmailReminders: openingMethod === 'email',
       openingMethod: openingMethod || undefined,
       dailyContentEmail: resolvedDailyEmail,
-      selectedExampleSets,
+      selectedExampleSets: isScratch ? undefined : selectedExampleSets,
+      selectedScratchPreset: isScratch ? selectedScratchPreset : undefined,
+      scratchContentMode: isScratch ? scratchContentMode : undefined,
+      shuffleCustomTasks: isScratch ? shuffleCustomTasks : undefined,
       productType,
       sku,
       format: productType !== 'interactive' ? format : undefined,
@@ -209,7 +305,23 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     localStorage.setItem('e-advent-product-type', productType);
     localStorage.setItem('e-advent-sku', sku);
     return data;
-  }, [name, email, calendarTitle, tasks, openingMethod, dailyContentEmail, selectedExampleSets, productType, format, design, getSku]);
+  }, [
+    name,
+    email,
+    calendarTitle,
+    tasks,
+    openingMethod,
+    dailyContentEmail,
+    selectedExampleSets,
+    selectedScratchPreset,
+    scratchContentMode,
+    shuffleCustomTasks,
+    productType,
+    format,
+    design,
+    getSku,
+    isScratch,
+  ]);
 
   return {
     currentStep,
@@ -230,6 +342,13 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     setTasks,
     selectedExampleSets,
     setSelectedExampleSets,
+    scratchContentMode,
+    setScratchContentMode,
+    selectedScratchPreset,
+    setSelectedScratchPreset,
+    shuffleCustomTasks,
+    setShuffleCustomTasks,
+    scratchPresets,
     format,
     setFormat: setFormatState,
     design,

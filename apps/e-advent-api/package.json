@@ -19,7 +19,9 @@
     "migrate:opening-method": "node scripts/migrate-opening-method.js",
     "migrate:email-sends": "node scripts/migrate-email-sends.js",
     "migrate:order-number": "node scripts/migrate-order-number.js",
-    "migrate:special-windows": "node scripts/migrate-special-windows.js"
+    "migrate:order-vat": "node scripts/migrate-order-vat.js",
+    "migrate:special-windows": "node scripts/migrate-special-windows.js",
+    "smoke:scratch-export": "node scripts/smoke-scratch-export.js"
   },
   "nodemonConfig": {
     "ignore": ["assets/**", "tests/**"]
@@ -36,8 +38,10 @@
   "license": "ISC",
   "dependencies": {
     "@e-advent/products": "1.0.0",
+    "@napi-rs/canvas": "^0.1.100",
     "@react-pdf/renderer": "^4.3.0",
     "@vercel/blob": "^2.6.1",
+    "pdfjs-dist": "4.10.38",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",

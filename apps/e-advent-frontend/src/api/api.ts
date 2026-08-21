@@ -16,7 +16,10 @@ export interface InternalCalendarData {
   calendarTitle: string;
   tasks: Array<{
     day: number;
+    /** Treść / opis dnia */
     task: string;
+    /** Opcjonalny tytuł dnia (zdrapka) */
+    title?: string;
     catalogTaskId?: string;
     duration?: number;
     lockedDay?: number;
@@ -52,11 +55,18 @@ export interface CreateCalendarRequest {
   creation?: string; // Data utworzenia (ISO string) - opcjonalne, backend może ustawić
   modified?: string; // Data modyfikacji (ISO string) - opcjonalne, backend może ustawić
   tasks: Array<{
-    title: string; // Tytuł zadania
-    day: number; // Dzień, w którym zadanie się pojawia (już wylosowany)
-    status: 'opened' | 'closed'; // Status: czy zadanie było otwarte
-    latestDay?: number; // Najpóźniejszy dzień na wykonanie zadania
+    /**
+     * Interaktywny: treść okienka.
+     * Zdrapka z tytułem dnia: nagłówek; treść wtedy w `description`.
+     */
+    title: string;
+    day: number;
+    status: 'opened' | 'closed';
+    /** Zdrapka: treść pod tytułem dnia */
+    description?: string;
+    latestDay?: number;
     duration?: number;
+    catalogTaskId?: string;
   }>;
   productType?: ProductType;
   sku?: string;
@@ -94,14 +104,29 @@ function mapToApiFormat(
     title: internalData.calendarTitle,
     author: internalData.name,
     email: internalData.email,
-    tasks: internalData.tasks.map(task => ({
-      title: task.task,
-      day: task.day,
-      status: openedDaysSet.has(task.day) ? 'opened' : 'closed' as 'opened' | 'closed',
-      ...(task.catalogTaskId ? { catalogTaskId: task.catalogTaskId } : {}),
-      ...(task.latestDay !== undefined ? { latestDay: task.latestDay } : {}),
-      ...(task.duration !== undefined ? { duration: task.duration } : {}),
-    })),
+    tasks: internalData.tasks.map(task => {
+      const dayTitle = task.title?.trim();
+      // Zdrapka: title = nagłówek dnia, description = treść. Interaktywny: title = treść.
+      if (dayTitle) {
+        return {
+          title: dayTitle,
+          description: task.task,
+          day: task.day,
+          status: (openedDaysSet.has(task.day) ? 'opened' : 'closed') as 'opened' | 'closed',
+          ...(task.catalogTaskId ? { catalogTaskId: task.catalogTaskId } : {}),
+          ...(task.latestDay !== undefined ? { latestDay: task.latestDay } : {}),
+          ...(task.duration !== undefined ? { duration: task.duration } : {}),
+        };
+      }
+      return {
+        title: task.task,
+        day: task.day,
+        status: (openedDaysSet.has(task.day) ? 'opened' : 'closed') as 'opened' | 'closed',
+        ...(task.catalogTaskId ? { catalogTaskId: task.catalogTaskId } : {}),
+        ...(task.latestDay !== undefined ? { latestDay: task.latestDay } : {}),
+        ...(task.duration !== undefined ? { duration: task.duration } : {}),
+      };
+    }),
     ...(internalData.productType ? { productType: internalData.productType } : {}),
     ...(internalData.sku ? { sku: internalData.sku } : {}),
     ...(internalData.format ? { format: internalData.format } : {}),
@@ -227,11 +252,14 @@ export interface GetCalendarResponse {
     format?: string;
     design?: { imageUrl?: string };
     shippingAddress?: {
+      firstName?: string;
+      lastName?: string;
       fullName?: string;
       street?: string;
       city?: string;
       postalCode?: string;
       phone?: string;
+      country?: string;
     };
     openingMethod?: OpeningMethod;
     dailyContentEmail?: string;
@@ -319,6 +347,8 @@ export interface CreatePaymentIntentRequest {
     quantity?: number;
   }>;
   shippingAddress?: {
+    firstName?: string;
+    lastName?: string;
     fullName: string;
     street: string;
     city: string;
@@ -418,6 +448,52 @@ export interface UpdateCalendarAcceptanceRequest {
     privacyAcceptedAt: string; // ISO timestamp
     clientIP: string | null;
   };
+}
+
+export interface PaymentOrderItem {
+  id?: string;
+  sku: string;
+  productType?: string;
+  quantity: number;
+  unitPrice: number;
+  calendarId?: string | null;
+  metadata?: { childName?: string } | null;
+}
+
+export interface PaymentOrderResponse {
+  payment: {
+    id: string;
+    orderNumber?: number | null;
+    orderNumberDisplay?: string | null;
+    stripePaymentIntentId?: string;
+    amount: number;
+    shippingAmount?: number;
+    status: string;
+    customerEmail?: string | null;
+    customerName?: string | null;
+    customerPhone?: string | null;
+    sku?: string | null;
+    productType?: string | null;
+    format?: string | null;
+    shippingAddress?: {
+      fullName?: string;
+      street?: string;
+      city?: string;
+      postalCode?: string;
+      phone?: string;
+    } | null;
+    items?: PaymentOrderItem[];
+  };
+  stripeStatus?: string;
+}
+
+export async function getPaymentByIntentId(paymentIntentId: string): Promise<PaymentOrderResponse> {
+  const url = `${API_BASE_URL}/stripe/payment/${encodeURIComponent(paymentIntentId)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Payment not found (${response.status})`);
+  }
+  return response.json() as Promise<PaymentOrderResponse>;
 }
 
 export interface UpdateCalendarAcceptanceResponse {

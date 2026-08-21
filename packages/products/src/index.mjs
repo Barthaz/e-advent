@@ -1,8 +1,11 @@
 export {
   SHIPPING_COST,
   FREE_SHIPPING_THRESHOLD,
+  DEFAULT_VAT_RATE,
   PRODUCTS,
   PRODUCT_FAMILIES,
+  roundPln,
+  splitGrossAmount,
   getProduct,
   getProductPrice,
   computeOrderTotals,

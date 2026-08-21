@@ -22,8 +22,9 @@ function parseShippingAddress(raw) {
 
 function isCompleteShippingAddress(sa) {
   if (!sa) return false;
+  const fullName = String(sa.fullName || `${sa.firstName || ''} ${sa.lastName || ''}`).trim();
   return Boolean(
-    sa.fullName &&
+    fullName &&
     sa.street &&
     sa.city &&
     sa.postalCode &&

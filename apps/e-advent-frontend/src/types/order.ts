@@ -8,4 +8,5 @@ export type {
   OrderCalendarData,
   FulfillmentStatus,
   OpeningMethod,
+  ScratchContentMode,
 } from '@e-advent/types';

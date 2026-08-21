@@ -13,6 +13,10 @@
     "./catalog": {
       "import": "./catalog/e-advent-calendars-data.json"
     },
+    "./scratch-presets": {
+      "import": "./catalog/scratch-presets.json",
+      "default": "./catalog/scratch-presets.json"
+    },
     "./creator-index": {
       "import": "./generated/creator-index.json"
     },

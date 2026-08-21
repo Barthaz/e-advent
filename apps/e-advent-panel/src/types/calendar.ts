@@ -1,6 +1,10 @@
+import type { ProductType } from '@e-advent/types';
+
 export interface CalendarTaskDetail {
   day: number;
-  /** Tekst zadania (pole `task` w JSON kalendarza) */
+  /** Opcjonalny tytuł dnia (zdrapka) */
+  title?: string;
+  /** Tekst zadania / opis */
   task: string;
   status: string;
   duration?: number;
@@ -13,6 +17,7 @@ export interface CalendarDetail {
   title: string;
   author: string;
   customer_email: string | null;
+  product_type: ProductType;
   sku: string | null;
   format: string;
   design_url: string | null;
@@ -31,5 +36,14 @@ export interface PatchCalendarRequest {
   author?: string;
   email?: string;
   fulfillment_notes?: string;
-  tasks?: CalendarTaskDetail[];
+  tasks?: Array<{
+    day: number;
+    title: string;
+    description?: string;
+    task?: string;
+    status: string;
+    duration?: number;
+    latestDay?: number;
+    lockedDay?: number;
+  }>;
 }

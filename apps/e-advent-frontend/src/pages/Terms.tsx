@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
 
@@ -104,11 +105,12 @@ export default function Terms() {
                 Przy zamówieniu produktów o łącznej wartości od 100 zł (bez kosztów wysyłki) wysyłka jest bezpłatna.
               </p>
               <p className="mb-4">
-                Użytkownik ponosi odpowiedzialność za poprawność adresu wysyłki. W przypadku produktów fizycznych
-                Użytkownik ma prawo odstąpić od umowy w terminie 14 dni od otrzymania przesyłki, z wyjątkiem
-                produktów wykonanych na indywidualne zamówienie (art. 38 pkt 3 ustawy o prawach konsumenta),
-                o ile produkt nie nosi śladów użytkowania. Gotowy zestaw „List do Świętego Mikołaja” nie jest
-                produktem personalizowanym online — dziecko uzupełnia treść samodzielnie na papierze.
+                Użytkownik ponosi odpowiedzialność za poprawność adresu wysyłki.
+                Szczegółowe informacje o dostawie znajdują się na stronie{' '}
+                <Link to="/dostawa-i-zwroty" className="text-christmas-green hover:underline font-medium">
+                  Dostawa i zwroty
+                </Link>
+                .
               </p>
             </section>
 
@@ -129,18 +131,41 @@ export default function Terms() {
             <section>
               <h2 className="legal-h2">7. Zwroty i reklamacje</h2>
               <p className="mb-4">
-                Ze względu na cyfrowy charakter usługi, która jest świadczona natychmiast po 
-                dokonaniu płatności, prawo do odstąpienia od umowy (zwrotu środków) nie przysługuje 
-                Użytkownikowi zgodnie z art. 38 pkt 1 ustawy z dnia 30 maja 2014 r. o prawach 
-                konsumenta.
+                Kalendarze adwentowe (interaktywny oraz zdrapka) są produktami spersonalizowanymi
+                i wykonywanymi na indywidualne zamówienie. Zgodnie z art. 38 pkt 3 ustawy z dnia
+                30 maja 2014 r. o prawach konsumenta prawo odstąpienia od umowy nie przysługuje
+                w odniesieniu do umów, których przedmiotem jest rzecz nieprefabrykowana,
+                wyprodukowana według specyfikacji konsumenta lub służąca zaspokojeniu jego
+                zindywidualizowanych potrzeb. Analogicznie prawo odstąpienia nie przysługuje
+                wobec dodatków personalizowanych (np. certyfikatu z imieniem dziecka).
               </p>
               <p className="mb-4">
-                W przypadku wystąpienia problemów technicznych uniemożliwiających korzystanie 
-                z kalendarza, Użytkownik ma prawo złożyć reklamację. Reklamacje należy składać 
-                na adres e-mail: kontakt@e-advent.pl.
+                Kalendarz interaktywny jest treścią cyfrową udostępnianą natychmiast po dokonaniu
+                płatności. Zgodnie z art. 38 pkt 13 ustawy o prawach konsumenta prawo odstąpienia
+                od umowy nie przysługuje, jeżeli spełnianie świadczenia rozpoczęło się za wyraźną
+                zgodą konsumenta przed upływem terminu do odstąpienia od umowy i po poinformowaniu
+                go o utracie prawa odstąpienia.
               </p>
               <p className="mb-4">
-                Administrator rozpatruje reklamacje w ciągu 14 dni roboczych od dnia ich otrzymania.
+                Gotowy zestaw „List do Świętego Mikołaja” (bez personalizacji online) nie jest
+                produktem wykonywanym według indywidualnej specyfikacji. W przypadku tego produktu
+                konsumentowi przysługuje prawo odstąpienia od umowy w terminie 14 dni od otrzymania
+                przesyłki, o ile produkt nie nosi śladów użytkowania uniemożliwiających ponowną
+                sprzedaż. Oświadczenie o odstąpieniu należy przesłać na adres: kontakt@e-advent.pl.
+              </p>
+              <p className="mb-4">
+                Niezależnie od powyższego Użytkownikowi przysługują uprawnienia z tytułu rękojmi
+                za wady oraz prawo złożenia reklamacji (np. uszkodzenie przesyłki, problemy
+                techniczne z kalendarzem interaktywnym). Reklamacje należy składać na adres e-mail:
+                kontakt@e-advent.pl. Administrator rozpatruje reklamacje w ciągu 14 dni roboczych
+                od dnia ich otrzymania.
+              </p>
+              <p className="mb-4">
+                Pełne informacje dla konsumentów znajdują się na stronie{' '}
+                <Link to="/dostawa-i-zwroty" className="text-christmas-green hover:underline font-medium">
+                  Dostawa i zwroty
+                </Link>
+                .
               </p>
             </section>
 

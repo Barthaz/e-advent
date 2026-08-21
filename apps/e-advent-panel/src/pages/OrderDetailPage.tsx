@@ -234,13 +234,16 @@ export default function OrderDetailPage() {
                       <th className="pb-2 font-medium">Produkt</th>
                       <th className="pb-2 font-medium">Typ</th>
                       <th className="pb-2 font-medium text-right">Ilość</th>
-                      <th className="pb-2 font-medium text-right">Cena jedn.</th>
-                      <th className="pb-2 font-medium text-right">Razem</th>
+                      <th className="pb-2 font-medium text-right">Netto</th>
+                      <th className="pb-2 font-medium text-right">VAT</th>
+                      <th className="pb-2 font-medium text-right">Brutto</th>
                     </tr>
                   </thead>
                   <tbody>
                     {order.items.map((item) => {
-                      const lineTotal = item.unitPrice * item.quantity;
+                      const lineBrutto = item.lineBrutto ?? item.unitPrice * item.quantity;
+                      const lineNetto = item.lineNetto;
+                      const lineVat = item.lineVat;
                       return (
                         <tr key={item.id} className="border-b border-gray-50 last:border-0">
                           <td className="py-2.5">
@@ -248,6 +251,9 @@ export default function OrderDetailPage() {
                               {item.displayName ?? item.sku}
                             </div>
                             <div className="font-mono text-[11px] text-gray-400">{item.sku}</div>
+                            {item.vatRate != null && (
+                              <div className="text-[11px] text-gray-400">VAT {item.vatRate}%</div>
+                            )}
                             {item.calendarId && (
                               <Link
                                 to={`/calendars/${item.calendarId}`}
@@ -262,10 +268,13 @@ export default function OrderDetailPage() {
                           </td>
                           <td className="py-2.5 text-right text-gray-800">{item.quantity}</td>
                           <td className="py-2.5 text-right text-gray-800">
-                            {formatAmount(item.unitPrice, order.currency)}
+                            {lineNetto != null ? formatAmount(lineNetto, order.currency) : '—'}
+                          </td>
+                          <td className="py-2.5 text-right text-gray-800">
+                            {lineVat != null ? formatAmount(lineVat, order.currency) : '—'}
                           </td>
                           <td className="py-2.5 text-right font-medium text-gray-900">
-                            {formatAmount(lineTotal, order.currency)}
+                            {formatAmount(lineBrutto, order.currency)}
                           </td>
                         </tr>
                       );
@@ -273,19 +282,29 @@ export default function OrderDetailPage() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t border-gray-200">
-                      <td colSpan={4} className="pt-3 text-right text-xs text-gray-500">
-                        Produkty
+                      <td colSpan={5} className="pt-3 text-right text-xs text-gray-500">
+                        Produkty (brutto)
                       </td>
                       <td className="pt-3 text-right text-sm text-gray-800">
                         {formatAmount(
-                          order.items.reduce((s, i) => s + i.unitPrice * i.quantity, 0),
+                          order.items.reduce(
+                            (s, i) => s + (i.lineBrutto ?? i.unitPrice * i.quantity),
+                            0,
+                          ),
                           order.currency,
                         )}
                       </td>
                     </tr>
                     <tr>
-                      <td colSpan={4} className="pt-1 text-right text-xs text-gray-500">
+                      <td colSpan={5} className="pt-1 text-right text-xs text-gray-500">
                         Wysyłka
+                        {(order.shipping_vat ?? 0) > 0 && (
+                          <span className="block text-[10px] font-normal">
+                            netto {formatAmount(order.shipping_netto ?? 0, order.currency)}
+                            {' · '}
+                            VAT {formatAmount(order.shipping_vat ?? 0, order.currency)}
+                          </span>
+                        )}
                       </td>
                       <td className="pt-1 text-right text-sm text-gray-800">
                         {(order.shipping_amount ?? 0) > 0
@@ -294,8 +313,8 @@ export default function OrderDetailPage() {
                       </td>
                     </tr>
                     <tr>
-                      <td colSpan={4} className="pt-2 text-right text-sm font-semibold text-gray-700">
-                        Razem zamówienie
+                      <td colSpan={5} className="pt-2 text-right text-sm font-semibold text-gray-700">
+                        Razem brutto
                       </td>
                       <td className="pt-2 text-right text-base font-bold text-christmas-green">
                         {formatAmount(order.amount, order.currency)}
@@ -421,7 +440,12 @@ export default function OrderDetailPage() {
           <div className="panel-card p-5">
             <h2 className="heading-section mb-4">Podsumowanie</h2>
             <dl className="space-y-3 text-sm">
-              <Row label="Kwota" value={formatAmount(order.amount, order.currency)} highlight />
+              <Row
+                label={`Netto${order.vat_rate != null ? ` (VAT ${order.vat_rate}%)` : ''}`}
+                value={formatAmount(order.amount_netto ?? 0, order.currency)}
+              />
+              <Row label="VAT" value={formatAmount(order.vat_amount ?? 0, order.currency)} />
+              <Row label="Brutto" value={formatAmount(order.amount, order.currency)} highlight />
               {order.discount_code && (
                 <Row label="Kod rabatowy" value={order.discount_code} />
               )}

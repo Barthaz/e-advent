@@ -25,6 +25,11 @@ interface RawOrderListRow {
   sku?: string;
   amount: number | string;
   shipping_amount?: number | string;
+  amount_netto?: number | string;
+  vat_amount?: number | string;
+  shipping_netto?: number | string;
+  shipping_vat?: number | string;
+  vat_rate?: number | string;
   currency: string;
   customer_email?: string;
   customer_name?: string;
@@ -49,6 +54,11 @@ interface RawOrderDetail {
   stripePaymentIntentId?: string;
   amount?: number | string;
   shippingAmount?: number | string;
+  amountNetto?: number | string;
+  vatAmount?: number | string;
+  shippingNetto?: number | string;
+  shippingVat?: number | string;
+  vatRate?: number | string;
   currency?: string;
   status?: string;
   fulfillmentStatus?: string;
@@ -163,6 +173,21 @@ function mapOrderItems(raw: unknown): OrderItem[] {
       ),
       quantity: Math.max(1, Number(item.quantity) || 1),
       unitPrice: toNumber((item.unitPrice ?? item.unit_price) as number | string),
+      vatRate: item.vatRate != null || item.vat_rate != null
+        ? toNumber((item.vatRate ?? item.vat_rate) as number | string)
+        : undefined,
+      unitPriceNetto: item.unitPriceNetto != null || item.unit_price_netto != null
+        ? toNumber((item.unitPriceNetto ?? item.unit_price_netto) as number | string)
+        : undefined,
+      lineNetto: item.lineNetto != null || item.line_netto != null
+        ? toNumber((item.lineNetto ?? item.line_netto) as number | string)
+        : undefined,
+      lineVat: item.lineVat != null || item.line_vat != null
+        ? toNumber((item.lineVat ?? item.line_vat) as number | string)
+        : undefined,
+      lineBrutto: item.lineBrutto != null || item.line_brutto != null
+        ? toNumber((item.lineBrutto ?? item.line_brutto) as number | string)
+        : undefined,
       calendarId: (item.calendarId ?? item.calendar_id ?? null) as string | null,
       metadata,
       displayName: getOrderItemDisplayName(sku, metadata),
@@ -175,9 +200,15 @@ function normalizeTasks(raw: unknown): CalendarTaskDetail[] {
   return raw.map((t, index) => {
     const item = t as Record<string, unknown>;
     const day = typeof item.day === 'number' ? item.day : Number(item.day) || index + 1;
-    const text = String(item.task ?? item.title ?? item.content ?? '').trim();
+    const hasBodyField =
+      item.description != null || item.text != null || item.task != null;
+    const dayTitle = hasBodyField ? String(item.title ?? '').trim() : '';
+    const text = hasBodyField
+      ? String(item.description ?? item.text ?? item.task ?? '').trim()
+      : String(item.title ?? item.content ?? '').trim();
     return {
       day,
+      ...(dayTitle ? { title: dayTitle } : {}),
       task: text,
       status: String(item.status ?? 'pending'),
       ...(item.duration != null ? { duration: Number(item.duration) } : {}),
@@ -204,6 +235,11 @@ export function mapOrderListItem(row: RawOrderListRow): OrderListItem {
     customer_phone: row.customer_phone ?? null,
     amount: toNumber(row.amount),
     shipping_amount: row.shipping_amount != null ? toNumber(row.shipping_amount) : 0,
+    amount_netto: row.amount_netto != null ? toNumber(row.amount_netto) : undefined,
+    vat_amount: row.vat_amount != null ? toNumber(row.vat_amount) : undefined,
+    shipping_netto: row.shipping_netto != null ? toNumber(row.shipping_netto) : undefined,
+    shipping_vat: row.shipping_vat != null ? toNumber(row.shipping_vat) : undefined,
+    vat_rate: row.vat_rate != null ? toNumber(row.vat_rate) : undefined,
     currency: row.currency || 'pln',
     tracking_number: row.tracking_number ?? null,
     shipping_city: row.shipping_city ?? null,
@@ -261,6 +297,11 @@ export function mapOrderDetail(raw: RawOrderDetail): OrderDetail {
     customer_phone: raw.customerPhone ?? null,
     amount: toNumber(raw.amount),
     shipping_amount: raw.shippingAmount != null ? toNumber(raw.shippingAmount) : 0,
+    amount_netto: raw.amountNetto != null ? toNumber(raw.amountNetto) : undefined,
+    vat_amount: raw.vatAmount != null ? toNumber(raw.vatAmount) : undefined,
+    shipping_netto: raw.shippingNetto != null ? toNumber(raw.shippingNetto) : undefined,
+    shipping_vat: raw.shippingVat != null ? toNumber(raw.shippingVat) : undefined,
+    vat_rate: raw.vatRate != null ? toNumber(raw.vatRate) : undefined,
     currency: raw.currency || 'pln',
     tracking_number: raw.trackingNumber ?? null,
     shipping_city: raw.shipping?.city ?? null,
@@ -303,6 +344,11 @@ export function mapPatchedOrder(raw: Record<string, unknown>): OrderDetail {
     customer_phone: (raw.customer_phone as string) ?? null,
     amount: toNumber(raw.amount as number | string),
     shipping_amount: raw.shipping_amount != null ? toNumber(raw.shipping_amount as number | string) : 0,
+    amount_netto: raw.amount_netto != null ? toNumber(raw.amount_netto as number | string) : undefined,
+    vat_amount: raw.vat_amount != null ? toNumber(raw.vat_amount as number | string) : undefined,
+    shipping_netto: raw.shipping_netto != null ? toNumber(raw.shipping_netto as number | string) : undefined,
+    shipping_vat: raw.shipping_vat != null ? toNumber(raw.shipping_vat as number | string) : undefined,
+    vat_rate: raw.vat_rate != null ? toNumber(raw.vat_rate as number | string) : undefined,
     currency: (raw.currency as string) || 'pln',
     tracking_number: (raw.tracking_number as string) ?? null,
     shipping_city: (raw.shipping_city as string) ?? null,
@@ -330,6 +376,7 @@ export function mapCalendarDetail(raw: RawCalendarDetail): CalendarDetail {
     title: raw.title ?? '',
     author: raw.author ?? '',
     customer_email: raw.email ?? null,
+    product_type: resolveProductType(raw.productType, raw.sku),
     sku: raw.sku ?? null,
     format: raw.format ?? '',
     design_url: raw.designUrl ?? null,

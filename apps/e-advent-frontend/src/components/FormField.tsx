@@ -11,6 +11,13 @@ interface FormFieldProps {
   min?: number;
   max?: number;
   maxLength?: number;
+  autoComplete?: string;
+  name?: string;
+  id?: string;
+}
+
+function cleanLabel(label: string): string {
+  return label.replace(/\s*\*+\s*$/u, '').trimEnd();
 }
 
 export default function FormField({
@@ -26,15 +33,23 @@ export default function FormField({
   min,
   max,
   maxLength,
+  autoComplete,
+  name,
+  id,
 }: FormFieldProps) {
+  const displayLabel = cleanLabel(label);
+  const inputId = id || name;
+
   return (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-parchment-muted mb-2">
-        {label}
-        {required && <span className="text-christmas-red ml-1">*</span>}
+      <label htmlFor={inputId} className="block text-sm font-medium text-parchment-muted mb-2">
+        {displayLabel}
+        {required && <span className="text-christmas-red ml-1" aria-hidden="true">*</span>}
       </label>
       {textarea ? (
         <textarea
+          id={inputId}
+          name={name}
           value={value}
           onChange={(e) => {
             let newValue = e.target.value;
@@ -47,10 +62,13 @@ export default function FormField({
           required={required}
           rows={rows}
           maxLength={maxLength}
+          autoComplete={autoComplete}
           className="input-field"
         />
       ) : (
         <input
+          id={inputId}
+          name={name}
           type={type}
           value={value}
           onChange={(e) => {
@@ -75,6 +93,7 @@ export default function FormField({
           min={min}
           max={max}
           maxLength={maxLength}
+          autoComplete={autoComplete}
           className="input-field"
         />
       )}

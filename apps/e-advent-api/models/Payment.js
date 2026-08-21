@@ -1,6 +1,7 @@
 const { query } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 const { formatOrderNumber } = require('../utils/orderNumber');
+const { DEFAULT_VAT_RATE, splitGrossAmount, roundPln } = require('../config/products');
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -17,10 +18,36 @@ function parseShippingAddress(raw) {
   return typeof raw === 'object' ? raw : null;
 }
 
+function resolveShippingCustomerName(sa) {
+  if (!sa) return null;
+  const composed = String(sa.fullName || `${sa.firstName || ''} ${sa.lastName || ''}`).trim();
+  return composed || null;
+}
+
 function resolveDeliveryType(shippingAddress, hasPhysical) {
   if (shippingAddress && hasPhysical !== false) return 'poczta_polska';
   if (shippingAddress) return 'poczta_polska';
   return 'none';
+}
+
+function resolveItemVatFields(item) {
+  const quantity = Math.max(1, parseInt(item.quantity, 10) || 1);
+  const unitPrice = Number(item.unitPrice ?? item.unit_price ?? 0) || 0;
+  const vatRate = Number(item.vatRate ?? item.vat_rate ?? DEFAULT_VAT_RATE) || DEFAULT_VAT_RATE;
+  const lineBrutto = item.lineBrutto != null || item.line_brutto != null
+    ? Number(item.lineBrutto ?? item.line_brutto)
+    : roundPln(unitPrice * quantity);
+  const unitSplit = splitGrossAmount(unitPrice, vatRate);
+  const lineSplit = splitGrossAmount(lineBrutto, vatRate);
+  return {
+    quantity,
+    unitPrice,
+    vatRate,
+    unitPriceNetto: item.unitPriceNetto ?? item.unit_price_netto ?? unitSplit.netto,
+    lineNetto: item.lineNetto ?? item.line_netto ?? lineSplit.netto,
+    lineVat: item.lineVat ?? item.line_vat ?? lineSplit.vat,
+    lineBrutto: lineSplit.brutto,
+  };
 }
 
 function rowToPayment(row, items = []) {
@@ -34,6 +61,11 @@ function rowToPayment(row, items = []) {
     stripePaymentIntentId:     row.stripe_payment_intent_id,
     amount:                    parseFloat(row.amount),
     shippingAmount:            row.shipping_amount != null ? parseFloat(row.shipping_amount) : 0,
+    amountNetto:               row.amount_netto != null ? parseFloat(row.amount_netto) : 0,
+    vatAmount:                 row.vat_amount != null ? parseFloat(row.vat_amount) : 0,
+    shippingNetto:             row.shipping_netto != null ? parseFloat(row.shipping_netto) : 0,
+    shippingVat:               row.shipping_vat != null ? parseFloat(row.shipping_vat) : 0,
+    vatRate:                   row.vat_rate != null ? parseFloat(row.vat_rate) : DEFAULT_VAT_RATE,
     currency:                  row.currency,
     status:                    row.status,
     customerEmail:             row.customer_email,
@@ -74,14 +106,19 @@ function rowToPayment(row, items = []) {
 
 function itemRowToItem(row) {
   return {
-    id:          row.id,
-    orderId:     row.order_id,
-    sku:         row.sku,
-    productType: row.product_type,
-    quantity:    row.quantity,
-    unitPrice:   parseFloat(row.unit_price),
-    calendarId:  row.calendar_id,
-    metadata:    typeof row.metadata === 'string' ? JSON.parse(row.metadata) : (row.metadata || {}),
+    id:             row.id,
+    orderId:        row.order_id,
+    sku:            row.sku,
+    productType:    row.product_type,
+    quantity:       row.quantity,
+    unitPrice:      parseFloat(row.unit_price),
+    vatRate:        row.vat_rate != null ? parseFloat(row.vat_rate) : DEFAULT_VAT_RATE,
+    unitPriceNetto: row.unit_price_netto != null ? parseFloat(row.unit_price_netto) : 0,
+    lineNetto:      row.line_netto != null ? parseFloat(row.line_netto) : 0,
+    lineVat:        row.line_vat != null ? parseFloat(row.line_vat) : 0,
+    lineBrutto:     row.line_brutto != null ? parseFloat(row.line_brutto) : parseFloat(row.unit_price) * row.quantity,
+    calendarId:     row.calendar_id,
+    metadata:       typeof row.metadata === 'string' ? JSON.parse(row.metadata) : (row.metadata || {}),
   };
 }
 
@@ -106,17 +143,25 @@ async function loadPaymentWithItems(row) {
 async function insertOrderItems(orderId, items) {
   if (!Array.isArray(items) || items.length === 0) return;
   for (const item of items) {
+    const vat = resolveItemVatFields(item);
     await query(
       `INSERT INTO order_items
-         (id, order_id, sku, product_type, quantity, unit_price, calendar_id, metadata)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         (id, order_id, sku, product_type, quantity, unit_price,
+          vat_rate, unit_price_netto, line_netto, line_vat, line_brutto,
+          calendar_id, metadata)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         uuidv4(),
         orderId,
         item.sku,
         item.productType || item.product_type || 'interactive',
-        item.quantity || 1,
-        item.unitPrice ?? item.unit_price ?? 0,
+        vat.quantity,
+        vat.unitPrice,
+        vat.vatRate,
+        vat.unitPriceNetto,
+        vat.lineNetto,
+        vat.lineVat,
+        vat.lineBrutto,
         item.calendarId || item.calendar_id || null,
         item.metadata ? JSON.stringify(item.metadata) : null,
       ]
@@ -138,25 +183,49 @@ const createPayment = async (paymentData) => {
     || paymentData.hasPhysical === true
     || ['scratch', 'letter'].includes(productType);
 
+  const shippingAmount = paymentData.shippingAmount || 0;
+  const vatRate = paymentData.vatRate ?? DEFAULT_VAT_RATE;
+  const shippingSplit = splitGrossAmount(shippingAmount, vatRate);
+  const amountNetto = paymentData.amountNetto != null
+    ? paymentData.amountNetto
+    : splitGrossAmount(paymentData.amount || 0, vatRate).netto;
+  const vatAmount = paymentData.vatAmount != null
+    ? paymentData.vatAmount
+    : splitGrossAmount(paymentData.amount || 0, vatRate).vat;
+  const shippingNetto = paymentData.shippingNetto != null
+    ? paymentData.shippingNetto
+    : shippingSplit.netto;
+  const shippingVat = paymentData.shippingVat != null
+    ? paymentData.shippingVat
+    : shippingSplit.vat;
+
   console.log(`Creating payment for calendar ${calendarId}, orderId ${paymentData.orderId || id}`);
 
   await query(
     `INSERT INTO orders
-       (id, calendar_id, stripe_payment_intent_id, amount, shipping_amount, currency, status,
+       (id, calendar_id, stripe_payment_intent_id, amount, shipping_amount,
+        amount_netto, vat_amount, shipping_netto, shipping_vat, vat_rate,
+        currency, status,
         customer_email, customer_name, customer_phone,
         delivery_type, shipping_street, shipping_city, shipping_postal_code,
         product_type, sku, fulfillment_status, metadata)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       calendarId,
       paymentData.stripePaymentIntentId  || null,
       paymentData.amount                 || 0,
-      paymentData.shippingAmount         || 0,
+      shippingAmount,
+      amountNetto,
+      vatAmount,
+      shippingNetto,
+      shippingVat,
+      vatRate,
       paymentData.currency               || 'pln',
       paymentData.status                 || 'pending',
       paymentData.customerEmail          || '',
-      sa?.fullName                       || null,
+      resolveShippingCustomerName(sa),
+
       sa?.phone                          || null,
       resolveDeliveryType(sa, hasPhysical),
       sa?.street                         || null,
@@ -218,6 +287,11 @@ const FIELD_MAP = {
   stripePaymentIntentId:    'stripe_payment_intent_id',
   amount:                   'amount',
   shippingAmount:           'shipping_amount',
+  amountNetto:              'amount_netto',
+  vatAmount:                'vat_amount',
+  shippingNetto:            'shipping_netto',
+  shippingVat:              'shipping_vat',
+  vatRate:                  'vat_rate',
   currency:                 'currency',
   status:                   'status',
   customerEmail:            'customer_email',
@@ -251,7 +325,8 @@ const updatePayment = async (stripePaymentIntentId, updateData) => {
     const sa = parseShippingAddress(data.shippingAddress);
     delete data.shippingAddress;
     if (sa) {
-      if (sa.fullName != null) data.customerName = sa.fullName;
+      const name = resolveShippingCustomerName(sa);
+      if (name != null) data.customerName = name;
       if (sa.phone != null) data.customerPhone = sa.phone;
       if (sa.street != null) data.shippingStreet = sa.street;
       if (sa.city != null) data.shippingCity = sa.city;
@@ -289,7 +364,8 @@ const updatePaymentByProductId = async (productId, updateData) => {
     const sa = parseShippingAddress(data.shippingAddress);
     delete data.shippingAddress;
     if (sa) {
-      if (sa.fullName != null) data.customerName = sa.fullName;
+      const name = resolveShippingCustomerName(sa);
+      if (name != null) data.customerName = name;
       if (sa.phone != null) data.customerPhone = sa.phone;
       if (sa.street != null) data.shippingStreet = sa.street;
       if (sa.city != null) data.shippingCity = sa.city;

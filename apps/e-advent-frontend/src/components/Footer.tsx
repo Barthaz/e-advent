@@ -59,6 +59,11 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5">
               <li>
+                <Link to="/dostawa-i-zwroty" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
+                  Dostawa i zwroty
+                </Link>
+              </li>
+              <li>
                 <Link to="/polityka-prywatnosci" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
                   Polityka prywatności
                 </Link>

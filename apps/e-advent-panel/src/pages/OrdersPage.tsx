@@ -100,6 +100,13 @@ export default function OrdersPage() {
           <span className="font-semibold text-christmas-green block">
             {formatAmount(row.amount, row.currency)}
           </span>
+          {(row.amount_netto != null || row.vat_amount != null) && (
+            <span className="text-[11px] text-gray-400 block">
+              netto {formatAmount(row.amount_netto ?? 0, row.currency)}
+              {' · '}
+              VAT {formatAmount(row.vat_amount ?? 0, row.currency)}
+            </span>
+          )}
           {(row.shipping_amount ?? 0) > 0 && (
             <span className="text-[11px] text-gray-400">
               w tym wysyłka {formatAmount(row.shipping_amount, row.currency)}

@@ -80,13 +80,17 @@ describe('products catalog (unit)', () => {
 
   test('computeOrderTotals: digital only = 0 shipping', () => {
     const t = computeOrderTotals([{ sku: 'interactive', quantity: 2 }]);
-    expect(t).toEqual({
+    expect(t).toMatchObject({
       subtotal: 18,
       shipping: 0,
       total: 18,
       hasPhysical: false,
       freeShipping: false,
+      vatRate: 23,
     });
+    expect(t.amountNetto + t.vatAmount).toBeCloseTo(t.total, 2);
+    expect(t.lines).toHaveLength(1);
+    expect(t.lines[0].lineBrutto).toBe(18);
   });
 
   test('computeOrderTotals: letter alone pays shipping', () => {
@@ -95,6 +99,35 @@ describe('products catalog (unit)', () => {
     expect(t.shipping).toBe(5);
     expect(t.total).toBe(34);
     expect(t.freeShipping).toBe(false);
+    expect(t.amountNetto + t.vatAmount).toBeCloseTo(34, 2);
+    expect(t.shippingNetto + t.shippingVat).toBeCloseTo(5, 2);
+  });
+
+  test('splitGrossAmount: 9 PLN brutto → netto + VAT 23%', () => {
+    const { splitGrossAmount } = require('../../config/products');
+    const split = splitGrossAmount(9, 23);
+    expect(split.brutto).toBe(9);
+    expect(split.netto).toBe(7.32);
+    expect(split.vat).toBe(1.68);
+    expect(split.netto + split.vat).toBe(9);
+  });
+
+  test('splitGrossAmount: 0 stays zero', () => {
+    const { splitGrossAmount } = require('../../config/products');
+    expect(splitGrossAmount(0)).toEqual({ brutto: 0, netto: 0, vat: 0, vatRate: 23 });
+  });
+
+  test('computeOrderTotals VAT snapshot: netto + vat = brutto for mixed cart', () => {
+    const t = computeOrderTotals([
+      { sku: 'interactive', quantity: 1 },
+      { sku: 'santa-letter', quantity: 1 },
+    ]);
+    expect(t.total).toBe(43);
+    expect(t.amountNetto + t.vatAmount).toBeCloseTo(43, 2);
+    expect(t.subtotalNetto + t.subtotalVat).toBeCloseTo(t.subtotal, 2);
+    t.lines.forEach((line) => {
+      expect(line.lineNetto + line.lineVat).toBeCloseTo(line.lineBrutto, 2);
+    });
   });
 
   test('computeOrderTotals: free shipping when subtotal >= 100', () => {

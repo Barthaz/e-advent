@@ -16,6 +16,7 @@ const {
 } = require('../services/orderMailer');
 const { listEmailTemplates, getEmailTemplatePreview } = require('../services/emailTemplates');
 const { formatOrderNumber, parseOrderNumberSearch } = require('../utils/orderNumber');
+const { registerScratchExportRoutes } = require('./adminScratchExport');
 
 // ── POST /admin/login ──────────────────────────────────────────────────────────
 
@@ -162,7 +163,9 @@ router.get('/orders', authAdmin, [
         const [rows] = await query(
             `SELECT
                o.id, o.order_number, o.created_at, o.status, o.fulfillment_status,
-               o.product_type, o.sku, o.amount, o.shipping_amount, o.currency,
+               o.product_type, o.sku, o.amount, o.shipping_amount,
+               o.amount_netto, o.vat_amount, o.shipping_netto, o.shipping_vat, o.vat_rate,
+               o.currency,
                o.customer_email, o.customer_name,
                o.delivery_type, o.shipping_city,
                o.parcel_locker_id, o.parcel_locker_name,
@@ -221,7 +224,17 @@ router.get('/orders/:id', authAdmin, async (req, res) => {
                 productType: ir.product_type,
                 quantity: ir.quantity,
                 unitPrice: parseFloat(ir.unit_price),
+                vatRate: ir.vat_rate != null ? parseFloat(ir.vat_rate) : 23,
+                unitPriceNetto: ir.unit_price_netto != null ? parseFloat(ir.unit_price_netto) : 0,
+                lineNetto: ir.line_netto != null ? parseFloat(ir.line_netto) : 0,
+                lineVat: ir.line_vat != null ? parseFloat(ir.line_vat) : 0,
+                lineBrutto: ir.line_brutto != null
+                    ? parseFloat(ir.line_brutto)
+                    : parseFloat(ir.unit_price) * ir.quantity,
                 calendarId: ir.calendar_id,
+                metadata: typeof ir.metadata === 'string'
+                    ? JSON.parse(ir.metadata)
+                    : (ir.metadata || {}),
             }));
         } catch {
             items = [];
@@ -235,6 +248,11 @@ router.get('/orders/:id', authAdmin, async (req, res) => {
             stripePaymentIntentId:     row.stripe_payment_intent_id,
             amount:                    parseFloat(row.amount),
             shippingAmount:            row.shipping_amount != null ? parseFloat(row.shipping_amount) : 0,
+            amountNetto:               row.amount_netto != null ? parseFloat(row.amount_netto) : 0,
+            vatAmount:                 row.vat_amount != null ? parseFloat(row.vat_amount) : 0,
+            shippingNetto:             row.shipping_netto != null ? parseFloat(row.shipping_netto) : 0,
+            shippingVat:               row.shipping_vat != null ? parseFloat(row.shipping_vat) : 0,
+            vatRate:                   row.vat_rate != null ? parseFloat(row.vat_rate) : 23,
             currency:                  row.currency,
             status:                    row.status,
             fulfillmentStatus:         row.fulfillment_status,
@@ -359,6 +377,8 @@ router.patch('/orders/:id', authAdmin, [
         res.status(500).json({ error: 'Failed to update order', message: error.message });
     }
 });
+
+registerScratchExportRoutes(router, authAdmin);
 
 // ── GET /admin/calendars/:id — podgląd kalendarza ─────────────────────────────
 

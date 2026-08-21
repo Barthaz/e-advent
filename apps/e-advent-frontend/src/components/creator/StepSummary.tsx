@@ -11,6 +11,8 @@ interface StepSummaryProps {
   email: string;
   calendarTitle: string;
   tasksCount?: number;
+  /** Gotowy opis treści (np. zdrapka); gdy podany, ma pierwszeństwo przed tasksCount */
+  tasksLabel?: string | null;
   format?: CalendarFormat;
   design?: DesignSelection | null;
   openingMethod?: OpeningMethod | null;
@@ -41,6 +43,7 @@ export default function StepSummary({
   email,
   calendarTitle,
   tasksCount,
+  tasksLabel: tasksLabelProp,
   format,
   design,
   openingMethod,
@@ -54,9 +57,13 @@ export default function StepSummary({
     'Kalendarz zdrapka';
 
   const tasksLabel =
-    tasksCount === undefined ? null :
-    tasksCount === 0 ? 'Z zestawów predefiniowanych' :
-    `${tasksCount} własnych + losowanie z zestawów`;
+    tasksLabelProp !== undefined && tasksLabelProp !== null
+      ? tasksLabelProp
+      : tasksCount === undefined
+        ? null
+        : tasksCount === 0
+          ? 'Z zestawów predefiniowanych'
+          : `${tasksCount} własnych + losowanie z zestawów`;
 
   return (
     <section className="creator-summary">

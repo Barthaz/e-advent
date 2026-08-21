@@ -4,7 +4,7 @@ import FestivePage from '../components/FestivePage';
 import ParchmentCard from '../components/ParchmentCard';
 import WizardShell from '../components/creator/WizardShell';
 import StepBasicInfo from '../components/creator/StepBasicInfo';
-import StepTasks from '../components/creator/StepTasks';
+import StepScratchTasks from '../components/creator/StepScratchTasks';
 import StepDesign from '../components/creator/StepDesign';
 import StepSummary from '../components/creator/StepSummary';
 import { useCreatorWizard } from '../hooks/useCreatorWizard';
@@ -19,7 +19,7 @@ import { prepareScratchCalendarForCart } from '../utils/prepareScratchForCart';
 import { trackViewItem } from '../utils/analytics';
 
 const STEPS = ['design', 'basic', 'tasks', 'summary'];
-const STEP_LABELS = ['Grafika i format', 'Dane', 'Zadania', 'Podsumowanie'];
+const STEP_LABELS = ['Grafika i format', 'Dane', 'Świąteczna przygoda', 'Podsumowanie'];
 
 export default function CreatorScratch() {
   const navigate = useNavigate();
@@ -59,7 +59,9 @@ export default function CreatorScratch() {
         email: wizard.email,
         calendarTitle: wizard.calendarTitle,
         tasks: wizard.tasks,
-        selectedExampleSets: wizard.selectedExampleSets,
+        scratchContentMode: wizard.scratchContentMode,
+        selectedScratchPreset: wizard.selectedScratchPreset,
+        shuffleCustomTasks: wizard.shuffleCustomTasks,
         dailyEmailReminders: wizard.dailyEmailReminders,
         productType: 'scratch',
         sku: cartSku,
@@ -88,6 +90,16 @@ export default function CreatorScratch() {
 
   const stepId = STEPS[wizard.currentStep];
 
+  const tasksSummaryLabel = (() => {
+    if (wizard.scratchContentMode === 'preset' && wizard.selectedScratchPreset != null) {
+      const name = wizard.scratchPresets[wizard.selectedScratchPreset]?.name;
+      return name ? `Przygoda: ${name}` : 'Gotowa świąteczna przygoda';
+    }
+    const n = wizard.tasks.length;
+    const order = wizard.shuffleCustomTasks ? 'przetasowane' : 'w kolejności';
+    return `${n} własnych zadań (${order})`;
+  })();
+
   return (
     <FestivePage className="py-4">
       <ParchmentCard padding="lg">
@@ -96,13 +108,34 @@ export default function CreatorScratch() {
             <StepBasicInfo name={wizard.name} setName={wizard.setName} email={wizard.email} setEmail={wizard.setEmail} calendarTitle={wizard.calendarTitle} setCalendarTitle={wizard.setCalendarTitle} />
           )}
           {stepId === 'tasks' && (
-            <StepTasks tasks={wizard.tasks} setTasks={wizard.setTasks} selectedExampleSets={wizard.selectedExampleSets} setSelectedExampleSets={wizard.setSelectedExampleSets} examples={wizard.examples} validationError={wizard.validationError} setValidationError={wizard.setValidationError} productType="scratch" />
+            <StepScratchTasks
+              presets={wizard.scratchPresets}
+              mode={wizard.scratchContentMode}
+              setMode={wizard.setScratchContentMode}
+              selectedPreset={wizard.selectedScratchPreset}
+              setSelectedPreset={wizard.setSelectedScratchPreset}
+              tasks={wizard.tasks}
+              setTasks={wizard.setTasks}
+              shuffleCustomTasks={wizard.shuffleCustomTasks}
+              setShuffleCustomTasks={wizard.setShuffleCustomTasks}
+              validationError={wizard.validationError}
+              setValidationError={wizard.setValidationError}
+            />
           )}
           {stepId === 'design' && (
             <StepDesign productType="scratch" format={wizard.format} setFormat={wizard.setFormat} design={wizard.design} setDesign={wizard.setDesign} validationError={wizard.validationError} setValidationError={wizard.setValidationError} />
           )}
           {stepId === 'summary' && (
-            <StepSummary productType="scratch" sku={sku} name={wizard.name} email={wizard.email} calendarTitle={wizard.calendarTitle} tasksCount={wizard.tasks.length} format={wizard.format} design={wizard.design} />
+            <StepSummary
+              productType="scratch"
+              sku={sku}
+              name={wizard.name}
+              email={wizard.email}
+              calendarTitle={wizard.calendarTitle}
+              tasksLabel={tasksSummaryLabel}
+              format={wizard.format}
+              design={wizard.design}
+            />
           )}
 
           {addError && (

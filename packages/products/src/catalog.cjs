@@ -2,6 +2,27 @@
 
 const SHIPPING_COST = 5;
 const FREE_SHIPPING_THRESHOLD = 100;
+const DEFAULT_VAT_RATE = 23;
+
+function roundPln(amount) {
+  return Math.round(Number(amount) * 100) / 100;
+}
+
+function splitGrossAmount(grossBrutto, vatRate = DEFAULT_VAT_RATE) {
+  const rate = Number(vatRate);
+  const bruttoGrosze = Math.round(Number(grossBrutto) * 100);
+  if (!Number.isFinite(bruttoGrosze) || bruttoGrosze === 0) {
+    return { brutto: 0, netto: 0, vat: 0, vatRate: rate };
+  }
+  const nettoGrosze = Math.round(bruttoGrosze / (1 + rate / 100));
+  const vatGrosze = bruttoGrosze - nettoGrosze;
+  return {
+    brutto: bruttoGrosze / 100,
+    netto: nettoGrosze / 100,
+    vat: vatGrosze / 100,
+    vatRate: rate,
+  };
+}
 
 const PRODUCTS = {
   interactive: {
@@ -122,20 +143,35 @@ function isPhysicalProduct(sku) {
 
 /**
  * @param {Array<{ sku: string, quantity?: number }>} items
- * @returns {{ subtotal: number, shipping: number, total: number, hasPhysical: boolean, freeShipping: boolean } | null}
+ * @param {{ vatRate?: number }} [options]
  */
-function computeOrderTotals(items) {
+function computeOrderTotals(items, options) {
   if (!Array.isArray(items) || items.length === 0) return null;
 
+  const vatRate = options && options.vatRate != null ? Number(options.vatRate) : DEFAULT_VAT_RATE;
   let subtotal = 0;
   let hasPhysical = false;
+  const lines = [];
 
   for (const item of items) {
     const product = getProduct(item.sku);
     if (!product) return null;
     const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
-    subtotal += product.basePrice * qty;
+    const lineBrutto = roundPln(product.basePrice * qty);
+    const unitSplit = splitGrossAmount(product.basePrice, vatRate);
+    const lineSplit = splitGrossAmount(lineBrutto, vatRate);
+    subtotal = roundPln(subtotal + lineBrutto);
     if (product.requiresShipping) hasPhysical = true;
+    lines.push({
+      sku: product.sku,
+      quantity: qty,
+      vatRate: vatRate,
+      unitPrice: product.basePrice,
+      unitPriceNetto: unitSplit.netto,
+      lineBrutto: lineSplit.brutto,
+      lineNetto: lineSplit.netto,
+      lineVat: lineSplit.vat,
+    });
   }
 
   let shipping = 0;
@@ -149,12 +185,27 @@ function computeOrderTotals(items) {
     }
   }
 
+  const shippingSplit = splitGrossAmount(shipping, vatRate);
+  const subtotalNetto = roundPln(lines.reduce(function (sum, line) { return sum + line.lineNetto; }, 0));
+  const subtotalVat = roundPln(lines.reduce(function (sum, line) { return sum + line.lineVat; }, 0));
+  const amountNetto = roundPln(subtotalNetto + shippingSplit.netto);
+  const vatAmount = roundPln(subtotalVat + shippingSplit.vat);
+  const total = roundPln(subtotal + shipping);
+
   return {
-    subtotal,
-    shipping,
-    total: subtotal + shipping,
-    hasPhysical,
-    freeShipping,
+    subtotal: subtotal,
+    shipping: shipping,
+    total: total,
+    hasPhysical: hasPhysical,
+    freeShipping: freeShipping,
+    vatRate: vatRate,
+    subtotalNetto: subtotalNetto,
+    subtotalVat: subtotalVat,
+    shippingNetto: shippingSplit.netto,
+    shippingVat: shippingSplit.vat,
+    amountNetto: amountNetto,
+    vatAmount: vatAmount,
+    lines: lines,
   };
 }
 
@@ -189,8 +240,11 @@ function getOrderItemDisplayName(sku, metadata) {
 module.exports = {
   SHIPPING_COST,
   FREE_SHIPPING_THRESHOLD,
+  DEFAULT_VAT_RATE,
   PRODUCTS,
   PRODUCT_FAMILIES,
+  roundPln,
+  splitGrossAmount,
   getProduct,
   getProductPrice,
   computeOrderTotals,

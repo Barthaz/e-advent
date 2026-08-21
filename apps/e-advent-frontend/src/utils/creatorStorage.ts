@@ -18,6 +18,9 @@ export function getStorageKeys(productType: ProductType) {
     form: prefix(productType, 'creator-form'),
     tasks: prefix(productType, 'tasks'),
     selectedExamples: prefix(productType, 'selected-examples'),
+    scratchPreset: prefix(productType, 'scratch-preset'),
+    scratchMode: prefix(productType, 'scratch-mode'),
+    scratchShuffle: prefix(productType, 'scratch-shuffle'),
     generatedCalendar: prefix(productType, 'generated-calendar'),
     design: prefix(productType, 'design'),
     format: prefix(productType, 'format'),
@@ -165,9 +168,39 @@ export function loadSelectedExamples(productType: ProductType): number[] {
   }
 }
 
+export function saveScratchPreset(productType: ProductType, index: number | null) {
+  const key = getStorageKeys(productType).scratchPreset;
+  if (index == null) localStorage.removeItem(key);
+  else localStorage.setItem(key, String(index));
+}
+
+export function loadScratchPreset(productType: ProductType): number | null {
+  const saved = localStorage.getItem(getStorageKeys(productType).scratchPreset);
+  if (saved == null || saved === '') return null;
+  const n = Number(saved);
+  return Number.isInteger(n) && n >= 0 ? n : null;
+}
+
+export function saveScratchMode(productType: ProductType, mode: 'preset' | 'custom') {
+  localStorage.setItem(getStorageKeys(productType).scratchMode, mode);
+}
+
+export function loadScratchMode(productType: ProductType): 'preset' | 'custom' {
+  const saved = localStorage.getItem(getStorageKeys(productType).scratchMode);
+  return saved === 'custom' ? 'custom' : 'preset';
+}
+
+export function saveScratchShuffle(productType: ProductType, shuffle: boolean) {
+  localStorage.setItem(getStorageKeys(productType).scratchShuffle, shuffle ? '1' : '0');
+}
+
+export function loadScratchShuffle(productType: ProductType): boolean {
+  return localStorage.getItem(getStorageKeys(productType).scratchShuffle) === '1';
+}
+
 export function saveGeneratedCalendar(
   productType: ProductType,
-  calendar: Array<{ day: number; task: string; duration?: number; latestDay?: number }>
+  calendar: Array<{ day: number; task: string; title?: string; duration?: number; latestDay?: number }>
 ) {
   localStorage.setItem(getStorageKeys(productType).generatedCalendar, JSON.stringify(calendar));
 }
@@ -213,7 +246,27 @@ export function loadShipping(productType: ProductType): ShippingAddress | null {
   const saved = localStorage.getItem(getStorageKeys(productType).shipping);
   if (!saved) return null;
   try {
-    return JSON.parse(saved);
+    const parsed = JSON.parse(saved) as Partial<ShippingAddress>;
+    if (!parsed || typeof parsed !== 'object') return null;
+    let firstName = String(parsed.firstName ?? '');
+    let lastName = String(parsed.lastName ?? '');
+    const legacyFull = String(parsed.fullName ?? '').trim();
+    if (!firstName.trim() && !lastName.trim() && legacyFull) {
+      const parts = legacyFull.split(/\s+/).filter(Boolean);
+      firstName = parts[0] || '';
+      lastName = parts.slice(1).join(' ');
+    }
+    const fullName = `${firstName} ${lastName}`.trim() || legacyFull;
+    return {
+      firstName,
+      lastName,
+      street: String(parsed.street ?? ''),
+      city: String(parsed.city ?? ''),
+      postalCode: String(parsed.postalCode ?? ''),
+      phone: String(parsed.phone ?? ''),
+      country: String(parsed.country ?? 'PL') || 'PL',
+      fullName,
+    };
   } catch {
     return null;
   }

@@ -4,6 +4,8 @@
     { "source": "/success", "destination": "/sukces", "permanent": true },
     { "source": "/privacy", "destination": "/polityka-prywatnosci", "permanent": true },
     { "source": "/terms", "destination": "/regulamin", "permanent": true },
+    { "source": "/shipping", "destination": "/dostawa-i-zwroty", "permanent": true },
+    { "source": "/returns", "destination": "/dostawa-i-zwroty", "permanent": true },
     { "source": "/preview", "destination": "/podglad", "permanent": true },
     { "source": "/track-santa", "destination": "/sledz-mikolaja", "permanent": true },
     { "source": "/create", "destination": "/stworz-kalendarz/interaktywny", "permanent": true }
