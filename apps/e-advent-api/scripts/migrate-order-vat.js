@@ -115,7 +115,7 @@ async function ensureOrderItemsTable(conn, database, label) {
   console.log(`[${label}] order_items created`);
 
   // Backfill one line per existing order (unit_price = amount − shipping when possible)
-  const { v4: uuidv4 } = require('uuid');
+  const { randomUUID: uuidv4 } = require('node:crypto');
   const { getProduct } = require('../config/products');
   const [orders] = await conn.execute(
     `SELECT id, calendar_id, sku, product_type, amount, shipping_amount

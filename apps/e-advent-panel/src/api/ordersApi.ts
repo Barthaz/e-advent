@@ -61,7 +61,12 @@ export const ordersApi = createApi({
         'OrderList',
       ],
     }),
+
+    syncInpost: builder.mutation<{ skipped: boolean; refreshed: number; failed: number }, void>({
+      query: () => ({ url: '/inpost/sync', method: 'POST' }),
+      invalidatesTags: ['OrderList', 'Order'],
+    }),
   }),
 });
 
-export const { useGetOrdersQuery, useGetOrderQuery, usePatchOrderMutation } = ordersApi;
+export const { useGetOrdersQuery, useGetOrderQuery, usePatchOrderMutation, useSyncInpostMutation } = ordersApi;

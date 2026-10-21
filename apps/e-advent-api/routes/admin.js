@@ -169,7 +169,7 @@ router.get('/orders', authAdmin, [
                o.customer_email, o.customer_name,
                o.delivery_type, o.shipping_city,
                o.parcel_locker_id, o.parcel_locker_name,
-               o.tracking_number, o.calendar_id,
+               o.tracking_number, o.inpost_shipment_id, o.inpost_status, o.shipped_at, o.delivered_at, o.calendar_id,
                (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id) AS item_count,
                (SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi WHERE oi.order_id = o.id) AS items_quantity
              FROM orders o
@@ -258,6 +258,11 @@ router.get('/orders/:id', authAdmin, async (req, res) => {
             fulfillmentStatus:         row.fulfillment_status,
             fulfillmentNotes:          row.fulfillment_notes,
             trackingNumber:            row.tracking_number,
+            inpostShipmentId:          row.inpost_shipment_id || null,
+            inpostStatus:              row.inpost_status || null,
+            labelCreatedAt:            row.label_created_at || null,
+            shippedAt:                 row.shipped_at || null,
+            deliveredAt:               row.delivered_at || null,
             customerEmail:             row.customer_email,
             customerName:              row.customer_name,
             customerPhone:             row.customer_phone,
@@ -266,9 +271,12 @@ router.get('/orders/:id', authAdmin, async (req, res) => {
             deliveryType:              row.delivery_type,
             items,
             shipping: {
-                street:     row.shipping_street,
-                city:       row.shipping_city,
-                postalCode: row.shipping_postal_code,
+                street:          row.shipping_street,
+                buildingNumber:  row.shipping_building_number || null,
+                apartmentNumber: row.shipping_apartment_number || null,
+                city:            row.shipping_city,
+                postalCode:      row.shipping_postal_code,
+                country:         row.shipping_country || null,
             },
             parcelLocker: row.parcel_locker_id ? {
                 id:      row.parcel_locker_id,

@@ -55,8 +55,9 @@ if (testingMode) {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: corsAllowedHeaders,
+    exposedHeaders: ['X-Shipment-Email', 'X-Shipment-Email-Error'],
   }));
-  console.log('⚠️ CORS w trybie testowym - zezwalanie na wszystkie originy (TESTING_MODE=true)');
+  console.log('âš ď¸Ź CORS w trybie testowym - zezwalanie na wszystkie originy (TESTING_MODE=true)');
 } else {
   app.use(cors({
     origin: (origin, callback) => {
@@ -69,27 +70,28 @@ if (testingMode) {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: corsAllowedHeaders,
+    exposedHeaders: ['X-Shipment-Email', 'X-Shipment-Email-Error'],
   }));
-  console.log('🔒 CORS allowlist:', corsAllowlist.join(', '));
+  console.log('đź”’ CORS allowlist:', corsAllowlist.join(', '));
 }
 
-// WAŻNE: Webhook Stripe wymaga surowego body (raw), nie sparsowanego JSON
-// Wykluczamy webhook z parsowania JSON - musi być surowe body (Buffer)
+// WAĹ»NE: Webhook Stripe wymaga surowego body (raw), nie sparsowanego JSON
+// Wykluczamy webhook z parsowania JSON - musi byÄ‡ surowe body (Buffer)
 app.use((req, res, next) => {
-    // Jeśli to webhook Stripe, pomiń parsowanie JSON
+    // JeĹ›li to webhook Stripe, pomiĹ„ parsowanie JSON
     if (req.path === '/api/stripe/webhook' || req.path === '/api/v1/stripe/webhook') {
         return next();
     }
-    // Dla wszystkich innych endpointów parsuj JSON
+    // Dla wszystkich innych endpointĂłw parsuj JSON
     bodyParser.json({ limit: '16mb' })(req, res, next);
 });
 
 app.use((req, res, next) => {
-    // Jeśli to webhook Stripe, pomiń parsowanie URL encoded
+    // JeĹ›li to webhook Stripe, pomiĹ„ parsowanie URL encoded
     if (req.path === '/api/stripe/webhook' || req.path === '/api/v1/stripe/webhook') {
         return next();
     }
-    // Dla wszystkich innych endpointów parsuj URL encoded
+    // Dla wszystkich innych endpointĂłw parsuj URL encoded
     bodyParser.urlencoded({ extended: true, limit: '16mb' })(req, res, next);
 });
 
@@ -100,7 +102,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Inicjalizuj pulę połączeń MySQL (lokalnie i na Vercel)
+// Inicjalizuj pulÄ™ poĹ‚Ä…czeĹ„ MySQL (lokalnie i na Vercel)
 connectDB().catch(err => {
     console.error('Failed to connect to MySQL:', err);
     if (process.env.VERCEL !== '1') process.exit(1);
@@ -152,11 +154,11 @@ app.get('/api/v1/android/min-version', (req, res) => {
     });
 });
 
-// Backward compatibility - przekierowanie ze starych endpointów do v1
+// Backward compatibility - przekierowanie ze starych endpointĂłw do v1
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/email', emailRoutes);
-app.use('/api/send-email', emailRoutes); // Alternatywna ścieżka dla /api/send-email
-app.use('/api/send-mail', emailRoutes); // Alternatywna ścieżka dla /api/send-mail (testowy endpoint)
+app.use('/api/send-email', emailRoutes); // Alternatywna Ĺ›cieĹĽka dla /api/send-email
+app.use('/api/send-mail', emailRoutes); // Alternatywna Ĺ›cieĹĽka dla /api/send-mail (testowy endpoint)
 app.use('/api/calendars', calendarRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/promocodes', promocodeRoutes);
@@ -168,7 +170,7 @@ app.use('/api/gift-ideas', giftIdeasRoutes);
 app.use('/api/special', specialPreview.router);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/assets', express.static(path.join(__dirname, '../../assets')));
-app.use('/health', healthRoutes); // Alternatywna ścieżka dla healthcheck
+app.use('/health', healthRoutes); // Alternatywna Ĺ›cieĹĽka dla healthcheck
 
 // Backward compatibility - Android min version endpoint
 app.get('/api/android/min-version', (req, res) => {
@@ -188,7 +190,7 @@ io.on('connection', (socket) => {
 app.use((err, req, res, next) => {
     if (err?.type === 'entity.too.large' || err?.status === 413 || err?.name === 'PayloadTooLargeError') {
         return res.status(413).json({
-            error: 'Zdjęcia są za duże do wysłania. Wczytaj JPG, PNG, WEBP lub GIF do 10 MB.',
+            error: 'ZdjÄ™cia sÄ… za duĹĽe do wysĹ‚ania. Wczytaj JPG, PNG, WEBP lub GIF do 10 MB.',
         });
     }
     console.error(err.stack);
@@ -197,7 +199,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-// Uruchom serwer tylko jeśli nie jesteśmy na Vercel ani w testach Jest
+// Uruchom serwer tylko jeĹ›li nie jesteĹ›my na Vercel ani w testach Jest
 if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'test') {
     server.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);

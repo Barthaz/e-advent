@@ -27,6 +27,7 @@ import {
   EMAIL_TYPE_LABELS,
 } from '../utils/constants';
 import { isPhysicalProduct } from '@e-advent/products';
+import { getInpostStatusLabel } from '../utils/inpostStatus';
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -36,7 +37,7 @@ export default function OrderDetailPage() {
 
   const { data: order, isLoading, isError, refetch } = useGetOrderQuery(orderId, { skip: !orderId });
   const [patchOrder, { isLoading: isSaving }] = usePatchOrderMutation();
-  const { data: emails = [], isLoading: emailsLoading } = useGetOrderEmailsQuery(orderId, { skip: !orderId });
+  const { data: emails = [], isLoading: emailsLoading, refetch: refetchEmails } = useGetOrderEmailsQuery(orderId, { skip: !orderId });
   const [sendPaidEmail, { isLoading: isSendingPaid }] = useSendPaidOrderEmailMutation();
   const [sendShippingEmail, { isLoading: isSendingShipping }] = useSendShippingEmailMutation();
 
@@ -128,6 +129,7 @@ export default function OrderDetailPage() {
   const hasPhysical = (order.items ?? []).some((item) => isPhysicalProduct(item.sku))
     || order.product_type === 'scratch'
     || order.product_type === 'letter';
+  const isInpost = Boolean(order.inpostDelivery);
   const trackingReady = Boolean((form.tracking_number ?? order.tracking_number ?? '').trim());
   const canSendPaid = order.status === 'succeeded';
 
@@ -159,7 +161,7 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {order.inpostDelivery && <InpostShipmentCard orderId={orderId} delivery={order.inpostDelivery} paid={order.status === 'succeeded'} onRefresh={refetch} />}
+      {order.inpostDelivery && <InpostShipmentCard orderId={orderId} delivery={order.inpostDelivery} paid={order.status === 'succeeded'} onRefresh={() => { refetch(); refetchEmails(); }} />}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* ── Lewa kolumna ── */}
         <div className="lg:col-span-2 space-y-5">
@@ -470,6 +472,15 @@ export default function OrderDetailPage() {
                   label="Dostawa"
                   value={getDeliveryTypeLabel(order.delivery_type, order.product_type)}
                 />
+                {isInpost && (
+                  <>
+                    <Row label="Status InPost" value={getInpostStatusLabel(order.inpost_status)} />
+                    <Row label="ID przesyłki" value={<span className="font-mono text-xs">{order.inpost_shipment_id ?? '—'}</span>} />
+                    <Row label="Etykieta" value={order.label_created_at ? formatDate(order.label_created_at) : '—'} />
+                    <Row label="Wysłano" value={order.shipped_at ? formatDate(order.shipped_at) : '—'} />
+                    <Row label="Doręczono" value={order.delivered_at ? formatDate(order.delivered_at) : '—'} />
+                  </>
+                )}
               </div>
               <div className="border-t border-gray-100 pt-3 mt-1">
                 <Row
@@ -528,6 +539,7 @@ export default function OrderDetailPage() {
             <p className="text-xs text-gray-500 mb-4">
               Webhook wysyła maile po opłaceniu automatycznie. Te przyciski służą do ręcznej wysyłki,
               gdy coś nie dotrze.
+              {isInpost && ' Mail „Paczka przygotowana” wychodzi sam przy pierwszym pobraniu etykiety InPost; o nadaniu i odbiorze informuje klienta InPost.'}
             </p>
             <div className="space-y-2 mb-4">
               <button
@@ -549,7 +561,7 @@ export default function OrderDetailPage() {
                   </>
                 )}
               </button>
-              {hasPhysical && (
+              {hasPhysical && !isInpost && (
                 <button
                   type="button"
                   onClick={handleSendShipping}
@@ -570,7 +582,7 @@ export default function OrderDetailPage() {
                   )}
                 </button>
               )}
-              {hasPhysical && !trackingReady && (
+              {hasPhysical && !isInpost && !trackingReady && (
                 <p className="text-xs text-gray-400">
                   Mail o wysyłce wymaga zapisanego numeru listu przewozowego.
                 </p>

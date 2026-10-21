@@ -9,6 +9,8 @@ const {
   buildInteractiveAccessEmailText,
   buildShippingEmail,
   buildShippingEmailText,
+  buildShipmentPreparedEmail,
+  buildShipmentPreparedEmailText,
   buildDailyWindowEmail,
   buildDailyWindowEmailText,
   buildCollaborationInviteEmail,
@@ -30,6 +32,13 @@ const TEMPLATES = [
     description: 'Link i kod dostępu do kalendarza interaktywnego po płatności.',
     trigger: 'Webhook Stripe / aktywacja darmowa / ręczne wysłanie',
     subject: '🎄 Twój Kalendarz Adwentowy: {tytuł}',
+  },
+  {
+    id: 'shipment_prepared',
+    name: 'Paczka przygotowana',
+    description: 'Numer przesyłki InPost i link do śledzenia, gdy etykieta jest gotowa. Wysyłany raz na zamówienie.',
+    trigger: 'Panel — automatycznie przy pierwszym „Pobierz etykietę PDF”',
+    subject: 'Twoja paczka e-Advent jest przygotowana do wysyłki',
   },
   {
     id: 'shipping',
@@ -119,6 +128,24 @@ function mockShipping() {
   };
 }
 
+function mockShipmentPrepared() {
+  const payload = {
+    orderId: '000042',
+    items: [
+      { sku: 'scratch-a4', quantity: 1, unitPrice: 49 },
+      { sku: 'santa-letter', quantity: 1, unitPrice: 29 },
+    ],
+    trackingNumber: '520000012345678901234567',
+    deliveryType: 'parcel_inpost',
+    parcelLocker: { id: 'KRA01M', name: 'Paczkomat KRA01M', address: 'ul. Testowa 1, 30-001 Kraków' },
+  };
+  return {
+    subject: 'Twoja paczka e-Advent jest przygotowana do wysyłki',
+    html: buildShipmentPreparedEmail(payload),
+    text: buildShipmentPreparedEmailText(payload),
+  };
+}
+
 function mockDailyWindow() {
   const day = 3;
   const year = 2026;
@@ -163,6 +190,7 @@ function mockCollaborationInvite() {
 const PREVIEW_BUILDERS = {
   order_confirmation: mockOrderConfirmation,
   interactive_access: mockInteractiveAccess,
+  shipment_prepared: mockShipmentPrepared,
   shipping: mockShipping,
   daily_window: mockDailyWindow,
   collaboration_invite: mockCollaborationInvite,

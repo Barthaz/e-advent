@@ -100,7 +100,7 @@ async function main() {
     );
 
     console.log(`Backfilling ${orders.length} orders into order_items...`);
-    const { v4: uuidv4 } = require('uuid');
+    const { randomUUID: uuidv4 } = require('node:crypto');
     const { getProduct, computeOrderTotals } = require('../config/products');
 
     for (const order of orders) {

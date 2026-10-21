@@ -721,6 +721,91 @@ function buildShippingEmailText({
   return lines.join('\n');
 }
 
+function inpostTrackingUrl(trackingNumber) {
+  return `https://inpost.pl/sledzenie-przesylek?number=${encodeURIComponent(trackingNumber || '')}`;
+}
+
+function buildShipmentPreparedEmail({
+  orderId,
+  items = [],
+  trackingNumber,
+  deliveryType,
+  shipping = {},
+  parcelLocker = null,
+  logoUrl,
+}) {
+  const carrier = deliveryLabel(deliveryType);
+  const destinationHtml = deliveryType === 'parcel_inpost' && parcelLocker
+    ? `${sectionLabel('Paczkomat')}
+      <p style="margin:0;line-height:1.55;color:#2f3a30 !important;font-size:13px;">
+        ${escapeHtml(parcelLocker.name || parcelLocker.id || '')}<br>
+        ${escapeHtml(parcelLocker.address || '')}
+      </p>`
+    : `${sectionLabel('Adres dostawy')}
+      <p style="margin:0;line-height:1.55;color:#2f3a30 !important;font-size:13px;">
+        ${escapeHtml(shipping.fullName || '')}<br>
+        ${escapeHtml(shipping.street || '')}<br>
+        ${escapeHtml(shipping.postalCode || '')} ${escapeHtml(shipping.city || '')}
+      </p>`;
+
+  const bodyHtml = `
+    <p style="margin:0 0 12px 0; text-align:center; font-size:14px; color:#2f3a30 !important;">Twoja paczka e-Advent jest spakowana i ma już etykietę nadawczą.</p>
+    <p style="margin:0 0 18px 0; text-align:center; color:#5a6358 !important; font-size:12px; line-height:1.55;">Wkrótce przekażemy ją InPost. O kolejnych etapach (nadanie, gotowość do odbioru) InPost poinformuje Cię SMS-em i e-mailem.</p>
+    ${sectionLabel('Numer przesyłki')}
+    <p style="margin:0 0 6px 0; text-align:center; font-size:18px; font-weight:bold; letter-spacing:1.5px; color:#0d4a2e !important; word-break:break-all; font-family:'Helvetica Neue',Arial,sans-serif;">${escapeHtml(trackingNumber || '—')}</p>
+    <p style="margin:0 0 18px 0; text-align:center; color:#5a6358 !important; font-size:13px;">Przewoźnik: <strong style="color:#0d4a2e !important;">${escapeHtml(carrier)}</strong></p>
+    <p style="text-align:center;margin:0 0 22px;">${ctaButton(inpostTrackingUrl(trackingNumber), 'Śledź przesyłkę')}</p>
+    ${sectionLabel('Zamówienie')}
+    <p style="margin:0 0 18px 0; text-align:center; color:#2f3a30 !important; font-size:14px; font-family:'Helvetica Neue',Arial,sans-serif;">${escapeHtml(orderId || '—')}</p>
+    ${sectionLabel('Zawartość')}
+    ${itemsTableHtml(items)}
+    <div style="margin-top:16px;">${destinationHtml}</div>
+  `;
+
+  return emailShell({
+    title: 'Paczka przygotowana do wysyłki',
+    subtitle: carrier,
+    preheader: `Twoja paczka e-Advent jest gotowa do nadania. Numer przesyłki: ${trackingNumber || ''}`,
+    bodyHtml,
+    logoUrl,
+  });
+}
+
+function buildShipmentPreparedEmailText({
+  orderId,
+  items = [],
+  trackingNumber,
+  deliveryType,
+  shipping = {},
+  parcelLocker = null,
+}) {
+  const lines = [
+    'Twoja paczka e-Advent jest spakowana i ma już etykietę nadawczą.',
+    'O kolejnych etapach (nadanie, gotowość do odbioru) InPost poinformuje Cię SMS-em i e-mailem.',
+    '',
+    `Numer przesyłki: ${trackingNumber || '—'}`,
+    `Śledzenie: ${inpostTrackingUrl(trackingNumber)}`,
+    `Przewoźnik: ${deliveryLabel(deliveryType)}`,
+    `Zamówienie: ${orderId || '—'}`,
+    '',
+    'Zawartość:',
+    ...(items || []).map((i) => `- ${itemDisplayName(i.sku, i.metadata)} × ${Math.max(1, parseInt(i.quantity, 10) || 1)}`),
+    '',
+  ];
+  if (deliveryType === 'parcel_inpost' && parcelLocker) {
+    lines.push('Paczkomat:', parcelLocker.name || parcelLocker.id || '', parcelLocker.address || '');
+  } else {
+    lines.push(
+      'Adres dostawy:',
+      shipping.fullName || '',
+      shipping.street || '',
+      `${shipping.postalCode || ''} ${shipping.city || ''}`.trim(),
+    );
+  }
+  lines.push('', `© ${new Date().getFullYear()} e-Advent`);
+  return lines.join('\n');
+}
+
 function dailyWindowSubject(day, calendarTitle) {
   return `Dzień ${day} kalendarza adwentowego — ${calendarTitle || 'e-Advent'}`;
 }
@@ -744,4 +829,6 @@ module.exports = {
   buildDailyWindowEmailText,
   buildShippingEmail,
   buildShippingEmailText,
+  buildShipmentPreparedEmail,
+  buildShipmentPreparedEmailText,
 };

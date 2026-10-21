@@ -8,7 +8,4 @@ module.exports = {
   testTimeout: 30000,
   verbose: true,
   forceExit: true,
-  moduleNameMapper: {
-    '^uuid$': '<rootDir>/tests/mocks/uuid.js',
-  },
 };

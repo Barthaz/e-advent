@@ -39,6 +39,10 @@ interface RawOrderListRow {
   parcel_locker_id?: string;
   parcel_locker_name?: string;
   tracking_number?: string;
+  inpost_shipment_id?: string | null;
+  inpost_status?: string | null;
+  shipped_at?: string | null;
+  delivered_at?: string | null;
   calendar_id?: string;
   stripe_payment_intent_id?: string;
   item_count?: number | string;
@@ -65,6 +69,11 @@ interface RawOrderDetail {
   fulfillmentStatus?: string;
   fulfillmentNotes?: string;
   trackingNumber?: string;
+  inpostShipmentId?: string | null;
+  inpostStatus?: string | null;
+  labelCreatedAt?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
   customerEmail?: string;
   customerName?: string;
   customerPhone?: string;
@@ -73,8 +82,11 @@ interface RawOrderDetail {
   deliveryType?: string;
   shipping?: {
     street?: string;
+    buildingNumber?: string | null;
+    apartmentNumber?: string | null;
     city?: string;
     postalCode?: string;
+    country?: string | null;
   };
   parcelLocker?: {
     id?: string;
@@ -243,6 +255,10 @@ export function mapOrderListItem(row: RawOrderListRow): OrderListItem {
     vat_rate: row.vat_rate != null ? toNumber(row.vat_rate) : undefined,
     currency: row.currency || 'pln',
     tracking_number: row.tracking_number ?? null,
+    inpost_shipment_id: row.inpost_shipment_id ?? null,
+    inpost_status: row.inpost_status ?? null,
+    shipped_at: row.shipped_at ?? null,
+    delivered_at: row.delivered_at ?? null,
     shipping_city: row.shipping_city ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at ?? null,
@@ -305,13 +321,21 @@ export function mapOrderDetail(raw: RawOrderDetail): OrderDetail {
     vat_rate: raw.vatRate != null ? toNumber(raw.vatRate) : undefined,
     currency: raw.currency || 'pln',
     tracking_number: raw.trackingNumber ?? null,
+    inpost_shipment_id: raw.inpostShipmentId ?? null,
+    inpost_status: raw.inpostStatus ?? null,
+    shipped_at: raw.shippedAt ?? null,
+    delivered_at: raw.deliveredAt ?? null,
+    label_created_at: raw.labelCreatedAt ?? null,
     shipping_city: raw.shipping?.city ?? null,
     created_at: raw.createdAt ?? '',
     updated_at: raw.updatedAt ?? null,
     inpostDelivery: raw.metadata?.inpostDelivery,
     fulfillment_notes: raw.fulfillmentNotes ?? null,
     shipping_street: raw.shipping?.street ?? null,
+    shipping_building_number: raw.shipping?.buildingNumber ?? null,
+    shipping_apartment_number: raw.shipping?.apartmentNumber ?? null,
     shipping_postal_code: raw.shipping?.postalCode ?? null,
+    shipping_country: raw.shipping?.country ?? null,
     parcel_locker_id: raw.parcelLocker?.id ?? null,
     parcel_locker_name: raw.parcelLocker?.name ?? null,
     parcel_locker_address: raw.parcelLocker?.address ?? null,
@@ -353,12 +377,20 @@ export function mapPatchedOrder(raw: Record<string, unknown>): OrderDetail {
     vat_rate: raw.vat_rate != null ? toNumber(raw.vat_rate as number | string) : undefined,
     currency: (raw.currency as string) || 'pln',
     tracking_number: (raw.tracking_number as string) ?? null,
+    inpost_shipment_id: (raw.inpost_shipment_id as string) ?? null,
+    inpost_status: (raw.inpost_status as string) ?? null,
+    shipped_at: (raw.shipped_at as string) ?? null,
+    delivered_at: (raw.delivered_at as string) ?? null,
+    label_created_at: (raw.label_created_at as string) ?? null,
     shipping_city: (raw.shipping_city as string) ?? null,
     created_at: (raw.created_at as string) ?? '',
     updated_at: (raw.updated_at as string) ?? null,
     fulfillment_notes: (raw.fulfillment_notes as string) ?? null,
     shipping_street: (raw.shipping_street as string) ?? null,
+    shipping_building_number: (raw.shipping_building_number as string) ?? null,
+    shipping_apartment_number: (raw.shipping_apartment_number as string) ?? null,
     shipping_postal_code: (raw.shipping_postal_code as string) ?? null,
+    shipping_country: (raw.shipping_country as string) ?? null,
     parcel_locker_id: (raw.parcel_locker_id as string) ?? null,
     parcel_locker_name: (raw.parcel_locker_name as string) ?? null,
     parcel_locker_address: (raw.parcel_locker_address as string) ?? null,

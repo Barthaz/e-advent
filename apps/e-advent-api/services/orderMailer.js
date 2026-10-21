@@ -13,6 +13,8 @@ const {
   buildInteractiveAccessEmailText,
   buildShippingEmail,
   buildShippingEmailText,
+  buildShipmentPreparedEmail,
+  buildShipmentPreparedEmailText,
   buildDailyWindowEmail,
   buildDailyWindowEmailText,
 } = require('./orderEmails');
@@ -267,6 +269,39 @@ async function sendShippingEmailForOrder(order, triggeredBy = 'admin') {
   };
 }
 
+/** Sent once per order, on the first label download; repeated downloads are skipped. */
+async function sendShipmentPreparedEmail(order, triggeredBy = 'admin') {
+  if (!order) throw MailerError('Zamówienie nie istnieje', 404, 'ORDER_NOT_FOUND');
+  const trackingNumber = String(order.trackingNumber || '').trim();
+  if (!trackingNumber) {
+    throw MailerError('InPost nie zwrócił jeszcze numeru przesyłki. Odśwież status i pobierz etykietę ponownie.', 409, 'NO_TRACKING');
+  }
+  const customerEmail = order.customerEmail;
+  if (!customerEmail) throw MailerError('Brak adresu email klienta', 400, 'NO_EMAIL');
+  if (await EmailSend.hasSuccessfulOrderEmail(order.id, null, 'shipment_prepared', customerEmail)) {
+    return { sent: 0, failed: 0, skipped: true, results: [] };
+  }
+
+  const payload = {
+    orderId: customerFacingOrderNumber(order) || '—',
+    items: orderLineItems(order),
+    trackingNumber,
+    deliveryType: order.deliveryType,
+    shipping: order.shippingAddress || {},
+    parcelLocker: order.parcelLocker || null,
+  };
+  const result = await dispatchAndLog({
+    type: 'shipment_prepared',
+    to: customerEmail,
+    subject: 'Twoja paczka e-Advent jest przygotowana do wysyłki',
+    html: buildShipmentPreparedEmail(payload),
+    text: buildShipmentPreparedEmailText(payload),
+    orderId: order.id,
+    triggeredBy,
+  });
+  return { sent: result.success ? 1 : 0, failed: result.success ? 0 : 1, skipped: false, results: [result] };
+}
+
 async function sendDailyWindowEmail(calendar, day, { force = true, triggeredBy = 'admin' } = {}) {
   if (!calendar) throw MailerError('Kalendarz nie istnieje', 404, 'CALENDAR_NOT_FOUND');
   const method = calendar.data && calendar.data.openingMethod;
@@ -446,6 +481,7 @@ module.exports = {
   sendPaidOrderEmailsById,
   sendShippingEmailForOrder,
   sendShippingEmailById,
+  sendShipmentPreparedEmail,
   sendDailyWindowEmail,
   sendTodaysDailyWindows,
   previewTodaysDailyWindows,

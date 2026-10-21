@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const { query, withNamedLocks } = require('../config/database');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('node:crypto');
 
 function generateEditToken() {
   return crypto.randomBytes(32).toString('hex');

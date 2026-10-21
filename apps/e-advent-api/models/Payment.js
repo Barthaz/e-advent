@@ -1,5 +1,5 @@
 const { query, withTransaction } = require('../config/database');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('node:crypto');
 const { formatOrderNumber } = require('../utils/orderNumber');
 const { DEFAULT_VAT_RATE, splitGrossAmount, roundPln } = require('../config/products');
 
@@ -91,6 +91,8 @@ function rowToPayment(row, items = []) {
       address: row.parcel_locker_address,
     } : null,
     trackingNumber:            row.tracking_number,
+    inpostShipmentId:          row.inpost_shipment_id || null,
+    inpostStatus:              row.inpost_status || null,
     fulfillmentStatus:         row.fulfillment_status,
     fulfillmentNotes:          row.fulfillment_notes,
     termsAcceptedAt:           row.terms_accepted_at,
@@ -206,8 +208,9 @@ const createPayment = async (paymentData) => withTransaction(async () => {
         currency, status,
         customer_email, customer_name, customer_phone,
         delivery_type, shipping_street, shipping_city, shipping_postal_code,
-        product_type, sku, fulfillment_status, metadata, parcel_locker_id, parcel_locker_name, parcel_locker_address)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        product_type, sku, fulfillment_status, metadata, parcel_locker_id, parcel_locker_name, parcel_locker_address,
+        shipping_building_number, shipping_apartment_number, shipping_country)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       calendarId,
@@ -234,6 +237,9 @@ const createPayment = async (paymentData) => withTransaction(async () => {
       paymentData.fulfillmentStatus      || 'pending',
       paymentData.metadata ? JSON.stringify(paymentData.metadata) : null,
       delivery?.point?.id || null, delivery?.point?.name || null, delivery?.point?.address || null,
+      delivery?.receiver?.address?.building_number || null,
+      delivery?.receiver?.address?.flat_number || null,
+      delivery ? (delivery.receiver?.address?.country_code || 'PL') : null,
     ]
   );
 

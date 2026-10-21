@@ -72,6 +72,7 @@ export const OPENING_METHOD_LABELS: Record<string, string> = {
 export const EMAIL_TYPE_LABELS: Record<string, string> = {
   order_confirmation: 'Potwierdzenie zamówienia',
   interactive_access: 'Dostęp do kalendarza',
+  shipment_prepared: 'Paczka przygotowana',
   shipping: 'Wysyłka paczki',
   daily_window: 'Okienko dnia',
   collaboration_invite: 'Zaproszenie do współpracy',

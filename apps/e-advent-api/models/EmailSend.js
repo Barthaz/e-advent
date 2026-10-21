@@ -1,10 +1,11 @@
 const { query } = require('../config/database');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('node:crypto');
 
 const VALID_TYPES = new Set([
   'order_confirmation',
   'interactive_access',
   'shipping',
+  'shipment_prepared',
   'daily_window',
   'collaboration_invite',
 ]);

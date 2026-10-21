@@ -1,5 +1,8 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetOrdersQuery } from '../api/ordersApi';
+import { useGetOrdersQuery, useSyncInpostMutation } from '../api/ordersApi';
+import { useToast } from '../hooks/useToast';
+import { getInpostStatusLabel } from '../utils/inpostStatus';
 import { useOrderFilters } from '../hooks/useOrderFilters';
 import DataTable, { type Column } from '../components/ui/DataTable';
 import FilterBar from '../components/ui/FilterBar';
@@ -24,6 +27,26 @@ export default function OrdersPage() {
   const { filters, setFilter, setPage, resetFilters, activeFilters } = useOrderFilters();
 
   const { data, isLoading, isError, isFetching } = useGetOrdersQuery(filters);
+  const [syncInpost, { isLoading: isSyncing }] = useSyncInpostMutation();
+  const toast = useToast();
+
+  useEffect(() => {
+    const key = 'inpost-sync-at';
+    if (Date.now() - Number(sessionStorage.getItem(key) || 0) < 5 * 60 * 1000) return;
+    sessionStorage.setItem(key, String(Date.now()));
+    syncInpost().unwrap().catch(() => {});
+  }, [syncInpost]);
+
+  const handleSync = async () => {
+    try {
+      const result = await syncInpost().unwrap();
+      sessionStorage.setItem('inpost-sync-at', String(Date.now()));
+      if (result.skipped) toast.error('InPost nie jest skonfigurowany w API.');
+      else toast.success(`Zsynchronizowano ${result.refreshed} przesyłek${result.failed ? `, błędy: ${result.failed}` : ''}.`);
+    } catch {
+      toast.error('Nie udało się zsynchronizować statusów InPost.');
+    }
+  };
 
   const columns: Column<OrderListItem>[] = [
     {
@@ -123,7 +146,12 @@ export default function OrdersPage() {
       key: 'tracking',
       header: 'Nr przesyłki',
       render: (row) => (
-        <span className="font-mono text-xs text-gray-500">{row.tracking_number ?? '—'}</span>
+        <div>
+          <span className="font-mono text-xs text-gray-500 block">{row.tracking_number ?? '—'}</span>
+          {row.inpost_status && (
+            <span className="text-[11px] text-christmas-green">InPost: {getInpostStatusLabel(row.inpost_status)}</span>
+          )}
+        </div>
       ),
     },
     {
@@ -154,12 +182,18 @@ export default function OrdersPage() {
             </p>
           )}
         </div>
-        {isFetching && !isLoading && (
-          <div className="flex items-center gap-2 text-sm text-christmas-green">
-            <span className="spinner spinner-sm" />
-            Odświeżam…
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {isFetching && !isLoading && (
+            <div className="flex items-center gap-2 text-sm text-christmas-green">
+              <span className="spinner spinner-sm" />
+              Odświeżam…
+            </div>
+          )}
+          <button type="button" className="btn-secondary px-3 py-2 text-sm" disabled={isSyncing} onClick={handleSync}>
+            <i className={`fa-solid fa-truck-fast ${isSyncing ? 'animate-pulse' : ''}`} />
+            {isSyncing ? 'Synchronizuję…' : 'Synchronizuj InPost'}
+          </button>
+        </div>
       </div>
 
       {/* Filtry */}

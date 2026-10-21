@@ -9,10 +9,17 @@ describe('emailTemplates catalog', () => {
     expect(list.map((t) => t.id)).toEqual([
       'order_confirmation',
       'interactive_access',
+      'shipment_prepared',
       'shipping',
       'daily_window',
       'collaboration_invite',
     ]);
+  });
+
+  test('shipment prepared preview links InPost tracking', () => {
+    const preview = getEmailTemplatePreview('shipment_prepared');
+    expect(preview.html).toContain('inpost.pl/sledzenie-przesylek?number=520000012345678901234567');
+    expect(preview.text).toContain('KRA01M');
   });
 
   test('preview renders full HTML with mock order number', () => {

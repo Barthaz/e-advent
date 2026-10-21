@@ -26,11 +26,13 @@ async function main() {
   const args = process.argv.slice(2);
   if (args.length !== 1 || !['--test', '--prod'].includes(args[0])) throw new Error('Wybierz dokładnie jedną bazę: --test lub --prod');
   const prefix = args[0] === '--test' ? 'MYSQL_TEST_' : 'MYSQL_';
-  for (const key of ['HOST', 'DATABASE', 'USER', 'PASSWORD']) {
+  const host = process.env[prefix + 'HOST'] || process.env.MYSQL_HOST;
+  for (const key of ['DATABASE', 'USER', 'PASSWORD']) {
     if (!process.env[prefix + key]) throw new Error(`Missing ${prefix + key}`);
   }
+  if (!host) throw new Error(`Missing ${prefix}HOST`);
   const conn = await mysql.createConnection({
-    host: process.env[prefix + 'HOST'], port: Number(process.env[prefix + 'PORT'] || 3306),
+    host, port: Number(process.env[prefix + 'PORT'] || process.env.MYSQL_PORT || 3306),
     database: process.env[prefix + 'DATABASE'], user: process.env[prefix + 'USER'], password: process.env[prefix + 'PASSWORD'],
   });
   try { await migrate(conn); console.log('Checkout tables ready; existing order UUIDs and numbers unchanged.'); }

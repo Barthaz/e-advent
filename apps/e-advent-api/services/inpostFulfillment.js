@@ -3,7 +3,9 @@ const { query, withNamedLocks } = require('../config/database');
 const Payment = require('../models/Payment');
 const inpost = require('./inpost');
 const { orderFingerprint, canonical } = require('./orderIdentity');
+const { sendShipmentPreparedEmail } = require('./orderMailer');
 const parse = value => typeof value === 'string' ? JSON.parse(value) : value;
+const shippedStatuses = new Set(['dispatched_by_sender', 'collected_from_sender', 'taken_by_courier', 'adopted_at_source_branch', 'sent_from_source_branch', 'adopted_at_sorting_center', 'sent_from_sorting_center', 'adopted_at_target_branch', 'out_for_delivery', 'ready_to_pickup', 'avizo']);
 const confirmed = new Set(['confirmed', 'dispatched_by_sender', 'collected_from_sender', 'taken_by_courier', 'adopted_at_source_branch', 'sent_from_source_branch', 'adopted_at_sorting_center', 'sent_from_sorting_center', 'adopted_at_target_branch', 'out_for_delivery', 'ready_to_pickup', 'delivered', 'avizo', 'claimed', 'returned_to_sender']);
 
 async function load(id) {
@@ -53,6 +55,8 @@ function view(order, row) {
     shipmentId: row?.shipment_id || null, state: row?.state || 'not_created',
     providerStatus: row?.remote?.status || null, trackingNumber: row?.remote?.tracking_number || null,
     labelReady: Boolean(row && (row.state === 'confirmed' || confirmed.has(row.remote?.status))),
+    labelDownloadedAt: row?.label_downloaded_at || null,
+    shipped: shippedStatuses.has(row?.remote?.status) || row?.remote?.status === 'delivered',
     offerId: offer?.id || null, offerPrice: offerPrice(offer),
     canBuy: Boolean(offer && !row?.buy_attempted && row?.state !== 'confirmed' && !confirmed.has(row?.remote?.status)),
     needsReview: Boolean(row && !row.shipment_id && row.state !== 'create_rejected') || Boolean(row?.buy_attempted && row?.state !== 'confirmed' && !confirmed.has(row?.remote?.status)),
@@ -66,12 +70,15 @@ async function refreshRow(order, row) {
   row.remote = remote;
   row.state = row.state === 'confirmed' || confirmed.has(remote.status) ? 'confirmed' : row.buy_attempted ? 'buy_pending' : 'prepared';
   await query('UPDATE order_inpost_shipments SET remote = ?, state = ? WHERE order_id = ?', [JSON.stringify(remote), row.state, order.id]);
-  if (remote.tracking_number) await query('UPDATE orders SET tracking_number = ? WHERE id = ?', [remote.tracking_number, order.id]);
-  // Label creation is NOT physical dispatch. Only delivery is authoritative here.
-  if (['dispatched_by_sender', 'collected_from_sender', 'taken_by_courier', 'adopted_at_source_branch', 'sent_from_source_branch', 'adopted_at_sorting_center', 'sent_from_sorting_center', 'adopted_at_target_branch', 'out_for_delivery', 'ready_to_pickup'].includes(remote.status)) {
-    await query("UPDATE orders SET fulfillment_status = 'shipped' WHERE id = ? AND fulfillment_status IN ('pending', 'processing')", [order.id]);
+  await query('UPDATE orders SET inpost_shipment_id = ?, inpost_status = ?, tracking_number = COALESCE(?, tracking_number) WHERE id = ?',
+    [String(row.shipment_id), remote.status || null, remote.tracking_number || null, order.id]);
+  // Label creation is NOT physical dispatch. Only InPost scan statuses mark it shipped.
+  if (shippedStatuses.has(remote.status)) {
+    await query("UPDATE orders SET fulfillment_status = 'shipped', shipped_at = COALESCE(shipped_at, NOW()) WHERE id = ? AND fulfillment_status IN ('pending', 'processing')", [order.id]);
   }
-  if (remote.status === 'delivered') await query("UPDATE orders SET fulfillment_status = 'delivered' WHERE id = ?", [order.id]);
+  if (remote.status === 'delivered') {
+    await query("UPDATE orders SET fulfillment_status = 'delivered', shipped_at = COALESCE(shipped_at, NOW()), delivered_at = COALESCE(delivered_at, NOW()) WHERE id = ?", [order.id]);
+  }
   return row;
 }
 
@@ -127,4 +134,33 @@ async function operate(id, action, input = {}) {
     return view(order, row);
   });
 }
-module.exports = { operate, matches, offerPrice };
+
+// Called after a successful label download: the parcel is packed, so the order
+// moves to "processing" and the customer gets one "prepared" email.
+async function markLabelPrepared(id) {
+  await query("UPDATE orders SET label_created_at = COALESCE(label_created_at, NOW()), fulfillment_status = IF(fulfillment_status = 'pending', 'processing', fulfillment_status) WHERE id = ?", [id]);
+  await query('UPDATE order_inpost_shipments SET label_downloaded_at = COALESCE(label_downloaded_at, NOW()) WHERE order_id = ?', [id]);
+  try {
+    const result = await sendShipmentPreparedEmail(await Payment.findPaymentById(id), 'admin');
+    return { email: result.skipped ? 'skipped' : result.sent ? 'sent' : 'failed', error: result.results[0]?.error || null };
+  } catch (error) {
+    return { email: 'failed', error: error.message };
+  }
+}
+
+// Fallback for missing/undeliverable webhooks (e.g. localhost): poll open shipments.
+async function syncActiveShipments({ limit = 50 } = {}) {
+  let c;
+  try { c = inpost.config(); } catch { return { skipped: true, refreshed: 0, failed: 0 }; }
+  const [rows] = await query(`SELECT s.order_id FROM order_inpost_shipments s JOIN orders o ON o.id = s.order_id
+    WHERE s.shipment_id IS NOT NULL AND s.environment = ? AND s.organization_id = ?
+      AND o.fulfillment_status NOT IN ('delivered', 'cancelled')
+    ORDER BY s.updated_at ASC LIMIT ?`, [c.environment, c.organizationId, limit]);
+  let refreshed = 0, failed = 0;
+  for (const { order_id: orderId } of rows) {
+    try { await operate(orderId, 'refresh'); refreshed++; } catch { failed++; }
+  }
+  return { skipped: false, refreshed, failed };
+}
+
+module.exports = { operate, matches, offerPrice, markLabelPrepared, syncActiveShipments };

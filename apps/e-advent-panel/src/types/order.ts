@@ -52,6 +52,10 @@ export interface OrderListItem {
   vat_rate?: number;
   currency: string;
   tracking_number: string | null;
+  inpost_shipment_id: string | null;
+  inpost_status: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
   shipping_city: string | null;
   created_at: string;
   updated_at: string | null;
@@ -64,8 +68,12 @@ export interface OrderListItem {
 export interface OrderDetail extends OrderListItem {
   inpostDelivery?: import('../components/InpostShipmentCard').SavedInpostDelivery;
   fulfillment_notes: string | null;
+  label_created_at: string | null;
   shipping_street: string | null;
+  shipping_building_number: string | null;
+  shipping_apartment_number: string | null;
   shipping_postal_code: string | null;
+  shipping_country: string | null;
   parcel_locker_id: string | null;
   parcel_locker_name: string | null;
   parcel_locker_address: string | null;
