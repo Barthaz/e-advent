@@ -22,6 +22,7 @@ export default function ScratchCalendarView({
 }: ScratchCalendarViewProps) {
   const previewUrl = resolveScratchPreviewUrl(calendar.design_url);
   const busy = exporting != null;
+  const isLegacyFormat = Boolean(calendar.format && calendar.format !== 'A3');
 
   return (
     <div className="space-y-5">
@@ -30,7 +31,7 @@ export default function ScratchCalendarView({
           <div>
             <h2 className="heading-section">Design produkcyjny</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Format z zamówienia: <span className="font-semibold text-gray-700">{calendar.format || 'A4'}</span>
+              Format z zamówienia: <span className="font-semibold text-gray-700">{calendar.format || 'A3'}</span>
               {' · '}eksport PNG @ 600 DPI
             </p>
           </div>
@@ -38,7 +39,7 @@ export default function ScratchCalendarView({
             <button
               type="button"
               className="btn-secondary px-3 py-2 text-sm"
-              disabled={busy || !calendar.design_url}
+              disabled={busy || !calendar.design_url || isLegacyFormat}
               onClick={onExportPdf}
             >
               {exporting === 'pdf' ? (
@@ -51,7 +52,7 @@ export default function ScratchCalendarView({
             <button
               type="button"
               className="btn-green px-3 py-2 text-sm"
-              disabled={busy || !calendar.design_url}
+              disabled={busy || !calendar.design_url || isLegacyFormat}
               onClick={onExportPng}
             >
               {exporting === 'png' ? (
@@ -64,6 +65,11 @@ export default function ScratchCalendarView({
           </div>
         </div>
 
+        {isLegacyFormat && (
+          <p className="text-sm text-amber-800 mb-4" role="status">
+            Zamówienie archiwalne. Generator obsługuje obecnie wyłącznie format A3; zapisany format zamówienia pozostaje bez zmian.
+          </p>
+        )}
         {previewUrl ? (
           <ScratchDesignThumb imageSrc={previewUrl} />
         ) : (

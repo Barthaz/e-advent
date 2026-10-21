@@ -1,4 +1,4 @@
-const { query } = require('../config/database');
+const { query, withTransaction } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 const { formatOrderNumber } = require('../utils/orderNumber');
 const { DEFAULT_VAT_RATE, splitGrossAmount, roundPln } = require('../config/products');
@@ -52,6 +52,7 @@ function resolveItemVatFields(item) {
 
 function rowToPayment(row, items = []) {
   if (!row) return null;
+  const delivery = (typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata)?.inpostDelivery;
   const orderNumber = row.order_number != null ? Number(row.order_number) : null;
   return {
     _id:                       row.id,
@@ -76,11 +77,12 @@ function rowToPayment(row, items = []) {
     productType:               row.product_type,
     sku:                       row.sku,
     deliveryType:              row.delivery_type,
-    shippingAddress: row.shipping_street ? {
+    delivery: delivery || null,
+    shippingAddress: (row.shipping_street || delivery) ? {
       fullName:   row.customer_name,
-      street:     row.shipping_street,
-      city:       row.shipping_city,
-      postalCode: row.shipping_postal_code,
+      street:     row.shipping_street || '',
+      city:       row.shipping_city || '',
+      postalCode: row.shipping_postal_code || '',
       phone:      row.customer_phone,
     } : null,
     parcelLocker: row.parcel_locker_id ? {
@@ -123,15 +125,10 @@ function itemRowToItem(row) {
 }
 
 async function loadItemsForOrder(orderId) {
-  try {
-    const [rows] = await query(
-      'SELECT * FROM order_items WHERE order_id = ? ORDER BY created_at ASC',
-      [orderId]
-    );
-    return rows.map(itemRowToItem);
-  } catch {
-    return [];
-  }
+  const [rows] = await query(
+    'SELECT * FROM order_items WHERE order_id = ? ORDER BY created_at ASC', [orderId],
+  );
+  return rows.map(itemRowToItem);
 }
 
 async function loadPaymentWithItems(row) {
@@ -171,12 +168,13 @@ async function insertOrderItems(orderId, items) {
 
 // ── CRUD ───────────────────────────────────────────────────────────────────────
 
-const createPayment = async (paymentData) => {
+const createPayment = async (paymentData) => withTransaction(async () => {
   const id         = uuidv4();
   const calendarId = paymentData.productId || paymentData.calendar_id || null;
   const sa         = parseShippingAddress(
     paymentData.shippingAddress || paymentData.metadata?.shippingAddress || null
   );
+  const delivery = paymentData.metadata?.inpostDelivery;
   const productType = paymentData.productType || 'interactive';
   const items = paymentData.items || [];
   const hasPhysical = items.some((i) => i.requiresShipping)
@@ -208,8 +206,8 @@ const createPayment = async (paymentData) => {
         currency, status,
         customer_email, customer_name, customer_phone,
         delivery_type, shipping_street, shipping_city, shipping_postal_code,
-        product_type, sku, fulfillment_status, metadata)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        product_type, sku, fulfillment_status, metadata, parcel_locker_id, parcel_locker_name, parcel_locker_address)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       calendarId,
@@ -227,7 +225,7 @@ const createPayment = async (paymentData) => {
       resolveShippingCustomerName(sa),
 
       sa?.phone                          || null,
-      resolveDeliveryType(sa, hasPhysical),
+      delivery?.type || resolveDeliveryType(sa, hasPhysical),
       sa?.street                         || null,
       sa?.city                           || null,
       sa?.postalCode                     || null,
@@ -235,6 +233,7 @@ const createPayment = async (paymentData) => {
       paymentData.sku                    || 'interactive',
       paymentData.fulfillmentStatus      || 'pending',
       paymentData.metadata ? JSON.stringify(paymentData.metadata) : null,
+      delivery?.point?.id || null, delivery?.point?.name || null, delivery?.point?.address || null,
     ]
   );
 
@@ -253,7 +252,7 @@ const createPayment = async (paymentData) => {
   console.log(`Payment created with ID ${id}`);
   const [rows] = await query('SELECT * FROM orders WHERE id = ?', [id]);
   return loadPaymentWithItems(rows[0]);
-};
+});
 
 const findPaymentByStripeId = async (stripePaymentIntentId) => {
   const [rows] = await query(
@@ -277,7 +276,7 @@ const findPaymentByOrderNumber = async (orderNumber) => {
 
 const updatePaymentStatus = async (stripePaymentIntentId, status) => {
   await query(
-    'UPDATE orders SET status = ? WHERE stripe_payment_intent_id = ?',
+    "UPDATE orders SET status = ? WHERE stripe_payment_intent_id = ? AND status <> 'succeeded'",
     [status, stripePaymentIntentId]
   );
   return findPaymentByStripeId(stripePaymentIntentId);
@@ -433,7 +432,19 @@ const replaceOrderItems = async (orderId, items) => {
   await insertOrderItems(orderId, items);
 };
 
+async function updatePendingPayment(orderId, data, items) {
+  return withTransaction(async () => {
+    const [rows] = await query('SELECT id, status FROM orders WHERE id = ? FOR UPDATE', [orderId]);
+    if (!rows[0] || rows[0].status !== 'pending') throw new Error('Order is no longer pending');
+    await query('UPDATE orders SET stripe_payment_intent_id = ? WHERE id = ?', [data.stripePaymentIntentId, orderId]);
+    await updatePayment(data.stripePaymentIntentId, data);
+    await replaceOrderItems(orderId, items);
+    return findPaymentByStripeId(data.stripePaymentIntentId);
+  });
+}
+
 module.exports = {
+  updatePendingPayment,
   createPayment,
   findPaymentByStripeId,
   findPaymentById,

@@ -42,13 +42,16 @@ async function sealContent(calendarId, taskId, revealAt, payload) {
   const id = uuidv4();
   const now = new Date();
   const reveal = revealAt instanceof Date ? revealAt : new Date(revealAt);
+  if (!Number.isFinite(reveal.getTime()) || reveal <= now) {
+    throw Object.assign(new Error('Reveal date must be in the future'), { status: 400 });
+  }
   await query(
     `INSERT INTO date_gate_entries (id, calendar_id, task_id, reveal_at, sealed_payload, created_at)
      VALUES (?, ?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE sealed_payload = VALUES(sealed_payload), reveal_at = VALUES(reveal_at)`,
+     ON DUPLICATE KEY UPDATE id = id`,
     [id, calendarId, taskId, reveal, JSON.stringify(payload), now],
   );
-  return { sealed: true, revealAt: reveal.toISOString() };
+  return getSealedContent(calendarId, taskId);
 }
 
 async function getSealedContent(calendarId, taskId) {

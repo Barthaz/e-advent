@@ -1,6 +1,8 @@
 import type { CalendarFormat, ProductType } from '@e-advent/types';
 
 export interface ProductSkuConfig {
+  /** Historical SKU, unavailable for new purchases. */
+  discontinued?: boolean;
   sku: string;
   type: ProductType;
   slug: string;
@@ -75,7 +77,7 @@ export function getProduct(sku: string): ProductSkuConfig | null;
 export function isPhysicalProduct(sku: string): boolean;
 export function computeOrderTotals(
   items: Array<{ sku: string; quantity?: number }>,
-  options?: { vatRate?: number },
+  options?: { shippingAmount?: number; vatRate?: number },
 ): OrderTotals | null;
 export function getProductPrice(sku: string): number | null;
 export function getSkuForTypeAndFormat(

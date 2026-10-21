@@ -15,7 +15,7 @@ const JSON_LD = {
   '@type': 'CollectionPage',
   name: 'Kalendarze adwentowe — e-Advent',
   description:
-    'Personalizowane kalendarze adwentowe: interaktywny online od 9 zł lub fizyczna zdrapka od 49 zł.',
+    'Personalizowane kalendarze adwentowe: interaktywny online od 9 zł lub fizyczna zdrapka od 69 zł.',
   url: 'https://e-advent.pl/kalendarze-adwentowe',
   isPartOf: { '@id': 'https://e-advent.pl/#website' },
   inLanguage: 'pl-PL',
@@ -31,7 +31,7 @@ export default function CalendarsHub() {
     <>
       <SEOHead
         title="Kalendarze adwentowe — interaktywny i zdrapka | e-Advent"
-        description="Stwórz personalizowany kalendarz adwentowy: interaktywny online od 9 zł lub fizyczna zdrapka A4/A3 od 49 zł. Własne zadania, wysyłka Pocztą Polską. Idealny prezent na święta!"
+        description="Stwórz personalizowany kalendarz adwentowy: interaktywny online od 9 zł lub fizyczna zdrapka A3 od 69 zł. Własne zadania, wysyłka InPost. Idealny prezent na święta!"
         keywords="kalendarz adwentowy, kalendarze adwentowe, interaktywny kalendarz adwentowy, kalendarz adwentowy zdrapka, personalizowany kalendarz adwentowy, e-advent"
         canonical="https://e-advent.pl/kalendarze-adwentowe"
         jsonLd={JSON_LD}
@@ -88,7 +88,7 @@ export default function CalendarsHub() {
                 title={secondary.name}
                 description={secondary.shortDescription}
                 priceLabel={`od ${formatPrice(secondary.priceFrom)}`}
-                priceHint="Wysyłka Pocztą Polską · realizacja 3–5 dni roboczych"
+                priceHint="Wysyłka InPost · realizacja 3–5 dni roboczych"
                 features={secondary.features}
                 cta={{ label: 'Stwórz kalendarz', to: secondary.creatorRoute }}
                 tone="onLight"
@@ -152,9 +152,9 @@ export default function CalendarsHub() {
                 Fizyczna zdrapka adwentowa
               </h3>
               <p className="text-parchment-muted leading-relaxed mb-4">
-                Preferujesz coś materialnego? Kalendarz zdrapka w formacie A4 lub A3 to fizyczny
+                Preferujesz coś materialnego? Kalendarz zdrapka w formacie A3 to fizyczny
                 prezent z Twoją grafiką i zadaniami pod każdym okienkiem. Realizacja 3–5 dni
-                roboczych, wysyłka Pocztą Polską.
+                roboczych, wysyłka InPost.
               </p>
 
               <h3 className="font-display text-2xl md:text-3xl font-semibold text-parchment-text mt-8 mb-4">

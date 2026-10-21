@@ -31,13 +31,14 @@ function canCompleteEngine({ engine, completionRule, payload }) {
     }
 
     case 'CARD_FORM': {
-      const fields = payload.fields || {};
       const required = completionRule?.requiredFields ?? [];
-      const missing = required.filter((f) => !String(fields[f] ?? '').trim());
-      if (missing.length === 0 && Object.keys(fields).length > 0) {
-        return { canComplete: true };
-      }
-      if (required.length === 0 && Object.keys(fields).length > 0) {
+      const cards = Array.isArray(payload.cards) && payload.cards.length ? payload.cards : [payload];
+      const complete = cards.every((card) => {
+        const fields = card?.fields || {};
+        return required.every((key) => String(fields[key] ?? '').trim())
+          && Object.values(fields).some((value) => String(value ?? '').trim());
+      });
+      if (complete) {
         return { canComplete: true };
       }
       return { canComplete: false, reason: 'Wypełnij wymagane pola' };

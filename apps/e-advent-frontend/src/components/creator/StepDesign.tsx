@@ -23,7 +23,6 @@ interface PresetDesign {
 interface StepDesignProps {
   productType: ProductType;
   format: CalendarFormat;
-  setFormat: (f: CalendarFormat) => void;
   design: DesignSelection | null;
   setDesign: (d: DesignSelection) => void;
   validationError: string | null;
@@ -42,7 +41,7 @@ async function ensurePendingDraft(productType: ProductType): Promise<{ calendarI
     tasks: [],
     dates: [],
     productType,
-    sku: getSkuForTypeAndFormat(productType, 'A4') || 'scratch-a4',
+    sku: getSkuForTypeAndFormat(productType, 'A3') || 'scratch-a3',
   };
   const created = await createCalendar(draft);
   if (!created.editToken) {
@@ -55,7 +54,6 @@ async function ensurePendingDraft(productType: ProductType): Promise<{ calendarI
 export default function StepDesign({
   productType,
   format,
-  setFormat,
   design,
   setDesign,
   validationError,
@@ -106,29 +104,9 @@ export default function StepDesign({
       <h2 className="heading-section mb-4">Grafika i format</h2>
 
       <div className="mb-6">
-        <h3 className="font-semibold text-parchment-text mb-3">Wybierz format</h3>
-        <div className="grid grid-cols-2 gap-4">
-          {(['A4', 'A3'] as CalendarFormat[]).map((f) => {
-            const fSku = getSkuForTypeAndFormat(productType, f);
-            const fProduct = fSku ? getProduct(fSku) : null;
-            return (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setFormat(f)}
-                className={`format-option ${format === f ? 'format-option--selected' : ''}`}
-              >
-                <div className="format-option-label">{f}</div>
-                {fProduct ? (
-                  <PriceBreakdown
-                    basePrice={fProduct.basePrice}
-                    shippingCost={fProduct.shippingCost}
-                    variant="format"
-                  />
-                ) : null}
-              </button>
-            );
-          })}
+        <div className="format-option format-option--selected text-left">
+          <div className="format-option-label">Format A3</div>
+          <p className="text-parchment-muted text-sm mt-1">29,7 × 42 cm — miejsce na 24 świąteczne niespodzianki.</p>
         </div>
       </div>
 
@@ -198,7 +176,7 @@ export default function StepDesign({
       )}
 
       {product && (
-        <PriceBreakdown
+        <PriceBreakdown shippingPending
           basePrice={product.basePrice}
           shippingCost={product.shippingCost}
           variant="inline"

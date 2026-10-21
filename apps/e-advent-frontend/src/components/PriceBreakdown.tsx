@@ -5,6 +5,7 @@ export type PriceBreakdownVariant = 'inline' | 'panel' | 'checkout' | 'format';
 interface PriceBreakdownProps {
   basePrice: number;
   shippingCost: number;
+  shippingPending?: boolean;
   variant?: PriceBreakdownVariant;
   className?: string;
   totalLabel?: string;
@@ -15,6 +16,7 @@ interface PriceBreakdownProps {
 export default function PriceBreakdown({
   basePrice,
   shippingCost,
+  shippingPending = false,
   variant = 'inline',
   className = '',
   totalLabel = 'Razem',
@@ -22,6 +24,8 @@ export default function PriceBreakdown({
   productLabel = 'Produkty',
 }: PriceBreakdownProps) {
   const total = basePrice + shippingCost;
+
+  if (shippingPending) return <div className="price-breakdown"><p>Produkty: {formatPrice(basePrice)}</p><p>Dostawa InPost: wybierz sposób dostawy, aby obliczyć koszt.</p></div>;
 
   if (shippingCost === 0 && !freeShipping) {
     return (
@@ -41,7 +45,7 @@ export default function PriceBreakdown({
         <span>{formatPrice(basePrice)}</span>
       </div>
       <div className="price-breakdown-row">
-        <span>Wysyłka (Poczta Polska)</span>
+        <span>Dostawa InPost</span>
         <span>{freeShipping || shippingCost === 0 ? 'Gratis' : formatPrice(shippingCost)}</span>
       </div>
       <div className="price-breakdown-total">

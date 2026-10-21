@@ -5,13 +5,69 @@ const path = require('path');
 const { sniffImageFormat, isPdfSafeImageFormat } = require('../imageFormat');
 
 const SCRATCH_ASSETS_DIR = path.resolve(__dirname, '../../assets/scratch');
-const TEMPLATE_PATH = path.join(SCRATCH_ASSETS_DIR, 'template.png');
 const PRESETS_DIR = path.join(SCRATCH_ASSETS_DIR, 'presets');
+const GRAPHICS_DIR = path.join(SCRATCH_ASSETS_DIR, 'graphics');
+const DAYS_DIR = path.join(GRAPHICS_DIR, 'days');
 
 const PRESET_NAMES = new Set(['green', 'red', 'blue']);
 
-function getTemplatePath() {
-  return TEMPLATE_PATH;
+const GRAPHIC_FILES = {
+  logo: 'logo.png',
+  powody: '24_powody.png',
+  odkrywaj: 'odkrywaj_codziennie.png',
+  windowBox: 'window_box.png',
+  heart: 'heart.png',
+};
+
+/**
+ * Absolute path to a named scratch graphic (logo, headers, window box, …).
+ * @param {keyof typeof GRAPHIC_FILES} name
+ */
+function getGraphicPath(name) {
+  const file = GRAPHIC_FILES[name];
+  if (!file) {
+    const err = new Error(`Nieznana grafika scratch: ${name}`);
+    err.status = 500;
+    err.code = 'SCRATCH_GRAPHIC_UNKNOWN';
+    throw err;
+  }
+  return path.join(GRAPHICS_DIR, file);
+}
+
+/**
+ * Absolute path to day number badge 1..24.
+ * @param {number} day
+ */
+function getDayBadgePath(day) {
+  const n = Math.floor(Number(day));
+  if (!Number.isFinite(n) || n < 1 || n > 24) {
+    const err = new Error(`Nieprawidłowy numer dnia: ${day}`);
+    err.status = 500;
+    err.code = 'SCRATCH_DAY_INVALID';
+    throw err;
+  }
+  return path.join(DAYS_DIR, `${n}.png`);
+}
+
+function assertGraphicsPresent() {
+  for (const key of Object.keys(GRAPHIC_FILES)) {
+    const filePath = getGraphicPath(/** @type {keyof typeof GRAPHIC_FILES} */ (key));
+    if (!fs.existsSync(filePath)) {
+      const err = new Error(`Brak grafiki scratch: ${GRAPHIC_FILES[key]}`);
+      err.status = 500;
+      err.code = 'SCRATCH_GRAPHIC_MISSING';
+      throw err;
+    }
+  }
+  for (let day = 1; day <= 24; day += 1) {
+    const filePath = getDayBadgePath(day);
+    if (!fs.existsSync(filePath)) {
+      const err = new Error(`Brak grafiki numeru dnia: ${day}.png`);
+      err.status = 500;
+      err.code = 'SCRATCH_GRAPHIC_MISSING';
+      throw err;
+    }
+  }
 }
 
 /**
@@ -43,31 +99,7 @@ function readLocalPreset(name) {
   return fs.readFileSync(filePath);
 }
 
-async function fetchRemoteImage(url) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
-  try {
-    const res = await fetch(url, { signal: controller.signal });
-    if (!res.ok) {
-      const err = new Error(`Nie udało się pobrać grafiki designu (${res.status})`);
-      err.status = 422;
-      err.code = 'SCRATCH_DESIGN_FETCH_FAILED';
-      throw err;
-    }
-    const arrayBuffer = await res.arrayBuffer();
-    return Buffer.from(arrayBuffer);
-  } catch (error) {
-    if (error.code === 'SCRATCH_DESIGN_FETCH_FAILED') throw error;
-    const err = new Error(error.name === 'AbortError'
-      ? 'Timeout podczas pobierania grafiki designu'
-      : `Nie udało się pobrać grafiki designu: ${error.message}`);
-    err.status = 422;
-    err.code = 'SCRATCH_DESIGN_FETCH_FAILED';
-    throw err;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+const { readPdfImage: fetchRemoteImage } = require('../pdfImageSource');
 
 /**
  * Resolve calendar design_url to an image buffer suitable for PDF (jpeg/png).
@@ -91,7 +123,6 @@ async function resolveScratchDesignImage(designUrl) {
   } else if (/^https?:\/\//i.test(trimmed)) {
     buffer = await fetchRemoteImage(trimmed);
   } else if (trimmed.startsWith('/')) {
-    // Relative storefront path that is not a known preset — try FRONTEND_URL
     const base = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
     if (!base) {
       const err = new Error('Nie można rozwiązać względnej ścieżki designu (brak FRONTEND_URL)');
@@ -115,12 +146,18 @@ async function resolveScratchDesignImage(designUrl) {
     throw err;
   }
 
+  if (!preset) return require('../pdfImageSource').normalizePdfImage(buffer);
   return { buffer, format };
 }
 
 module.exports = {
   SCRATCH_ASSETS_DIR,
-  getTemplatePath,
+  GRAPHICS_DIR,
+  DAYS_DIR,
+  GRAPHIC_FILES,
+  getGraphicPath,
+  getDayBadgePath,
+  assertGraphicsPresent,
   matchPresetName,
   resolveScratchDesignImage,
 };

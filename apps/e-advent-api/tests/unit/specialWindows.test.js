@@ -44,6 +44,15 @@ describe('taskSanitizer', () => {
 });
 
 describe('completionRules', () => {
+  test.each([
+    [{}, false],
+    [{ fields: { answer: '  ' } }, false],
+    [{ fields: { answer: 'Treść' } }, true],
+    [{ cards: [{ fields: { answer: 'Pierwsza' } }, { fields: { answer: 'Druga' } }] }, true],
+    [{ cards: [{ fields: { answer: 'Pierwsza' } }, { fields: {} }] }, false],
+  ])('validates meaningful single-card and multi-card answers: %j', (payload, expected) => {
+    expect(canCompleteEngine({ engine: 'CARD_FORM', completionRule: { type: 'DEFAULT' }, payload }).canComplete).toBe(expected);
+  });
   test('quiz completes when finished', () => {
     const result = canCompleteEngine({
       engine: 'QUIZ',

@@ -40,7 +40,15 @@ const uploadLimiter = createLimiter({
   message: 'Zbyt wiele uploadów. Spróbuj ponownie później.',
 });
 
+const pdfLimiter = createLimiter({ windowMs: 15 * 60 * 1000, max: 20, message: 'Zbyt wiele eksportów PDF. Spróbuj później.' });
+const calendarAccessLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: isTestEnv ? 10000 : 20,
+  skipSuccessfulRequests: true, standardHeaders: true, legacyHeaders: false,
+  message: { error: 'Too many failed access attempts' },
+});
 module.exports = {
+  calendarAccessLimiter,
+  pdfLimiter,
   loginLimiter,
   createFreeLimiter,
   promocodeLimiter,

@@ -37,8 +37,9 @@ const SET_DESCRIPTIONS: Record<string, string> = {
   'Refleksja i relaks': 'Zadania na spokojne chwile refleksji i relaksu w grudniu.',
 };
 
+const sets = (catalog as { sets: CatalogSet[] }).sets || [];
+
 export default function CatalogTasksPage() {
-  const sets = (catalog as { sets: CatalogSet[] }).sets || [];
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -47,7 +48,7 @@ export default function CatalogTasksPage() {
     const tasks = sets.flatMap((set) => set.tasks);
     const special = tasks.filter((task) => task.isSpecial).length;
     return { total: tasks.length, special, standard: tasks.length - special };
-  }, [sets]);
+  }, []);
 
   const normalizedQuery = query.trim().toLowerCase();
 

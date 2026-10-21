@@ -47,10 +47,14 @@ export function canCompleteEngine(args: {
     }
 
     case 'CARD_FORM': {
-      const fields = (payload.fields as Record<string, string>) || {};
       const required = completionRule.requiredFields ?? [];
-      const missing = required.filter((f) => !String(fields[f] ?? '').trim());
-      if (missing.length === 0) {
+      const cards = Array.isArray(payload.cards) && payload.cards.length ? payload.cards : [payload];
+      const complete = cards.every((card) => {
+        const fields = (card?.fields as Record<string, unknown>) || {};
+        return required.every((key) => String(fields[key] ?? '').trim())
+          && Object.values(fields).some((value) => String(value ?? '').trim());
+      });
+      if (complete) {
         return { canComplete: true };
       }
       return { canComplete: false, reason: 'Wypełnij wymagane pola' };

@@ -1,15 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const Calendar = require('../models/Calendar');
-const Payment = require('../models/Payment');
+
+// Old orders retain their original format; new drafts can only produce A3.
+function normalizeScratchProduct(data, existing = {}) {
+  const merged = { ...existing, ...data };
+  if (merged.productType !== 'scratch' && !String(merged.sku || '').startsWith('scratch') && merged.format !== 'A4') return;
+  if ((merged.format && merged.format !== 'A3') || (merged.sku && merged.sku !== 'scratch-a3')) {
+    throw Object.assign(new Error('Kalendarz zdrapka jest dostępny wyłącznie w formacie A3. Wróć do kreatora i wybierz aktualny produkt.'), { status: 400 });
+  }
+  data.productType = 'scratch';
+  data.sku = 'scratch-a3';
+  data.format = 'A3';
+}
+const { withNamedLocks } = require('../config/database');
+const { cancelCalendarCheckout } = require('../services/checkoutPayment');
 const { sendEmail } = require('../config/email');
 const { body, validationResult } = require('express-validator');
 const {
   isFullDiscountPromo,
   isSkuAllowedForPromo,
-  normalizeCode,
 } = require('../config/promocodes');
-const { createFreeLimiter } = require('../middleware/rateLimits');
+const { createFreeLimiter, loginLimiter } = require('../middleware/rateLimits');
 const {
   buildInteractiveAccessEmail,
   buildInteractiveAccessEmailText,
@@ -23,14 +35,7 @@ const {
 } = require('../services/special/SpecialConfigRegistry');
 const specialWindowsRouter = require('./specialWindows');
 
-const generateAccessCode = () => {
-  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-};
+const { generateAccessCode } = require('../services/orderMailer');
 
 function calendarToResponse(calendar, { includeEditToken = false } = {}) {
   if (!calendar) return null;
@@ -62,7 +67,7 @@ function extractEditToken(req) {
 
 // ── POST /access ───────────────────────────────────────────────────────────────
 
-router.post('/access', [
+router.post('/access', loginLimiter, [
   body('email').isEmail().withMessage('Valid email is required'),
   body('accessCode').notEmpty().withMessage('Access code is required'),
 ], async (req, res) => {
@@ -75,7 +80,7 @@ router.post('/access', [
     const { email, accessCode } = req.body;
     const calendar = await Calendar.findCalendarByEmailAndAccessCode(email, accessCode);
 
-    if (!calendar) {
+    if (!calendar || calendar.status !== 'succeeded') {
       return res.status(404).json({
         error: 'Calendar not found',
         message: 'Nie znaleziono kalendarza dla podanego adresu email i kodu dostępu.',
@@ -85,9 +90,13 @@ router.post('/access', [
     res.json({ success: true, calendar: calendarToResponse(calendar) });
   } catch (error) {
     console.error('Error retrieving calendar by email and accessCode:', error);
-    res.status(500).json({ error: 'Failed to retrieve calendar', message: error.message });
+    res.status(error.status || 500).json({ error: 'Failed to retrieve calendar', message: error.message });
   }
 });
+
+function calendarLocked(handler) {
+  return (req, res, next) => withNamedLocks([`calendar:${req.body.calendarId}`], () => handler(req, res)).catch(next);
+}
 
 // ── POST /createFree ───────────────────────────────────────────────────────────
 
@@ -95,7 +104,7 @@ router.post('/createFree', createFreeLimiter, [
   body('calendarId').notEmpty().withMessage('Calendar ID is required'),
   body('email').isEmail().withMessage('Valid email is required'),
   body('promoCode').notEmpty().withMessage('Promo code is required'),
-], async (req, res) => {
+], calendarLocked(async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -119,13 +128,20 @@ router.post('/createFree', createFreeLimiter, [
       });
     }
 
-    if (calendar.status !== 'pending') {
+    if (calendar.status !== 'pending' && !(calendar.status === 'succeeded' && calendar.isFree)) {
       return res.status(400).json({
         error: 'Invalid calendar status',
         message: `Kalendarz ma status '${calendar.status}'. Darmowa aktywacja tylko dla statusu pending.`,
       });
     }
 
+    if (!Calendar.verifyEditToken(calendar, extractEditToken(req))) {
+      return res.status(403).json({ error: 'Forbidden', message: 'Brak ważnego tokena edycji kalendarza.' });
+    }
+    const ownerEmail = String(calendar.data?.email || '').trim().toLowerCase();
+    if (!ownerEmail || ownerEmail !== String(email).trim().toLowerCase()) {
+      return res.status(400).json({ error: 'Email mismatch', message: 'Adres musi być zgodny z adresem właściciela kalendarza.' });
+    }
     const sku = calendar.data?.sku || 'interactive';
     if (!isSkuAllowedForPromo(promoCode, sku)) {
       return res.status(403).json({
@@ -134,38 +150,12 @@ router.post('/createFree', createFreeLimiter, [
       });
     }
 
-    const acceptanceDate = new Date();
-    const accessCode = generateAccessCode();
-
-    const updatedCalendar = await Calendar.updateCalendar(calendarId, {
-      status: 'succeeded',
-      isFree: true,
-      accessCode,
-      fulfillmentStatus: 'delivered',
+    if (calendar.status === 'pending') await cancelCalendarCheckout(calendarId, { singleOnly: true });
+    const accessCode = calendar.accessCode || generateAccessCode();
+    const updatedCalendar = calendar.status === 'succeeded' ? calendar : await Calendar.updateCalendar(calendarId, {
+      status: 'succeeded', isFree: true, accessCode, fulfillmentStatus: 'delivered',
     });
-
-    if (!updatedCalendar) {
-      return res.status(404).json({
-        error: 'Calendar not found',
-        message: `Kalendarz o ID ${calendarId} nie został znaleziony podczas aktualizacji.`,
-      });
-    }
-
-    try {
-      const payments = await Payment.findPayments({ productId: calendarId });
-      if (payments && payments.length > 0) {
-        await Payment.updatePaymentByProductId(calendarId, {
-          amount: 0,
-          rabat: normalizeCode(promoCode).toUpperCase(),
-          termsAcceptedAt: acceptanceDate,
-          privacyPolicyAcceptedAt: acceptanceDate,
-          status: 'succeeded',
-          fulfillmentStatus: 'delivered',
-        });
-      }
-    } catch (paymentError) {
-      console.error('Error updating payment for free calendar:', paymentError);
-    }
+    if (!updatedCalendar) throw new Error('Calendar activation failed');
 
     const calendarData = updatedCalendar.data || calendar.data || {};
     const calendarTitle = calendarData.title || 'Twój Kalendarz Adwentowy';
@@ -180,7 +170,7 @@ router.post('/createFree', createFreeLimiter, [
     const emailText = buildInteractiveAccessEmailText({ calendarTitle, calendarLink, accessCode });
 
     const emailResult = await sendEmail({
-      to: email,
+      to: ownerEmail,
       subject: emailSubject,
       text: emailText,
       html: emailHtml,
@@ -190,24 +180,23 @@ router.post('/createFree', createFreeLimiter, [
       success: true,
       message: 'Kalendarz został pomyślnie aktywowany i email został wysłany',
       calendar: calendarToResponse(updatedCalendar),
-      accessCode,
       emailSent: true,
       emailMessageId: emailResult.messageId,
     });
   } catch (error) {
     console.error('Error creating free calendar:', error);
-    res.status(500).json({ error: 'Failed to create free calendar', message: error.message });
+    res.status(error.status || 500).json({ error: 'Failed to create free calendar', message: error.message });
   }
-});
+}));
 
 // ── POST /:id? — utwórz lub zaktualizuj kalendarz ─────────────────────────────
 
 router.post('/:id?', [
   body('calendar').optional().isObject().withMessage('Calendar must be an object'),
-  body('title').optional().isString(),
-  body('author').optional().isString(),
-  body('email').optional().isEmail(),
-  body('tasks').optional().isArray(),
+  body('calendar.title').optional().isString(),
+  body('calendar.author').optional().isString(),
+  body('calendar.email').optional().isEmail(),
+  body('calendar.tasks').optional().isArray(),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -256,6 +245,7 @@ router.post('/:id?', [
           });
         }
 
+        normalizeScratchProduct(data, existing.data);
         calendar = await Calendar.updateCalendarData(requestedId, data, existing.status);
         isUpdate = true;
         editTokenToReturn = existing.editToken;
@@ -264,6 +254,7 @@ router.post('/:id?', [
 
     if (!calendar) {
       // Always create with server UUID — never accept client id
+      normalizeScratchProduct(data);
       calendar = await Calendar.createCalendar({ data });
       editTokenToReturn = calendar.editToken;
     }
@@ -275,7 +266,7 @@ router.post('/:id?', [
     });
   } catch (error) {
     console.error('Error upserting calendar:', error);
-    res.status(500).json({ error: 'Failed to upsert calendar', message: error.message });
+    res.status(error.status || 500).json({ error: 'Failed to upsert calendar', message: error.message });
   }
 });
 
@@ -299,7 +290,7 @@ router.get('/:id', async (req, res) => {
     res.json({ success: true, calendar: calendarToResponse(calendar) });
   } catch (error) {
     console.error('Error retrieving calendar:', error);
-    res.status(500).json({ error: 'Failed to retrieve calendar', message: error.message });
+    res.status(error.status || 500).json({ error: 'Failed to retrieve calendar', message: error.message });
   }
 });
 
@@ -307,7 +298,7 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id', [
   body('calendar').optional().isObject(),
-  body('tasks').optional().isArray(),
+  body('calendar.tasks').optional().isArray(),
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -349,6 +340,7 @@ router.put('/:id', [
         });
       }
 
+      normalizeScratchProduct(data, existing.data);
       const calendar = await Calendar.updateCalendarData(id, data, existing.status);
       return res.json({
         success: true,
@@ -364,7 +356,7 @@ router.put('/:id', [
     });
   } catch (error) {
     console.error('Error updating calendar:', error);
-    res.status(500).json({ error: 'Failed to update calendar', message: error.message });
+    res.status(error.status || 500).json({ error: 'Failed to update calendar', message: error.message });
   }
 });
 
@@ -384,6 +376,9 @@ router.put('/:id/open/:day', async (req, res) => {
       return res.status(404).json({ error: 'Calendar not found' });
     }
 
+    if (calendar.status !== 'succeeded') {
+      return res.status(403).json({ error: 'Calendar is not active' });
+    }
     const updated = await Calendar.openTask(id, dayNum);
     const d = updated.data || {};
     const openedTask = findTaskByDay(updated, dayNum);
@@ -413,7 +408,7 @@ router.put('/:id/open/:day', async (req, res) => {
     if (error.message.includes('not found')) {
       return res.status(404).json({ error: error.message });
     }
-    res.status(500).json({ error: 'Failed to open task', message: error.message });
+    res.status(error.status || 500).json({ error: 'Failed to open task', message: error.message });
   }
 });
 

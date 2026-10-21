@@ -16,7 +16,7 @@ const {
   getSealedContent,
   resolveRevealAt,
 } = require('../services/special/DateGateService');
-const { uploadLimiter } = require('../middleware/rateLimits');
+const { uploadLimiter, pdfLimiter } = require('../middleware/rateLimits');
 const { imageUpload, storeImage } = require('../services/imageStore');
 const { sniffImageFormat, uploadRejectMessage, HEIC_ERROR, FORMAT_ERROR } = require('../services/imageFormat');
 
@@ -45,25 +45,8 @@ function payloadHasSealedContent(payload) {
   return false;
 }
 
-function redactDateGatedPayload(payload) {
-  if (!payload || typeof payload !== 'object') return { dateGateLocked: true };
-  const next = { ...payload, dateGateLocked: true };
-  if (next.fields && typeof next.fields === 'object') {
-    next.fields = Object.fromEntries(Object.keys(next.fields).map((key) => [key, '']));
-  }
-  if (typeof next.name === 'string') next.name = '';
-  if (Array.isArray(next.cards)) {
-    next.cards = next.cards.map((card) => {
-      if (!card || typeof card !== 'object') return card;
-      const redacted = { ...card };
-      if (typeof redacted.name === 'string') redacted.name = '';
-      if (redacted.fields && typeof redacted.fields === 'object') {
-        redacted.fields = Object.fromEntries(Object.keys(redacted.fields).map((key) => [key, '']));
-      }
-      return redacted;
-    });
-  }
-  return next;
+function redactDateGatedPayload() {
+  return { dateGateLocked: true, sealed: true, started: true };
 }
 
 function redactDateGatedProgress(progress) {
@@ -86,7 +69,7 @@ async function attachDateGate(calendarId, taskId, descriptor, progress) {
   if (sealed.sealed && !sealed.revealed) {
     return { progress: redactDateGatedProgress(progress), dateGate };
   }
-  return { progress, dateGate };
+  return { progress: sealed.sealed && progress ? { ...progress, payload: sealed.payload } : progress, dateGate };
 }
 
 function resolveSealRevealAt(body, descriptor) {
@@ -100,6 +83,10 @@ async function authorizeCalendar(req, res) {
   const calendar = await Calendar.findCalendarById(id);
   if (!calendar) {
     res.status(404).json({ error: 'Calendar not found' });
+    return null;
+  }
+  if (calendar.status !== 'succeeded') {
+    res.status(403).json({ error: 'Calendar is not active' });
     return null;
   }
   // UUID in the URL is the capability token; access code is only for
@@ -159,6 +146,10 @@ router.put('/:id/days/:day/special/progress', async (req, res) => {
     }
 
     const descriptor = getSpecialDescriptor(task.catalogTaskId);
+    if (hasDateGate(descriptor)) {
+      const sealed = await getSealedContent(calendar.id, task.catalogTaskId);
+      if (sealed.sealed) return res.status(409).json({ error: 'Sealed content cannot be changed' });
+    }
     const body = req.body || {};
     const progress = await SpecialProgressStore.upsertProgress(
       calendar.id,
@@ -187,7 +178,7 @@ router.put('/:id/days/:day/special/progress', async (req, res) => {
     res.json(resBody);
   } catch (error) {
     console.error('PUT special progress:', error);
-    res.status(500).json({ error: 'Failed to save progress', message: error.message });
+    res.status(error.status || 500).json({ error: 'Failed to save progress', message: error.message });
   }
 });
 
@@ -207,6 +198,7 @@ router.post('/:id/days/:day/special/complete', async (req, res) => {
       return res.status(404).json({ error: 'Special config not found' });
     }
 
+    if (!isPremiumCalendar(calendar)) return res.status(403).json({ error: 'Premium only' });
     const progress = await SpecialProgressStore.getProgress(calendar.id, task.catalogTaskId);
     const completion = canCompleteEngine({
       engine: descriptor.engine,
@@ -214,7 +206,7 @@ router.post('/:id/days/:day/special/complete', async (req, res) => {
       payload: progress?.payload || req.body?.payload || {},
     });
 
-    if (!completion.canComplete && !req.body?.force) {
+    if (!completion.canComplete) {
       return res.status(400).json({ error: 'Cannot complete', reason: completion.reason });
     }
 
@@ -301,7 +293,7 @@ router.post(
   },
 );
 
-router.post('/:id/days/:day/special/export/pdf', async (req, res) => {
+router.post('/:id/days/:day/special/export/pdf', pdfLimiter, async (req, res) => {
   try {
     const calendar = await authorizeCalendar(req, res);
     if (!calendar) return;
@@ -329,15 +321,12 @@ router.post('/:id/days/:day/special/export/pdf', async (req, res) => {
       });
     }
 
-    let payload = {};
-    try {
-      const progress = await SpecialProgressStore.getProgress(calendar.id, task.catalogTaskId);
-      payload = progress?.payload || {};
-    } catch (progressError) {
-      console.warn('PDF export: progress lookup skipped:', progressError.message);
-    }
+    const sealed = hasDateGate(descriptor) ? await getSealedContent(calendar.id, task.catalogTaskId) : null;
+    if (sealed?.sealed && !sealed.revealed) return res.status(403).json({ error: 'Content is date locked' });
+    const progress = await SpecialProgressStore.getProgress(calendar.id, task.catalogTaskId);
+    let payload = sealed?.sealed ? sealed.payload : (progress?.payload || {});
 
-    if (req.body?.payload && typeof req.body.payload === 'object') {
+    if (!sealed?.sealed && req.body?.payload && typeof req.body.payload === 'object') {
       payload = { ...payload, ...req.body.payload };
     }
 
@@ -359,6 +348,7 @@ router.post('/:id/days/:day/special/export/pdf', async (req, res) => {
   } catch (error) {
     console.error('POST special export/pdf:', error);
     const message = String(error?.message || '');
+    if (error.status === 400) return res.status(400).json({ error: message });
     if (/could not be decoded|wstawić zdjęcia do PDF/i.test(message)) {
       return res.status(400).json({
         error: 'Nie udało się wstawić zdjęcia do PDF. Wczytaj je ponownie jako JPG lub PNG.',

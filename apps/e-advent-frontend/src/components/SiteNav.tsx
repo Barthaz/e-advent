@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 
 const NAV_LINKS = [
   { to: '/', label: 'Strona główna', end: true },

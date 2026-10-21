@@ -4,14 +4,11 @@ import PageBackground from '../components/PageBackground';
 import ParchmentCard from '../components/ParchmentCard';
 import SEOHead from '../components/SEOHead';
 import {
-  FREE_SHIPPING_THRESHOLD,
-  SHIPPING_COST,
   formatPrice,
   getProduct,
-  getProductPrice,
   SANTA_CERTIFICATE_SKU,
 } from '../config/products';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 import { trackViewItem } from '../utils/analytics';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 import certificatePreview from '../assets/certyficate-preview.webp';
@@ -38,7 +35,7 @@ const FAQ = [
   },
   {
     q: 'Jak długo trwa wysyłka?',
-    a: 'Przygotowanie i wysyłka Pocztą Polską zwykle zajmują 3–5 dni roboczych od opłacenia zamówienia.',
+    a: 'Przygotowanie i wysyłka InPost zwykle zajmują 3–5 dni roboczych od opłacenia zamówienia.',
   },
   {
     q: 'Czym jest Certyfikat Grzecznego Dziecka?',
@@ -46,7 +43,7 @@ const FAQ = [
   },
   {
     q: 'Czy mogę zamówić kilka zestawów?',
-    a: 'Tak — dodaj więcej sztuk do koszyka. Przy produktach fizycznych o wartości od 100 zł wysyłka jest gratis.',
+    a: 'Tak — dodaj więcej sztuk do koszyka. Koszt dostawy InPost zależy od zawartości koszyka i wybranej metody dostawy.',
   },
   {
     q: 'Czy list jest personalizowany online?',
@@ -59,7 +56,7 @@ const JSON_LD = {
   '@type': 'Product',
   name: 'List do Świętego Mikołaja',
   description:
-    'Gotowy zestaw: 2 wersje listu, opisana koperta i naklejki świąteczne. Wysyłka Pocztą Polską.',
+    'Gotowy zestaw: 2 wersje listu, opisana koperta i naklejki świąteczne. Wysyłka InPost.',
   image: GALLERY.map((g) => `https://e-advent.pl${g.src}`),
   brand: { '@type': 'Brand', name: 'e-Advent' },
   offers: {
@@ -68,18 +65,6 @@ const JSON_LD = {
     priceCurrency: 'PLN',
     price: '29.00',
     availability: 'https://schema.org/InStock',
-    shippingDetails: {
-      '@type': 'OfferShippingDetails',
-      shippingRate: {
-        '@type': 'MonetaryAmount',
-        value: String(SHIPPING_COST),
-        currency: 'PLN',
-      },
-      shippingDestination: {
-        '@type': 'DefinedRegion',
-        addressCountry: 'PL',
-      },
-    },
   },
 };
 
@@ -95,7 +80,7 @@ export default function SantaLetterProduct() {
   const [formError, setFormError] = useState<string | null>(null);
 
   const basePrice = product?.basePrice ?? 29;
-  const standaloneTotal = getProductPrice(SKU) ?? basePrice + SHIPPING_COST;
+  const standaloneTotal = basePrice;
 
   useEffect(() => {
     trackViewItem({
@@ -141,7 +126,7 @@ export default function SantaLetterProduct() {
     <>
       <SEOHead
         title="List do Świętego Mikołaja — zestaw listów, koperta i naklejki | e-Advent"
-        description="Gotowy zestaw List do Świętego Mikołaja: 2 wersje listu, opisana koperta i naklejki. Cena 29 zł + wysyłka 5 zł Pocztą Polską (gratis od 100 zł). Idealny prezent adwentowy dla dzieci."
+        description="Gotowy zestaw List do Świętego Mikołaja: 2 wersje listu, opisana koperta i naklejki. Cena od 29 zł, dostawa do Paczkomatu lub kurierem InPost wyceniana przy zamówieniu. Idealny prezent adwentowy dla dzieci."
         keywords="list do świętego mikołaja, list do mikołaja, zestaw list mikołaj, koperta do mikołaja, prezent adwentowy, e-advent"
         canonical="https://e-advent.pl/list-do-swietego-mikolaja"
         ogImage={`https://e-advent.pl${GALLERY[0].src}`}
@@ -220,16 +205,15 @@ export default function SantaLetterProduct() {
                     {formatPrice(basePrice)}
                   </p>
                   <p className="text-white/60 text-sm mt-2">
-                    + wysyłka {formatPrice(SHIPPING_COST)} Pocztą Polską
-                    {` · darmowa od ${FREE_SHIPPING_THRESHOLD} zł`}
+                    + dostawa InPost — wycena przy zamówieniu
                   </p>
                   <p className="text-white/50 text-xs mt-1">
-                    Jedna sztuka z wysyłką: {formatPrice(standaloneTotal)}
+                    Jedna sztuka (bez dostawy): {formatPrice(standaloneTotal)}
                   </p>
                 </div>
 
                 <ul className="space-y-2 mb-6 text-white/85 text-sm">
-                  {['2 wersje listu', 'Opisana koperta', 'Naklejki świąteczne', 'Wysyłka Pocztą Polską'].map(
+                  {['2 wersje listu', 'Opisana koperta', 'Naklejki świąteczne', 'Wysyłka InPost'].map(
                     (f) => (
                       <li key={f} className="flex items-center gap-2">
                         <i className="fas fa-check text-christmas-gold text-xs" />

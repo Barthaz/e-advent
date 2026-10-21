@@ -1,0 +1,55 @@
+{
+  "warning": "CONFIRMED means defect reproduced, NOT application healthy. No real services used.",
+  "results": [
+    {
+      "name": "A01: createFree supplies credentials for an unverified email identity",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A02: pending calendar day 24 opens without authentication/date/payment checks",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A03: checkout resolves foreign calendar without edit-token proof",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A04: duplicate webhook rotates access code and sends email again",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A05: webhook returns 200 when database operation fails",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A06: checkout returns client secret despite failing to persist order",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A07: public preview PDF endpoint invokes renderer without purchase/auth",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A08: PDF route passes sealed content to renderer before reveal date",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A09: scratch image resolver accepts loopback URL (fetch stub; no request sent)",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    },
+    {
+      "name": "A10: unauthenticated preview forwards a private-network image URL to fetch (stub)",
+      "result": "CONFIRMED",
+      "dependencies": "offline stubs"
+    }
+  ]
+}

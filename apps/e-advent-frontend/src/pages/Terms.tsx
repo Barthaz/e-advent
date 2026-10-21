@@ -53,7 +53,7 @@ export default function Terms() {
               <p className="mb-4">
                 e-Advent oferuje dwa warianty personalizowanego kalendarza adwentowego:
                 interaktywny (online) oraz fizyczna zdrapka. Użytkownik dodaje własne zadania
-                i — w przypadku produktów fizycznych — wybiera grafikę oraz format (A4 lub A3).
+                i — w przypadku produktów fizycznych — wybiera grafikę kalendarza w formacie A3.
               </p>
               <p className="mb-4">Użytkownik zobowiązuje się do:</p>
               <ul className="list-disc pl-6 space-y-2 mb-4">
@@ -85,9 +85,9 @@ export default function Terms() {
               </p>
               <ul className="list-disc pl-6 space-y-2 mb-4">
                 <li>Kalendarz interaktywny — 9 zł (produkt cyfrowy, bez wysyłki)</li>
-                <li>Kalendarz zdrapka A4 — 49 zł; A3 — 69 zł</li>
+                <li>Kalendarz zdrapka A3 — 69 zł</li>
                 <li>List do Świętego Mikołaja (zestaw) — 29 zł</li>
-                <li>Wysyłka produktów fizycznych — 5 zł (Poczta Polska); darmowa przy wartości produktów od 100 zł</li>
+                <li>Dostawa produktów fizycznych — Paczkomat lub kurier InPost; koszt jest wyświetlany przed płatnością i zależy od rodzaju przesyłki</li>
               </ul>
               <p className="mb-4">
                 Płatność odbywa się online przez system płatności elektronicznych (Stripe).
@@ -100,7 +100,7 @@ export default function Terms() {
               <h2 className="legal-h2">5a. Produkty fizyczne — wysyłka</h2>
               <p className="mb-4">
                 Produkty fizyczne (kalendarz zdrapka, list do Świętego Mikołaja) są przygotowywane po zaksięgowaniu płatności
-                i wysyłane Pocztą Polską na adres podany w formularzu zamówienia (terytorium Polski).
+                i wysyłane InPost do wybranego Paczkomatu lub na podany adres (terytorium Polski).
                 Standardowy czas realizacji wynosi 3–5 dni roboczych; w okresie wysokiego obciążenia sezonowego może wydłużyć się do 14 dni roboczych.
                 Przy zamówieniu produktów o łącznej wartości od 100 zł (bez kosztów wysyłki) wysyłka jest bezpłatna.
               </p>

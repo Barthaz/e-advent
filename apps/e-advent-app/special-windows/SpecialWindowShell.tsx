@@ -15,7 +15,7 @@ interface Props {
 
 export default function SpecialWindowShell({ calendarId, openedWindow }: Props) {
   const descriptor = openedWindow.special;
-  const { progress, updatePayload, saveState } = useSpecialProgress(
+  const { progress, updatePayload, saveState, dateGate, sealProgress } = useSpecialProgress(
     calendarId,
     openedWindow.day,
     descriptor ?? null
@@ -25,8 +25,11 @@ export default function SpecialWindowShell({ calendarId, openedWindow }: Props) 
   if (!descriptor) return null;
 
   const canPrint = isMobilePrintable(descriptor);
+  const dateGateLocked = Boolean(descriptor.capabilities?.dateGate
+    && (progress?.payload.dateGateLocked || (progress?.payload.sealed && !dateGate?.revealed)));
 
   const downloadPdf = async () => {
+    if (!progress || dateGateLocked || exporting) return;
     try {
       setExporting(true);
       await exportSpecialPdf(calendarId, openedWindow.day, progress?.payload);
@@ -48,13 +51,20 @@ export default function SpecialWindowShell({ calendarId, openedWindow }: Props) 
       {descriptor.description ? <Text style={styles.description}>{descriptor.description}</Text> : null}
       {canPrint ? <Text style={styles.hint}>{printableHint(descriptor)}</Text> : null}
 
-      <EngineRouter
+      {!progress ? (
+        <Text style={styles.hint}>{saveState === 'error' ? 'Nie udało się wczytać zadania. Otwórz je ponownie po odzyskaniu połączenia.' : 'Wczytywanie zadania…'}</Text>
+      ) : dateGateLocked ? (
+        <View>
+          <Text style={styles.headline}>Treść zapieczętowana</Text>
+          <Text style={styles.hint}>Otworzy się {dateGate?.revealAt ? new Date(dateGate.revealAt).toLocaleString('pl-PL') : 'we wskazanym terminie'}.</Text>
+        </View>
+      ) : <EngineRouter
         descriptor={descriptor}
         progress={progress}
         onUpdate={updatePayload}
         calendarId={calendarId}
         day={openedWindow.day}
-      />
+      />}
 
       <View style={styles.footer}>
         <Text style={styles.save}>
@@ -62,10 +72,17 @@ export default function SpecialWindowShell({ calendarId, openedWindow }: Props) 
             ? 'Zapisywanie…'
             : saveState === 'saved'
               ? 'Zapisano'
-              : 'Postęp zapisuje się automatycznie'}
+              : saveState === 'error'
+                ? 'Nie udało się zsynchronizować postępu. Sprawdź połączenie.'
+                : 'Postęp zapisuje się automatycznie'}
         </Text>
+        {descriptor.capabilities?.dateGate && progress && !dateGateLocked && !dateGate?.revealed ? (
+          <Pressable style={styles.goldBtn} onPress={sealProgress} disabled={saveState === 'saving' || exporting}>
+            <Text style={styles.goldBtnText}>Zapieczętuj do terminu</Text>
+          </Pressable>
+        ) : null}
         {canPrint ? (
-          <Pressable style={styles.goldBtn} onPress={downloadPdf} disabled={exporting}>
+          <Pressable style={styles.goldBtn} onPress={downloadPdf} disabled={exporting || !progress || dateGateLocked}>
             <Text style={styles.goldBtnText}>{exporting ? 'Przygotowuję…' : 'Pobierz PDF'}</Text>
           </Pressable>
         ) : null}

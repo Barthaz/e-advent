@@ -140,8 +140,7 @@ function mapToApiFormat(
 
 export async function createCalendar(
   internalData: InternalCalendarData,
-  calendarId?: string,
-  _forceNewId?: string
+  calendarId?: string
 ): Promise<CreateCalendarResponse> {
   const pendingToken = typeof localStorage !== 'undefined'
     ? localStorage.getItem('e-advent-pending-edit-token')
@@ -208,6 +207,7 @@ export async function createCalendar(
       try {
         localStorage.setItem('e-advent-pending-calendar-id', responseData.calendar.id);
         localStorage.setItem('e-advent-pending-edit-token', responseData.editToken);
+        localStorage.setItem(`e-advent-edit-token:${responseData.calendar.id}`, responseData.editToken);
         localStorage.setItem('calendarId', responseData.calendar.id);
       } catch {
         /* ignore */
@@ -311,8 +311,7 @@ export type OpenDayResponse = {
 
 export async function openCalendarDay(
   calendarId: string,
-  day: number,
-  _accessCode?: string
+  day: number
 ): Promise<OpenDayResponse> {
   console.log('[API] Otwieranie okienka:', { calendarId, day });
   const url = `${API_BASE_URL}/calendars/${calendarId}/open/${day}`;
@@ -336,6 +335,7 @@ export async function openCalendarDay(
 }
 
 export interface CreatePaymentIntentRequest {
+  delivery?: { type: 'parcel_inpost' | 'courier_inpost'; pointId?: string; quoteKey?: string };
   amount: number;
   currency: string;
   customerEmail: string;
@@ -393,6 +393,9 @@ export async function createPaymentIntent(
   data: CreatePaymentIntentRequest
 ): Promise<CreatePaymentIntentSuccessResponse> {
   const url = `${API_BASE_URL}/stripe/create-payment-intent`;
+  const cartSnapshot = data.items?.length ? localStorage.getItem('e-advent-cart') : null;
+  const { getCheckoutToken } = await import('../utils/checkoutSession');
+  const checkoutToken = getCheckoutToken();
 
   if (!data.orderId || (typeof data.orderId === 'string' && data.orderId.trim() === '')) {
     throw new Error('orderId jest wymagany');
@@ -408,8 +411,14 @@ export async function createPaymentIntent(
       currency: data.currency,
       customerEmail: data.customerEmail,
       orderId: String(data.orderId),
+      checkoutToken,
       ...(data.productId ? { productId: String(data.productId) } : {}),
-      ...(hasItems ? { items: data.items } : {}),
+      editToken: data.productId ? localStorage.getItem(`e-advent-edit-token:${data.productId}`) || localStorage.getItem('e-advent-pending-edit-token') : undefined,
+      ...(hasItems ? { items: data.items?.map(item => ({ ...item,
+        ...(item.calendarId ? { editToken: localStorage.getItem(`e-advent-edit-token:${item.calendarId}`) ||
+          (localStorage.getItem('e-advent-pending-calendar-id') === item.calendarId ? localStorage.getItem('e-advent-pending-edit-token') : null) } : {}),
+      })) } : {}),
+      ...(data.delivery ? { delivery: data.delivery } : {}),
       ...(data.shippingAddress ? { shippingAddress: data.shippingAddress } : {}),
       metadata: {
         ...(data.metadata || {}),
@@ -436,6 +445,9 @@ export async function createPaymentIntent(
     throw new Error(msg);
   }
 
+  sessionStorage.setItem(`e-advent-payment:${responseData.paymentIntentId}`, responseData.clientSecret);
+  sessionStorage.setItem(`e-advent-checkout-owner:${responseData.paymentIntentId}`, checkoutToken);
+  if (cartSnapshot) sessionStorage.setItem(`e-advent-checkout-cart:${responseData.paymentIntentId}`, cartSnapshot);
   return responseData as CreatePaymentIntentSuccessResponse;
 }
 
@@ -467,6 +479,8 @@ export interface PaymentOrderResponse {
     orderNumberDisplay?: string | null;
     stripePaymentIntentId?: string;
     amount: number;
+    deliveryType?: string;
+    parcelLocker?: { id: string; name: string; address: string } | null;
     shippingAmount?: number;
     status: string;
     customerEmail?: string | null;
@@ -485,11 +499,14 @@ export interface PaymentOrderResponse {
     items?: PaymentOrderItem[];
   };
   stripeStatus?: string;
+  emailStatus?: 'pending' | 'sent';
 }
 
 export async function getPaymentByIntentId(paymentIntentId: string): Promise<PaymentOrderResponse> {
   const url = `${API_BASE_URL}/stripe/payment/${encodeURIComponent(paymentIntentId)}`;
-  const response = await fetch(url);
+  const clientSecret = new URLSearchParams(window.location.search).get('payment_intent_client_secret')
+    || sessionStorage.getItem(`e-advent-payment:${paymentIntentId}`) || '';
+  const response = await fetch(url, { headers: { 'X-Payment-Client-Secret': clientSecret } });
   if (!response.ok) {
     throw new Error(`Payment not found (${response.status})`);
   }
@@ -735,12 +752,17 @@ export async function createFreeCalendar(
     const created = await createCalendar(internalData);
     id = created.calendar.id;
   } else {
-    await createCalendar(internalData, id);
+    const existing = await getCalendar(id);
+    if (existing.calendar.status === 'pending') {
+      const updated = await createCalendar(internalData, id);
+      id = updated.calendar.id;
+    }
   }
 
   const url = `${API_BASE_URL}/calendars/createFree`;
   const requestBody = {
     calendarId: id,
+    editToken: localStorage.getItem(`e-advent-edit-token:${id}`) || localStorage.getItem('e-advent-pending-edit-token'),
     email: internalData.email,
     promoCode,
   };

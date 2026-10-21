@@ -1,3 +1,4 @@
+const { resolveDelivery } = require('./inpost');
 const Calendar = require('../models/Calendar');
 const {
   getProduct,
@@ -57,12 +58,23 @@ async function resolveCheckoutItems(requestData) {
   }
 
   const resolved = [];
+  const seenCalendars = new Set();
 
   for (let i = 0; i < rawItems.length; i++) {
     const raw = rawItems[i] || {};
-    const quantity = Math.max(1, parseInt(raw.quantity, 10) || 1);
+    const quantity = raw.quantity == null ? 1 : Number(raw.quantity);
     const calendarId = raw.calendarId || raw.productId || null;
     let clientSku = raw.sku || null;
+
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 100) {
+      errors.push({ type: 'field', msg: 'Quantity must be an integer from 1 to 100', path: `items[${i}].quantity`, location: 'body' });
+      continue;
+    }
+    if (calendarId && seenCalendars.has(calendarId)) {
+      errors.push({ type: 'field', msg: 'A calendar may occur only once in an order', path: `items[${i}].calendarId`, location: 'body' });
+      continue;
+    }
+    if (calendarId) seenCalendars.add(calendarId);
 
     if (calendarId) {
       let calendar;
@@ -99,9 +111,21 @@ async function resolveCheckoutItems(requestData) {
         continue;
       }
 
+      if (!Calendar.verifyEditToken(calendar, raw.editToken || requestData.editToken)) {
+        errors.push({ type: 'field', msg: 'Valid calendar edit token is required', path: 'editToken', location: 'body' });
+        continue;
+      }
       const data = calendar.data || {};
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.email || '').trim())) {
+        errors.push({ type: 'field', msg: 'Calendar owner email is required for delivery', path: `items[${i}].calendarId`, location: 'body' });
+        continue;
+      }
       const sku = data.sku || 'interactive';
       const product = getProduct(sku);
+      if (product?.discontinued || (product?.type === 'scratch' && data.format && data.format !== 'A3')) {
+        errors.push({ type: 'field', msg: 'Kalendarz zdrapka jest dostępny wyłącznie w formacie A3. Utwórz go ponownie w kreatorze.', path: `items[${i}].calendarId`, location: 'body' });
+        continue;
+      }
       if (!product) {
         errors.push({
           type: 'field',
@@ -109,6 +133,11 @@ async function resolveCheckoutItems(requestData) {
           path: 'sku',
           location: 'body',
         });
+        continue;
+      }
+
+      if (!isPhysicalProduct(sku) && quantity !== 1) {
+        errors.push({ type: 'field', msg: 'An interactive calendar requires quantity 1', path: `items[${i}].quantity`, location: 'body' });
         continue;
       }
 
@@ -136,6 +165,10 @@ async function resolveCheckoutItems(requestData) {
     }
 
     const product = getProduct(clientSku);
+    if (product?.discontinued) {
+      errors.push({ type: 'field', msg: 'Ten wariant został wycofany. Kalendarz zdrapka jest dostępny w formacie A3.', path: `items[${i}].sku`, location: 'body' });
+      continue;
+    }
     if (!product) {
       errors.push({
         type: 'field',
@@ -233,7 +266,7 @@ async function resolveCheckoutItems(requestData) {
     };
   }
 
-  const totals = computeOrderTotals(resolved.map((r) => ({ sku: r.sku, quantity: r.quantity })));
+  let totals = computeOrderTotals(resolved.map((r) => ({ sku: r.sku, quantity: r.quantity })));
   if (!totals) {
     return {
       errors: [{
@@ -245,21 +278,28 @@ async function resolveCheckoutItems(requestData) {
     };
   }
 
-  const shippingAddress = parseShippingAddress(
+  const rawShipping = parseShippingAddress(
     requestData.shippingAddress
     || requestData.metadata?.shippingAddress
     || null
   );
+  let shippingAddress = rawShipping ? {
+    fullName: String(rawShipping.fullName || `${rawShipping.firstName || ''} ${rawShipping.lastName || ''}`).trim(),
+    street: String(rawShipping.street || '').trim(), city: String(rawShipping.city || '').trim(),
+    postalCode: String(rawShipping.postalCode || '').trim(), phone: String(rawShipping.phone || '').trim(),
+  } : null;
 
-  if (totals.hasPhysical && !isCompleteShippingAddress(shippingAddress)) {
-    return {
-      errors: [{
-        type: 'field',
-        msg: 'Complete shipping address is required for physical products',
-        path: 'shippingAddress',
-        location: 'body',
-      }],
+  let delivery = null;
+  if (totals.hasPhysical) {
+    delivery = await resolveDelivery(resolved, requestData.delivery, rawShipping, requestData.customerEmail);
+    const a = delivery.receiver.address;
+    shippingAddress = {
+      fullName: delivery.receiver.first_name + ' ' + delivery.receiver.last_name,
+      phone: delivery.receiver.phone,
+      street: a ? a.street + ' ' + a.building_number + (a.flat_number ? '/' + a.flat_number : '') : '',
+      city: a?.city || '', postalCode: a?.post_code || '',
     };
+    totals = computeOrderTotals(resolved, { shippingAmount: delivery.price });
   }
 
   const primary = resolved.find((r) => r.sku === SANTA_LETTER_SKU)
@@ -267,6 +307,7 @@ async function resolveCheckoutItems(requestData) {
     || resolved[0];
   return {
     items: resolved,
+    delivery,
     totals,
     shippingAddress: totals.hasPhysical ? shippingAddress : null,
     primaryProductId: primary?.calendarId || null,

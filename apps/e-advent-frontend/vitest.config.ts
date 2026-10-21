@@ -10,6 +10,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      'react': path.resolve(root, 'node_modules/react'),
+      'react-native': path.resolve(root, 'src/test-support/reactNative.tsx'),
+      '@react-native-async-storage/async-storage': path.resolve(root, 'src/test-support/asyncStorage.ts'),
+      'expo-image-picker': path.resolve(root, 'src/test-support/imagePicker.ts'),
       '@e-advent/assets/background.png': path.resolve(monorepoRoot, 'assets/background.png'),
       '@e-advent/assets/logo.png': path.resolve(monorepoRoot, 'assets/brand/eadvent-logo.png'),
       '@e-advent/assets/brand/eadvent-logo.png': path.resolve(monorepoRoot, 'assets/brand/eadvent-logo.png'),

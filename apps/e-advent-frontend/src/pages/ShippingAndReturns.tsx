@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
 import SEOHead from '../components/SEOHead';
-import { FREE_SHIPPING_THRESHOLD, PHYSICAL_FULFILLMENT_TIME, SHIPPING_COST } from '../config/products';
+import { PHYSICAL_FULFILLMENT_TIME } from '../config/products';
 
 export default function ShippingAndReturns() {
   return (
@@ -25,11 +25,10 @@ export default function ShippingAndReturns() {
             </p>
             <ul className="list-disc pl-6 space-y-2 mb-4">
               <li>
-                <strong>Sposób dostawy:</strong> Poczta Polska (przesyłka na terenie Polski)
+                <strong>Sposób dostawy:</strong> Paczkomat lub kurier InPost (na terenie Polski)
               </li>
               <li>
-                <strong>Koszt wysyłki:</strong> {SHIPPING_COST} zł; darmowa przy wartości produktów
-                od {FREE_SHIPPING_THRESHOLD} zł (bez kosztów wysyłki)
+                <strong>Koszt wysyłki:</strong> wyliczany przy składaniu zamówienia na podstawie zawartości koszyka i wybranej metody dostawy
               </li>
               <li>
                 <strong>Czas realizacji:</strong> standardowo {PHYSICAL_FULFILLMENT_TIME}; w okresie

@@ -47,6 +47,7 @@ interface RawOrderListRow {
 
 /** Odpowiedź GET /admin/orders/:id — camelCase opakowana w { order } */
 interface RawOrderDetail {
+  metadata?: { inpostDelivery?: OrderDetail['inpostDelivery'] };
   id: string;
   orderNumber?: number | string | null;
   orderNumberDisplay?: string | null;
@@ -307,6 +308,7 @@ export function mapOrderDetail(raw: RawOrderDetail): OrderDetail {
     shipping_city: raw.shipping?.city ?? null,
     created_at: raw.createdAt ?? '',
     updated_at: raw.updatedAt ?? null,
+    inpostDelivery: raw.metadata?.inpostDelivery,
     fulfillment_notes: raw.fulfillmentNotes ?? null,
     shipping_street: raw.shipping?.street ?? null,
     shipping_postal_code: raw.shipping?.postalCode ?? null,

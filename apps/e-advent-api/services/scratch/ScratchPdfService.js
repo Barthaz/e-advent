@@ -14,12 +14,17 @@ const {
   StyleSheet,
 } = require('@react-pdf/renderer');
 
-const { getTemplatePath, resolveScratchDesignImage } = require('./scratchAssets');
 const {
-  buildWindowBoxes,
-  scaleBoxToPage,
+  assertGraphicsPresent,
+  getGraphicPath,
+  getDayBadgePath,
+  resolveScratchDesignImage,
+} = require('./scratchAssets');
+const {
+  computeScratchLayout,
   pageSizePoints,
   normalizeExportFormat,
+  MAX_DAYS,
 } = require('./scratchWindowLayout');
 
 const fontsDir = path.resolve(__dirname, '../../assets/fonts');
@@ -43,8 +48,8 @@ function bufferImage(buffer, format) {
   return { data: buffer, format: format === 'jpeg' ? 'jpg' : format };
 }
 
-function fileImage(filePath, format) {
-  return { data: fs.readFileSync(filePath), format };
+function fileImage(filePath) {
+  return { data: fs.readFileSync(filePath), format: 'png' };
 }
 
 function normalizeTasks(tasks) {
@@ -67,7 +72,6 @@ function normalizeTasks(tasks) {
         };
       }
 
-      // Legacy / interactive: tylko `title` = treść ciała
       return {
         day,
         title: undefined,
@@ -81,64 +85,58 @@ function normalizeTasks(tasks) {
 function taskContentByDay(tasks) {
   const map = new Map();
   for (const t of normalizeTasks(tasks)) {
-    map.set(t.day, { title: t.title, text: t.text });
+    if (t.day >= 1 && t.day <= MAX_DAYS) {
+      map.set(t.day, { title: t.title, text: t.text });
+    }
   }
   return map;
 }
 
-function fontSizeForBox(height) {
-  // Larger type so temporary grid texts stay readable on A4/A3
-  if (height < 40) return 7;
-  if (height < 56) return 8;
-  if (height < 72) return 9;
-  if (height < 96) return 10;
+function fontSizeForTextBox(width, height) {
+  const minDim = Math.min(width, height);
+  if (minDim < 36) return 6;
+  if (minDim < 48) return 7;
+  if (minDim < 64) return 8;
+  if (minDim < 80) return 9;
+  if (minDim < 100) return 10;
   return 11;
+}
+
+function rectStyle(rect) {
+  return {
+    position: 'absolute',
+    left: rect.x,
+    top: rect.y,
+    width: rect.width,
+    height: rect.height,
+  };
 }
 
 /**
  * Build scratch calendar PDF buffer.
- * Layers: design → template → window texts on top (visible until exact hole coords exist).
+ * Layers: design background → logo → headers → heart → window boxes → day badges → texts.
  *
  * @param {{ format?: string, designUrl: string, tasks: unknown[] }} input
  * @returns {Promise<Buffer>}
  */
 async function buildScratchPdfBuffer(input) {
   ensureFonts();
+  assertGraphicsPresent();
 
   const format = normalizeExportFormat(input.format);
   const dims = pageSizePoints(format);
+  const layout = computeScratchLayout(dims);
   const { buffer: designBuffer, format: designFormat } = await resolveScratchDesignImage(input.designUrl);
-  const templatePath = getTemplatePath();
-  if (!fs.existsSync(templatePath)) {
-    const err = new Error('Brak pliku template.png dla kalendarza zdrapki');
-    err.status = 500;
-    err.code = 'SCRATCH_TEMPLATE_MISSING';
-    throw err;
+  const texts = taskContentByDay(input.tasks);
+  const windowBoxSrc = fileImage(getGraphicPath('windowBox'));
+  const dayBadgeSrc = new Map();
+  for (let day = 1; day <= MAX_DAYS; day += 1) {
+    dayBadgeSrc.set(day, fileImage(getDayBadgePath(day)));
   }
-
-  const normalized = normalizeTasks(input.tasks);
-  const texts = taskContentByDay(normalized);
-  const maxDay = normalized.reduce((m, t) => Math.max(m, t.day), 0);
-  const taskCount = Math.max(maxDay, normalized.length, 1);
-  const logicalBoxes = buildWindowBoxes(taskCount);
-  const pageBoxes = logicalBoxes.map((b) => scaleBoxToPage(b, dims));
 
   const styles = StyleSheet.create({
     page: {
-      backgroundColor: '#000000',
-    },
-    fullBleed: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: dims.width,
-      height: dims.height,
-    },
-    windowBox: {
-      position: 'absolute',
-      padding: 3,
-      justifyContent: 'center',
-      alignItems: 'center',
+      backgroundColor: '#ffffff',
     },
     taskText: {
       fontFamily: 'Source Serif 4',
@@ -152,15 +150,38 @@ async function buildScratchPdfBuffer(input) {
       color: '#1a2e1f',
       textAlign: 'center',
     },
+    textBox: {
+      position: 'absolute',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   });
 
-  // Texts on top of template until exact foil-hole coords are calibrated.
-  // Box geometry unchanged — title (bold) + body share the same centered box.
-  const windowNodes = pageBoxes.map((box) => {
-    const fsSize = fontSizeForBox(box.height);
-    const content = texts.get(box.day);
-    if (!content?.text) return null;
+  const windowNodes = [];
 
+  for (const cell of layout.windows) {
+    windowNodes.push(
+      React.createElement(Image, {
+        key: `box-${cell.day}`,
+        src: windowBoxSrc,
+        fixed: true,
+        style: rectStyle(cell),
+      }),
+    );
+
+    windowNodes.push(
+      React.createElement(Image, {
+        key: `badge-${cell.day}`,
+        src: dayBadgeSrc.get(cell.day),
+        fixed: true,
+        style: rectStyle(cell.badge),
+      }),
+    );
+
+    const content = texts.get(cell.day);
+    if (!content?.text) continue;
+
+    const fsSize = fontSizeForTextBox(cell.text.width, cell.text.height);
     const textChildren = content.title
       ? [
           React.createElement(
@@ -176,29 +197,23 @@ async function buildScratchPdfBuffer(input) {
         ]
       : content.text;
 
-    return React.createElement(
-      View,
-      {
-        key: `day-${box.day}`,
-        fixed: true,
-        wrap: false,
-        style: [
-          styles.windowBox,
-          {
-            left: box.x,
-            top: box.y,
-            width: box.width,
-            height: box.height,
-          },
-        ],
-      },
+    windowNodes.push(
       React.createElement(
-        Text,
-        { style: [styles.taskText, { fontSize: fsSize }] },
-        textChildren,
+        View,
+        {
+          key: `text-${cell.day}`,
+          fixed: true,
+          wrap: false,
+          style: [styles.textBox, rectStyle(cell.text)],
+        },
+        React.createElement(
+          Text,
+          { style: [styles.taskText, { fontSize: fsSize }] },
+          textChildren,
+        ),
       ),
     );
-  }).filter(Boolean);
+  }
 
   const doc = React.createElement(
     Document,
@@ -214,16 +229,33 @@ async function buildScratchPdfBuffer(input) {
         key: 'design',
         src: bufferImage(designBuffer, designFormat),
         fixed: true,
-        style: styles.fullBleed,
+        style: rectStyle(layout.design),
       }),
       React.createElement(Image, {
-        key: 'template',
-        src: fileImage(templatePath, 'png'),
+        key: 'logo',
+        src: fileImage(getGraphicPath('logo')),
         fixed: true,
-        style: styles.fullBleed,
+        style: rectStyle(layout.logo),
+      }),
+      React.createElement(Image, {
+        key: 'powody',
+        src: fileImage(getGraphicPath('powody')),
+        fixed: true,
+        style: rectStyle(layout.powody),
+      }),
+      React.createElement(Image, {
+        key: 'odkrywaj',
+        src: fileImage(getGraphicPath('odkrywaj')),
+        fixed: true,
+        style: rectStyle(layout.odkrywaj),
+      }),
+      React.createElement(Image, {
+        key: 'heart',
+        src: fileImage(getGraphicPath('heart')),
+        fixed: true,
+        style: rectStyle(layout.heart),
       }),
       ...windowNodes,
-      // In-flow spacer so MediaBox keeps correct page height when children are fixed/absolute.
       React.createElement(View, {
         style: { width: dims.width, height: dims.height },
       }),

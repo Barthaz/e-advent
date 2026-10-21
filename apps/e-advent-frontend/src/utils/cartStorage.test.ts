@@ -41,7 +41,7 @@ describe('cartStorage + order totals', () => {
 
   it('letter alone pays shipping (29+5=34)', () => {
     const totals = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }]);
-    expect(totals).toEqual({
+    expect(totals).toMatchObject({
       subtotal: 29,
       shipping: SHIPPING_COST,
       total: 34,
@@ -53,7 +53,7 @@ describe('cartStorage + order totals', () => {
 
   it('digital only = 0 shipping', () => {
     const totals = computeOrderTotals([{ sku: 'interactive', quantity: 2 }]);
-    expect(totals).toEqual({
+    expect(totals).toMatchObject({
       subtotal: 18,
       shipping: 0,
       total: 18,
@@ -79,7 +79,7 @@ describe('cartStorage + order totals', () => {
       { sku: 'interactive', quantity: 1 },
       { sku: 'santa-letter', quantity: 1 },
     ]);
-    expect(totals).toEqual({
+    expect(totals).toMatchObject({
       subtotal: 38,
       shipping: SHIPPING_COST,
       total: 43,

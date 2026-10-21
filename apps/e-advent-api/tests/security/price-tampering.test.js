@@ -7,7 +7,8 @@ jest.mock('../../config/database', () => ({
     }),
   })),
   query: jest.fn().mockResolvedValue([[], []]),
-  withTransaction: jest.fn(),
+  withTransaction: jest.fn(fn => fn()),
+  withNamedLocks: jest.fn((keys, fn) => fn()),
   closeConnection: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('../../models/Calendar', () => require('../mocks/Calendar'));
@@ -33,25 +34,17 @@ const { request, loadApp, pendingCalendar } = require('../helpers/createTestApp'
 const Calendar = require('../../models/Calendar');
 const Payment = require('../../models/Payment');
 const stripe = require('../../config/stripe');
+const configureInpost = require('../helpers/inpostFixture');
+let delivery;
 
 describe('Faza 1 — price tampering (P-*)', () => {
   const app = loadApp();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    Payment.findPayments.mockResolvedValue([]);
-    Payment.createPayment.mockImplementation(async (data) => ({
-      _id: 'pay-1',
-      ...data,
-      status: 'pending',
-    }));
-    stripe.paymentIntents.create.mockResolvedValue({
-      id: 'pi_test_123',
-      client_secret: 'pi_test_123_secret',
-      status: 'requires_payment_method',
-      amount: 900,
-      currency: 'pln',
-    });
+    delivery = configureInpost();
+    require('../helpers/checkoutStore')();
+
   });
 
   test('P-01: amount 1 PLN for scratch-a3 is rejected', async () => {
@@ -60,14 +53,15 @@ describe('Faza 1 — price tampering (P-*)', () => {
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 1,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
           orderId: 'order_test_1',
           productId: 'cal-pending-001',
           shippingAddress: {
-            fullName: 'Jan Kowalski',
+            firstName: 'Jan', lastName: 'Kowalski', buildingNumber: '1', fullName: 'Jan Kowalski',
             street: 'ul. Testowa 1',
             city: 'Warszawa',
             postalCode: '00-001',
@@ -84,13 +78,14 @@ describe('Faza 1 — price tampering (P-*)', () => {
 
   test('P-04: unknown SKU on calendar record is rejected', async () => {
     Calendar.findCalendarById.mockResolvedValue(
-      pendingCalendar({ sku: 'totally-fake', data: { sku: 'totally-fake', productType: 'interactive' } })
+      pendingCalendar({ sku: 'totally-fake', data: { delivery, checkoutToken: 'a'.repeat(64), sku: 'totally-fake', productType: 'interactive' } })
     );
 
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 9,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
@@ -109,7 +104,8 @@ describe('Faza 1 — price tampering (P-*)', () => {
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 9,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
@@ -128,7 +124,8 @@ describe('Faza 1 — price tampering (P-*)', () => {
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 9,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
@@ -144,13 +141,14 @@ describe('Faza 1 — price tampering (P-*)', () => {
 
   test('P-05c: already succeeded calendar cannot create payment intent', async () => {
     Calendar.findCalendarById.mockResolvedValue(
-      pendingCalendar({ status: 'succeeded', sku: 'interactive', data: { sku: 'interactive', productType: 'interactive' } })
+      pendingCalendar({ status: 'succeeded', sku: 'interactive', data: { delivery, checkoutToken: 'a'.repeat(64), sku: 'interactive', productType: 'interactive' } })
     );
 
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 9,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
@@ -161,31 +159,32 @@ describe('Faza 1 — price tampering (P-*)', () => {
       });
 
     expect(res.status).toBe(400);
-    expect(res.body.error).toMatch(/Invalid calendar status/i);
+    expect(res.body.message).toMatch(/Calendar has status/i);
     expect(stripe.paymentIntents.create).not.toHaveBeenCalled();
   });
 
   test('P-01b: correct catalog amount for scratch-a3 is accepted', async () => {
     Calendar.findCalendarById.mockResolvedValue(pendingCalendar({ sku: 'scratch-a3' }));
-    stripe.paymentIntents.create.mockResolvedValue({
+    stripe.paymentIntents.create.mockImplementation(async params => ({ ...params,
       id: 'pi_test_74',
       client_secret: 'secret',
       status: 'requires_payment_method',
       amount: 7400,
       currency: 'pln',
-    });
+    }));
 
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 74,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
           orderId: 'order_test_ok',
           productId: 'cal-pending-001',
           shippingAddress: {
-            fullName: 'Jan Kowalski',
+            firstName: 'Jan', lastName: 'Kowalski', buildingNumber: '1', fullName: 'Jan Kowalski',
             street: 'ul. Testowa 1',
             city: 'Warszawa',
             postalCode: '00-001',
@@ -203,7 +202,8 @@ describe('Faza 1 — price tampering (P-*)', () => {
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 34,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
@@ -213,30 +213,31 @@ describe('Faza 1 — price tampering (P-*)', () => {
       });
 
     expect(res.status).toBe(400);
-    expect(JSON.stringify(res.body)).toMatch(/shipping address/i);
+    expect(JSON.stringify(res.body)).toMatch(/odbiorcy/i);
     expect(stripe.paymentIntents.create).not.toHaveBeenCalled();
   });
 
   test('P-07: santa-letter with address and correct total is accepted', async () => {
-    stripe.paymentIntents.create.mockResolvedValue({
+    stripe.paymentIntents.create.mockImplementation(async params => ({ ...params,
       id: 'pi_letter',
       client_secret: 'secret',
       status: 'requires_payment_method',
       amount: 3400,
       currency: 'pln',
-    });
+    }));
 
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 34,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
           orderId: 'order_letter_2',
           items: [{ sku: 'santa-letter', quantity: 1 }],
           shippingAddress: {
-            fullName: 'Anna Nowak',
+            firstName: 'Anna', lastName: 'Nowak', buildingNumber: '5', fullName: 'Anna Nowak',
             street: 'ul. Świąteczna 5',
             city: 'Kraków',
             postalCode: '30-001',
@@ -249,22 +250,23 @@ describe('Faza 1 — price tampering (P-*)', () => {
     expect(stripe.paymentIntents.create).toHaveBeenCalled();
   });
 
-  test('P-08: free shipping cart total must match server (no shipping charged)', async () => {
+  test('P-08: configured InPost delivery is charged even above the old free-shipping threshold', async () => {
     Calendar.findCalendarById.mockResolvedValue(pendingCalendar({ sku: 'scratch-a3' }));
-    stripe.paymentIntents.create.mockResolvedValue({
+    stripe.paymentIntents.create.mockImplementation(async params => ({ ...params,
       id: 'pi_free_ship',
       client_secret: 'secret',
       status: 'requires_payment_method',
-      amount: 12700,
+      amount: 13200,
       currency: 'pln',
-    });
+    }));
 
-    // 69 + 29*2 = 127, free shipping
+    // 69 + 29*2 + configured test tariff 5 = 132
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
-          amount: 127,
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
+          amount: 132,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
           orderId: 'order_free_ship',
@@ -273,7 +275,7 @@ describe('Faza 1 — price tampering (P-*)', () => {
             { sku: 'santa-letter', quantity: 2 },
           ],
           shippingAddress: {
-            fullName: 'Anna Nowak',
+            firstName: 'Anna', lastName: 'Nowak', buildingNumber: '5', fullName: 'Anna Nowak',
             street: 'ul. Świąteczna 5',
             city: 'Kraków',
             postalCode: '30-001',
@@ -283,14 +285,15 @@ describe('Faza 1 — price tampering (P-*)', () => {
       });
 
     expect(res.status).toBe(200);
-    expect(res.body.shipping).toBe(0);
+    expect(res.body.shipping).toBe(5);
   });
 
   test('P-09: santa-certificate without letter is rejected', async () => {
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 9,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
@@ -301,7 +304,7 @@ describe('Faza 1 — price tampering (P-*)', () => {
             metadata: { childName: 'Kasia' },
           }],
           shippingAddress: {
-            fullName: 'Anna Nowak',
+            firstName: 'Anna', lastName: 'Nowak', buildingNumber: '5', fullName: 'Anna Nowak',
             street: 'ul. Świąteczna 5',
             city: 'Kraków',
             postalCode: '30-001',
@@ -316,18 +319,19 @@ describe('Faza 1 — price tampering (P-*)', () => {
   });
 
   test('P-10: letter with certificate and correct total is accepted', async () => {
-    stripe.paymentIntents.create.mockResolvedValue({
+    stripe.paymentIntents.create.mockImplementation(async params => ({ ...params,
       id: 'pi_letter_cert',
       client_secret: 'secret',
       status: 'requires_payment_method',
       amount: 4300,
       currency: 'pln',
-    });
+    }));
 
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { delivery, checkoutToken: 'a'.repeat(64),
+          editToken: 'test-edit-token',
           amount: 43,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
@@ -337,7 +341,7 @@ describe('Faza 1 — price tampering (P-*)', () => {
             { sku: 'santa-certificate', quantity: 1, metadata: { childName: 'Kasia Kowalska' } },
           ],
           shippingAddress: {
-            fullName: 'Anna Nowak',
+            firstName: 'Anna', lastName: 'Nowak', buildingNumber: '5', fullName: 'Anna Nowak',
             street: 'ul. Świąteczna 5',
             city: 'Kraków',
             postalCode: '30-001',

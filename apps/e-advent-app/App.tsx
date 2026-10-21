@@ -26,11 +26,6 @@ import appConfig from './app.json';
 // Zapobiegaj automatycznemu ukryciu splash screen
 SplashScreen.preventAutoHideAsync();
 
-if (!Text.defaultProps) {
-  Text.defaultProps = {};
-}
-
-Text.defaultProps.style = [{ fontFamily: 'serif' }, Text.defaultProps.style];
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -378,7 +373,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.35)',
   },
   logoContainer: {

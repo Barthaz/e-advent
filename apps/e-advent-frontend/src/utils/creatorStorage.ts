@@ -235,7 +235,7 @@ export function saveFormat(productType: ProductType, format: CalendarFormat) {
 
 export function loadFormat(productType: ProductType): CalendarFormat | null {
   const saved = localStorage.getItem(getStorageKeys(productType).format);
-  return saved === 'A4' || saved === 'A3' ? saved : null;
+  return saved === 'A3' || saved === 'A4' ? 'A3' : null;
 }
 
 export function saveShipping(productType: ProductType, address: ShippingAddress) {
@@ -261,6 +261,8 @@ export function loadShipping(productType: ProductType): ShippingAddress | null {
       firstName,
       lastName,
       street: String(parsed.street ?? ''),
+      buildingNumber: String(parsed.buildingNumber ?? ''),
+      apartmentNumber: String(parsed.apartmentNumber ?? ''),
       city: String(parsed.city ?? ''),
       postalCode: String(parsed.postalCode ?? ''),
       phone: String(parsed.phone ?? ''),
@@ -325,7 +327,7 @@ export function resolveCheckoutProduct(
     if (productType === 'interactive') {
       sku = 'interactive';
     } else {
-      const format: CalendarFormat = parsed.format === 'A3' ? 'A3' : 'A4';
+      const format: CalendarFormat = 'A3';
       sku = getSkuForTypeAndFormat(productType, format) || sku;
     }
   }

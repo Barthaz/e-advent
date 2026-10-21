@@ -61,7 +61,9 @@ describe('products catalog (unit)', () => {
 
   test('getSkuForTypeAndFormat maps correctly', () => {
     expect(getSkuForTypeAndFormat('interactive', 'A4')).toBe('interactive');
-    expect(getSkuForTypeAndFormat('scratch', 'A4')).toBe('scratch-a4');
+    expect(getSkuForTypeAndFormat('scratch', 'A4')).toBeNull();
+    expect(getSkuForTypeAndFormat('scratch')).toBe('scratch-a3');
+    expect(getProduct('scratch-a4').discontinued).toBe(true);
     expect(getSkuForTypeAndFormat('scratch', 'A3')).toBe('scratch-a3');
     expect(getSkuForTypeAndFormat('letter', null)).toBe('santa-letter');
   });

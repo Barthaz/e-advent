@@ -4,7 +4,7 @@ interface ScratchDesignThumbProps {
   className?: string;
 }
 
-/** Design background + scratch template overlay (panel-local assets). */
+/** Design background preview (PDF composes graphics separately). */
 export default function ScratchDesignThumb({
   imageSrc,
   alt = 'Podgląd designu zdrapki',
@@ -16,12 +16,6 @@ export default function ScratchDesignThumb({
         src={imageSrc}
         alt={alt}
         className="absolute inset-0 h-full w-full object-cover"
-      />
-      <img
-        src="/scratch/template.png"
-        alt=""
-        aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full object-fill"
       />
     </div>
   );

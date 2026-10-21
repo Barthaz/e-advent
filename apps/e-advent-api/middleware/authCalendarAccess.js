@@ -59,4 +59,5 @@ async function authCalendarAccess(req, res, next) {
   }
 }
 
-module.exports = authCalendarAccess;
+const { calendarAccessLimiter } = require('./rateLimits');
+module.exports = (req, res, next) => calendarAccessLimiter(req, res, () => authCalendarAccess(req, res, next));

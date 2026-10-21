@@ -1,10 +1,7 @@
 'use strict';
 
 const { query } = require('../config/database');
-const {
-  buildScratchPdfBuffer,
-  scratchExportFilename,
-} = require('../services/scratch/ScratchPdfService');
+
 const { pdfBufferToPng } = require('../services/scratch/PdfRasterService');
 const {
   normalizeExportFormat,
@@ -69,10 +66,11 @@ function sendExportError(res, error) {
 function registerScratchExportRoutes(router, authAdmin) {
   router.get('/calendars/:id/export/pdf', authAdmin, async (req, res) => {
     try {
+      const { buildScratchPdfBuffer, scratchExportFilename } = require('../services/scratch/ScratchPdfService');
       const row = await loadScratchCalendarOrRespond(req, res);
       if (!row) return;
 
-      const format = normalizeExportFormat(req.query.format || row.format || 'A4');
+      const format = normalizeExportFormat(req.query.format || row.format || 'A3');
       const pdfBuffer = await buildScratchPdfBuffer({
         format,
         designUrl: row.design_url,
@@ -91,10 +89,11 @@ function registerScratchExportRoutes(router, authAdmin) {
 
   router.get('/calendars/:id/export/png', authAdmin, async (req, res) => {
     try {
+      const { buildScratchPdfBuffer, scratchExportFilename } = require('../services/scratch/ScratchPdfService');
       const row = await loadScratchCalendarOrRespond(req, res);
       if (!row) return;
 
-      const format = normalizeExportFormat(req.query.format || row.format || 'A4');
+      const format = normalizeExportFormat(req.query.format || row.format || 'A3');
       const dpi = normalizeDpi(req.query.dpi || 600);
 
       const pdfBuffer = await buildScratchPdfBuffer({

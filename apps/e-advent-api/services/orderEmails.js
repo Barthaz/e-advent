@@ -378,6 +378,8 @@ function buildOrderConfirmationText({
     if (deliveryType === 'parcel_inpost' && parcelLocker) {
       parts.push(
         '',
+        `Dostawa InPost: ${formatPln(shippingAmount)}`,
+        `Odbiorca: ${shipping.fullName || ''}, tel. ${shipping.phone || ''}`,
         'Paczkomat InPost:',
         parcelLocker.name || parcelLocker.id || '',
         parcelLocker.address || '',

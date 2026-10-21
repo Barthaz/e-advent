@@ -3,12 +3,31 @@
 const { createCanvas } = require('@napi-rs/canvas');
 const { pageSizePixels, normalizeExportFormat, normalizeDpi } = require('./scratchWindowLayout');
 
+/** White frame around the rasterized page (extra pixels outside the graphic). */
+const PNG_BORDER_PX = 22;
+
 /**
  * Load pdfjs legacy build (CommonJS-friendly) for Node.
  */
 async function loadPdfJs() {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
   return pdfjs;
+}
+
+/**
+ * Expand canvas by a thin white border on each side (does not crop the graphic).
+ * @param {import('@napi-rs/canvas').Canvas} source
+ * @param {number} borderPx
+ */
+function withWhiteBorder(source, borderPx = PNG_BORDER_PX) {
+  const w = source.width + borderPx * 2;
+  const h = source.height + borderPx * 2;
+  const framed = createCanvas(w, h);
+  const ctx = framed.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(source, borderPx, borderPx);
+  return framed;
 }
 
 /**
@@ -71,6 +90,9 @@ async function pdfBufferToPng(pdfBuffer, options = {}) {
     octx.fillRect(0, 0, targetW, targetH);
     octx.drawImage(canvas, 0, 0, targetW, targetH);
   }
+
+  // Thin white frame: enlarge PNG, leave graphic untouched.
+  outCanvas = withWhiteBorder(outCanvas, PNG_BORDER_PX);
 
   // compressionLevel 0 = least compression / fastest / largest (best visual fidelity for print proofs)
   return outCanvas.toBuffer('image/png', { compressionLevel: 1 });

@@ -24,10 +24,11 @@ const {
 } = require('./special/SpecialConfigRegistry');
 
 function generateAccessCode() {
+  const { randomInt } = require('node:crypto');
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let code = '';
   for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(randomInt(chars.length));
   }
   return code;
 }
@@ -88,6 +89,9 @@ async function dispatchAndLog({
   triggeredBy,
 }) {
   try {
+    if (triggeredBy === 'webhook' && await EmailSend.hasSuccessfulOrderEmail(orderId, calendarId, type, to)) {
+      return { success: true, skipped: true, recipient: to, type };
+    }
     const result = await sendEmail({ to, subject, text, html });
     try {
       await EmailSend.createSend({
@@ -101,7 +105,7 @@ async function dispatchAndLog({
         triggeredBy,
       });
     } catch (logErr) {
-      console.error('Failed to log successful email send:', logErr.message);
+      throw new Error(`Email sent but delivery log failed: ${logErr.message}`);
     }
     return { success: true, messageId: result.messageId, recipient: to, type };
   } catch (error) {
@@ -193,13 +197,18 @@ async function sendPaidOrderEmails(order, triggeredBy = 'webhook') {
       });
       continue;
     }
+    if (!found.data?.email) throw MailerError('Brak adresu właściciela kalendarza', 400, 'NO_OWNER_EMAIL');
+    if (item.metadata?.ownerEmail && item.metadata.ownerEmail !== String(found.data.email).trim().toLowerCase()) {
+      throw MailerError('Właściciel kalendarza nie zgadza się z zamówieniem', 409, 'OWNER_MISMATCH');
+    }
     const { calendar, accessCode } = await ensureInteractiveUnlocked(found);
     const calendarTitle = (calendar.data && calendar.data.title) || 'Twój Kalendarz Adwentowy';
     const link = calendarLink({ ...calendar, accessCode });
     const subject = `🎄 Twój Kalendarz Adwentowy: ${calendarTitle}`;
     results.push(await dispatchAndLog({
       type: 'interactive_access',
-      to: customerEmail,
+      to: item.metadata?.ownerEmail || calendar.data?.email,
+
       subject,
       html: buildInteractiveAccessEmail({ calendarTitle, calendarLink: link, accessCode, subtitle: 'Twój kalendarz jest gotowy' }),
       text: buildInteractiveAccessEmailText({ calendarTitle, calendarLink: link, accessCode }),

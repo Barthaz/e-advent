@@ -1,0 +1,21 @@
+{
+  "serverProgress": {
+    "status": "IN_PROGRESS",
+    "payload": {
+      "name": "Saved work"
+    },
+    "configId": "audit",
+    "updatedAt": "2026-10-16"
+  },
+  "resultingProgress": {
+    "taskId": "audit",
+    "configId": "audit",
+    "status": "NOT_STARTED",
+    "payloadVersion": 1,
+    "payload": {
+      "started": true
+    },
+    "updatedAt": "2026-10-16T11:53:09.355Z"
+  },
+  "defectConfirmed": true
+}

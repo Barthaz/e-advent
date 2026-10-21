@@ -7,7 +7,8 @@ jest.mock('../../config/database', () => ({
     }),
   })),
   query: jest.fn().mockResolvedValue([[], []]),
-  withTransaction: jest.fn(),
+  withTransaction: jest.fn(fn => fn()),
+  withNamedLocks: jest.fn((keys, fn) => fn()),
   closeConnection: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('../../models/Calendar', () => require('../mocks/Calendar'));
@@ -90,7 +91,7 @@ describe('Faza 1 — payment bypass / promo (Pay-*)', () => {
         id: 'cal-spoof-status',
         status: 'pending',
         editToken: 'tok',
-        data: { sku: 'interactive', productType: 'interactive', email: 'a@b.c', title: 'X', author: 'Y', tasks: [] },
+        data: { checkoutToken: 'a'.repeat(64), sku: 'interactive', productType: 'interactive', email: 'a@example.com', title: 'X', author: 'Y', tasks: [] },
       })
     );
 
@@ -100,7 +101,7 @@ describe('Faza 1 — payment bypass / promo (Pay-*)', () => {
         calendar: {
           title: 'X',
           author: 'Y',
-          email: 'a@b.c',
+          email: 'a@example.com',
           sku: 'interactive',
           productType: 'interactive',
           tasks: [],
@@ -131,7 +132,7 @@ describe('Faza 1 — payment/price security (fixed)', () => {
     Calendar.findCalendarById.mockResolvedValue(pendingCalendar({
       id: 'cal-free-1',
       sku: 'interactive',
-      data: { sku: 'interactive', productType: 'interactive' },
+      data: { checkoutToken: 'a'.repeat(64), sku: 'interactive', productType: 'interactive' },
     }));
 
     const res = await request(app)
@@ -146,7 +147,7 @@ describe('Faza 1 — payment/price security (fixed)', () => {
     Calendar.findCalendarById.mockResolvedValue(pendingCalendar({
       id: 'cal-free-ok',
       sku: 'interactive',
-      data: { sku: 'interactive', productType: 'interactive', title: 'T', email: 'a@b.c' },
+      data: { checkoutToken: 'a'.repeat(64), sku: 'interactive', productType: 'interactive', title: 'T', email: 'a@example.com' },
     }));
     Calendar.updateCalendar.mockResolvedValue(
       pendingCalendar({
@@ -154,17 +155,17 @@ describe('Faza 1 — payment/price security (fixed)', () => {
         status: 'succeeded',
         isFree: true,
         accessCode: 'ABC123',
-        data: { sku: 'interactive', productType: 'interactive', title: 'T' },
+        data: { checkoutToken: 'a'.repeat(64), sku: 'interactive', productType: 'interactive', title: 'T' },
       })
     );
     Payment.findPayments.mockResolvedValue([]);
 
     const res = await request(app)
       .post('/api/v1/calendars/createFree')
-      .send({ calendarId: 'cal-free-ok', email: 'buyer@example.com', promoCode: 'rabat100' });
+      .send({ calendarId: 'cal-free-ok', email: 'a@example.com', editToken: 'test-edit-token', promoCode: 'rabat100' });
 
     expect(res.status).toBe(200);
-    expect(res.body.accessCode).toBeTruthy();
+    expect(res.body.accessCode).toBeUndefined();
     expect(Calendar.updateCalendar).toHaveBeenCalled();
   });
 
@@ -172,12 +173,12 @@ describe('Faza 1 — payment/price security (fixed)', () => {
     Calendar.findCalendarById.mockResolvedValue(pendingCalendar({
       id: 'cal-scratch',
       sku: 'scratch-a3',
-      data: { sku: 'scratch-a3', productType: 'scratch' },
+      data: { checkoutToken: 'a'.repeat(64), sku: 'scratch-a3', productType: 'scratch' },
     }));
 
     const res = await request(app)
       .post('/api/v1/calendars/createFree')
-      .send({ calendarId: 'cal-scratch', email: 'buyer@example.com', promoCode: 'rabat100' });
+      .send({ calendarId: 'cal-scratch', email: 'buyer@example.com', editToken: 'test-edit-token', promoCode: 'rabat100' });
 
     expect(res.status).toBe(403);
     expect(Calendar.updateCalendar).not.toHaveBeenCalled();
@@ -197,7 +198,7 @@ describe('Faza 1 — payment/price security (fixed)', () => {
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { checkoutToken: 'a'.repeat(64),
           amount: 9,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
@@ -225,7 +226,7 @@ describe('Faza 1 — payment/price security (fixed)', () => {
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: {
+        data: { checkoutToken: 'a'.repeat(64),
           amount: 74,
           currency: 'eur',
           customerEmail: 'buyer@example.com',
@@ -260,7 +261,7 @@ describe('Faza 1 — payment/price security (fixed)', () => {
         calendar: {
           title: 'X',
           author: 'Y',
-          email: 'a@b.c',
+          email: 'a@example.com',
           sku: 'interactive',
           productType: 'interactive',
           tasks: [],

@@ -145,7 +145,8 @@ function ChecklistEngine(props: EngineProps) {
   if (props.descriptor.variant === 'BINGO') return <BingoEngine {...props} />;
   if (props.descriptor.variant === 'SCORE') return <ScoreHuntEngine {...props} />;
   const pack = resolvePack(props.descriptor.contentKey);
-  const items = (props.progress?.payload?.items as string[]) || (pack?.items as string[]) || [];
+  const savedItems = props.progress?.payload?.items;
+  const items = Array.isArray(savedItems) && savedItems.length ? savedItems as string[] : (pack?.items as string[]) || [];
   const checked = (props.progress?.payload?.checked as Record<string, boolean>) || {};
   return (
     <View style={{ gap: 8 }}>
@@ -277,7 +278,8 @@ function ScoreHuntEngine({ descriptor, progress, onUpdate }: EngineProps) {
 function BingoEngine({ descriptor, progress, onUpdate }: EngineProps) {
   const pack = resolvePack(descriptor.contentKey);
   const size = Number(pack?.columns || pack?.rows || 3) || 3;
-  const source = ((progress?.payload?.items as string[]) || (pack?.items as string[]) || []).slice(0, size * size);
+  const savedItems = progress?.payload?.items;
+  const source = (Array.isArray(savedItems) && savedItems.length ? savedItems as string[] : (pack?.items as string[]) || []).slice(0, size * size);
   const items = [...source];
   while (items.length < size * size) items.push(`Pole ${items.length + 1}`);
   const checked = (progress?.payload?.checked as Record<string, boolean>) || {};
@@ -947,18 +949,34 @@ function SortableListEngine({ descriptor, progress, onUpdate }: EngineProps) {
   );
 }
 
-function RecipeEngine({ descriptor }: EngineProps) {
+function RecipeEngine({ descriptor, progress, onUpdate }: EngineProps) {
   const pack = resolvePack(descriptor.contentKey);
   const title = String(pack?.title || descriptor.headline);
   const steps = (pack?.steps as string[]) || [];
+  const ingredients = (pack?.ingredients as string[]) || [];
   return (
     <View style={{ gap: 6 }}>
       <Text style={{ color: calendarTheme.goldBright, fontSize: 18, fontWeight: '700' }}>{title}</Text>
+      {ingredients.length > 0 && (
+        <>
+          <Text style={{ color: calendarTheme.goldBright, fontWeight: '600' }}>Składniki</Text>
+          {ingredients.map((ingredient) => <Text key={ingredient} style={{ color: '#fff' }}>• {ingredient}</Text>)}
+          <Text style={{ color: calendarTheme.goldBright, fontWeight: '600' }}>Przygotowanie</Text>
+        </>
+      )}
       {steps.map((s) => (
         <Text key={s} style={{ color: '#fff' }}>
           • {s}
         </Text>
       ))}
+      <Pressable
+        style={goldBtn}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: !!progress?.payload?.recipeDone }}
+        onPress={() => onUpdate({ recipeDone: !progress?.payload?.recipeDone, started: true })}
+      >
+        <Text style={goldBtnText}>{progress?.payload?.recipeDone ? '✓ Przepis wykonany' : 'Oznacz przepis jako wykonany'}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -1019,7 +1037,7 @@ function ImageCardEngine({ descriptor, progress, onUpdate, calendarId, day }: En
         mediaTypes: ['images'],
         quality: 0.8,
         allowsEditing: true,
-        preferredAssetRepresentationMode: 'compatible',
+        preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
       });
       if (result.canceled || !result.assets?.[0]?.uri) return;
       const asset = result.assets[0];

@@ -58,12 +58,9 @@ const CalendarWindow = forwardRef<View, CalendarWindowProps>(function CalendarWi
           </View>
 
           {shouldShine && (
-            <Image
-              source={windowShine}
-              style={styles.shine}
-              resizeMode="cover"
-              pointerEvents="none"
-            />
+            <View style={styles.shine} pointerEvents="none">
+              <Image source={windowShine} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            </View>
           )}
 
           {isOpening && (
@@ -97,7 +94,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   numberLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -124,14 +121,14 @@ const styles = StyleSheet.create({
     opacity: 0.78,
   },
   shine: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     width: '100%',
     height: '100%',
     // Nudge shine up to align with close.png frame
     transform: [{ translateY: -35 }],
   },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(8, 26, 23, 0.45)',
     alignItems: 'center',
     justifyContent: 'center',

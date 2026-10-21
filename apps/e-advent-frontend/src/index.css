@@ -117,6 +117,73 @@ html.embed-window-preview #root {
   border-color: var(--color-parchment-dark);
 }
 
+/* Główne akcje hero: cały kafel jest jednym linkiem. */
+.hero-actions {
+  display: grid;
+  gap: 1rem;
+  max-width: 56rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.hero-action {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #d4af3780;
+  border-radius: 1.125rem;
+  box-shadow: 0 8px 28px #0003, inset 0 1px 0 #fff2;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.hero-action--letter {
+  color: var(--color-parchment-text);
+  background: linear-gradient(135deg, #f5e7cf, #dfc096);
+}
+
+.hero-action--calendar {
+  color: #fff4de;
+  background: linear-gradient(135deg, #175238, #0b3426);
+}
+
+.hero-action-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid #b08d5766;
+  border-radius: 50%;
+  color: var(--color-christmas-green);
+  background: #fff5;
+  font-size: 1.2rem;
+}
+
+.hero-action--calendar .hero-action-icon {
+  color: #f3d787;
+  background: #d4af371a;
+}
+
+.hero-action-content { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.hero-action-eyebrow { font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; }
+.hero-action-title { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 1.75rem; line-height: 1.15; margin: 0.4rem 0 0.6rem; }
+.hero-action-description { font-size: 0.95rem; line-height: 1.55; }
+.hero-action-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; padding-top: 1.15rem; margin-top: auto; font-size: 0.95rem; font-weight: 600; color: var(--color-christmas-green); }
+.hero-action-footer i { margin-left: 0.4rem; font-size: 0.75rem; transition: transform 200ms ease; }
+.hero-action-price { font-weight: 400; font-size: 0.85rem; white-space: nowrap; }
+.hero-action--calendar .hero-action-footer { color: #f3d787; }
+.hero-action:hover { transform: translateY(-4px); border-color: #f4d03f; box-shadow: 0 12px 36px #0005, 0 0 0 1px #d4af3740; }
+.hero-action:hover .hero-action-footer i { transform: translateX(4px); }
+.hero-action:focus-visible, .hero-returning-link:focus-visible { outline: 3px solid #f4d03f; outline-offset: 5px; }
+.hero-returning { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.25rem 0.75rem; max-width: 38rem; margin: 1.75rem auto 0; padding-top: 1.25rem; border-top: 1px solid #ead5b340; font-size: 0.95rem; color: #fffdf2cc; }
+.hero-returning-link { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; color: #f3d787; text-underline-offset: 5px; border-radius: 0.25rem; }
+.hero-returning-link:hover { text-decoration: underline; }
+.hero-returning-link i { font-size: 0.75rem; }
+
+@media (min-width: 640px) { .hero-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 380px) { .hero-action { padding: 1.1rem; gap: 0.75rem; } .hero-action-title { font-size: 1.55rem; } }
+@media (prefers-reduced-motion: reduce) { .hero-action, .hero-action-footer i { transition: none; } .hero-action:hover, .hero-action:hover .hero-action-footer i { transform: none; } }
+
 /* Odliczanie — styl aplikacji mobilnej */
 .countdown-box {
   background: linear-gradient(

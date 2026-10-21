@@ -1,3 +1,5 @@
+import InpostDelivery from '../components/checkout/InpostDelivery';
+import { useInpostQuote, type InpostChoice } from '../components/checkout/useInpostQuote';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
@@ -10,12 +12,14 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import PriceBreakdown from '../components/PriceBreakdown';
 import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals } from '../config/products';
-import ShippingForm, { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../components/checkout/ShippingForm';
+import ShippingForm from '../components/checkout/ShippingForm';
+import { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../utils/shippingAddress';
 import type { ProductType, ShippingAddress } from '../types/order';
 import { getActiveProduct, getStorageKeys, loadShipping, saveShipping, loadCheckoutCalendarData, resolveCheckoutProduct, getReusablePendingCalendarId, getPendingCalendarSession, setPendingCalendarSession, getPurchasedCalendarIds, markCalendarPurchased, PENDING_EDIT_TOKEN_KEY, PURCHASED_CALENDAR_IDS_KEY } from '../utils/creatorStorage';
-import { CART_STORAGE_KEY, loadCart, getCartTotals, cartItemCheckoutKey, cartItemToCheckoutItem, getCartItemDisplayName, type CartItem } from '../utils/cartStorage';
+import { CART_STORAGE_KEY, loadCart, getCartTotals, cartItemToCheckoutItem, getCartItemDisplayName, type CartItem } from '../utils/cartStorage';
 import { trackBeginCheckout, saveGaPurchasePayload } from '../utils/analytics';
 import { saveOrderSummary, cartItemsToOrderLines } from '../utils/orderSummary';
+import { getCheckoutToken } from '../utils/checkoutSession';
 
 /** Survives React Strict Mode remounts — prevents duplicate create-payment-intent calls */
 const checkoutPaymentInitCache: {
@@ -356,6 +360,7 @@ export default function Checkout() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [activePaymentKey, setActivePaymentKey] = useState('');
   const [stripePromise] = useState(() => loadStripe(STRIPE_PUBLISHABLE_KEY));
   const [promoCode, setPromoCode] = useState<string>('');
   const [promoCodeDiscount, setPromoCodeDiscount] = useState<number | null>(null);
@@ -373,12 +378,16 @@ export default function Checkout() {
   /** Blokada przed pętlą createCalendar + createPaymentIntent w useEffect */
   const paymentInitLockRef = useRef(false);
   const paymentInitKeyRef = useRef<string | null>(null);
-  const lastSyncedShippingRef = useRef<string | null>(null);
 
+  const [delivery, setDelivery] = useState<InpostChoice>({ type: 'parcel_inpost' });
+  const deliveryItems = cartItems.length ? cartItems.map(i => ({ sku: i.sku, quantity: i.quantity })) : [{ sku, quantity: 1 }];
+  const needsDelivery = deliveryItems.some(i => isPhysicalProduct(i.sku));
+  const shippingQuote = useInpostQuote(deliveryItems, delivery.type, needsDelivery);
   const orderTotals = computeOrderTotals(
     cartItems.length > 0
       ? cartItems.map((i) => ({ sku: i.sku, quantity: i.quantity }))
       : [{ sku, quantity: 1 }],
+    { shippingAmount: shippingQuote.quote?.price ?? 0 },
   );
   const product = getProduct(sku);
   const totalPrice = orderTotals?.total ?? getProductPrice(sku) ?? 9;
@@ -390,8 +399,8 @@ export default function Checkout() {
   /** Synchronous address check — never fire create-payment-intent with empty shipping */
   const shippingAddressComplete = useMemo(() => {
     if (!isPhysical) return true;
-    return Object.keys(validateShippingAddress(shippingAddress)).length === 0;
-  }, [isPhysical, shippingAddress]);
+    return Boolean(shippingQuote.quote && (delivery.type === 'courier_inpost' || delivery.pointId)) && Object.keys(validateShippingAddress(shippingAddress, delivery.type)).length === 0;
+  }, [isPhysical, shippingAddress, delivery, shippingQuote.quote]);
 
   const emailReady = isValidCheckoutEmail(calendarData?.email);
 
@@ -475,12 +484,6 @@ export default function Checkout() {
     const savedTasks = localStorage.getItem(getStorageKeys(pt).tasks) || localStorage.getItem('e-advent-tasks');
     const savedSelectedExamples = localStorage.getItem(getStorageKeys(pt).selectedExamples) || localStorage.getItem('e-advent-selected-examples');
 
-    try {
-      localStorage.clear();
-    } catch (error) {
-      console.warn('[Checkout] Nie można wyczyścić localStorage:', error);
-    }
-
     if (cookieConsent) localStorage.setItem('cookieConsent', cookieConsent);
     // Preserve physical cart while paying for interactive separately
     if (savedCartRaw) localStorage.setItem(CART_STORAGE_KEY, savedCartRaw);
@@ -546,14 +549,17 @@ export default function Checkout() {
       setShippingErrors({});
       return;
     }
-    const errors = validateShippingAddress(shippingAddress);
+    const errors = validateShippingAddress(shippingAddress, delivery.type);
     setShippingErrors(errors);
     const valid = Object.keys(errors).length === 0;
     if (valid) {
       saveShipping(cartMode ? 'scratch' : productType, normalizeShippingAddress(shippingAddress));
       if (cartMode) saveShipping('letter', normalizeShippingAddress(shippingAddress));
     }
-  }, [shippingAddress, isPhysical, productType, cartMode, calendarData]);
+  }, [shippingAddress, isPhysical, productType, cartMode, calendarData, delivery.type]);
+
+  const checkoutFingerprint = JSON.stringify({ checkoutToken: getCheckoutToken(), calendarData, cart: cartMode ? cartItems : null,
+    shipping: isPhysical ? normalizeShippingAddress(shippingAddress) : null, delivery: isPhysical ? delivery : null, quoteKey: shippingQuote.quote?.quoteKey, sku, totalPrice });
 
   // Utwórz Payment Intent raz na zestaw danych (bez pętli przy re-renderach)
   useEffect(() => {
@@ -571,13 +577,7 @@ export default function Checkout() {
         return;
       }
 
-      // Stable key: cart/email/amount — shipping updates reuse the same pending payment on backend
-      const cartFingerprint = cartMode
-        ? cartItems.map((i) => cartItemCheckoutKey(i)).join('|')
-        : `${sku}:1`;
-      const initKey = cartMode
-        ? `cart:${calendarData.email}:${totalPrice}:${cartFingerprint}`
-        : `cal:${calendarData.email}:${sku}:${totalPrice}`;
+      const initKey = checkoutFingerprint;
 
       // Zmiana danych wejściowych (email / kwota / koszyk) → reset i jedna nowa inicjalizacja
       if (paymentInitKeyRef.current && paymentInitKeyRef.current !== initKey) {
@@ -604,6 +604,7 @@ export default function Checkout() {
       if (checkoutPaymentInitCache.key === initKey && checkoutPaymentInitCache.result) {
         setClientSecret(checkoutPaymentInitCache.result.clientSecret);
         setPaymentIntentId(checkoutPaymentInitCache.result.paymentIntentId);
+        setActivePaymentKey(initKey);
         paymentInitLockRef.current = true;
         paymentInitKeyRef.current = initKey;
         return;
@@ -614,6 +615,7 @@ export default function Checkout() {
           if (!cancelled) {
             setClientSecret(result.clientSecret);
             setPaymentIntentId(result.paymentIntentId);
+            setActivePaymentKey(initKey);
             paymentInitLockRef.current = true;
             paymentInitKeyRef.current = initKey;
           }
@@ -655,6 +657,7 @@ export default function Checkout() {
             ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
             items,
             shippingAddress: normalizeShippingAddress(shippingAddress),
+            delivery: { ...delivery, quoteKey: shippingQuote.quote?.quoteKey },
             metadata: {
               productType: productType,
               sku,
@@ -664,7 +667,7 @@ export default function Checkout() {
             },
           });
           localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
-          localStorage.setItem('orderId', orderId);
+          localStorage.setItem('orderId', paymentIntent.orderId || '');
           if (paymentIntent.orderNumber) {
             localStorage.setItem('orderNumber', paymentIntent.orderNumber);
           }
@@ -701,11 +704,11 @@ export default function Checkout() {
 
         try {
           const result = await promise;
-          checkoutPaymentInitCache.result = result;
-          lastSyncedShippingRef.current = JSON.stringify(shippingAddress);
+          if (checkoutPaymentInitCache.key === initKey) checkoutPaymentInitCache.result = result;
           if (!cancelled) {
             setClientSecret(result.clientSecret);
             setPaymentIntentId(result.paymentIntentId);
+            setActivePaymentKey(initKey);
           }
         } catch (err) {
           checkoutPaymentInitCache.key = null;
@@ -718,7 +721,7 @@ export default function Checkout() {
             const isShippingError = /shipping|adres|wysyłk/i.test(message);
             setPaymentError(
               isShippingError
-                ? 'Uzupełnij dane do wysyłki, aby sfinalizować płatność.'
+                ? 'Wybierz dostawę i uzupełnij dane odbiorcy, aby przejść do płatności.'
                 : message
             );
           }
@@ -784,7 +787,7 @@ export default function Checkout() {
 
         if (savedGeneratedCalendar) {
           try {
-            const generatedCalendar: Array<{ day: number; task: string; duration?: number; latestDay?: number }> = JSON.parse(savedGeneratedCalendar);
+            const generatedCalendar: Array<{ day: number; task: string; duration?: number; latestDay?: number; catalogTaskId?: string }> = JSON.parse(savedGeneratedCalendar);
             generatedTasks = generatedCalendar.map(({ day, task, duration, latestDay, catalogTaskId }) => ({
               day,
               task,
@@ -844,6 +847,7 @@ export default function Checkout() {
         const paymentAmount = totalPrice;
 
         const paymentIntentData = {
+          ...(isPhysical ? { shippingAddress: normalizeShippingAddress(shippingAddress), delivery: { ...delivery, quoteKey: shippingQuote.quote?.quoteKey } } : {}),
           amount: paymentAmount,
           currency: 'pln',
           customerEmail: calendarData.email,
@@ -869,7 +873,7 @@ export default function Checkout() {
         const paymentIntent = await createPaymentIntent(paymentIntentData);
 
         localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
-        localStorage.setItem('orderId', orderId);
+        localStorage.setItem('orderId', paymentIntent.orderId || '');
         if (paymentIntent.orderNumber) {
           localStorage.setItem('orderNumber', paymentIntent.orderNumber);
         }
@@ -907,10 +911,11 @@ export default function Checkout() {
 
       try {
         const result = await promise;
-        checkoutPaymentInitCache.result = result;
+        if (checkoutPaymentInitCache.key === initKey) checkoutPaymentInitCache.result = result;
         if (!cancelled) {
           setClientSecret(result.clientSecret);
           setPaymentIntentId(result.paymentIntentId);
+            setActivePaymentKey(initKey);
         }
       } catch (error) {
         console.error('[Payment] Błąd podczas inicjalizacji płatności:', error);
@@ -955,52 +960,7 @@ export default function Checkout() {
       cancelled = true;
       if (debounceTimer) clearTimeout(debounceTimer);
     };
-  }, [calendarData, clientSecret, shippingAddressComplete, isPhysical, totalPrice, productType, sku, shippingAddress, cartMode, cartItems]);
-
-  // After Payment Intent exists, push shipping address updates without creating a new order row
-  useEffect(() => {
-    if (!cartMode || !isPhysical || !clientSecret || !calendarData) return;
-    if (!shippingAddressComplete || !isValidCheckoutEmail(calendarData.email)) return;
-
-    const shippingKey = JSON.stringify(shippingAddress);
-    if (lastSyncedShippingRef.current === shippingKey) return;
-
-    const timer = setTimeout(() => {
-      const orderId = getStableCheckoutOrderId(
-        `cart:${calendarData.email}:${totalPrice}:${cartItems.map((i) => cartItemCheckoutKey(i)).join('|')}`
-      );
-      const items = cartItems.map((i) => cartItemToCheckoutItem(i));
-      const primaryCalendarId = cartItems.find((i) => i.calendarId)?.calendarId;
-      void createPaymentIntent({
-        amount: totalPrice,
-        currency: 'pln',
-        customerEmail: calendarData.email,
-        orderId,
-        ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
-        items,
-        shippingAddress: normalizeShippingAddress(shippingAddress),
-        metadata: {
-          productType,
-          sku,
-          itemCount: String(cartItems.length),
-          cartCheckout: '1',
-          clientOrderId: orderId,
-          shippingUpdate: '1',
-        },
-      })
-        .then((paymentIntent) => {
-          lastSyncedShippingRef.current = shippingKey;
-          if (paymentIntent.orderNumber) {
-            localStorage.setItem('orderNumber', paymentIntent.orderNumber);
-          }
-        })
-        .catch(() => {
-          /* non-blocking — pay flow still works with address captured at first successful init */
-        });
-    }, 600);
-
-    return () => clearTimeout(timer);
-  }, [shippingAddress, shippingAddressComplete, cartMode, isPhysical, clientSecret, calendarData, totalPrice, cartItems, productType, sku]);
+  }, [checkoutFingerprint, calendarData, clientSecret, shippingCost, shippingAddressComplete, isPhysical, totalPrice, productType, sku, shippingAddress, cartMode, cartItems, delivery, shippingQuote.quote]);
 
   // Funkcja do sprawdzania kodu promocyjnego
   const handlePromoCodeBlur = async () => {
@@ -1114,7 +1074,7 @@ export default function Checkout() {
       
       if (savedGeneratedCalendar) {
         try {
-          const generatedCalendar: Array<{ day: number; task: string; duration?: number; latestDay?: number }> = JSON.parse(savedGeneratedCalendar);
+          const generatedCalendar: Array<{ day: number; task: string; duration?: number; latestDay?: number; catalogTaskId?: string }> = JSON.parse(savedGeneratedCalendar);
           
           generatedTasks = generatedCalendar.map(({ day, task, duration, latestDay, catalogTaskId }) => ({
             day,
@@ -1255,7 +1215,6 @@ export default function Checkout() {
                         checkoutPaymentInitCache.key = null;
                         checkoutPaymentInitCache.promise = null;
                         checkoutPaymentInitCache.result = null;
-                        lastSyncedShippingRef.current = null;
                       }}
                       placeholder="jan@example.com"
                       required
@@ -1303,7 +1262,7 @@ export default function Checkout() {
               {isPhysical && (
                 <p className="mt-2 text-sm text-gray-600">
                   <i className="fas fa-clock mr-2 text-christmas-green" />
-                  Czas realizacji: {PHYSICAL_FULFILLMENT_TIME}. Wysyłka: Poczta Polska.
+                  Czas realizacji: {PHYSICAL_FULFILLMENT_TIME}. Wysyłka: InPost.
                   {orderTotals?.freeShipping
                     ? ' Darmowa wysyłka (próg 100 zł).'
                     : null}
@@ -1368,7 +1327,8 @@ export default function Checkout() {
                   shippingCost={shippingCost}
                   variant="checkout"
                   totalLabel="Do zapłaty"
-                  freeShipping={orderTotals?.freeShipping}
+                  freeShipping={false}
+                  shippingPending={isPhysical && !shippingQuote.quote}
                 />
               )}
               {promoCodeDiscount !== null && promoCodeDiscount > 0 && promoCodeDiscount < 100 && (
@@ -1380,7 +1340,10 @@ export default function Checkout() {
           </div>
 
           {isPhysical && (
-            <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} />
+            <>
+              <InpostDelivery value={delivery} onChange={setDelivery} {...shippingQuote} />
+              <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} deliveryType={delivery.type} />
+            </>
           )}
 
           {/* Pole kodu promocyjnego — tylko interaktywny */}
@@ -1477,8 +1440,9 @@ export default function Checkout() {
             </div>
           )}
 
-          {clientSecret && paymentIntentId ? (
+          {clientSecret && paymentIntentId && activePaymentKey === checkoutFingerprint && emailReady && (!isPhysical || shippingAddressComplete) ? (
             <Elements
+              key={clientSecret}
               stripe={stripePromise}
               options={{
                 clientSecret,
@@ -1503,7 +1467,7 @@ export default function Checkout() {
                 Uzupełnij dane do wysyłki, aby sfinalizować płatność.
               </p>
               <p className="text-gray-500 text-sm mt-2">
-                Formularz płatności pojawi się po uzupełnieniu adresu powyżej.
+                Formularz płatności pojawi się po wycenie dostawy oraz wyborze Paczkomatu lub podaniu adresu kuriera.
               </p>
             </div>
           ) : cartMode && !emailReady ? (

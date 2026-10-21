@@ -1,6 +1,9 @@
 const mysql = require('mysql2/promise');
 const { testingMode, getMysqlConfig } = require('./app');
 
+const { AsyncLocalStorage } = require('node:async_hooks');
+const transactionContext = new AsyncLocalStorage();
+const connectionContext = new AsyncLocalStorage();
 let pool = null;
 
 const createPool = () => {
@@ -35,6 +38,8 @@ const getPool = () => {
 
 // Pojedyncze zapytanie - zwraca [rows, fields]
 const query = async (sql, params = []) => {
+  const transaction = transactionContext.getStore() || connectionContext.getStore();
+  if (transaction) return transaction.execute(sql, params);
   const p = getPool();
   try {
     return await p.execute(sql, params);
@@ -49,17 +54,45 @@ const query = async (sql, params = []) => {
 
 // Transakcja pomocnicza
 const withTransaction = async (fn) => {
-  const conn = await getPool().getConnection();
-  await conn.beginTransaction();
+  const active = transactionContext.getStore();
+  if (active) return fn(active);
+  const shared = connectionContext.getStore();
+  const conn = shared || await getPool().getConnection();
   try {
-    const result = await fn(conn);
+    await conn.beginTransaction();
+    const result = await transactionContext.run(conn, () => fn(conn));
     await conn.commit();
     return result;
   } catch (err) {
     await conn.rollback();
     throw err;
   } finally {
-    conn.release();
+    if (!shared) conn.release();
+  }
+};
+
+// MySQL locks coordinate API instances as well as concurrent requests. All work
+// uses this connection so waiting requests cannot exhaust a second pool slot.
+const withNamedLocks = async (keys, fn) => {
+  const { createHash } = require('node:crypto');
+  const names = [...new Set(keys)].sort().map(key => createHash('sha256').update(key).digest('hex'));
+  const conn = await getPool().getConnection();
+  const acquired = [];
+  let reusable = true;
+  try {
+    for (const name of names) {
+      const [rows] = await conn.execute('SELECT GET_LOCK(?, 10) AS acquired', [name]);
+      if (Number(rows[0]?.acquired) !== 1) throw Object.assign(new Error('Checkout is busy. Please retry.'), { status: 409 });
+      acquired.push(name);
+    }
+    return await connectionContext.run(conn, () => fn(conn));
+  } finally {
+    for (const name of acquired.reverse()) {
+      try { await conn.execute('SELECT RELEASE_LOCK(?)', [name]); }
+      catch { reusable = false; }
+    }
+    if (reusable) conn.release();
+    else conn.destroy(); // Never return a connection holding an advisory lock.
   }
 };
 
@@ -95,6 +128,7 @@ module.exports = {
   getPool,
   query,
   withTransaction,
+  withNamedLocks,
   closeConnection,
   getMysqlConfig,
 };

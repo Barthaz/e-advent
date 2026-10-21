@@ -81,11 +81,11 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         applySession(session, response.calendar);
         return response.calendar;
       } catch (error) {
-        await clearSessionStorage();
-        setEmail(null);
-        setAccessCode(null);
-        setCalendarId(null);
-        setCalendar(null);
+        const status = (error as { status?: number }).status;
+        if (status === 400 || status === 401 || status === 403 || status === 404) {
+          await clearSessionStorage();
+          setEmail(null); setAccessCode(null); setCalendarId(null); setCalendar(null);
+        }
         throw error;
       } finally {
         setIsLoading(false);

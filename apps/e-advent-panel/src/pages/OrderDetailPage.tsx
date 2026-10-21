@@ -1,3 +1,4 @@
+import InpostShipmentCard from '../components/InpostShipmentCard';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGetOrderQuery, usePatchOrderMutation } from '../api/ordersApi';
@@ -33,7 +34,7 @@ export default function OrderDetailPage() {
   const toast = useToast();
   const orderId = id ?? '';
 
-  const { data: order, isLoading, isError } = useGetOrderQuery(orderId, { skip: !orderId });
+  const { data: order, isLoading, isError, refetch } = useGetOrderQuery(orderId, { skip: !orderId });
   const [patchOrder, { isLoading: isSaving }] = usePatchOrderMutation();
   const { data: emails = [], isLoading: emailsLoading } = useGetOrderEmailsQuery(orderId, { skip: !orderId });
   const [sendPaidEmail, { isLoading: isSendingPaid }] = useSendPaidOrderEmailMutation();
@@ -70,7 +71,9 @@ export default function OrderDetailPage() {
 
   const handleSave = async () => {
     try {
-      await patchOrder({ id: orderId, data: form }).unwrap();
+      const data = Object.fromEntries(Object.entries(form).filter(([key, value]) => value !== (order?.[key as keyof typeof order] ?? ''))) as PatchOrderRequest;
+      if (!Object.keys(data).length) { setIsDirty(false); return; }
+      await patchOrder({ id: orderId, data }).unwrap();
       toast.success('Zamówienie zostało zaktualizowane.');
       setIsDirty(false);
     } catch {
@@ -156,6 +159,7 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
+      {order.inpostDelivery && <InpostShipmentCard orderId={orderId} delivery={order.inpostDelivery} paid={order.status === 'succeeded'} onRefresh={refetch} />}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* ── Lewa kolumna ── */}
         <div className="lg:col-span-2 space-y-5">
@@ -168,6 +172,7 @@ export default function OrderDetailPage() {
                 <label className="block text-xs font-medium text-gray-500 mb-1.5">Status płatności</label>
                 <select
                   className="admin-select"
+                  disabled={Boolean(order.stripe_payment_intent_id)}
                   value={form.status ?? order.status}
                   onChange={(e) => handleChange('status', e.target.value as PaymentStatus)}
                 >
@@ -194,6 +199,7 @@ export default function OrderDetailPage() {
                   type="text"
                   className="input-field"
                   placeholder="np. 123456789012345678"
+                  disabled={Boolean(order.inpostDelivery)}
                   value={form.tracking_number ?? ''}
                   onChange={(e) => handleChange('tracking_number', e.target.value)}
                 />
@@ -202,6 +208,7 @@ export default function OrderDetailPage() {
                 <label className="block text-xs font-medium text-gray-500 mb-1.5">Typ dostawy</label>
                 <select
                   className="admin-select"
+                  disabled={Boolean(order.inpostDelivery)}
                   value={form.delivery_type ?? order.delivery_type}
                   onChange={(e) => handleChange('delivery_type', e.target.value as DeliveryType)}
                 >
@@ -335,6 +342,7 @@ export default function OrderDetailPage() {
                 <input
                   type="text"
                   className="input-field"
+                  disabled={Boolean(order.inpostDelivery)}
                   value={form.customer_name ?? ''}
                   onChange={(e) => handleChange('customer_name', e.target.value)}
                 />
@@ -344,6 +352,7 @@ export default function OrderDetailPage() {
                 <input
                   type="tel"
                   className="input-field"
+                  disabled={Boolean(order.inpostDelivery)}
                   value={form.customer_phone ?? ''}
                   onChange={(e) => handleChange('customer_phone', e.target.value)}
                 />
@@ -369,7 +378,8 @@ export default function OrderDetailPage() {
                   <input
                     type="text"
                     className="input-field"
-                    value={form.shipping_street ?? ''}
+                    disabled={Boolean(order.inpostDelivery)}
+                  value={form.shipping_street ?? ''}
                     onChange={(e) => handleChange('shipping_street', e.target.value)}
                   />
                 </div>
@@ -378,7 +388,8 @@ export default function OrderDetailPage() {
                   <input
                     type="text"
                     className="input-field"
-                    value={form.shipping_postal_code ?? ''}
+                    disabled={Boolean(order.inpostDelivery)}
+                  value={form.shipping_postal_code ?? ''}
                     onChange={(e) => handleChange('shipping_postal_code', e.target.value)}
                   />
                 </div>
@@ -387,7 +398,8 @@ export default function OrderDetailPage() {
                   <input
                     type="text"
                     className="input-field"
-                    value={form.shipping_city ?? ''}
+                    disabled={Boolean(order.inpostDelivery)}
+                  value={form.shipping_city ?? ''}
                     onChange={(e) => handleChange('shipping_city', e.target.value)}
                   />
                 </div>
@@ -406,7 +418,8 @@ export default function OrderDetailPage() {
                     type="text"
                     className="input-field"
                     placeholder="np. WAW120"
-                    value={form.parcel_locker_id ?? ''}
+                    disabled={Boolean(order.inpostDelivery)}
+                  value={form.parcel_locker_id ?? ''}
                     onChange={(e) => handleChange('parcel_locker_id', e.target.value)}
                   />
                 </div>
@@ -415,7 +428,8 @@ export default function OrderDetailPage() {
                   <input
                     type="text"
                     className="input-field"
-                    value={form.parcel_locker_name ?? ''}
+                    disabled={Boolean(order.inpostDelivery)}
+                  value={form.parcel_locker_name ?? ''}
                     onChange={(e) => handleChange('parcel_locker_name', e.target.value)}
                   />
                 </div>
@@ -424,7 +438,8 @@ export default function OrderDetailPage() {
                   <input
                     type="text"
                     className="input-field"
-                    value={form.parcel_locker_address ?? ''}
+                    disabled={Boolean(order.inpostDelivery)}
+                  value={form.parcel_locker_address ?? ''}
                     onChange={(e) => handleChange('parcel_locker_address', e.target.value)}
                   />
                 </div>

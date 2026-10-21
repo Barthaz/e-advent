@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { defaultPdfLayout, normalizePdfLayout, applyPdfLayout } = require('./pdfLayout');
+const { CRAFT_TEMPLATES, buildCraftSheets } = require('./CraftSheets');
 
 const packsDir = path.resolve(__dirname, '../../../../packages/content/packs');
 
@@ -142,7 +143,7 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
   const data = {
     ...pack,
     ...payload,
-    items: payload.items || pack.items,
+    items: Array.isArray(payload.items) && payload.items.length ? payload.items : pack.items,
     columns: payload.columns || pack.columns,
     ingredients: payload.ingredients || pack.ingredients,
     steps: payload.steps || pack.steps,
@@ -174,6 +175,15 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
 
   const intro = [heading, subtitle, { type: 'Divider' }].filter(Boolean);
   const footer = { type: 'BrandFooter' };
+
+  if (CRAFT_TEMPLATES.has(templateId)) {
+    base.page = { size: 'A4', orientation: 'PORTRAIT', marginMm: 14 };
+    base.layout = 'PORTRAIT';
+    base.craftTheme = String(payload.theme || '');
+    base.craftSheets = buildCraftSheets(templateId, pack, payload);
+    base.nodes = [{ type: 'CraftSheets', templateId }];
+    return base;
+  }
 
   if (templateId === 'santa-adult-letter-v1') {
     const fields = payload.fields && typeof payload.fields === 'object' ? payload.fields : {};
@@ -610,7 +620,7 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
       nodes.push({ type: 'Text', text: '□ □ □ □ □ □', style: 'accent' });
     }
     nodes.push({ type: 'CutLine', label: cutLabel });
-    nodes.push(...payloadNodes(data).filter((node) => node.type !== 'CheckboxList' || (node.items || []).some(Boolean)));
+    nodes.push(...payloadNodes(payload).filter((node) => node.type !== 'CheckboxList' || (node.items || []).some(Boolean)));
     nodes.push(footer);
     base.nodes = nodes;
     return base;

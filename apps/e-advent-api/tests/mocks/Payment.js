@@ -1,4 +1,5 @@
 module.exports = {
+  updatePendingPayment: jest.fn(),
   createPayment: jest.fn(),
   findPayments: jest.fn(),
   findPaymentByStripeId: jest.fn(),

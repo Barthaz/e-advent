@@ -16,7 +16,7 @@ export function getDaysUntilChristmas(): number {
   return diffDays;
 }
 
-export function formatCountdown(_days: number): { days: number; hours: number; minutes: number } {
+export function formatCountdown(): { days: number; hours: number; minutes: number } {
   const now = new Date();
   const currentYear = now.getFullYear();
   const christmas = new Date(currentYear, 11, 25, 0, 0, 0);

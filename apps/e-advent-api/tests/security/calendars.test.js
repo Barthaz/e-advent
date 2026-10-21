@@ -84,7 +84,7 @@ describe('Faza 3 — calendars ID / access / multi-create (C-*, M-*)', () => {
         calendar: {
           title: 'Second',
           author: 'X',
-          email: 'a@b.c',
+          email: 'a@example.com',
           sku: 'interactive',
           productType: 'interactive',
           tasks: [],
@@ -111,7 +111,7 @@ describe('Faza 3 — calendars ID / access / multi-create (C-*, M-*)', () => {
       calendar: {
         title: 'Cal',
         author: 'A',
-        email: 'a@b.c',
+        email: 'a@example.com',
         sku: 'interactive',
         productType: 'interactive',
         tasks: [],
@@ -177,7 +177,7 @@ describe('Faza 3 — calendar ownership / ID (fixed)', () => {
           id: 'client-forced-id-123',
           title: 'X',
           author: 'Y',
-          email: 'a@b.c',
+          email: 'a@example.com',
           sku: 'interactive',
           productType: 'interactive',
           tasks: [],
@@ -229,5 +229,42 @@ describe('Faza 3 — calendar ownership / ID (fixed)', () => {
     const res = await request(app).put('/api/v1/calendars/any-cal/open/1');
     expect(res.status).toBe(200);
     expect(Calendar.openTask).toHaveBeenCalled();
+  });
+});
+
+
+describe('Scratch calendars: A3 only', () => {
+  const app = loadApp();
+  beforeEach(() => jest.clearAllMocks());
+
+  test.each([
+    { productType: 'scratch', sku: 'scratch-a4', format: 'A4' },
+    { productType: 'scratch', sku: 'scratch-a3', format: 'A4' },
+    { productType: 'scratch', format: 'A5' },
+  ])('rejects an unavailable scratch variant: %j', async (product) => {
+    const res = await request(app).post('/api/v1/calendars').send({ calendar: { ...product, email: 'buyer@example.com' } });
+    expect(res.status).toBe(400);
+    expect(Calendar.createCalendar).not.toHaveBeenCalled();
+  });
+
+  test('defaults a new scratch draft to A3', async () => {
+    Calendar.createCalendar.mockResolvedValue(pendingCalendar({ sku: 'scratch-a3' }));
+    const res = await request(app).post('/api/v1/calendars').send({ calendar: { productType: 'scratch', email: 'buyer@example.com' } });
+    expect(res.status).toBe(201);
+    expect(Calendar.createCalendar).toHaveBeenCalledWith({ data: expect.objectContaining({ sku: 'scratch-a3', format: 'A3' }) });
+  });
+
+  test('cannot switch an existing draft to A4 through PUT', async () => {
+    Calendar.findCalendarById.mockResolvedValue(pendingCalendar({ sku: 'scratch-a3' }));
+    const res = await request(app).put('/api/v1/calendars/cal-pending-001').set('X-Calendar-Edit-Token', 'test-edit-token').send({ calendar: { format: 'A4' } });
+    expect(res.status).toBe(400);
+    expect(Calendar.updateCalendarData).not.toHaveBeenCalled();
+  });
+
+  test('historical A4 draft cannot start a new checkout', async () => {
+    Calendar.findCalendarById.mockResolvedValue(pendingCalendar({ sku: 'scratch-a4' }));
+    const { resolveCheckoutItems } = require('../../services/orderCheckout');
+    const result = await resolveCheckoutItems({ productId: 'cal-pending-001', editToken: 'test-edit-token' });
+    expect(result.errors).toEqual(expect.arrayContaining([expect.objectContaining({ msg: expect.stringContaining('A3') })]));
   });
 });

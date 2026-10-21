@@ -1,7 +1,7 @@
 import { getProduct, PHYSICAL_FULFILLMENT_NOTE } from '../../config/products';
 import PriceBreakdown from '../PriceBreakdown';
 import ScratchDesignPreview from '../ScratchDesignPreview';
-import { OPENING_METHOD_LABELS } from './StepOpeningMethod';
+import { OPENING_METHOD_LABELS } from './openingMethods';
 import type { CalendarFormat, DesignSelection, OpeningMethod, ProductType } from '../../types/order';
 
 interface StepSummaryProps {

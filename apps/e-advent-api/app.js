@@ -29,6 +29,7 @@ const corsAllowedHeaders = [
   'Content-Type',
   'Authorization',
   'X-Calendar-Edit-Token',
+  'X-Payment-Client-Secret',
   'X-Access-Code',
   'X-Access-Email',
 ];
@@ -94,49 +95,8 @@ app.use((req, res, next) => {
 
 // Request logging middleware
 app.use((req, res, next) => {
-    const startTime = Date.now();
-    const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
-    const timestamp = new Date().toISOString();
-
-    // Log request
-    console.log(`\n[${timestamp}] ${req.method} ${req.originalUrl || req.url}`);
-    console.log(`  📍 IP: ${clientIP}`);
-
-    if (req.body && Object.keys(req.body).length > 0) {
-        // Ukryj wrażliwe dane w logach
-        const sanitizedBody = { ...req.body };
-        if (sanitizedBody.password) sanitizedBody.password = '***';
-        if (sanitizedBody.EMAIL_PASS) sanitizedBody.EMAIL_PASS = '***';
-        if (sanitizedBody.token) sanitizedBody.token = '***';
-        if (sanitizedBody.clientSecret) sanitizedBody.clientSecret = '***';
-        if (sanitizedBody.payload && typeof sanitizedBody.payload === 'object') {
-            sanitizedBody.payload = '[payload]';
-        }
-        const bodyStr = JSON.stringify(sanitizedBody);
-        console.log(`  📦 Body: ${bodyStr.length > 200 ? bodyStr.substring(0, 200) + '...' : bodyStr}`);
-    }
-
-    if (Object.keys(req.query).length > 0) {
-        console.log(`  🔍 Query: ${JSON.stringify(req.query)}`);
-    }
-
-    // Log response
-    const originalSend = res.send;
-    res.send = function (data) {
-        const duration = Date.now() - startTime;
-        const statusCode = res.statusCode;
-        const statusEmoji = statusCode >= 200 && statusCode < 300 ? '✅' : statusCode >= 400 ? '❌' : '⚠️';
-
-        console.log(`  ${statusEmoji} ${statusCode} - ${duration}ms`);
-        if (data && typeof data === 'string' && data.length < 500) {
-            const responsePreview = data.length > 150 ? data.substring(0, 150) + '...' : data;
-            console.log(`  📤 Response: ${responsePreview}`);
-        }
-        console.log(`─────────────────────────────────────────`);
-
-        return originalSend.call(this, data);
-    };
-
+    const started = Date.now();
+    res.on('finish', () => console.log(req.method, req.path, res.statusCode, Date.now() - started + 'ms'));
     next();
 });
 
@@ -170,6 +130,8 @@ app.get('/', (req, res) => {
 
 // API v1 routes
 app.use('/api/v1/stripe', stripeRoutes);
+app.use('/api/v1/shipping', require('./routes/shipping'));
+app.use('/api/v1/inpost', require('./routes/inpostWebhook'));
 app.use('/api/v1/email', emailRoutes);
 app.use('/api/v1/calendars', calendarRoutes);
 app.use('/api/v1/health', healthRoutes);

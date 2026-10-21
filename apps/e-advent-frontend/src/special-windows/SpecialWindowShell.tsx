@@ -6,7 +6,7 @@ import EngineRouter from './EngineRouter';
 import { useSpecialProgress } from './useSpecialProgress';
 import { exportSpecialPdf } from '../api/api';
 import { specialCtaLabel, specialPrintableHint, specialResumeLabel } from './specialCta';
-import { defaultPdfLayout, type PdfLayout } from './pdfLayout';
+import { defaultPdfLayout, fixedPdfLayout, type PdfLayout } from './pdfLayout';
 import { downloadBlob } from '../utils/downloadBlob';
 import ambientPortrait from '@e-advent/assets/backgrounds/christmas-ambient-portrait.webp';
 import { resolvePack } from './contentPacks';
@@ -27,6 +27,7 @@ export default function SpecialWindowShell({
 }: SpecialWindowShellProps) {
   const [teaserVisible, setTeaserVisible] = useState(false);
   const [stageOpen, setStageOpen] = useState(autoOpenStage);
+  const [exporting, setExporting] = useState(false);
   const [pdfLayout, setPdfLayout] = useState<PdfLayout>(() =>
     defaultPdfLayout(openedWindow.special?.document?.templateId)
   );
@@ -76,8 +77,7 @@ export default function SpecialWindowShell({
     && !!dateGate
     && !dateGate.revealed
     && (!!progress?.payload?.dateGateLocked || !!progress?.payload?.sealed);
-  const lockedPdfLayout: PdfLayout | null =
-    descriptor.document?.templateId === 'then-now-v1' ? 'LANDSCAPE' : null;
+  const lockedPdfLayout = fixedPdfLayout(descriptor.document?.templateId);
 
   const openStage = () => {
     updatePayload({ started: true });
@@ -143,7 +143,11 @@ export default function SpecialWindowShell({
             </header>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-7 md:py-5">
-              {dateGateLocked ? (
+              {!progress ? (
+                <p className="p-4 text-center text-white/75">
+                  {saveState === 'error' ? 'Nie udało się wczytać zadania. Otwórz je ponownie po odzyskaniu połączenia.' : 'Wczytywanie zadania…'}
+                </p>
+              ) : dateGateLocked ? (
                 <div className="space-y-3 p-4 text-center text-white">
                   <p className="font-display text-2xl text-christmas-gold-light">Treść zapieczętowana</p>
                   <p className="text-sm text-white/75">
@@ -170,14 +174,15 @@ export default function SpecialWindowShell({
                 {saveState === 'saving' && 'Zapisywanie…'}
                 {saveState === 'saved' && 'Zapisano'}
                 {saveState === 'idle' && 'Postęp zapisuje się automatycznie'}
-                {saveState === 'error' && 'Zapis lokalny — spróbuj ponownie później'}
+                {saveState === 'error' && 'Nie udało się zsynchronizować postępu. Sprawdź połączenie.'}
               </span>
               <div className="flex flex-wrap items-center gap-2">
-                {descriptor.capabilities?.dateGate && !dateGateLocked ? (
+                {descriptor.capabilities?.dateGate && progress && !dateGateLocked && !dateGate?.revealed ? (
                   <button
                     type="button"
                     className="rounded-lg border border-christmas-gold/40 px-4 py-2 text-sm text-christmas-gold-light"
                     onClick={() => sealProgress()}
+                    disabled={saveState === 'saving' || exporting}
                   >
                     Zapieczętuj do terminu
                   </button>
@@ -212,9 +217,12 @@ export default function SpecialWindowShell({
                     <button
                       type="button"
                       className="btn-gold px-4 py-2 text-sm"
+                      disabled={!progress || dateGateLocked || exporting}
                       onClick={async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (!progress || dateGateLocked || exporting) return;
+                        setExporting(true);
                         try {
                           const blob = await exportSpecialPdf(
                             calendarId,
@@ -235,10 +243,12 @@ export default function SpecialWindowShell({
                               ? err.message
                               : 'Nie udało się wygenerować PDF. Spróbuj ponownie.';
                           alert(message);
+                        } finally {
+                          setExporting(false);
                         }
                       }}
                     >
-                      Pobierz PDF
+                      {exporting ? 'Przygotowuję…' : 'Pobierz PDF'}
                     </button>
                   </>
                 )}

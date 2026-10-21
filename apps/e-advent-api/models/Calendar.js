@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { query } = require('../config/database');
+const { query, withNamedLocks } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 
 function generateEditToken() {
@@ -211,10 +211,11 @@ const findCalendars = async (filter = {}, options = {}) => {
 };
 
 /** Update content fields only; status is never taken from client (caller passes existing status). */
-const updateCalendarData = async (id, data, status) => {
+const updateCalendarData = async (id, data) => withNamedLocks([`calendar:${id}`], async () => {
   const [rows] = await query('SELECT * FROM calendars WHERE id = ?', [String(id)]);
   const existing = rows[0];
   if (!existing) return null;
+  if (existing.status !== 'pending') throw Object.assign(new Error('Kalendarz został już opłacony.'), { status: 409 });
 
   const d = data || {};
   const openingMethod = Object.prototype.hasOwnProperty.call(d, 'openingMethod')
@@ -228,6 +229,17 @@ const updateCalendarData = async (id, data, status) => {
     )
     : (existing.daily_content_email || null);
 
+  const unchanged = [
+    ['title', 'title'], ['author', 'author'], ['email', 'email'], ['productType', 'product_type'],
+    ['sku', 'sku'], ['format', 'format'],
+  ].every(([key, col]) => !d[key] || d[key] === existing[col])
+    && (!d.design?.imageUrl || d.design.imageUrl === existing.design_url)
+    && (!d.tasks || JSON.stringify(d.tasks) === JSON.stringify(typeof existing.tasks === 'string' ? JSON.parse(existing.tasks) : existing.tasks))
+    && openingMethod === normalizeOpeningMethod(existing.opening_method)
+    && dailyContentEmail === (existing.daily_content_email || null);
+  if (unchanged) return rowToCalendar(existing);
+  const { cancelCalendarCheckout } = require('../services/checkoutPayment');
+  await cancelCalendarCheckout(id);
   await query(
     `UPDATE calendars SET
        title               = ?,
@@ -251,7 +263,7 @@ const updateCalendarData = async (id, data, status) => {
       d.format || existing.format,
       d.design?.imageUrl || existing.design_url,
       JSON.stringify(d.tasks || (typeof existing.tasks === 'string' ? JSON.parse(existing.tasks) : existing.tasks) || []),
-      status || existing.status,
+      existing.status,
       openingMethod,
       dailyContentEmail,
       String(id),
@@ -259,7 +271,7 @@ const updateCalendarData = async (id, data, status) => {
   );
   const [updated] = await query('SELECT * FROM calendars WHERE id = ?', [String(id)]);
   return rowToCalendar(updated[0]);
-};
+});
 
 const openTask = async (calendarId, day) => {
   const [rows] = await query('SELECT * FROM calendars WHERE id = ?', [String(calendarId)]);

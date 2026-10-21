@@ -109,7 +109,16 @@ async function countSuccessfulDaily(day, calendarIds) {
   return Number(rows[0]?.cnt || 0);
 }
 
+async function hasSuccessfulOrderEmail(orderId, calendarId, type, to) {
+  const [rows] = await query(
+    "SELECT id FROM email_sends WHERE order_id = ? AND calendar_id <=> ? AND type = ? AND recipient_email = ? AND status = 'sent' LIMIT 1",
+    [orderId, calendarId || null, type, String(to).trim().toLowerCase()],
+  );
+  return rows.length > 0;
+}
+
 module.exports = {
+  hasSuccessfulOrderEmail,
   createSend,
   listByOrderId,
   listByCalendarId,

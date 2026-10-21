@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Builds creator examples.json (order 1–24 per set) and creator-index.json (text → catalogTaskId).
+ * Builds the complete creator task pool; the wizard selects 24 calendar days.
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { dirname, join } from 'path';
@@ -34,7 +34,7 @@ const creatorIndex = {
 
 for (const set of catalog.sets) {
   const dayTasks = set.tasks
-    .filter((t) => t.order >= 1 && t.order <= 24)
+    .filter((t) => t.order >= 1)
     .sort((a, b) => a.order - b.order);
 
   const setEntry = {
@@ -82,4 +82,4 @@ writeFileSync(frontendExamplesPath, JSON.stringify(examples, null, 4));
 writeFileSync(frontendIndexPath, JSON.stringify(creatorIndex, null, 2));
 
 console.log(`✓ creator-index.json (${Object.keys(creatorIndex.catalogTaskById).length} tasks)`);
-console.log(`✓ examples.json (${examples.length} sets, 24 tasks each)`);
+console.log(`✓ examples.json (${examples.length} sets, full task pools)`);

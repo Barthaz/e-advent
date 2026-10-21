@@ -33,7 +33,7 @@ export {
 export type { ProductSkuConfig, OrderTotals };
 
 export const PHYSICAL_FULFILLMENT_TIME = '3–5 dni roboczych';
-export const PHYSICAL_FULFILLMENT_NOTE = `Dodaj produkt do koszyka — adres dostawy i płatność uzupełnisz przy składaniu zamówienia. Czas realizacji: ${PHYSICAL_FULFILLMENT_TIME}. Po opłaceniu przygotujemy przesyłkę i wyślemy ją Pocztą Polską.`;
+export const PHYSICAL_FULFILLMENT_NOTE = `Dodaj produkt do koszyka — adres dostawy i płatność uzupełnisz przy składaniu zamówienia. Czas realizacji: ${PHYSICAL_FULFILLMENT_TIME}. Po opłaceniu przygotujemy przesyłkę i wyślemy ją InPost.`;
 export const PHYSICAL_CHECKOUT_HINT = 'Następny krok: koszyk → adres dostawy i bezpieczna płatność.';
 export const PHYSICAL_ADD_TO_CART_HINT = 'Produkt trafi do koszyka. Możesz dodać więcej pozycji, a potem opłacić wszystko jako jedno zamówienie.';
 

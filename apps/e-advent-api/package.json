@@ -20,11 +20,16 @@
     "migrate:email-sends": "node scripts/migrate-email-sends.js",
     "migrate:order-number": "node scripts/migrate-order-number.js",
     "migrate:order-vat": "node scripts/migrate-order-vat.js",
+    "migrate:checkout": "node scripts/migrate-checkout.js",
     "migrate:special-windows": "node scripts/migrate-special-windows.js",
-    "smoke:scratch-export": "node scripts/smoke-scratch-export.js"
+    "smoke:scratch-export": "node scripts/smoke-scratch-export.js",
+    "migrate:inpost": "node scripts/migrate-inpost.js"
   },
   "nodemonConfig": {
-    "ignore": ["assets/**", "tests/**"]
+    "ignore": [
+      "assets/**",
+      "tests/**"
+    ]
   },
   "keywords": [
     "nodejs",
@@ -41,7 +46,6 @@
     "@napi-rs/canvas": "^0.1.100",
     "@react-pdf/renderer": "^4.3.0",
     "@vercel/blob": "^2.6.1",
-    "pdfjs-dist": "4.10.38",
     "bcrypt": "^6.0.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -52,7 +56,8 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",
     "mysql2": "^3.23.3",
-    "nodemailer": "^6.9.7",
+    "nodemailer": "^10.1.2",
+    "pdfjs-dist": "4.10.38",
     "react": "^19.0.0",
     "socket.io": "^4.6.1",
     "stripe": "^14.7.0",

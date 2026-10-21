@@ -14,6 +14,8 @@ export type TaskWindowStatus = 'opened' | 'closed';
 export type OpeningMethod = 'app' | 'email' | 'online';
 
 export interface ShippingAddress {
+  buildingNumber?: string;
+  apartmentNumber?: string;
   firstName: string;
   lastName: string;
   street: string;

@@ -108,7 +108,7 @@ export default function SEOHead({
     return () => {
       document.querySelectorAll(`script[${JSON_LD_ATTR}]`).forEach((el) => el.remove());
     };
-  }, [title, description, keywords, canonical, ogImage, jsonLd]);
+  }, [title, description, keywords, canonical, ogImage, jsonLd, robots]);
 
   return null;
 }

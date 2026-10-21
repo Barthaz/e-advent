@@ -62,6 +62,7 @@ export interface OrderListItem {
 }
 
 export interface OrderDetail extends OrderListItem {
+  inpostDelivery?: import('../components/InpostShipmentCard').SavedInpostDelivery;
   fulfillment_notes: string | null;
   shipping_street: string | null;
   shipping_postal_code: string | null;

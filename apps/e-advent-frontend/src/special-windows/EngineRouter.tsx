@@ -123,7 +123,8 @@ function ChecklistEngine(props: EngineProps) {
 
   const { descriptor, progress, onUpdate } = props;
   const pack = resolvePack(descriptor.contentKey);
-  const items = (progress?.payload?.items as string[]) || (pack?.items as string[]) || [];
+  const savedItems = progress?.payload?.items;
+  const items = Array.isArray(savedItems) && savedItems.length ? savedItems as string[] : (pack?.items as string[]) || [];
   const checked = (progress?.payload?.checked as Record<string, boolean>) || {};
 
   return (
@@ -228,7 +229,8 @@ function ScoreHuntEngine({ descriptor, progress, onUpdate }: EngineProps) {
 function BingoEngine({ descriptor, progress, onUpdate }: EngineProps) {
   const pack = resolvePack(descriptor.contentKey);
   const size = Number(pack?.columns || pack?.rows || 3) || 3;
-  const source = ((progress?.payload?.items as string[]) || (pack?.items as string[]) || []).slice(0, size * size);
+  const savedItems = progress?.payload?.items;
+  const source = (Array.isArray(savedItems) && savedItems.length ? savedItems as string[] : (pack?.items as string[]) || []).slice(0, size * size);
   const items = [...source];
   while (items.length < size * size) items.push(`Pole ${items.length + 1}`);
   const checked = (progress?.payload?.checked as Record<string, boolean>) || {};
@@ -827,17 +829,27 @@ function RecipeEngine({ descriptor, progress, onUpdate }: EngineProps) {
   const pack = resolvePack(descriptor.contentKey);
   const title = String(pack?.title || descriptor.headline);
   const steps = (pack?.steps as string[]) || [];
+  const ingredients = (pack?.ingredients as string[]) || [];
 
   return (
     <div className="p-2 text-white space-y-2">
       <h4 className="font-bold text-christmas-gold-light">{title}</h4>
+      {ingredients.length > 0 && (
+        <>
+          <h5 className="font-semibold">Składniki</h5>
+          <ul className="list-disc pl-5 text-sm">
+            {ingredients.map((ingredient) => <li key={ingredient}>{ingredient}</li>)}
+          </ul>
+          <h5 className="font-semibold">Przygotowanie</h5>
+        </>
+      )}
       <ul className="list-disc pl-5 text-sm">
         {steps.map((s) => (
           <li key={s}>{s}</li>
         ))}
       </ul>
       <label className="flex items-center gap-2 mt-4">
-        <input type="checkbox" onChange={(e) => onUpdate({ recipeDone: e.target.checked, started: true })} />
+        <input type="checkbox" checked={!!progress?.payload?.recipeDone} onChange={(e) => onUpdate({ recipeDone: e.target.checked, started: true })} />
         Przepis wykonany
       </label>
     </div>
@@ -854,7 +866,7 @@ function DocumentEngine({ descriptor, progress, onUpdate }: EngineProps) {
     if (!progress?.payload?.started) {
       onUpdate({ started: true });
     }
-  }, []);
+  }, [onUpdate, progress?.payload?.started]);
 
   return (
     <div className="space-y-3 p-4 text-center text-white">

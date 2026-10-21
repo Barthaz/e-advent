@@ -7,11 +7,11 @@ import SocialShare from '../components/SocialShare';
 import SEOHead from '../components/SEOHead';
 import ProductCard from '../components/products/ProductCard';
 import { PRODUCT_FAMILIES } from '../config/products';
-import { getDaysUntilChristmas, formatCountdown } from '../utils/countdown';
+import { formatCountdown, getDaysUntilChristmas } from '../utils/countdown';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
 export default function Landing() {
-  const [countdown, setCountdown] = useState(formatCountdown(getDaysUntilChristmas()));
+  const [countdown, setCountdown] = useState(formatCountdown());
   const [daysUntilChristmas, setDaysUntilChristmas] = useState(getDaysUntilChristmas());
   const [heroVisible, setHeroVisible] = useState(false);
   const scrollElementsRef = useRef<(HTMLElement | null)[]>([]);
@@ -48,15 +48,13 @@ export default function Landing() {
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      scrollElementsRef.current.forEach((el) => {
-        if (el) observer.unobserve(el);
-      });
+      observer.disconnect();
     };
   }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCountdown(formatCountdown(getDaysUntilChristmas()));
+      setCountdown(formatCountdown());
       setDaysUntilChristmas(getDaysUntilChristmas());
     }, 1000);
     return () => clearInterval(interval);
@@ -79,7 +77,7 @@ export default function Landing() {
       <div className="min-h-screen">
         {/* Hero */}
         <PageBackground
-          className="min-h-screen flex flex-col justify-center py-16 md:py-24"
+          className="min-h-screen flex flex-col justify-center py-10 md:py-12"
           showSnow
           overlayOpacity="medium"
         >
@@ -89,7 +87,7 @@ export default function Landing() {
                 <img
                   src={logo}
                   alt="e-Advent - Interaktywny Kalendarz Adwentowy Online"
-                  className="h-36 md:h-44 w-auto drop-shadow-2xl"
+                  className="h-28 md:h-32 w-auto drop-shadow-2xl"
                   width="300"
                   height="120"
                   loading="eager"
@@ -151,24 +149,33 @@ export default function Landing() {
               List do Świętego Mikołaja, kalendarze adwentowe i magia oczekiwania — żeby grudzień przeżywać w cieple i miłej atmosferze.
             </p>
 
-            <div className={`flex flex-col sm:flex-row items-center justify-center gap-4 mb-6 ${heroClass('delay-600')}`}>
-              <Link to="/list-do-swietego-mikolaja" className="btn-gold px-10 py-4 text-lg md:text-xl">
-                <i className="fas fa-envelope" />
-                List do Mikołaja
+            <div className={`hero-actions ${heroClass('delay-600')}`}>
+              <Link to="/list-do-swietego-mikolaja" className="hero-action hero-action--letter">
+                <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-envelope-open-text" /></span>
+                <span className="hero-action-content">
+                  <span className="hero-action-eyebrow">Mały list, wielkie marzenia</span>
+                  <span className="hero-action-title">List do Mikołaja</span>
+                  <span className="hero-action-description">Zestaw z kopertą i naklejkami na najważniejsze świąteczne życzenia.</span>
+                  <span className="hero-action-footer"><span>Zobacz zestaw <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od 29 zł</span></span>
+                </span>
               </Link>
-              <Link to="/kalendarze-adwentowe" className="btn-green px-8 py-4 text-lg">
-                <i className="fas fa-calendar-alt" />
-                Kalendarze adwentowe
-              </Link>
-              <Link to="/kalendarz" className="btn-outline-gold px-8 py-4 text-base md:text-lg">
-                Otwórz swój kalendarz
-                <i className="fas fa-arrow-right text-sm" />
+              <Link to="/kalendarze-adwentowe" className="hero-action hero-action--calendar">
+                <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-calendar-alt" /></span>
+                <span className="hero-action-content">
+                  <span className="hero-action-eyebrow">24 dni wspólnej radości</span>
+                  <span className="hero-action-title">Kalendarz adwentowy</span>
+                  <span className="hero-action-description">Twoje zadania i codzienne niespodzianki — online lub na zdrapce A3.</span>
+                  <span className="hero-action-footer"><span>Wybierz kalendarz <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od 9 zł</span></span>
+                </span>
               </Link>
             </div>
 
-            <p className={`text-white/50 text-xs md:text-sm tracking-wide ${heroClass('delay-700')}`}>
-              List od 29 zł &nbsp;·&nbsp; Kalendarze od 9 zł &nbsp;·&nbsp; Darmowa wysyłka od 100 zł
-            </p>
+            <div className={`hero-returning ${heroClass('delay-700')}`}>
+              <span>Masz już swój kalendarz?</span>
+              <Link to="/kalendarz" className="hero-returning-link">
+                Otwórz swój kalendarz <i className="fas fa-arrow-right" aria-hidden="true" />
+              </Link>
+            </div>
           </div>
         </PageBackground>
 
@@ -418,7 +425,7 @@ export default function Landing() {
               Wybierz interaktywny kalendarz od{' '}
               <span className="text-christmas-green font-semibold">9 zł</span>
               {' '}lub fizyczną zdrapkę od{' '}
-              <span className="text-christmas-green font-semibold">49 zł</span>
+              <span className="text-christmas-green font-semibold">69 zł</span>
             </p>
             <Link to="/stworz-kalendarz" className="btn-gold px-12 py-5 text-xl md:text-2xl">
               <i className="fas fa-gift" />

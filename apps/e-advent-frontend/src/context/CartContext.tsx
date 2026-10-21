@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   FREE_SHIPPING_THRESHOLD,
   getProduct,
@@ -20,45 +20,10 @@ import {
 } from '../utils/cartStorage';
 import { trackAddToCart } from '../utils/analytics';
 
-interface AddItemInput {
-  sku: string;
-  quantity?: number;
-  calendarId?: string;
-  label?: string;
-  unitPrice?: number;
-  customerEmail?: string;
-  customerName?: string;
-  format?: string;
-  childName?: string;
-  linkedLetterId?: string;
-}
+import { CartContext, type AddItemInput, type AddSantaLetterBundleInput } from './useCart';
 
-interface AddSantaLetterBundleInput {
-  letterLabel?: string;
-  childName?: string;
-}
+const EMPTY_TOTALS: OrderTotals = getCartTotals([])!;
 
-interface CartContextValue {
-  items: CartItem[];
-  itemCount: number;
-  totals: OrderTotals;
-  freeShippingThreshold: number;
-  addItem: (input: AddItemInput) => CartItem;
-  addSantaLetterBundle: (input: AddSantaLetterBundleInput) => CartItem[];
-  removeItem: (id: string) => void;
-  updateQty: (id: string, quantity: number) => void;
-  clear: () => void;
-}
-
-const EMPTY_TOTALS: OrderTotals = {
-  subtotal: 0,
-  shipping: 0,
-  total: 0,
-  hasPhysical: false,
-  freeShipping: false,
-};
-
-const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 function trackAddedItems(added: CartItem[], quantityFallback = 1) {
   for (const item of added) {
@@ -208,12 +173,4 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
-}
-
-export function useCart() {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
 }

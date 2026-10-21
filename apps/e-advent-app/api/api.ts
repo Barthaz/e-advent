@@ -108,7 +108,7 @@ export async function getCalendarByAccessCode(
     } else if (response.status === 400) {
       errorMessage = 'Nieprawidłowy email lub kod dostępu.';
     }
-    throw new Error(errorMessage);
+    throw Object.assign(new Error(errorMessage), { status: response.status });
   }
 
   const responseData = await response.json();
@@ -412,31 +412,34 @@ function specialHeaders(): Record<string, string> {
   return { 'Content-Type': 'application/json' };
 }
 
+export type SpecialProgressResponse = {
+  progress: SpecialWindowProgress | null;
+  dateGate?: { revealed: boolean; revealAt: string | null };
+};
+
 export async function getSpecialProgress(
   calendarId: string,
   day: number
-): Promise<SpecialWindowProgress | null> {
+): Promise<SpecialProgressResponse> {
   const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/progress`, {
     headers: specialHeaders(),
   });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.progress ?? null;
+  if (!res.ok) throw new Error(await parseErrorMessage(res, 'Nie udało się pobrać postępu.'));
+  return await res.json();
 }
 
 export async function saveSpecialProgress(
   calendarId: string,
   day: number,
-  body: Partial<SpecialWindowProgress>
-): Promise<SpecialWindowProgress> {
+  body: Partial<SpecialWindowProgress> & { seal?: boolean; revealAt?: string }
+): Promise<SpecialProgressResponse> {
   const res = await fetch(`${API_BASE_URL}/calendars/${calendarId}/days/${day}/special/progress`, {
     method: 'PUT',
     headers: specialHeaders(),
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error('Autosave failed');
-  const data = await res.json();
-  return data.progress;
+  return await res.json();
 }
 
 export async function uploadSpecialImage(
@@ -483,14 +486,14 @@ export async function exportSpecialPdf(
   const buffer = await res.arrayBuffer();
   const { File, Paths } = await import('expo-file-system');
   const Sharing = await import('expo-sharing');
-  const file = new File(Paths.cache, `e-advent-dzien-${day}.pdf`);
+  const file = new File(Paths.cache, `e-advent-${calendarId.replace(/[^a-zA-Z0-9_-]/g, '')}-dzien-${day}-${Date.now()}.pdf`);
   file.write(new Uint8Array(buffer));
 
   if (await Sharing.isAvailableAsync()) {
     await Sharing.shareAsync(file.uri, {
       mimeType: 'application/pdf',
       UTI: 'com.adobe.pdf',
-      dialogTitle: 'Zapisz listę PDF',
+      dialogTitle: 'Zapisz PDF zadania',
     });
     return;
   }

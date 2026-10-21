@@ -28,6 +28,8 @@ const SQUARE = new Set([
 ]);
 
 function defaultPdfLayout(templateId) {
+  const { CRAFT_TEMPLATES } = require('./CraftSheets');
+  if (CRAFT_TEMPLATES.has(templateId)) return 'PORTRAIT';
   if (LANDSCAPE.has(templateId)) return 'LANDSCAPE';
   if (SQUARE.has(templateId)) return 'SQUARE';
   return 'PORTRAIT';

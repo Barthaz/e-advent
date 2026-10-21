@@ -26,7 +26,13 @@
             "Dziś jest Dzień Tajnej Misji Elfa — wybierz jednego domownika i w ciągu dnia zrób dla niego trzy drobne, miłe rzeczy tak, aby nie od razu było wiadomo, kto za nimi stoi.",
             "Dziś jest Dzień Świątecznych Kalamburów — wylosuj świąteczne hasło, pokaż je bez słów, a reszta zgaduje, zanim minie minuta. Potem losuj kolejne: w tej rundzie hasła się nie powtarzają. Tytuł „Kevin sam w domu” możesz potraktować jako poziom trudny.",
             "Dziś jest Dzień Prezentowego Detektywa — wybierz zapakowany prezent albo zamknięte pudełko i razem z kimś spróbujcie odgadnąć jego zawartość wyłącznie po kształcie, wadze i dźwięku. Bez podglądania.",
-            "Dziś jest Dzień Grudniowego Rankingu — ułóż ranking pięciu ulubionych świątecznych filmów, potraw, piosenek albo tradycji. Porównaj go z rankingiem kogoś bliskiego i znajdź przynajmniej jedną wspólną pozycję."
+            "Dziś jest Dzień Grudniowego Rankingu — ułóż ranking pięciu ulubionych świątecznych filmów, potraw, piosenek albo tradycji. Porównaj go z rankingiem kogoś bliskiego i znajdź przynajmniej jedną wspólną pozycję.",
+            "Dziś jest Dzień Świątecznej Reklamy — wybierz zwykły domowy przedmiot i w 30 sekund zareklamuj go jako najbardziej ekskluzywny prezent bożonarodzeniowy. Im bardziej poważna prezentacja, tym zabawniejszy efekt.",
+            "Dziś jest Dzień Choinkowych Poszukiwań — poproś kogoś o ukrycie małej ozdoby w pokoju, a następnie spróbuj ją znaleźć, korzystając wyłącznie ze wskazówek „cieplej” i „zimniej”.",
+            "Dziś jest Dzień Jednego Kadru — ustaw telefon i nagraj dziesięć sekund zwykłej świątecznej chwili: migające lampki, przygotowania, śmiech albo kubki stojące na stole. Bez pozowania — niech to będzie prawdziwy fragment grudnia.",
+            "Dziś jest Dzień Świątecznej Prognozy — razem z domownikami zapiszcie na osobnych kartkach po jednej zabawnej przepowiedni dotyczącej tegorocznych świąt. Otwórzcie je w Wigilię i sprawdźcie, czy któraś się spełniła.",
+            "Dziś jest Dzień Reniferowego Wyzwania — przez pięć minut komunikuj się z domownikami wyłącznie za pomocą gestów i zabawnych, świątecznych odgłosów. Zakończcie zabawę, gdy ktoś poprawnie odgadnie trzy komunikaty.",
+            "Dziś jest Dzień Małego Finału — wybierz jedną rzecz, która w tym grudniu najmocniej budowała u Ciebie świąteczny klimat, i powtórz ją dziś w wyjątkowej wersji: trochę ładniej, trochę dłużej albo razem z kimś bliskim."
         ]
     },
     {
@@ -56,7 +62,13 @@
             "Dziś jest Dzień Naczyń Specjalnych — sprawdź półmiski, miski, dzbanki i tace, które zwykle wyjmujesz tylko na wyjątkowe okazje. Umyj potrzebne rzeczy i odłóż je razem w łatwo dostępnym miejscu.",
             "Dziś jest Dzień Baterii Mikołaja — sprawdź, czy masz zapas baterii do lampek, zabawek i drobnych dekoracji. Kilka dodatkowych sztuk może uratować sytuację dokładnie wtedy, gdy sklepy będą już zamknięte.",
             "Dziś jest Dzień Małych Zapasów — sprawdź, czy masz pod ręką serwetki, worki na śmieci, ręczniki papierowe i zapasowe lampki lub świece LED. To mało świąteczne zakupy, ale bardzo świąteczny spokój.",
-            "Dziś jest Dzień Awaryjnej Listy Prezentów — zapisz trzy uniwersalne drobiazgi, które można szybko kupić lub przygotować. Taka lista przyda się, jeśli pojawi się niespodziewany gość albo przypomnisz sobie o kimś w ostatniej chwili."
+            "Dziś jest Dzień Awaryjnej Listy Prezentów — zapisz trzy uniwersalne drobiazgi, które można szybko kupić lub przygotować. Taka lista przyda się, jeśli pojawi się niespodziewany gość albo przypomnisz sobie o kimś w ostatniej chwili.",
+            "Dziś jest Dzień Porządku w Dekoracjach — ozdoby, których jeszcze nie używasz, włóż do opisanych pudeł zamiast zostawiać je w przypadkowych miejscach. Od razu przygotuj też jedno pudełko oznaczone „do schowania po świętach”.",
+            "Dziś jest Dzień Świątecznego Ładowania — naładuj powerbank, aparat, głośnik i inne urządzenia, z których chcesz korzystać podczas świąt. Dzięki temu nie będziesz szukać kabla akurat wtedy, gdy wydarzy się coś wartego uwiecznienia.",
+            "Dziś jest Dzień Zdjęciowego Porządku — zwolnij trochę miejsca w telefonie i utwórz album „Święta 2026”. Nowe zdjęcia od razu będą miały swoje miejsce, a później łatwiej będzie do nich wrócić.",
+            "Dziś jest Dzień Pięciominutowego Koszyka — ustaw w salonie mały koszyk na rzeczy, które wieczorem trzeba odłożyć na miejsce. Jeden szybki obchód wystarczy, by przywrócić porządek bez większego sprzątania.",
+            "Dziś jest Dzień Spokojnego Poranka — wieczorem przygotuj rzeczy potrzebne na następny dzień: ubranie, torbę, listę zakupów albo produkty na śniadanie. Jutro podziękujesz sobie za te kilka minut przygotowań.",
+            "Dziś jest Dzień Ostatniej Kontroli — przejdź po domu z jednym pytaniem: „Co w Wigilię mogłoby mnie najbardziej zirytować?” Wybierz tylko jeden problem, któremu możesz zapobiec, i zajmij się nim dziś."
         ]
     },
     {
@@ -86,7 +98,13 @@
             "Dziś jest Dzień Prezentu z Czasu — podaruj komuś 20 minut pełnej uwagi. Bez telefonu i robienia kilku rzeczy naraz — po prostu porozmawiaj albo posłuchaj.",
             "Dziś jest Dzień Pomocy Przy Prezentach — zaproponuj komuś pomoc w pakowaniu, wyborze upominku, odebraniu paczki lub innym przedświątecznym drobiazgu. Mała pomoc może komuś oszczędzić sporo stresu.",
             "Dziś jest Dzień Dobrej Opinii — jeśli masz dobre doświadczenie z małą firmą, lokalnym sklepem, restauracją albo usługodawcą, zostaw uczciwą pozytywną opinię. Tobie zajmie to kilka minut, a dla małego biznesu może mieć duże znaczenie.",
-            "Dziś jest Dzień Rodzinnych Wspomnień — zadzwoń lub odwiedź starszą osobę w rodzinie i poproś o jedno świąteczne wspomnienie z dzieciństwa. Dziś to jej opowieść jest najważniejsza."
+            "Dziś jest Dzień Rodzinnych Wspomnień — zadzwoń lub odwiedź starszą osobę w rodzinie i poproś o jedno świąteczne wspomnienie z dzieciństwa. Dziś to jej opowieść jest najważniejsza.",
+            "Dziś jest Dzień Ciepłego Miejsca — zadbaj o wspólną przestrzeń, z której korzystają też inni: kuchnię w pracy, klatkę schodową, rodzinny kącik albo wspólny pokój. Zostaw ją odrobinę lepszą, niż ją zastajesz na co dzień.",
+            "Dziś jest Dzień Sekretnej Słodkości — ukryj dla kogoś mały smakołyk w miejscu, w którym zostanie znaleziony dopiero później. Dodaj karteczkę z jednym ciepłym, świątecznym zdaniem.",
+            "Dziś jest Dzień Życzeń Bez Kopiowania — napisz jednej osobie życzenia całkowicie własnymi słowami. Zamiast uniwersalnego „zdrowia i szczęścia” napisz, czego naprawdę jej życzysz w nadchodzącym roku.",
+            "Dziś jest Dzień Drugiej Szansy dla Rzeczy — znajdź zabawkę, książkę, grę albo ubranie w dobrym stanie i przekaż je dalej. Jeśli wiąże się z tym przedmiotem miła historia, możesz dołączyć krótką notatkę.",
+            "Dziś jest Dzień Jednego „Tak” — jeśli ktoś poprosi Cię o niewielką pomoc, której zwykle odmawiasz z wygody lub braku czasu, spróbuj dziś powiedzieć „tak” — oczywiście tylko wtedy, gdy naprawdę możesz pomóc.",
+            "Dziś jest Dzień Cichego Finału — przed snem pomyśl o jednej osobie, której w tym miesiącu udało Ci się sprawić radość, oraz o jednej, której jeszcze chcesz okazać trochę życzliwości przed świętami."
         ]
     },
     {
@@ -116,7 +134,13 @@
             "Dziś jest Dzień Łańcucha Wspomnień — przygotuj kilka papierowych pasków i na każdym zapisz jedno dobre wspomnienie z mijającego roku. Połącz paski w mały łańcuch i zachowaj go do Wigilii.",
             "Dziś jest Dzień Kartonowej Gwiazdy — wytnij gwiazdę z niepotrzebnego pudełka, a następnie oklej ją papierem albo pomaluj. Dodaj otwór i sznurek, aby mogła zawisnąć jak pełnoprawna ozdoba.",
             "Dziś jest Dzień Świątecznego Monogramu — zaprojektuj swój inicjał albo inicjał bliskiej osoby w świątecznym stylu. Dodaj do litery gałązkę, gwiazdkę, czapkę Mikołaja lub drobny ornament.",
-            "Dziś jest Dzień Papierowego Mikołaja — stwórz postać Mikołaja wyłącznie z prostych figur: kół, trójkątów i prostokątów. Sprawdź, jak niewiele elementów potrzeba, aby postać była od razu rozpoznawalna."
+            "Dziś jest Dzień Papierowego Mikołaja — stwórz postać Mikołaja wyłącznie z prostych figur: kół, trójkątów i prostokątów. Sprawdź, jak niewiele elementów potrzeba, aby postać była od razu rozpoznawalna.",
+            "Dziś jest Dzień Małej Girlandy — przygotuj krótką girlandę z pięciu papierowych elementów: gwiazd, chorągiewek albo choinek. Zawieś ją w jednym wybranym miejscu zamiast dekorować cały pokój.",
+            "Dziś jest Dzień Świątecznego Portretu — narysuj siebie jako elfa, Mikołaja albo bohatera zimowej bajki. Dodaj jeden charakterystyczny przedmiot lub cechę, która naprawdę do Ciebie pasuje.",
+            "Dziś jest Dzień Ręcznie Pisanych Życzeń — wybierz jedno krótkie zdanie i napisz je odręcznie tak starannie, jak potrafisz. Dodaj prostą ramkę i ustaw kartkę jako małą świąteczną dekorację.",
+            "Dziś jest Dzień Prezentu z Papieru — przygotuj dla kogoś drobiazg bez kupowania dodatkowych materiałów: kupon na wspólną kawę, małą książeczkę wspomnień albo listę pięciu rzeczy, które cenisz w tej osobie.",
+            "Dziś jest Dzień Świątecznej Scenografii — ustaw na stole małą scenę z trzema przedmiotami i jednym źródłem światła. Zrób zdjęcie, zmień wyłącznie ustawienie przedmiotów i wykonaj drugie ujęcie, aby porównać efekt.",
+            "Dziś jest Dzień Ozdoby na Lata — wykonaj jedną dekorację, którą po świętach naprawdę zechcesz schować i wyjąć ponownie za rok. Zanim trafi na swoje miejsce, podpisz ją rokiem 2026."
         ]
     },
     {
@@ -146,7 +170,13 @@
             "Dziś jest Dzień Świątecznej Grzanki — przygotuj grzankę z serem i dodatkiem, którego zwykle nie używasz, np. żurawiną, gruszką albo odrobiną miodu. Sprawdź, czy słodko-słone połączenie trafi do Twojego świątecznego menu.",
             "Dziś jest Dzień Jadalnego Prezentu — przygotuj mały słoiczek lub woreczek z domową mieszanką: orzechami, ciasteczkami albo porcją składników do kakao. Dodaj ręcznie napisaną etykietę.",
             "Dziś jest Dzień Świątecznego Śniadania — niezależnie od tego, co jesz, podaj śniadanie odrobinę ładniej niż zwykle. Wystarczą serwetka, ciepły napój i jeden grudniowy detal na stole.",
-            "Dziś jest Dzień Ciasteczkowego Pojedynku — wybierz dwa rodzaje ciastek lub pierników i zrób degustację w ciemno. Zwycięski smak otrzymuje tytuł „Oficjalnego Smaku Grudnia”."
+            "Dziś jest Dzień Ciasteczkowego Pojedynku — wybierz dwa rodzaje ciastek lub pierników i zrób degustację w ciemno. Zwycięski smak otrzymuje tytuł „Oficjalnego Smaku Grudnia”.",
+            "Dziś jest Dzień Słodkiego Tria — przygotuj trzy małe porcje różnych słodkości i podaj je razem na jednym talerzu. Mogą być gotowe — zabawa polega na stworzeniu własnej miniaturowej degustacji.",
+            "Dziś jest Dzień Zimowego Talerza Owoców — pokrój mandarynkę, jabłko, gruszkę lub inne owoce i ułóż z nich choinkę, gwiazdę albo wieniec. Zwykłe owoce też mogą wyglądać bardzo świątecznie.",
+            "Dziś jest Dzień Kuchennej Pamiątki — przygotuj potrawę kojarzącą Ci się z dzieciństwem albo poproś bliską osobę o rodzinny przepis. Zapisz choć przybliżone proporcje, zanim kolejny raz usłyszysz, że wszystkiego dodaje się po prostu „na oko”.",
+            "Dziś jest Dzień Świątecznego Dipu — przygotuj prosty dip na bazie jogurtu, serka albo hummusu i dodaj jeden zimowy akcent, np. żurawinę, orzechy lub zioła. Podaj go z warzywami albo krakersami.",
+            "Dziś jest Dzień Kuchennego Eksperymentu — wybierz przyprawę, której rzadko używasz, i dodaj niewielką ilość do prostego deseru lub napoju. Sprawdź, czy zasługuje na stałe miejsce w Twoim świątecznym menu.",
+            "Dziś jest Dzień Własnego Świątecznego Smaku — połącz dwa ulubione grudniowe smaki w jednym prostym deserze, napoju, kanapce albo przekąsce. Na koniec nadaj swojemu pomysłowi własną nazwę."
         ]
     },
     {
@@ -176,7 +206,13 @@
             "Dziś jest Dzień Powolnego Śniadania — zjedz jeden posiłek bez telefonu i robienia czegokolwiek równocześnie. Przez pierwsze pięć minut skup się wyłącznie na smaku, zapachu i chwili przy stole.",
             "Dziś jest Dzień Rodzinnego „Pamiętasz?” — wybierz jedno wspólne wydarzenie z mijającego roku i poproś domowników, aby każdy opowiedział, co zapamiętał z niego najbardziej. Zobaczcie, jak różne mogą być wspomnienia tej samej chwili.",
             "Dziś jest Dzień Małej Kapsuły Czasu — włóż do koperty krótką notatkę o tym, co obecnie lubisz, czym żyjesz i czego najczęściej słuchasz. Dopisz datę i otwórz kopertę za rok.",
-            "Dziś jest Dzień Pięciu Minut Przy Oknie — usiądź przy oknie i przez pięć minut po prostu patrz na zewnątrz. Jeśli chcesz, weź coś ciepłego do picia. Na koniec zapisz jedną rzecz, która wcześniej umykała Twojej uwadze."
+            "Dziś jest Dzień Pięciu Minut Przy Oknie — usiądź przy oknie i przez pięć minut po prostu patrz na zewnątrz. Jeśli chcesz, weź coś ciepłego do picia. Na koniec zapisz jedną rzecz, która wcześniej umykała Twojej uwadze.",
+            "Dziś jest Dzień Odpowiedzi na Jedno Pytanie — dokończ zdanie: „Ten rok nauczył mnie, że…” Nie szukaj idealnej odpowiedzi — pierwsza szczera myśl zwykle mówi najwięcej.",
+            "Dziś jest Dzień Listy „Chcę Więcej” — wypisz trzy niematerialne rzeczy, których chcesz mieć więcej w przyszłym roku. Mogą to być spacery, spotkania, sen, odwaga, spokój albo spontaniczność.",
+            "Dziś jest Dzień Listy „Chcę Mniej” — zapisz trzy rzeczy, które niepotrzebnie zabierają Ci czas lub spokój. Przy jednej z nich dopisz prostą granicę, którą możesz wprowadzić po świętach.",
+            "Dziś jest Dzień Świątecznego Wspomnienia — wybierz zapach, smak albo dźwięk, który natychmiast przenosi Cię do dawnych świąt. Opowiedz komuś, jakie konkretne wspomnienie za nim stoi.",
+            "Dziś jest Dzień Jednego Zdjęcia Tylko dla Siebie — zrób fotografię chwili, którą chcesz zachować wyłącznie we własnej galerii. Nie publikuj jej — niech będzie prywatną pocztówką z tego grudnia.",
+            "Dziś jest Dzień Grudniowego Domknięcia — zapisz trzy rzeczy: za co chcesz podziękować mijającemu rokowi, co zostawiasz za sobą i na co najbardziej czekasz. Schowaj kartkę razem ze świątecznymi dekoracjami i wróć do niej za rok."
         ]
     }
 ]

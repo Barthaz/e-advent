@@ -52,12 +52,15 @@ const getMysqlConfig = () => {
   const port = parseInt(process.env.MYSQL_PORT || '3306', 10);
 
   if (testingMode) {
+    if (!process.env.MYSQL_TEST_DATABASE || !process.env.MYSQL_TEST_USER || process.env.MYSQL_TEST_PASSWORD === undefined) {
+      throw new Error('Testing mode requires explicit MYSQL_TEST_DATABASE, MYSQL_TEST_USER and MYSQL_TEST_PASSWORD');
+    }
     return {
-      host,
+      host: process.env.MYSQL_TEST_HOST || host,
       port,
-      database: process.env.MYSQL_TEST_DATABASE || process.env.MYSQL_DATABASE || 'srv74754_e-advent-test',
-      user: process.env.MYSQL_TEST_USER || process.env.MYSQL_USER || 'srv74754_e-advent-test',
-      password: process.env.MYSQL_TEST_PASSWORD || process.env.MYSQL_PASSWORD || '',
+      database: process.env.MYSQL_TEST_DATABASE,
+      user: process.env.MYSQL_TEST_USER,
+      password: process.env.MYSQL_TEST_PASSWORD,
     };
   }
 

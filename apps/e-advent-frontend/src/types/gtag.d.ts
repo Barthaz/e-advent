@@ -4,10 +4,10 @@ interface Window {
     command: 'config' | 'event' | 'js' | 'set',
     targetId: string | Date,
     config?: {
-      [key: string]: any;
+      [key: string]: unknown;
     }
   ) => void;
-  dataLayer?: any[];
-  fbq?: (...args: any[]) => void;
+  dataLayer?: unknown[];
+  fbq?: (...args: unknown[]) => void;
 }
 

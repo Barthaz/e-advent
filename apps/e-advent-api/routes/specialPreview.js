@@ -6,6 +6,7 @@ const {
 } = require('../services/special/SpecialConfigRegistry');
 const { renderSpecialPdf, resolveContentPack } = require('../services/special/DocumentRegistry');
 
+const { pdfLimiter } = require('../middleware/rateLimits');
 const router = express.Router();
 
 function getPreviewExportDescriptor(catalogTaskId) {
@@ -16,7 +17,7 @@ function getPreviewExportDescriptor(catalogTaskId) {
   return descriptor;
 }
 
-router.post('/preview/pdf', async (req, res) => {
+router.post('/preview/pdf', pdfLimiter, async (req, res) => {
   try {
     const catalogTaskId = String(req.body?.catalogTaskId || '').trim();
     const descriptor = getPreviewExportDescriptor(catalogTaskId);
@@ -43,6 +44,7 @@ router.post('/preview/pdf', async (req, res) => {
   } catch (error) {
     console.error('POST special preview/pdf:', error);
     const message = String(error?.message || '');
+    if (error.status === 400) return res.status(400).json({ error: message });
     if (/could not be decoded|wstawić zdjęcia do PDF/i.test(message)) {
       return res.status(400).json({
         error: 'Nie udało się wstawić zdjęcia do PDF. Wczytaj je ponownie jako JPG lub PNG.',

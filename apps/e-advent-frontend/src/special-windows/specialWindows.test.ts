@@ -61,6 +61,15 @@ describe('resolveAmbientVariant', () => {
 });
 
 describe('canCompleteEngine', () => {
+  it.each([
+    [{}, false],
+    [{ fields: { answer: '  ' } }, false],
+    [{ fields: { answer: 'Treść' } }, true],
+    [{ cards: [{ fields: { answer: 'Pierwsza' } }, { fields: { answer: 'Druga' } }] }, true],
+    [{ cards: [{ fields: { answer: 'Pierwsza' } }, { fields: {} }] }, false],
+  ] as const)('validates meaningful single-card and multi-card answers: %j', (payload, expected) => {
+    expect(canCompleteEngine({ engine: 'CARD_FORM', completionRule: { type: 'DEFAULT' }, payload }).canComplete).toBe(expected);
+  });
   it('allows manual completion', () => {
     expect(
       canCompleteEngine({

@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   dim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(4, 15, 13, 0.35)',
   },
   divingWindow: {
@@ -298,12 +298,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   divingImage: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     width: '100%',
     height: '100%',
   },
   divingNumberWrap: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     borderRadius: 48,
   },
   flash: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: calendarTheme.flash,
   },
   panelWrap: {
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   panelHit: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   quoteCard: {
     width: '100%',

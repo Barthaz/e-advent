@@ -14,7 +14,7 @@ import {
   getCheckoutCtaLabel,
   PHYSICAL_ADD_TO_CART_HINT,
 } from '../config/products';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 import { prepareScratchCalendarForCart } from '../utils/prepareScratchForCart';
 import { trackViewItem } from '../utils/analytics';
 
@@ -123,7 +123,7 @@ export default function CreatorScratch() {
             />
           )}
           {stepId === 'design' && (
-            <StepDesign productType="scratch" format={wizard.format} setFormat={wizard.setFormat} design={wizard.design} setDesign={wizard.setDesign} validationError={wizard.validationError} setValidationError={wizard.setValidationError} />
+            <StepDesign productType="scratch" format={wizard.format} design={wizard.design} setDesign={wizard.setDesign} validationError={wizard.validationError} setValidationError={wizard.setValidationError} />
           )}
           {stepId === 'summary' && (
             <StepSummary

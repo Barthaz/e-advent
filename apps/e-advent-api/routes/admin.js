@@ -328,6 +328,21 @@ router.patch('/orders/:id', authAdmin, [
 
         const { id } = req.params;
 
+        const [currentRows] = await query('SELECT status, stripe_payment_intent_id, metadata FROM orders WHERE id = ?', [id]);
+        if (!currentRows.length) return res.status(404).json({ error: 'Order not found' });
+        const current = currentRows[0];
+        const savedMetadata = typeof current.metadata === 'string' ? JSON.parse(current.metadata) : (current.metadata || {});
+        const stripeOrder = Boolean(current.stripe_payment_intent_id || savedMetadata.checkoutVersion === 2);
+        if (stripeOrder && req.body.status !== undefined && req.body.status !== current.status) {
+            return res.status(409).json({ error: 'Status płatności Stripe jest aktualizowany przez webhook.' });
+        }
+        const deliveryFields = ['customer_name', 'customer_phone', 'shipping_street', 'shipping_city', 'shipping_postal_code', 'delivery_type', 'parcel_locker_id', 'parcel_locker_name', 'parcel_locker_address'];
+        if (savedMetadata.inpostDelivery && [...deliveryFields, 'tracking_number'].some(field => req.body[field] !== undefined)) {
+            return res.status(409).json({ error: 'Dostawa InPost jest powiązana z płatnością. Nie można zmienić jej odbiorcy ani punktu w tym formularzu.' });
+        }
+        if (stripeOrder && current.status !== 'succeeded' && deliveryFields.some(field => req.body[field] !== undefined)) {
+            return res.status(409).json({ error: 'Dane oczekującej płatności zmienia się w koszyku, po anulowaniu poprzedniej płatności.' });
+        }
         const EDITABLE = [
             'fulfillment_status', 'fulfillment_notes', 'tracking_number', 'status',
             'delivery_type', 'parcel_locker_id', 'parcel_locker_name', 'parcel_locker_address',
@@ -339,6 +354,7 @@ router.patch('/orders/:id', authAdmin, [
         const values = [];
 
         for (const field of EDITABLE) {
+            if (stripeOrder && field === 'status') continue;
             if (req.body[field] !== undefined) {
                 sets.push(`${field} = ?`);
                 values.push(req.body[field]);
@@ -379,6 +395,7 @@ router.patch('/orders/:id', authAdmin, [
 });
 
 registerScratchExportRoutes(router, authAdmin);
+require('./adminInpost')(router, authAdmin);
 
 // ── GET /admin/calendars/:id — podgląd kalendarza ─────────────────────────────
 

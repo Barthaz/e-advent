@@ -98,6 +98,10 @@ function createStyles(variant, layout, size) {
       fontSize: 12,
       color: color ? COLORS.creamText : COLORS.inkText,
       backgroundColor: color ? '#04120e' : COLORS.inkBg,
+      // Page padding is repeated on every continuation page; View margins are not.
+      paddingTop: compact ? (wide ? 28 : 32) : wide ? 36 : 42,
+      paddingBottom: compact ? (wide ? 84 : 92) : wide ? 116 : 120,
+      paddingHorizontal: compact ? (wide ? 32 : 28) : wide ? 48 : 42,
     },
     background: {
       position: 'absolute',
@@ -136,9 +140,6 @@ function createStyles(variant, layout, size) {
     },
     content: {
       flex: 1,
-      marginTop: compact ? (wide ? 28 : 32) : wide ? 36 : 42,
-      marginBottom: compact ? (wide ? 72 : 84) : wide ? 92 : 108,
-      marginHorizontal: compact ? (wide ? 32 : 28) : wide ? 48 : 42,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -262,9 +263,9 @@ function createStyles(variant, layout, size) {
       flexShrink: 0,
     },
     checkMark: {
-      fontFamily: 'Source Serif 4',
-      fontSize: compact ? 10 : 11,
-      color: COLORS.goldLight,
+      width: 8,
+      height: 8,
+      backgroundColor: COLORS.gold,
     },
     checkItem: {
       flex: 1,
@@ -344,9 +345,9 @@ function createStyles(variant, layout, size) {
     bingoCell: {
       flex: 1,
       marginHorizontal: 4,
-      minHeight: compact ? (wide ? 72 : 80) : wide ? 108 : 122,
+      minHeight: compact ? (wide ? 52 : 64) : wide ? 108 : 122,
       paddingHorizontal: 8,
-      paddingVertical: 12,
+      paddingVertical: compact ? 6 : 12,
       borderWidth: 1.5,
       borderColor: COLORS.gold,
       borderRadius: 10,
@@ -481,48 +482,11 @@ function createStyles(variant, layout, size) {
   });
 }
 
-function bufferToPdfImage(buffer) {
-  const format = sniffImageFormat(buffer);
-  if (!isPdfSafeImageFormat(format)) return null;
-  return { data: buffer, format: format === 'jpeg' ? 'jpg' : format };
-}
-
-function localUploadImage(filename) {
-  const safe = path.basename(String(filename || ''));
-  if (!safe) return null;
-  const filePath = path.join(__dirname, '..', '..', 'uploads', safe);
-  if (!fs.existsSync(filePath)) return null;
-  return bufferToPdfImage(fs.readFileSync(filePath));
-}
-
 async function loadPdfImage(src) {
-  if (!src || typeof src !== 'string') return null;
-  const trimmed = src.trim();
-  if (!trimmed) return null;
-  if (trimmed.startsWith('data:image/')) {
-    const match = trimmed.match(/^data:image\/[a-zA-Z0-9+.-]+;base64,(.+)$/);
-    if (!match) return null;
-    try {
-      return bufferToPdfImage(Buffer.from(match[1], 'base64'));
-    } catch {
-      return null;
-    }
-  }
-  const uploaded = trimmed.match(/\/uploads\/([^/?#]+)/);
-  if (uploaded) {
-    const local = localUploadImage(uploaded[1]);
-    if (local) return local;
-  }
-  if (!/^https?:\/\//i.test(trimmed)) {
-    return localUploadImage(trimmed);
-  }
-  try {
-    const res = await fetch(trimmed);
-    if (!res.ok) return null;
-    return bufferToPdfImage(Buffer.from(await res.arrayBuffer()));
-  } catch {
-    return null;
-  }
+  if (!src) return null;
+  const { readPdfImage, normalizePdfImage } = require('../pdfImageSource');
+  const { buffer, format } = await normalizePdfImage(await readPdfImage(src));
+  return { data: buffer, format: format === 'jpeg' ? 'jpg' : format };
 }
 
 async function hydratePhotoNodes(nodes) {
@@ -634,14 +598,14 @@ function renderNodes(nodes, styles) {
                   style: on ? [styles.bingoCell, styles.bingoCellOn] : styles.bingoCell,
                   wrap: false,
                 },
-                on ? React.createElement(Text, { style: styles.bingoMark }, '✓') : null,
+                on ? React.createElement(Text, { style: styles.bingoMark }, 'X') : null,
                 React.createElement(Text, { style: styles.bingoCellText }, String(items[i] || '')),
               ),
             );
           }
           rows.push(React.createElement(View, { key: `row-${r}`, style: styles.bingoRow, wrap: false }, ...cells));
         }
-        return React.createElement(View, { key: index, style: styles.bingoBoard }, ...rows);
+        return React.createElement(View, { key: index, style: styles.bingoBoard, wrap: false }, ...rows);
       }
       case 'ScoreHuntBoard': {
         const maxPoints = Math.max(1, Number(node.maxPoints) || 6);
@@ -693,7 +657,7 @@ function renderNodes(nodes, styles) {
               React.createElement(
                 View,
                 { style: styles.checkBox },
-                node.checked?.[i] ? React.createElement(Text, { style: styles.checkMark }, '✓') : null,
+                node.checked?.[i] ? React.createElement(View, { style: styles.checkMark }) : null,
               ),
               React.createElement(Text, { style: styles.checkItem }, String(item)),
             ),
@@ -739,6 +703,10 @@ function renderNodes(nodes, styles) {
 
 async function renderDocumentDefinition(definition) {
   ensureFonts();
+  if (definition.craftSheets) {
+    const { craftPdfDocument } = require('./CraftPdfDocument');
+    return renderToBuffer(craftPdfDocument(definition));
+  }
   await hydratePhotoNodes(definition.nodes);
   const variant = definition.variant === 'INK_SAVER' ? 'INK_SAVER' : 'COLOR';
   const layout = definition.layout

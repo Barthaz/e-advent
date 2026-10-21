@@ -7,6 +7,7 @@ import {
   clearCreatorData,
   saveTasks,
   loadTasks,
+  loadFormat,
   setPendingCalendarSession,
   markCalendarPurchased,
   getReusablePendingCalendarId,
@@ -90,5 +91,16 @@ describe('pending vs purchased calendar session (M-02 / U-10)', () => {
     setPendingCalendarSession('uuid-pending', 'token-2');
     expect(getReusablePendingCalendarId()).toBe('uuid-pending');
     expect(getPendingCalendarSession()?.editToken).toBe('token-2');
+  });
+});
+
+
+describe('Scratch draft format migration', () => {
+  it('resumes an old A4 draft as A3 without losing tasks', () => {
+    localStorage.clear();
+    localStorage.setItem(getStorageKeys('scratch').format, 'A4');
+    saveTasks('scratch', [{ day: 1, task: 'Upiecz pierniki' }]);
+    expect(loadFormat('scratch')).toBe('A3');
+    expect(loadTasks('scratch')[0].task).toBe('Upiecz pierniki');
   });
 });

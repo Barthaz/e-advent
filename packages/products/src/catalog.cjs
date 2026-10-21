@@ -40,6 +40,7 @@ const PRODUCTS = {
   },
   'scratch-a4': {
     sku: 'scratch-a4',
+    discontinued: true, // Historical orders only; unavailable for new checkout.
     type: 'scratch',
     slug: 'zdrapka',
     name: 'Kalendarz zdrapka A4',
@@ -102,7 +103,7 @@ const PRODUCT_FAMILIES = [
     icon: 'fa-envelope',
     creatorRoute: '/list-do-swietego-mikolaja',
     priceFrom: 29,
-    features: ['2 wersje listu', 'Opisana koperta', 'Naklejki świąteczne', 'Wysyłka Pocztą Polską'],
+    features: ['2 wersje listu', 'Opisana koperta', 'Naklejki świąteczne', 'Wysyłka InPost'],
     requiresShipping: true,
     requiresDesign: false,
   },
@@ -125,8 +126,8 @@ const PRODUCT_FAMILIES = [
     shortDescription: 'Fizyczny kalendarz — zdrapuj okienko każdego dnia i odkryj zadanie lub cytat.',
     icon: 'fa-hand-sparkles',
     creatorRoute: '/stworz-kalendarz/zdrapka',
-    priceFrom: 49,
-    features: ['Format A4 lub A3', 'Własna grafika', 'Realizacja 3–5 dni roboczych', 'Wysyłka Pocztą Polską'],
+    priceFrom: 69,
+    features: ['Format A3 (29,7 × 42 cm)', 'Własna grafika', 'Realizacja 3–5 dni roboczych', 'Wysyłka InPost'],
     requiresShipping: true,
     requiresDesign: true,
   },
@@ -177,7 +178,11 @@ function computeOrderTotals(items, options) {
   let shipping = 0;
   let freeShipping = false;
   if (hasPhysical) {
-    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+    if (options?.shippingAmount != null) {
+      shipping = roundPln(options.shippingAmount);
+      if (!Number.isFinite(shipping) || shipping < 0) return null;
+      freeShipping = shipping === 0;
+    } else if (subtotal >= FREE_SHIPPING_THRESHOLD) {
       shipping = 0;
       freeShipping = true;
     } else {
@@ -216,7 +221,7 @@ function getProductPrice(sku) {
 
 function getSkuForTypeAndFormat(type, format) {
   if (type === 'interactive') return 'interactive';
-  if (type === 'scratch') return format === 'A3' ? 'scratch-a3' : 'scratch-a4';
+  if (type === 'scratch') return !format || format === 'A3' ? 'scratch-a3' : null;
   if (type === 'letter') return 'santa-letter';
   return null;
 }

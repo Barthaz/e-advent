@@ -1,23 +1,19 @@
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 import FestivePage from '../components/FestivePage';
 import ParchmentCard from '../components/ParchmentCard';
 import SEOHead from '../components/SEOHead';
 import {
-  FREE_SHIPPING_THRESHOLD,
   formatPrice,
   getProduct,
 } from '../config/products';
 import { buildCartDisplayRows, getCartItemDisplayName } from '../utils/cartStorage';
 
 export default function CartPage() {
-  const { items, totals, updateQty, removeItem, freeShippingThreshold } = useCart();
+  const { items, totals, updateQty, removeItem } = useCart();
   const displayRows = buildCartDisplayRows(items);
+  const hasRetiredProduct = items.some((item) => getProduct(item.sku)?.discontinued);
 
-  const remainingForFree =
-    totals.hasPhysical && !totals.freeShipping
-      ? Math.max(0, freeShippingThreshold - totals.subtotal)
-      : 0;
 
   return (
     <>
@@ -136,40 +132,32 @@ export default function CartPage() {
                   <span>{formatPrice(totals.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-parchment-text">
-                  <span>Wysyłka (Poczta Polska)</span>
+                  <span>Dostawa InPost</span>
                   <span>
-                    {totals.hasPhysical
-                      ? totals.freeShipping
-                        ? 'Gratis'
-                        : formatPrice(totals.shipping)
-                      : '—'}
+                    {totals.hasPhysical ? 'Cena w następnym kroku' : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg text-christmas-green pt-2 border-t border-parchment-dark/20">
-                  <span>Razem</span>
-                  <span>{formatPrice(totals.total)}</span>
+                  <span>Produkty razem</span>
+                  <span>{formatPrice(totals.subtotal)}</span>
                 </div>
               </div>
 
-              {totals.hasPhysical && (
-                <p className="text-parchment-muted text-sm mb-6 text-center">
-                  {totals.freeShipping
-                    ? `Darmowa wysyłka — próg ${FREE_SHIPPING_THRESHOLD} zł osiągnięty.`
-                    : remainingForFree > 0
-                      ? `Do darmowej wysyłki brakuje ${formatPrice(remainingForFree)} (próg ${FREE_SHIPPING_THRESHOLD} zł).`
-                      : null}
+
+              {hasRetiredProduct && (
+                <p role="alert" className="alert-error mb-6">
+                  W koszyku jest wycofany wariant kalendarza. Usuń go i utwórz kalendarz w aktualnym formacie A3.
                 </p>
               )}
-
               <p className="text-parchment-muted text-sm mb-6 text-center">
                 W kolejnym kroku podasz adres dostawy i opłacisz całe zamówienie naraz.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link to="/platnosc" className="btn-gold px-8 py-3.5 text-lg">
+                {!hasRetiredProduct && <Link to="/platnosc" className="btn-gold px-8 py-3.5 text-lg">
                   <i className="fas fa-lock" />
                   Przejdź do zamówienia
-                </Link>
+                </Link>}
                 <Link
                   to="/kalendarze-adwentowe"
                   className="btn-outline-parchment px-6 py-3"

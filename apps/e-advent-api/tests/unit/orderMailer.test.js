@@ -90,7 +90,7 @@ describe('orderMailer', () => {
 
   test('sendPaidOrderEmails sends access mail for interactive item', async () => {
     Calendar.findCalendarById.mockResolvedValue(interactiveCalendar({
-      data: { ...interactiveCalendar().data, openingMethod: 'online' },
+      data: { ...interactiveCalendar().data, email: 'owner@example.com', openingMethod: 'online' },
     }));
     const result = await sendPaidOrderEmails({
       id: 'ord-i',
@@ -104,6 +104,7 @@ describe('orderMailer', () => {
     expect(result.sent).toBe(1);
     expect(sendEmail.mock.calls[0][0].subject).toMatch(/Kalendarz/);
     expect(sendEmail.mock.calls[0][0].html).toContain('ABC123');
+    expect(sendEmail.mock.calls[0][0].to).toBe('owner@example.com');
   });
 
   test('sendPaidOrderEmails rejects unpaid orders', async () => {

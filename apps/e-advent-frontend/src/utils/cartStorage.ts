@@ -1,3 +1,4 @@
+import { DEFAULT_VAT_RATE } from '@e-advent/products';
 import { computeOrderTotals, getOrderItemDisplayName, getProduct, type OrderTotals } from '../config/products';
 
 export const CART_STORAGE_KEY = 'e-advent-cart';
@@ -69,6 +70,8 @@ export function getCartTotals(items: CartItem[]): OrderTotals | null {
       total: 0,
       hasPhysical: false,
       freeShipping: false,
+      vatRate: DEFAULT_VAT_RATE,
+      subtotalNetto: 0, subtotalVat: 0, shippingNetto: 0, shippingVat: 0, amountNetto: 0, vatAmount: 0, lines: [],
     };
   }
   return computeOrderTotals(items.map((item) => ({ sku: item.sku, quantity: item.quantity })));
