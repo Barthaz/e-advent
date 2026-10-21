@@ -1,3 +1,4 @@
+import { ADMIN_API_BASE } from '../api/apiBase';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppSelector } from '../hooks/useAppDispatch';
 import { getInpostStatusLabel, inpostTrackingUrl } from '../utils/inpostStatus';
@@ -35,7 +36,7 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh 
   useEffect(() => () => { mounted.current = false; }, []);
 
   const call = useCallback(async (action = '', body?: unknown) => {
-    const response = await fetch(`/api/v1/admin/orders/${encodeURIComponent(orderId)}/inpost${action ? '/' + action : ''}`, {
+    const response = await fetch(`${ADMIN_API_BASE}/orders/${encodeURIComponent(orderId)}/inpost${action ? '/' + action : ''}`, {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       ...(action && action !== 'label' ? { method: 'POST', body: JSON.stringify(body || {}) } : {}),
     });

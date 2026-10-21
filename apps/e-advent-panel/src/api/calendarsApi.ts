@@ -1,3 +1,4 @@
+import { ADMIN_API_BASE } from './apiBase';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../store';
 import type { CalendarDetail, PatchCalendarRequest } from '../types/calendar';
@@ -7,7 +8,7 @@ export const calendarsApi = createApi({
   reducerPath: 'calendarsApi',
   tagTypes: ['Calendar'],
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1/admin',
+    baseUrl: ADMIN_API_BASE,
     prepareHeaders(headers, { getState }) {
       const token = (getState() as RootState).auth.token;
       if (token) {

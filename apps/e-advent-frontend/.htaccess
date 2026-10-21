@@ -8,6 +8,14 @@
   # Redirect www do non-www (301 Permanent Redirect)
 RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
 RewriteRule ^(.*)$ https://e-advent.pl/$1 [R=301,L]
+
+  # TYMCZASOWE: poza e-advent.pl (np. test.e-advent.pl) wpuszczaj tylko z dozwolonego IP.
+  # Kolejne IP dopisuj jako: RewriteCond %{REMOTE_ADDR} !^1\.2\.3\.4$
+  # /.well-known/ zostaje otwarte dla odnawiania certyfikatu SSL.
+  RewriteCond %{HTTP_HOST} !^e-advent\.pl$ [NC]
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
+  RewriteCond %{REMOTE_ADDR} !^83\.23\.199\.175$
+  RewriteRule ^ https://e-advent.pl/ [R=302,L]
   
   # WAŻNE: Najpierw sprawdź czy plik istnieje - jeśli tak, NIE przekierowuj
   RewriteCond %{REQUEST_FILENAME} -f

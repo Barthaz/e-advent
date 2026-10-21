@@ -1,3 +1,4 @@
+import { ADMIN_API_BASE } from './apiBase';
 import type { RootState } from '../store';
 
 function triggerBlobDownload(blob: Blob, filename: string) {
@@ -36,7 +37,7 @@ export async function downloadScratchExport(
 ): Promise<void> {
   const token = getState().auth.token;
   const qs = kind === 'png' ? '?dpi=600' : '';
-  const res = await fetch(`/api/v1/admin/calendars/${encodeURIComponent(calendarId)}/export/${kind}${qs}`, {
+  const res = await fetch(`${ADMIN_API_BASE}/calendars/${encodeURIComponent(calendarId)}/export/${kind}${qs}`, {
     method: 'GET',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });

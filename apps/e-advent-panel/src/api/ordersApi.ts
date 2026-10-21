@@ -1,3 +1,4 @@
+import { ADMIN_API_BASE } from './apiBase';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../store';
 import type {
@@ -12,7 +13,7 @@ export const ordersApi = createApi({
   reducerPath: 'ordersApi',
   tagTypes: ['Order', 'OrderList'],
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1/admin',
+    baseUrl: ADMIN_API_BASE,
     prepareHeaders(headers, { getState }) {
       const token = (getState() as RootState).auth.token;
       if (token) {
