@@ -132,7 +132,8 @@ app.get('/', (req, res) => {
 
 // API v1 routes
 app.use('/api/v1/stripe', stripeRoutes);
-app.use('/api/v1/shipping', require('./routes/shipping'));
+const shippingRoutes = require('./routes/shipping');
+app.use('/api/v1/shipping', shippingRoutes);
 app.use('/api/v1/inpost', require('./routes/inpostWebhook'));
 app.use('/api/v1/email', emailRoutes);
 app.use('/api/v1/calendars', calendarRoutes);
@@ -156,6 +157,7 @@ app.get('/api/v1/android/min-version', (req, res) => {
 
 // Backward compatibility - przekierowanie ze starych endpointĂłw do v1
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/shipping', shippingRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/send-email', emailRoutes); // Alternatywna Ĺ›cieĹĽka dla /api/send-email
 app.use('/api/send-mail', emailRoutes); // Alternatywna Ĺ›cieĹĽka dla /api/send-mail (testowy endpoint)

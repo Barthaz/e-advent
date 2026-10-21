@@ -11,11 +11,19 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://apie-advent.vercel.app/api",
+        "EXPO_PUBLIC_ORDER_CALENDAR_URL": "https://e-advent.pl/stworz-kalendarz"
       }
     },
     "production": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://apie-advent.vercel.app/api",
+        "EXPO_PUBLIC_ORDER_CALENDAR_URL": "https://e-advent.pl/stworz-kalendarz"
       }
     }
   },
@@ -23,4 +31,3 @@
     "production": {}
   }
 }
-
