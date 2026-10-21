@@ -84,7 +84,7 @@ async function initializeCheckout(request, clientIP) {
     }
     intent = intent || await ensureIntent(order);
     return {
-      clientSecret: intent.client_secret, paymentIntentId: intent.id,
+      clientSecret: intent.client_secret, paymentIntentId: intent.id, paymentStatus: intent.status,
       orderId: order.id, orderNumber: order.orderNumberDisplay || formatOrderNumber(order.orderNumber),
       productId: primaryProductId, amount: order.amount, shipping: order.shippingAmount,
       subtotal: totals.subtotal, items: order.items,

@@ -369,9 +369,13 @@ export interface CreatePaymentIntentRequest {
   };
 }
 
+const PAYMENT_STARTED_STATUSES = ['succeeded', 'processing', 'requires_capture'];
+
 export interface CreatePaymentIntentSuccessResponse {
   clientSecret: string;
   paymentIntentId: string;
+  /** Stripe PaymentIntent status */
+  paymentStatus?: string;
   productId?: string | null;
   orderId?: string;
   /** Publiczny numer zamówienia, np. "000001" */
@@ -448,6 +452,11 @@ export async function createPaymentIntent(
   sessionStorage.setItem(`e-advent-payment:${responseData.paymentIntentId}`, responseData.clientSecret);
   sessionStorage.setItem(`e-advent-checkout-owner:${responseData.paymentIntentId}`, checkoutToken);
   if (cartSnapshot) sessionStorage.setItem(`e-advent-checkout-cart:${responseData.paymentIntentId}`, cartSnapshot);
+  // Stripe refuses to mount Elements on a paid / in-flight PaymentIntent; show its result instead.
+  if (PAYMENT_STARTED_STATUSES.includes(responseData.paymentStatus)) {
+    window.location.assign(`/sukces?payment_intent=${encodeURIComponent(responseData.paymentIntentId)}`);
+    return new Promise<never>(() => {});
+  }
   return responseData as CreatePaymentIntentSuccessResponse;
 }
 
