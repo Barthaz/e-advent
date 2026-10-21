@@ -127,6 +127,27 @@ async function getClientIP(): Promise<string | null> {
   return null;
 }
 
+type StripeBillingAddress = {
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+};
+
+function toStripeBillingAddress(address: ShippingAddress | null): StripeBillingAddress {
+  const number = [address?.buildingNumber, address?.apartmentNumber].filter(Boolean).join('/');
+  return {
+    line1: [address?.street, number].filter(Boolean).join(' ').trim(),
+    line2: '',
+    city: address?.city?.trim() || '',
+    state: '',
+    postal_code: address?.postalCode?.trim() || '',
+    country: address?.country?.trim().toUpperCase() || 'PL',
+  };
+}
+
 // Komponent formularza płatności używający Stripe Elements
 function PaymentForm({ 
   clientSecret, 
@@ -135,6 +156,7 @@ function PaymentForm({
   isFree,
   onCreateFreeCalendar,
   payAmount,
+  billingAddress,
 }: { 
   clientSecret: string; 
   paymentIntentId: string;
@@ -142,6 +164,7 @@ function PaymentForm({
   isFree: boolean;
   onCreateFreeCalendar: () => Promise<void>;
   payAmount: number;
+  billingAddress: StripeBillingAddress;
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -228,6 +251,8 @@ function PaymentForm({
         clientSecret,
         confirmParams: {
           return_url: returnUrl,
+          // PaymentElement hides the address (fields.billingDetails.address = 'never'), so Stripe requires it here.
+          payment_method_data: { billing_details: { address: billingAddress } },
         },
       });
 
@@ -1458,6 +1483,7 @@ export default function Checkout() {
                 isFree={isFree}
                 onCreateFreeCalendar={handleCreateFreeCalendar}
                 payAmount={totalPrice}
+                billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
               />
             </Elements>
           ) : isPhysical && !shippingAddressComplete ? (
