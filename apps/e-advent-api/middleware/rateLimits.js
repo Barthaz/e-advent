@@ -1,6 +1,12 @@
-const rateLimit = require('express-rate-limit');
+const expressRateLimit = require('express-rate-limit');
 
 const isTestEnv = process.env.NODE_ENV === 'test';
+
+// Client IP comes from X-Forwarded-For via `trust proxy` (app.js); Vercel also sends the
+// standardized `Forwarded` header, which Express ignores — don't fail validation on it.
+function rateLimit(options) {
+  return expressRateLimit({ ...options, validate: { forwardedHeader: false, ...options.validate } });
+}
 
 function createLimiter({ windowMs, max, message }) {
   return rateLimit({
@@ -47,6 +53,7 @@ const calendarAccessLimiter = rateLimit({
   message: { error: 'Too many failed access attempts' },
 });
 module.exports = {
+  rateLimit,
   calendarAccessLimiter,
   pdfLimiter,
   loginLimiter,

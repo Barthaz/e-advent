@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const rateLimit = require('express-rate-limit');
+const { rateLimit } = require('../middleware/rateLimits');
 const inpost = require('../services/inpost');
 router.use(rateLimit({ windowMs: 60000, max: 60, standardHeaders: true, legacyHeaders: false }));
 router.get('/config', (req, res) => {

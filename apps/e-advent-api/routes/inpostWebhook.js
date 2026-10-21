@@ -3,7 +3,7 @@ const { timingSafeEqual } = require('node:crypto');
 const { query } = require('../config/database');
 const { config } = require('../services/inpost');
 const { operate } = require('../services/inpostFulfillment');
-const limiter = require('express-rate-limit')({ windowMs: 60000, max: 300, standardHeaders: true, legacyHeaders: false });
+const limiter = require('../middleware/rateLimits').rateLimit({ windowMs: 60000, max: 300, standardHeaders: true, legacyHeaders: false });
 
 router.post('/webhook', limiter, async (req, res) => {
   const secret = process.env.INPOST_WEBHOOK_SECRET;

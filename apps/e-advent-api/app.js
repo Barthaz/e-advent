@@ -23,6 +23,8 @@ const socketHandler = require('./socket/socketHandler');
 const path = require('path');
 
 const app = express();
+// Vercel's edge proxy is the single hop in front of the function; req.ip = real client IP.
+if (process.env.VERCEL) app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 const corsAllowedHeaders = [
