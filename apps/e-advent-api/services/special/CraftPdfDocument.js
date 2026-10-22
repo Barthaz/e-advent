@@ -1,10 +1,12 @@
 'use strict';
 
 const React=require('react');
-const { Document,Page,Text,Svg,Path,Rect,Circle,Line }=require('@react-pdf/renderer');
+const { getReactPdf }=require('../reactPdf');
 const h=React.createElement;
 const MM=72/25.4;
-const components={path:Path,rect:Rect,circle:Circle,line:Line};
+// Loaded by PdfRenderService.renderDocumentDefinition() before this module is used.
+const rp=()=>getReactPdf();
+const components={ get path(){return rp().Path;}, get rect(){return rp().Rect;}, get circle(){return rp().Circle;}, get line(){return rp().Line;} };
 
 function palette(variant,theme) {
   if(variant==='INK_SAVER') return { accent:'#222222',tint:'#ffffff',paper:'#ffffff',ink:'#111111' };
@@ -14,12 +16,14 @@ function palette(variant,theme) {
   return { accent:'#245943',tint:'#f2eee3',paper:'#ffffff',ink:'#1d3027' };
 }
 function label(value,key,colors) {
+  const { Text }=rp();
   return h(Text,{key,hyphenationCallback:word=>word.length>18?(word.match(/.{1,12}/gu)||[word]):[word],style:{
     position:'absolute',left:value.x*MM,top:value.y*MM,width:value.width*MM,height:value.height*MM,
     fontFamily:'Source Serif 4',fontSize:value.size,lineHeight:1.18,color:colors.ink,textAlign:value.align||'left',
   }},value.text);
 }
 function craftPdfDocument(definition) {
+  const { Document,Page,Svg,Line }=rp();
   const colors=palette(definition.variant,definition.craftTheme||'');
   return h(Document,{title:definition.title,author:'e-Advent',creator:'e-Advent'},
     ...definition.craftSheets.map((s,page)=>h(Page,{key:page,size:'A4',orientation:'portrait',wrap:false,style:{backgroundColor:'#ffffff',height:297*MM,width:210*MM}},

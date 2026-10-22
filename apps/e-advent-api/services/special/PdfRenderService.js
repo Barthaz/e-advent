@@ -3,16 +3,10 @@
 const path = require('path');
 const fs = require('fs');
 const React = require('react');
-const {
-  renderToBuffer,
-  Document,
-  Page,
-  Text,
-  View,
-  Image,
-  Font,
-  StyleSheet,
-} = require('@react-pdf/renderer');
+const { loadReactPdf } = require('../reactPdf');
+
+// Bound by renderDocumentDefinition() before any helper below runs.
+let renderToBuffer, Document, Page, Text, View, Image, Font, StyleSheet;
 
 const fontsDir = path.resolve(__dirname, '../../assets/fonts');
 const pdfAssetsDir = path.resolve(__dirname, '../../assets/pdf');
@@ -702,6 +696,7 @@ function renderNodes(nodes, styles) {
 }
 
 async function renderDocumentDefinition(definition) {
+  ({ renderToBuffer, Document, Page, Text, View, Image, Font, StyleSheet } = await loadReactPdf());
   ensureFonts();
   if (definition.craftSheets) {
     const { craftPdfDocument } = require('./CraftPdfDocument');
