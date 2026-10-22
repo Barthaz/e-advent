@@ -397,7 +397,6 @@ export default function Checkout() {
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>(emptyShippingAddress());
   const [shippingErrors, setShippingErrors] = useState<Partial<Record<keyof ShippingAddress, string>>>({});
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [letterOnly, setLetterOnly] = useState(false);
   /** Physical products from cart (scratch, letters) — one order, shipping at checkout */
   const [cartMode, setCartMode] = useState(false);
 
@@ -415,7 +414,7 @@ export default function Checkout() {
       : [{ sku, quantity: 1 }],
     { shippingAmount: shippingQuote.quote?.price ?? 0 },
   );
-  const pricedTotals = promoCodeDiscount === 10 || promoCodeDiscount === 100
+  const pricedTotals = (promoCodeDiscount === 10 || promoCodeDiscount === 100) && orderTotals
     ? applyPercentDiscount(orderTotals, promoCodeDiscount)
     : orderTotals;
   const product = getProduct(sku);
@@ -466,7 +465,6 @@ export default function Checkout() {
       const nameFromCart = cart.find((i) => i.customerName)?.customerName?.trim() || '';
 
       setCartMode(true);
-      setLetterOnly(onlyLetters);
       setCartItems(cart);
       setSku(firstSku);
       setProductType(firstProduct?.type || (onlyLetters ? 'letter' : 'scratch'));
@@ -542,7 +540,6 @@ export default function Checkout() {
     }
 
     setCartMode(false);
-    setLetterOnly(false);
     setCalendarData(normalizedData);
     setProductType(resolved.productType);
     setSku(resolved.sku);
