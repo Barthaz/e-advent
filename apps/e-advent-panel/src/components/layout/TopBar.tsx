@@ -1,9 +1,5 @@
 import { useLocation, Link } from 'react-router-dom';
-
-const STOREFRONT_URL = import.meta.env.VITE_STOREFRONT_URL;
-if (!STOREFRONT_URL) {
-  throw new Error('Missing VITE_STOREFRONT_URL — set it in apps/e-advent-panel/.env');
-}
+import { STOREFRONT_URL } from '../../config/env';
 
 interface Breadcrumb {
   label: string;

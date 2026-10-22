@@ -7,10 +7,10 @@ import { fileURLToPath } from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const monorepoRoot = resolve(__dirname, '../..');
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, __dirname, '');
   const proxyTarget = env.VITE_API_PROXY_TARGET;
-  if (!proxyTarget) {
+  if (command === 'serve' && !proxyTarget) {
     throw new Error('Missing VITE_API_PROXY_TARGET — set it in apps/e-advent-panel/.env');
   }
 
@@ -28,12 +28,14 @@ export default defineConfig(({ mode }) => {
       fs: {
         allow: [monorepoRoot],
       },
-      proxy: {
-        '/api': {
-          target: proxyTarget,
-          changeOrigin: true,
+      ...(proxyTarget ? {
+        proxy: {
+          '/api': {
+            target: proxyTarget,
+            changeOrigin: true,
+          },
         },
-      },
+      } : {}),
     },
     build: {
       outDir: 'dist',

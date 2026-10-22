@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import catalog from '../../../../packages/content/catalog/e-advent-calendars-data.json' with { type: 'json' };
+import { STOREFRONT_URL } from '../config/env';
 import Badge from '../components/ui/Badge';
 
 type CatalogTask = {
@@ -22,11 +23,6 @@ type CatalogSet = {
 };
 
 type Filter = 'all' | 'special' | 'standard';
-
-const STOREFRONT = import.meta.env.VITE_STOREFRONT_URL;
-if (!STOREFRONT) {
-  throw new Error('Missing VITE_STOREFRONT_URL — set it in apps/e-advent-panel/.env');
-}
 
 const SET_DESCRIPTIONS: Record<string, string> = {
   'Świąteczny nastrój i zabawa': 'Zadania, które wprowadzą Cię w klimat świąt i poprawią humor.',
@@ -209,7 +205,7 @@ function TaskPreviewOverlay({
     <div className="fixed inset-0 z-[80] overflow-hidden">
       <iframe
         title="Podgląd okienka"
-        src={`${STOREFRONT.replace(/\/$/, '')}/podglad-okienka/${previewId}`}
+        src={`${STOREFRONT_URL}/podglad-okienka/${previewId}`}
         className="block h-full w-full border-0 bg-transparent"
         allow="downloads; clipboard-write"
       />
