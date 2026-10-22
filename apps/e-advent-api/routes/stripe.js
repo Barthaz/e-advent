@@ -149,17 +149,25 @@ router.get('/payment/:paymentIntentId', async (req, res) => {
     }
 });
 
-// Webhook endpoint for Stripe events
-// WAŻNE: express.raw() musi być użyte tutaj, aby otrzymać surowe body (Buffer)
-// Stripe wymaga surowego body do weryfikacji podpisu webhooka
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+// Webhook endpoint for Stripe events.
+// Raw bytes come from app.js bodyParser verify= (req.rawBody). Do not use
+// express.raw() here — after json parsing the stream is empty and it overwrites body.
+router.post('/webhook', async (req, res) => {
     const sig = req.headers['stripe-signature'];
+    const payload = Buffer.isBuffer(req.rawBody) ? req.rawBody : null;
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+        if (!payload) {
+            throw new Error('Missing raw webhook body (Vercel/body-parser)');
+        }
+        event = stripe.webhooks.constructEvent(payload, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
-        console.error('Webhook signature verification failed:', err.message);
+        console.error('Webhook signature verification failed:', err.message, {
+            hasRawBody: Buffer.isBuffer(req.rawBody),
+            bodyType: Buffer.isBuffer(req.body) ? 'buffer' : typeof req.body,
+            secretPrefix: String(process.env.STRIPE_WEBHOOK_SECRET || '').slice(0, 10),
+        });
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 

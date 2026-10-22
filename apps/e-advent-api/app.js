@@ -77,24 +77,26 @@ if (testingMode) {
   console.log('đź”’ CORS allowlist:', corsAllowlist.join(', '));
 }
 
-// WAĹ»NE: Webhook Stripe wymaga surowego body (raw), nie sparsowanego JSON
-// Wykluczamy webhook z parsowania JSON - musi byÄ‡ surowe body (Buffer)
-app.use((req, res, next) => {
-    // JeĹ›li to webhook Stripe, pomiĹ„ parsowanie JSON
-    if (req.path === '/api/stripe/webhook' || req.path === '/api/v1/stripe/webhook') {
-        return next();
+// Stripe needs the exact raw bytes for signature verification. On Vercel the
+// request stream can already be consumed, so keep a copy via verify= and prefer
+// that in the webhook route (req.rawBody) over a re-parsed body.
+function isStripeWebhookPath(req) {
+  const path = `${req.originalUrl || ''}${req.url || ''}${req.path || ''}`;
+  return path.includes('/stripe/webhook');
+}
+
+app.use(bodyParser.json({
+  limit: '16mb',
+  verify: (req, _res, buf) => {
+    if (isStripeWebhookPath(req) && Buffer.isBuffer(buf) && buf.length) {
+      req.rawBody = buf;
     }
-    // Dla wszystkich innych endpointĂłw parsuj JSON
-    bodyParser.json({ limit: '16mb' })(req, res, next);
-});
+  },
+}));
 
 app.use((req, res, next) => {
-    // JeĹ›li to webhook Stripe, pomiĹ„ parsowanie URL encoded
-    if (req.path === '/api/stripe/webhook' || req.path === '/api/v1/stripe/webhook') {
-        return next();
-    }
-    // Dla wszystkich innych endpointĂłw parsuj URL encoded
-    bodyParser.urlencoded({ extended: true, limit: '16mb' })(req, res, next);
+  if (isStripeWebhookPath(req)) return next();
+  bodyParser.urlencoded({ extended: true, limit: '16mb' })(req, res, next);
 });
 
 // Request logging middleware
