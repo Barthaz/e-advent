@@ -5,7 +5,33 @@ const LOGO_ASPECT = 1254 / 1254;
 const POWODY_ASPECT = 2172 / 198;
 const ODKRYWAJ_ASPECT = 2172 / 443;
 const HEART_ASPECT = 2172 / 293;
-const WINDOW_BOX_ASPECT = 1362 / 954;
+
+/**
+ * window_box.png geometry in source pixels. `inner` is the white field inside the gold
+ * frame; `stretch` is a band of rows where the frame sides are straight, so repeating
+ * it vertically makes the window taller without distorting corners or holly.
+ */
+const WINDOW_BOX_SOURCE = {
+  width: 1362,
+  height: 954,
+  inner: { left: 47, top: 234, right: 1315, bottom: 908 },
+  stretch: { top: 340, bottom: 800 },
+};
+
+/** Printed size of the white field inside each window (mm). */
+const WINDOW_INNER_MM = { width: 58, height: 35 };
+
+const PT_PER_MM = 72 / 25.4;
+
+function windowBoxStretchedHeight() {
+  const { inner } = WINDOW_BOX_SOURCE;
+  const pxPerMm = (inner.right - inner.left) / WINDOW_INNER_MM.width;
+  const targetInnerPx = WINDOW_INNER_MM.height * pxPerMm;
+  return Math.round(WINDOW_BOX_SOURCE.height + targetInnerPx - (inner.bottom - inner.top));
+}
+
+const WINDOW_BOX_HEIGHT_PX = windowBoxStretchedHeight();
+const WINDOW_BOX_ASPECT = WINDOW_BOX_SOURCE.width / WINDOW_BOX_HEIGHT_PX;
 
 const COLS = 4;
 const ROWS = 6;
@@ -24,28 +50,32 @@ const LAYOUT = {
   pageWhiteBorderRight: 0.7,
   pageWhiteBorderBottom: 0.7,
   padX: 0.045,
-  padTop: 0.03,
-  padBottom: 0.022,
-  logoHeight: 0.115,
-  afterLogoGap: 0.01,
+  padTop: 0.02,
+  padBottom: 0.024,
+  logoHeight: 0.074,
+  afterLogoGap: 0.006,
   /** Combined height for 24_powody + odkrywaj_codziennie (+ small gap). */
-  headersBudget: 0.095,
+  headersBudget: 0.068,
   /** Relative visual weight: powody larger than odkrywaj (but less dominant). */
   powodyWeight: 1.25,
   odkrywajWeight: 1,
   headersInnerGapFrac: 0.1,
   headerMaxWidth: 0.88,
   /** Small heart under odkrywaj_codziennie. */
-  heartHeight: 0.018,
-  afterOdkrywajGap: 0.006,
-  afterHeartGap: 0.012,
+  heartHeight: 0.013,
+  afterOdkrywajGap: 0.004,
+  afterHeartGap: 0.008,
   /** Day badge size relative to window cell width. */
   badgeSizeFrac: 0.171,
   /** How much of the badge sits above the window box. */
   badgeOverhangFrac: 0.42,
-  /** Horizontal / vertical gaps between window boxes (equal look). */
-  gridGapMinFrac: 0.012,
-  textPadFrac: 0.08,
+  /** Upper bound for gaps between window boxes (fraction of max page side). */
+  gridGapMaxFrac: 0.012,
+  /** Text inset inside the white window field (mm). */
+  textInsetXMm: 2.5,
+  textInsetYMm: 2,
+  /** Order number label in the bottom-right corner (font size in pt). */
+  orderLabelFontSize: 11,
 };
 
 /**
@@ -55,6 +85,7 @@ const LAYOUT = {
  *   page: { width: number, height: number },
  *   border: { left: number, top: number, right: number, bottom: number },
  *   design: Rect,
+ *   orderLabel: Rect,
  *   logo: Rect,
  *   powody: Rect,
  *   odkrywaj: Rect,
@@ -150,42 +181,36 @@ function computeScratchLayout(pageSize) {
   const availW = W - 2 * padX;
   const availH = Math.max(0, gridBottom - gridTop);
 
-  const gapGuess = Math.max(W, H) * LAYOUT.gridGapMinFrac;
-  let gap = gapGuess;
-  let cellW;
-  let cellH;
-  let overhang;
+  const src = WINDOW_BOX_SOURCE;
+  const innerFracW = (src.inner.right - src.inner.left) / src.width;
+  const overhangPerCellW = LAYOUT.badgeSizeFrac * LAYOUT.badgeOverhangFrac;
+  const maxGap = Math.max(W, H) * LAYOUT.gridGapMaxFrac;
 
-  for (let i = 0; i < 8; i += 1) {
-    cellW = (availW - (COLS - 1) * gap) / COLS;
-    cellH = cellW / WINDOW_BOX_ASPECT;
-    const badge = cellW * LAYOUT.badgeSizeFrac;
-    overhang = badge * LAYOUT.badgeOverhangFrac;
-    const neededH = overhang + ROWS * cellH + (ROWS - 1) * gap;
-    if (neededH <= availH || cellW <= 1) break;
-    const heightForBoxes = availH - overhang - (ROWS - 1) * gap;
-    cellH = Math.max(1, heightForBoxes / ROWS);
-    cellW = cellH * WINDOW_BOX_ASPECT;
-    const widthUsed = COLS * cellW + (COLS - 1) * gap;
-    if (widthUsed > availW) {
-      cellW = (availW - (COLS - 1) * gap) / COLS;
-      cellH = cellW / WINDOW_BOX_ASPECT;
-    }
-    overhang = cellW * LAYOUT.badgeSizeFrac * LAYOUT.badgeOverhangFrac;
-    const usedH = overhang + ROWS * cellH + (ROWS - 1) * gap;
-    if (usedH < availH) {
-      gap += (availH - usedH) / (ROWS + COLS);
-    }
-  }
+  let cellW = (WINDOW_INNER_MM.width * PT_PER_MM) / innerFracW;
+  // Shrink uniformly only when the target size cannot fit on the page.
+  const fitW = (availW - (COLS - 1) * maxGap * 0.5) / (COLS * cellW);
+  const fitH = (availH - (ROWS - 1) * maxGap * 0.5)
+    / (ROWS * (cellW / WINDOW_BOX_ASPECT) + cellW * overhangPerCellW);
+  cellW *= Math.min(1, fitW, fitH);
+  const cellH = cellW / WINDOW_BOX_ASPECT;
 
   const badgeSize = cellW * LAYOUT.badgeSizeFrac;
-  overhang = badgeSize * LAYOUT.badgeOverhangFrac;
+  const overhang = badgeSize * LAYOUT.badgeOverhangFrac;
+  const gap = Math.max(0, Math.min(
+    maxGap,
+    (availW - COLS * cellW) / (COLS - 1),
+    (availH - overhang - ROWS * cellH) / (ROWS - 1),
+  ));
   const gridBlockW = COLS * cellW + (COLS - 1) * gap;
   const gridBlockH = overhang + ROWS * cellH + (ROWS - 1) * gap;
   const gridOriginX = padX + Math.max(0, (availW - gridBlockW) / 2);
   const gridOriginY = gridTop + Math.max(0, (availH - gridBlockH) / 2);
 
-  const textPad = Math.min(cellW, cellH) * LAYOUT.textPadFrac;
+  const scaleX = cellW / src.width;
+  const scaleY = cellH / WINDOW_BOX_HEIGHT_PX;
+  const innerBottomPx = src.inner.bottom + (WINDOW_BOX_HEIGHT_PX - src.height);
+  const insetX = LAYOUT.textInsetXMm * PT_PER_MM;
+  const insetY = LAYOUT.textInsetYMm * PT_PER_MM;
   const windows = [];
 
   for (let i = 0; i < MAX_DAYS; i += 1) {
@@ -208,13 +233,10 @@ function computeScratchLayout(pageSize) {
       height: cellH,
       badge,
       text: {
-        x: x + textPad,
-        y: y + textPad + badgeSize * (1 - LAYOUT.badgeOverhangFrac) * 0.35,
-        width: cellW - 2 * textPad,
-        height: Math.max(
-          8,
-          cellH - 2 * textPad - badgeSize * (1 - LAYOUT.badgeOverhangFrac) * 0.45,
-        ),
+        x: x + src.inner.left * scaleX + insetX,
+        y: y + src.inner.top * scaleY + insetY,
+        width: Math.max(8, (src.inner.right - src.inner.left) * scaleX - 2 * insetX),
+        height: Math.max(8, (innerBottomPx - src.inner.top) * scaleY - 2 * insetY),
       },
     };
     windows.push({
@@ -225,10 +247,21 @@ function computeScratchLayout(pageSize) {
     });
   }
 
+  const gridBottomY = gridOriginY + gridBlockH;
+  const labelH = LAYOUT.orderLabelFontSize * 1.4;
+  const labelW = cellW * 1.5;
+  const orderLabelLocal = {
+    x: gridOriginX + gridBlockW - labelW,
+    y: Math.min(H - labelH, gridBottomY + Math.max(0, (H - gridBottomY - labelH) / 2)),
+    width: labelW,
+    height: labelH,
+  };
+
   return {
     page: { width: pageW, height: pageH },
     border,
     design,
+    orderLabel: offsetRect(orderLabelLocal, ox, oy),
     logo: offsetRect(logoLocal, ox, oy),
     powody: offsetRect(powodyLocal, ox, oy),
     odkrywaj: offsetRect(odkrywajLocal, ox, oy),
@@ -313,6 +346,9 @@ module.exports = {
   ODKRYWAJ_ASPECT,
   HEART_ASPECT,
   WINDOW_BOX_ASPECT,
+  WINDOW_BOX_SOURCE,
+  WINDOW_BOX_HEIGHT_PX,
+  WINDOW_INNER_MM,
   computeScratchLayout,
   buildWindowBoxes,
   scaleBoxToPage,

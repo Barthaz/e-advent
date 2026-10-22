@@ -11,6 +11,9 @@ const {
   ROWS,
   MAX_DAYS,
   LAYOUT,
+  WINDOW_BOX_SOURCE,
+  WINDOW_BOX_HEIGHT_PX,
+  WINDOW_INNER_MM,
 } = require('../../services/scratch/scratchWindowLayout');
 const {
   matchPresetName,
@@ -80,6 +83,32 @@ describe('scratchWindowLayout', () => {
     const cell = layout.windows[0];
     expect(cell.badge.y).toBeLessThan(cell.y);
     expect(cell.badge.y + cell.badge.height).toBeGreaterThan(cell.y);
+  });
+
+  test('A3 inner window field is 58×35 mm and text sits inside it', () => {
+    const PT_PER_MM = 72 / 25.4;
+    const layout = computeScratchLayout(pageSizePoints('A3'));
+    const cell = layout.windows[0];
+    const src = WINDOW_BOX_SOURCE;
+    const scaleX = cell.width / src.width;
+    const scaleY = cell.height / WINDOW_BOX_HEIGHT_PX;
+    const innerBottomPx = src.inner.bottom + (WINDOW_BOX_HEIGHT_PX - src.height);
+    const inner = {
+      x: cell.x + src.inner.left * scaleX,
+      y: cell.y + src.inner.top * scaleY,
+      width: (src.inner.right - src.inner.left) * scaleX,
+      height: (innerBottomPx - src.inner.top) * scaleY,
+    };
+    expect(WINDOW_INNER_MM).toEqual({ width: 58, height: 35 });
+    expect(inner.width / PT_PER_MM).toBeCloseTo(58, 1);
+    expect(inner.height / PT_PER_MM).toBeCloseTo(35, 1);
+    expect(cell.text.x).toBeGreaterThan(inner.x);
+    expect(cell.text.y).toBeGreaterThan(inner.y);
+    expect(cell.text.x + cell.text.width).toBeLessThan(inner.x + inner.width);
+    expect(cell.text.y + cell.text.height).toBeLessThan(inner.y + inner.height);
+    expect(layout.orderLabel.x + layout.orderLabel.width)
+      .toBeGreaterThan(layout.windows[3].x + layout.windows[3].width * 0.5);
+    expect(layout.orderLabel.y).toBeGreaterThan(layout.windows[23].y + layout.windows[23].height);
   });
 
   test('buildWindowBoxes returns sequential days', () => {

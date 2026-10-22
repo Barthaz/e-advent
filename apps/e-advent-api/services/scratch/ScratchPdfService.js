@@ -16,7 +16,12 @@ const {
   pageSizePoints,
   normalizeExportFormat,
   MAX_DAYS,
+  WINDOW_BOX_SOURCE,
+  WINDOW_BOX_HEIGHT_PX,
+  LAYOUT,
 } = require('./scratchWindowLayout');
+
+const ORDER_LABEL_COLOR = '#C9A13B';
 
 const fontsDir = path.resolve(__dirname, '../../assets/fonts');
 
@@ -71,6 +76,35 @@ async function loadDayBadges(badgeRect) {
   }
   badgeCache = { size, images };
   return images;
+}
+
+let windowBoxCache = null;
+
+async function loadWindowBox() {
+  if (windowBoxCache) return windowBoxCache;
+  const filePath = getGraphicPath('windowBox');
+  const { width, height, stretch } = WINDOW_BOX_SOURCE;
+  if (WINDOW_BOX_HEIGHT_PX === height) {
+    windowBoxCache = fileImage(filePath);
+    return windowBoxCache;
+  }
+  const { createCanvas, loadImage } = require('@napi-rs/canvas');
+  const img = await loadImage(filePath);
+  const extra = WINDOW_BOX_HEIGHT_PX - height;
+  const bandH = stretch.bottom - stretch.top;
+  const canvas = createCanvas(width, WINDOW_BOX_HEIGHT_PX);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, width, stretch.top, 0, 0, width, stretch.top);
+  ctx.drawImage(img, 0, stretch.top, width, bandH, 0, stretch.top, width, bandH + extra);
+  ctx.drawImage(
+    img,
+    0, stretch.bottom, width, height - stretch.bottom,
+    0, stretch.bottom + extra, width, height - stretch.bottom,
+  );
+  windowBoxCache = { data: canvas.toBuffer('image/png'), format: 'png' };
+  return windowBoxCache;
 }
 
 function normalizeTasks(tasks) {
@@ -137,7 +171,7 @@ function rectStyle(rect) {
  * Build scratch calendar PDF buffer.
  * Layers: design background → logo → headers → heart → window boxes → day badges → texts.
  *
- * @param {{ format?: string, designUrl: string, tasks: unknown[] }} input
+ * @param {{ format?: string, designUrl: string, tasks: unknown[], orderNumber?: string|null }} input
  * @returns {Promise<Buffer>}
  */
 async function buildScratchPdfBuffer(input) {
@@ -150,7 +184,8 @@ async function buildScratchPdfBuffer(input) {
   const layout = computeScratchLayout(dims);
   const { buffer: designBuffer, format: designFormat } = await resolveScratchDesignImage(input.designUrl);
   const texts = taskContentByDay(input.tasks);
-  const windowBoxSrc = fileImage(getGraphicPath('windowBox'));
+  const windowBoxSrc = await loadWindowBox();
+  const orderNumber = input.orderNumber ? String(input.orderNumber).trim() : '';
   const dayBadgeSrc = await loadDayBadges(layout.windows[0].badge);
 
   const styles = StyleSheet.create({
@@ -173,6 +208,14 @@ async function buildScratchPdfBuffer(input) {
       position: 'absolute',
       justifyContent: 'center',
       alignItems: 'center',
+    },
+    orderLabel: {
+      fontFamily: 'Source Serif 4',
+      fontWeight: 600,
+      fontSize: LAYOUT.orderLabelFontSize,
+      color: ORDER_LABEL_COLOR,
+      textAlign: 'right',
+      letterSpacing: 1,
     },
   });
 
@@ -275,6 +318,18 @@ async function buildScratchPdfBuffer(input) {
         style: rectStyle(layout.heart),
       }),
       ...windowNodes,
+      orderNumber
+        ? React.createElement(
+          View,
+          {
+            key: 'order-number',
+            fixed: true,
+            wrap: false,
+            style: [rectStyle(layout.orderLabel), { justifyContent: 'center' }],
+          },
+          React.createElement(Text, { style: styles.orderLabel }, orderNumber),
+        )
+        : null,
       React.createElement(View, {
         style: { width: dims.width, height: dims.height },
       }),

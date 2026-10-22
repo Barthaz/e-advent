@@ -1,6 +1,7 @@
 'use strict';
 
 const { query } = require('../config/database');
+const { formatOrderNumber } = require('../utils/orderNumber');
 
 const { pdfBufferToPng } = require('../services/scratch/PdfRasterService');
 const {
@@ -49,6 +50,32 @@ async function loadScratchCalendarOrRespond(req, res) {
   return row;
 }
 
+async function findOrderNumberForCalendar(calendarId) {
+  const [rows] = await query(
+    `SELECT order_number FROM orders
+     WHERE order_number IS NOT NULL
+       AND (calendar_id = ? OR id IN (SELECT order_id FROM order_items WHERE calendar_id = ?))
+     ORDER BY (status = 'succeeded') DESC, created_at DESC
+     LIMIT 1`,
+    [calendarId, calendarId],
+  );
+  return rows.length ? formatOrderNumber(rows[0].order_number) : null;
+}
+
+async function buildExportPdf(row, format) {
+  const { buildScratchPdfBuffer } = require('../services/scratch/ScratchPdfService');
+  const orderNumber = await findOrderNumberForCalendar(row.id).catch((error) => {
+    console.error('Scratch export order lookup error:', error.message);
+    return null;
+  });
+  return buildScratchPdfBuffer({
+    format,
+    designUrl: row.design_url,
+    tasks: parseTasks(row.tasks),
+    orderNumber,
+  });
+}
+
 function sendExportError(res, error) {
   const status = error.status || 500;
   console.error('Scratch export error:', error);
@@ -66,16 +93,12 @@ function sendExportError(res, error) {
 function registerScratchExportRoutes(router, authAdmin) {
   router.get('/calendars/:id/export/pdf', authAdmin, async (req, res) => {
     try {
-      const { buildScratchPdfBuffer, scratchExportFilename } = require('../services/scratch/ScratchPdfService');
+      const { scratchExportFilename } = require('../services/scratch/ScratchPdfService');
       const row = await loadScratchCalendarOrRespond(req, res);
       if (!row) return;
 
       const format = normalizeExportFormat(req.query.format || row.format || 'A3');
-      const pdfBuffer = await buildScratchPdfBuffer({
-        format,
-        designUrl: row.design_url,
-        tasks: parseTasks(row.tasks),
-      });
+      const pdfBuffer = await buildExportPdf(row, format);
 
       const filename = scratchExportFilename(row.id, format, 'pdf');
       res.setHeader('Content-Type', 'application/pdf');
@@ -89,18 +112,14 @@ function registerScratchExportRoutes(router, authAdmin) {
 
   router.get('/calendars/:id/export/png', authAdmin, async (req, res) => {
     try {
-      const { buildScratchPdfBuffer, scratchExportFilename } = require('../services/scratch/ScratchPdfService');
+      const { scratchExportFilename } = require('../services/scratch/ScratchPdfService');
       const row = await loadScratchCalendarOrRespond(req, res);
       if (!row) return;
 
       const format = normalizeExportFormat(req.query.format || row.format || 'A3');
       const dpi = normalizeDpi(req.query.dpi || 600);
 
-      const pdfBuffer = await buildScratchPdfBuffer({
-        format,
-        designUrl: row.design_url,
-        tasks: parseTasks(row.tasks),
-      });
+      const pdfBuffer = await buildExportPdf(row, format);
       const pngBuffer = await pdfBufferToPng(pdfBuffer, { format, dpi });
 
       const filename = scratchExportFilename(row.id, format, 'png');

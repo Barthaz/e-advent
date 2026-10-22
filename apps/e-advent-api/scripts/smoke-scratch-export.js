@@ -21,6 +21,7 @@ async function main() {
     format: 'A3',
     designUrl: '/designs/scratch/red.png',
     tasks,
+    orderNumber: '000011',
   });
   if (pdfA3.slice(0, 4).toString() !== '%PDF') throw new Error('A3 PDF magic mismatch');
   console.log('A3 PDF OK', pdfA3.length, 'bytes');
