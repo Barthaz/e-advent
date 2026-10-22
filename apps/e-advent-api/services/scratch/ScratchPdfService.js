@@ -43,6 +43,36 @@ function fileImage(filePath) {
   return { data: fs.readFileSync(filePath), format: 'png' };
 }
 
+// Badge sources are ~25x more pixels than their printed size; react-pdf decodes every
+// RGBA image in JS, so oversized badges dominated export time. Downscale once per
+// instance to the 600 DPI print size (the highest raster export resolution).
+const MAX_EXPORT_DPI = 600;
+let badgeCache = null;
+
+async function loadDayBadges(badgeRect) {
+  const size = Math.ceil((Math.max(badgeRect.width, badgeRect.height) * MAX_EXPORT_DPI) / 72);
+  if (badgeCache?.size === size) return badgeCache.images;
+  const { createCanvas, loadImage } = require('@napi-rs/canvas');
+  const images = new Map();
+  for (let day = 1; day <= MAX_DAYS; day += 1) {
+    const filePath = getDayBadgePath(day);
+    const img = await loadImage(filePath);
+    if (img.width <= size && img.height <= size) {
+      images.set(day, fileImage(filePath));
+      continue;
+    }
+    const scale = size / Math.max(img.width, img.height);
+    const canvas = createCanvas(Math.round(img.width * scale), Math.round(img.height * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    images.set(day, { data: canvas.toBuffer('image/png'), format: 'png' });
+  }
+  badgeCache = { size, images };
+  return images;
+}
+
 function normalizeTasks(tasks) {
   const list = Array.isArray(tasks) ? tasks : [];
   return list
@@ -121,10 +151,7 @@ async function buildScratchPdfBuffer(input) {
   const { buffer: designBuffer, format: designFormat } = await resolveScratchDesignImage(input.designUrl);
   const texts = taskContentByDay(input.tasks);
   const windowBoxSrc = fileImage(getGraphicPath('windowBox'));
-  const dayBadgeSrc = new Map();
-  for (let day = 1; day <= MAX_DAYS; day += 1) {
-    dayBadgeSrc.set(day, fileImage(getDayBadgePath(day)));
-  }
+  const dayBadgeSrc = await loadDayBadges(layout.windows[0].badge);
 
   const styles = StyleSheet.create({
     page: {

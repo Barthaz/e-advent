@@ -69,19 +69,27 @@ async function pdfBufferToPng(pdfBuffer, options = {}) {
 
   const canvasW = Math.round(viewport.width);
   const canvasH = Math.round(viewport.height);
-  const canvas = createCanvas(canvasW, canvasH);
+  // Usual case: page renders at exact target size, so draw it straight into the
+  // bordered canvas instead of copying a ~70 MP bitmap (time + ~280 MB memory).
+  const direct = canvasW === targetW && canvasH === targetH;
+  const border = direct ? PNG_BORDER_PX : 0;
+  const canvas = createCanvas(canvasW + border * 2, canvasH + border * 2);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = true;
   if ('imageSmoothingQuality' in ctx) {
     ctx.imageSmoothingQuality = 'high';
   }
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvasW, canvasH);
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   await page.render({
     canvasContext: ctx,
     viewport,
+    transform: border ? [1, 0, 0, 1, border, border] : null,
   }).promise;
+  await pdf.destroy();
+
+  if (direct) return canvas.toBuffer('image/png', { compressionLevel: 1 });
 
   let outCanvas = canvas;
   if (canvasW !== targetW || canvasH !== targetH) {
