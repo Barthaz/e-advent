@@ -10,6 +10,7 @@ import CalendarDetailPage from './pages/CalendarDetailPage';
 import DailyEmailsPage from './pages/DailyEmailsPage';
 import EmailTemplatesPage from './pages/EmailTemplatesPage';
 import CatalogTasksPage from './pages/CatalogTasksPage';
+import DiscountCodesPage from './pages/DiscountCodesPage';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
                     <Route path="emails" element={<DailyEmailsPage />} />
                     <Route path="email-templates" element={<EmailTemplatesPage />} />
                     <Route path="tasks" element={<CatalogTasksPage />} />
+                    <Route path="rabaty" element={<DiscountCodesPage />} />
                     <Route path="*" element={<Navigate to="/orders" replace />} />
                   </Routes>
                 </AppLayout>

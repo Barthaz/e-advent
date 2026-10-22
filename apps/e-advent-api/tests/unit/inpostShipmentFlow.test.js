@@ -5,7 +5,7 @@ const db = require('../../config/database');
 const Payment = require('../../models/Payment');
 const { sendEmail } = require('../../config/email');
 const inpost = require('../../services/inpost');
-const { operate, markLabelPrepared, syncActiveShipments } = require('../../services/inpostFulfillment');
+const { operate, markLabelPrepared, markDispatched, syncActiveShipments } = require('../../services/inpostFulfillment');
 const { orderFingerprint } = require('../../services/orderIdentity');
 const setup = require('../helpers/inpostFixture');
 
@@ -77,22 +77,33 @@ test('simultaneous label downloads serialize the email check and send', async ()
   }
 });
 
-test('InPost scan marks the order shipped and delivery marks it delivered without a second customer email', async () => {
+test('InPost scan marks the order shipped and delivery marks it delivered without emailing the customer', async () => {
   remote.status = 'dispatched_by_sender';
   await expect(syncActiveShipments()).resolves.toEqual({ skipped: false, refreshed: 1, failed: 0 });
   expect(orderUpdates.some(([sql]) => sql.includes("fulfillment_status = 'shipped', shipped_at"))).toBe(true);
-  expect(sendEmail).toHaveBeenCalledTimes(1);
+  expect(sendEmail).not.toHaveBeenCalled();
   remote.status = 'delivered';
   await operate(order.id, 'refresh');
   expect(orderUpdates.some(([sql]) => sql.includes("fulfillment_status = 'delivered'"))).toBe(true);
-  expect(sendEmail).toHaveBeenCalledTimes(1);
+  expect(sendEmail).not.toHaveBeenCalled();
 });
 
-test('confirmed label purchase emails the customer even before a PDF download', async () => {
+test('refreshing a paid label does not email until the panel generates or downloads it', async () => {
   await operate(order.id, 'refresh');
+  expect(sendEmail).not.toHaveBeenCalled();
+  await expect(markLabelPrepared(order.id, { downloaded: false })).resolves.toEqual({ email: 'sent', error: null });
   expect(sendEmail).toHaveBeenCalledTimes(1);
   expect(sendEmail.mock.calls[0][0]).toMatchObject({ to: 'buyer@example.com' });
   expect(sendEmail.mock.calls[0][0].text).toContain('TRACK123');
   await expect(markLabelPrepared(order.id)).resolves.toEqual({ email: 'skipped', error: null });
+  expect(sendEmail).toHaveBeenCalledTimes(1);
+});
+
+test('panel dispatch emails the shipped notice once', async () => {
+  await expect(markDispatched(order.id)).resolves.toMatchObject({ dispatched: true, shippedEmail: 'sent' });
+  expect(sendEmail).toHaveBeenCalledTimes(1);
+  expect(sendEmail.mock.calls[0][0].subject).toMatch(/została wysłana/);
+  expect(sendEmail.mock.calls[0][0].text).toContain('TRACK123');
+  await expect(markDispatched(order.id)).resolves.toMatchObject({ shippedEmail: 'skipped' });
   expect(sendEmail).toHaveBeenCalledTimes(1);
 });

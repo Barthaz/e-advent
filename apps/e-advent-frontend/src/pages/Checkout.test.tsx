@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { createPaymentIntent } from '../api/api';
+import { createPaymentIntent, validatePromoCode } from '../api/api';
 import { saveShipping } from '../utils/creatorStorage';
 import Checkout from './Checkout';
 
@@ -68,4 +68,29 @@ it('does not open Stripe when shipping cannot be priced', async () => {
   await screen.findByText('Brak cennika testowego.');
   expect(screen.queryByTestId('stripe-form')).toBeNull();
   expect(createPaymentIntent).not.toHaveBeenCalled();
+});
+
+it('applies a 10% code to the charged amount', async () => {
+  vi.mocked(validatePromoCode).mockResolvedValue({ success: true, valid: true, discount: 10, message: 'ok' });
+  render(<MemoryRouter><Checkout /></MemoryRouter>);
+  fireEvent.click(screen.getByLabelText('Kurier InPost'));
+  await waitFor(() => expect(screen.getByTestId('stripe-form')).not.toBeNull(), { timeout: 3000 });
+  fireEvent.change(screen.getByPlaceholderText('Wpisz kod rabatowy'), { target: { value: 'SAVE10' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Zastosuj' }));
+  await waitFor(() => {
+    const last = vi.mocked(createPaymentIntent).mock.calls.at(-1)?.[0];
+    expect(last).toMatchObject({ promoCode: 'SAVE10', amount: 38.1 });
+  }, { timeout: 3000 });
+});
+
+it('keeps a 100% order off Stripe until the customer finishes checkout', async () => {
+  vi.mocked(validatePromoCode).mockResolvedValue({ success: true, valid: true, discount: 100, message: 'ok' });
+  render(<MemoryRouter><Checkout /></MemoryRouter>);
+  fireEvent.click(screen.getByLabelText('Kurier InPost'));
+  await waitFor(() => expect(screen.getByTestId('stripe-form')).not.toBeNull(), { timeout: 3000 });
+  fireEvent.change(screen.getByPlaceholderText('Wpisz kod rabatowy'), { target: { value: 'FREE100' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Zastosuj' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: /Dokończ zamówienie/ })).toBeTruthy(), { timeout: 3000 });
+  expect(screen.queryByTestId('stripe-form')).toBeNull();
+  expect(vi.mocked(createPaymentIntent).mock.calls.every(call => call[0].amount !== 0)).toBe(true);
 });

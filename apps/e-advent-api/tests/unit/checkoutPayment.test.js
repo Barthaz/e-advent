@@ -2,6 +2,11 @@ jest.mock('../../config/database', () => ({ query: jest.fn(), withTransaction: j
 jest.mock('../../models/Payment', () => require('../mocks/Payment'));
 jest.mock('../../models/Calendar', () => require('../mocks/Calendar'));
 jest.mock('../../config/stripe', () => ({ paymentIntents: { create: jest.fn(), retrieve: jest.fn(), cancel: jest.fn() } }));
+jest.mock('../../services/paymentFulfillment', () => ({
+  fulfillFreeOrder: jest.fn(async (orderId) => ({ duplicate: false, orderId })),
+  fulfillPaidIntent: jest.fn(),
+  redeemOrderDiscount: jest.fn(),
+}));
 const { initializeCheckout } = require('../../services/checkoutPayment');
 const { pendingCalendar } = require('../helpers/createTestApp');
 const Calendar = require('../../models/Calendar');
@@ -9,6 +14,8 @@ const Payment = require('../../models/Payment');
 const stripe = require('../../config/stripe');
 const db = require('../../config/database');
 const setup = require('../helpers/checkoutStore');
+const { fulfillFreeOrder } = require('../../services/paymentFulfillment');
+const { discountRow, installDiscountStore } = require('../helpers/discountFixture');
 
 const configureInpost = require('../helpers/inpostFixture');
 const request = {
@@ -114,6 +121,26 @@ describe('checkout identity and concurrency', () => {
   test('duplicate calendar lines are rejected before saving any order', async () => {
     const item = { calendarId: 'cal', editToken: 'test-edit-token' };
     await expect(initializeCheckout({ ...request, amount: 18, items: [item, item] }, 'test')).rejects.toThrow('only once');
+    expect(store.orders.size).toBe(0);
+  });
+  test('10% code discounts products and keeps shipping', async () => {
+    installDiscountStore(db.query, [discountRow({ code: 'SAVE10', percent: 10, reusable: 1 })]);
+    const result = await initializeCheckout({ ...request, amount: 31.1, promoCode: 'SAVE10' }, 'test');
+    expect(result.amount).toBe(31.1);
+    expect(store.orders.get(result.orderId).rabat).toBe('SAVE10');
+    expect(store.orders.get(result.orderId).amount).toBe(31.1);
+    expect(store.orders.get(result.orderId).shippingAmount).toBe(5);
+  });
+  test('100% code fulfills without contacting Stripe', async () => {
+    installDiscountStore(db.query, [discountRow({ code: 'FREE100', percent: 100, reusable: 1 })]);
+    const result = await initializeCheckout({ ...request, amount: 0, promoCode: 'FREE100' }, 'test');
+    expect(result).toMatchObject({ free: true, amount: 0, clientSecret: null, paymentIntentId: null });
+    expect(stripe.paymentIntents.create).not.toHaveBeenCalled();
+    expect(fulfillFreeOrder).toHaveBeenCalledWith(result.orderId);
+  });
+  test('rejects an unknown promo code before creating an order', async () => {
+    installDiscountStore(db.query, []);
+    await expect(initializeCheckout({ ...request, promoCode: 'NOPE12' }, 'test')).rejects.toMatchObject({ status: 400 });
     expect(store.orders.size).toBe(0);
   });
 });

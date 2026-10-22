@@ -4,12 +4,10 @@ const { validatePromoCode } = require('../config/promocodes');
 const { promocodeLimiter } = require('../middleware/rateLimits');
 
 // GET /api/v1/promocodes/:code
-router.get('/:code', promocodeLimiter, (req, res) => {
+router.get('/:code', promocodeLimiter, async (req, res) => {
   try {
     const code = decodeURIComponent(req.params.code);
-    console.log('🎟️ Sprawdzanie kodu promocyjnego:', code);
-
-    const result = validatePromoCode(code);
+    const result = await validatePromoCode(code);
     return res.json({
       success: true,
       valid: result.valid,
@@ -17,12 +15,12 @@ router.get('/:code', promocodeLimiter, (req, res) => {
       message: result.message,
     });
   } catch (error) {
-    console.error('❌ Błąd podczas walidacji kodu promocyjnego:', error);
+    console.error('Promo code validation error:', error.message);
     return res.status(500).json({
       success: false,
       valid: false,
       discount: 0,
-      message: 'Wystąpił błąd podczas sprawdzania kodu promocyjnego.',
+      message: 'Wystąpił błąd podczas sprawdzania kodu rabatowego.',
     });
   }
 });

@@ -8,8 +8,8 @@ export function getCheckoutToken(): string {
   return token;
 }
 
-export function finishCheckout(paymentIntentId: string): void {
-  if (sessionStorage.getItem(`e-advent-checkout-owner:${paymentIntentId}`) === sessionStorage.getItem(SESSION_KEY)) {
+export function finishCheckout(paymentIntentId?: string): void {
+  if (!paymentIntentId || sessionStorage.getItem(`e-advent-checkout-owner:${paymentIntentId}`) === sessionStorage.getItem(SESSION_KEY)) {
     sessionStorage.removeItem(SESSION_KEY);
   }
 }

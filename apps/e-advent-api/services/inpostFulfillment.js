@@ -1,9 +1,10 @@
 'use strict';
 const { query, withNamedLocks } = require('../config/database');
 const Payment = require('../models/Payment');
+const EmailSend = require('../models/EmailSend');
 const inpost = require('./inpost');
 const { orderFingerprint, canonical } = require('./orderIdentity');
-const { sendShipmentPreparedEmail } = require('./orderMailer');
+const { sendShipmentPreparedEmail, sendShippingEmailForOrder } = require('./orderMailer');
 const parse = value => typeof value === 'string' ? JSON.parse(value) : value;
 const shippedStatuses = new Set(['dispatched_by_sender', 'collected_from_sender', 'taken_by_courier', 'adopted_at_source_branch', 'sent_from_source_branch', 'adopted_at_sorting_center', 'sent_from_sorting_center', 'adopted_at_target_branch', 'out_for_delivery', 'ready_to_pickup', 'avizo']);
 const confirmed = new Set(['confirmed', 'dispatched_by_sender', 'collected_from_sender', 'taken_by_courier', 'adopted_at_source_branch', 'sent_from_source_branch', 'adopted_at_sorting_center', 'sent_from_sorting_center', 'adopted_at_target_branch', 'out_for_delivery', 'ready_to_pickup', 'delivered', 'avizo', 'claimed', 'returned_to_sender']);
@@ -49,17 +50,26 @@ function offerPrice(offer) {
   if (!Number.isFinite(amount) || amount < 0 || offer.currency !== 'PLN') throw inpost.fail('Nieprawidłowa cena oferty InPost.', 502);
   return Math.round(amount * (tax === 'net' ? 1.23 : 1) * 100) / 100;
 }
-function view(order, row) {
+function isPaid(row) {
+  return Boolean(row && (row.state === 'confirmed' || confirmed.has(row.remote?.status)));
+}
+async function view(order, row) {
   const offer = offerFor(row);
+  const labelReady = isPaid(row);
+  const trackingNumber = row?.remote?.tracking_number || null;
+  const shippedNotified = order.customerEmail
+    ? await EmailSend.hasSuccessfulOrderEmail(order.id, null, 'shipping', order.customerEmail)
+    : false;
   return { orderId: order.id, delivery: order.metadata.inpostDelivery,
     shipmentId: row?.shipment_id || null, state: row?.state || 'not_created',
-    providerStatus: row?.remote?.status || null, trackingNumber: row?.remote?.tracking_number || null,
-    labelReady: Boolean(row && (row.state === 'confirmed' || confirmed.has(row.remote?.status))),
-    labelDownloadedAt: row?.label_downloaded_at || null,
+    providerStatus: row?.remote?.status || null, trackingNumber,
+    labelReady, labelDownloadedAt: row?.label_downloaded_at || null,
     shipped: shippedStatuses.has(row?.remote?.status) || row?.remote?.status === 'delivered',
+    dispatched: ['shipped', 'delivered'].includes(order.fulfillmentStatus),
+    shippedNotified: Boolean(shippedNotified),
     offerId: offer?.id || null, offerPrice: offerPrice(offer),
-    canBuy: Boolean(offer && !row?.buy_attempted && row?.state !== 'confirmed' && !confirmed.has(row?.remote?.status)),
-    needsReview: Boolean(row && !row.shipment_id && row.state !== 'create_rejected') || Boolean(row?.buy_attempted && row?.state !== 'confirmed' && !confirmed.has(row?.remote?.status)),
+    canBuy: Boolean(offer && !row?.buy_attempted && !labelReady),
+    needsReview: Boolean(row && !row.shipment_id && row.state !== 'create_rejected') || Boolean(row?.buy_attempted && !labelReady),
   };
 }
 
@@ -68,40 +78,56 @@ async function refreshRow(order, row) {
   const remote = await inpost.request(`/shipments/${row.shipment_id}`);
   if (String(remote.id) !== String(row.shipment_id) || !matches(remote, row.payload)) throw inpost.fail('Dane przesyłki w InPost różnią się od zamówienia. Wymagane sprawdzenie w Managerze Paczek.', 409);
   row.remote = remote;
-  row.state = row.state === 'confirmed' || confirmed.has(remote.status) ? 'confirmed' : row.buy_attempted ? 'buy_pending' : 'prepared';
+  row.state = isPaid(row) ? 'confirmed' : row.buy_attempted ? 'buy_pending' : 'prepared';
   await query('UPDATE order_inpost_shipments SET remote = ?, state = ? WHERE order_id = ?', [JSON.stringify(remote), row.state, order.id]);
   await query('UPDATE orders SET inpost_shipment_id = ?, inpost_status = ?, tracking_number = COALESCE(?, tracking_number) WHERE id = ?',
     [String(row.shipment_id), remote.status || null, remote.tracking_number || null, order.id]);
-  // Label creation is NOT physical dispatch. Only InPost scan statuses mark it shipped.
+  if (remote.tracking_number) order.trackingNumber = order.trackingNumber || remote.tracking_number;
+  // Provider scans update local status as a fallback. The customer "wysłane"
+  // mail is sent only from the panel dispatch action.
   if (shippedStatuses.has(remote.status)) {
     await query("UPDATE orders SET fulfillment_status = 'shipped', shipped_at = COALESCE(shipped_at, NOW()) WHERE id = ? AND fulfillment_status IN ('pending', 'processing')", [order.id]);
+    if (!['delivered', 'cancelled', 'hold'].includes(order.fulfillmentStatus)) order.fulfillmentStatus = 'shipped';
   }
   if (remote.status === 'delivered') {
     await query("UPDATE orders SET fulfillment_status = 'delivered', shipped_at = COALESCE(shipped_at, NOW()), delivered_at = COALESCE(delivered_at, NOW()) WHERE id = ?", [order.id]);
+    order.fulfillmentStatus = 'delivered';
   }
+  return row;
+}
+
+async function createShipment(id, payload, row) {
+  const c = inpost.config();
+  if (row) await query("UPDATE order_inpost_shipments SET state = 'create_pending' WHERE order_id = ?", [id]);
+  else await query('INSERT INTO order_inpost_shipments (order_id, environment, organization_id, state, payload) VALUES (?, ?, ?, ?, ?)',
+    [id, c.environment, c.organizationId, 'create_pending', JSON.stringify(payload)]);
+  // Persist intent BEFORE network call. Unknown result is never blindly retried.
+  let remote;
+  try { remote = await inpost.request(`/organizations/${c.organizationId}/shipments`, { method: 'POST', body: payload }); }
+  catch (error) {
+    // Definitive validation/auth rejection is safe to retry after correction.
+    // Timeouts, 5xx, conflicts and rate limits remain ambiguous.
+    if ([400, 401, 403, 404, 422].includes(error.providerStatus)) await query("UPDATE order_inpost_shipments SET state = 'create_rejected' WHERE order_id = ?", [id]);
+    throw error;
+  }
+  if (!/^\d+$/.test(String(remote.id || ''))) throw inpost.fail('Brak identyfikatora przesyłki w odpowiedzi InPost. Sprawdź Manager Paczek.', 502);
+  await query('UPDATE order_inpost_shipments SET shipment_id = ?, state = ?, remote = ? WHERE order_id = ?', [String(remote.id), 'prepared', JSON.stringify(remote), id]);
+  return { order_id: id, payload, shipment_id: String(remote.id), state: 'prepared', remote, buy_attempted: 0 };
+}
+
+async function buyOffer(id, row, offer) {
+  if (offer.expires_at && new Date(offer.expires_at).getTime() <= Date.now()) throw inpost.fail('Oferta wygasła. Odśwież oferty.', 409);
+  await query("UPDATE order_inpost_shipments SET buy_attempted = 1, state = 'buy_pending' WHERE order_id = ?", [id]);
+  await inpost.request(`/shipments/${row.shipment_id}/buy`, { method: 'POST', body: { offer_id: offer.id } });
+  row.buy_attempted = 1;
   return row;
 }
 
 async function operate(id, action, input = {}) {
   return withNamedLocks([`inpost:${id}`], async () => {
     let { order, payload, row } = await load(id);
-    if (action === 'create' && (!row || row.state === 'create_rejected')) {
-      const c = inpost.config();
-      if (row) await query("UPDATE order_inpost_shipments SET state = 'create_pending' WHERE order_id = ?", [id]);
-      else await query('INSERT INTO order_inpost_shipments (order_id, environment, organization_id, state, payload) VALUES (?, ?, ?, ?, ?)',
-        [id, c.environment, c.organizationId, 'create_pending', JSON.stringify(payload)]);
-      // Persist intent BEFORE network call. Unknown result is never blindly retried.
-      let remote;
-      try { remote = await inpost.request(`/organizations/${c.organizationId}/shipments`, { method: 'POST', body: payload }); }
-      catch (error) {
-        // Definitive validation/auth rejection is safe to retry after correction.
-        // Timeouts, 5xx, conflicts and rate limits remain ambiguous.
-        if ([400, 401, 403, 404, 422].includes(error.providerStatus)) await query("UPDATE order_inpost_shipments SET state = 'create_rejected' WHERE order_id = ?", [id]);
-        throw error;
-      }
-      if (!/^\d+$/.test(String(remote.id || ''))) throw inpost.fail('Brak identyfikatora przesyłki w odpowiedzi InPost. Sprawdź Manager Paczek.', 502);
-      await query('UPDATE order_inpost_shipments SET shipment_id = ?, state = ?, remote = ? WHERE order_id = ?', [String(remote.id), 'prepared', JSON.stringify(remote), id]);
-      row = { order_id: id, payload, shipment_id: String(remote.id), state: 'prepared', remote, buy_attempted: 0 };
+    if ((action === 'create' || action === 'generate') && (!row || row.state === 'create_rejected')) {
+      row = await createShipment(id, payload, row);
     }
     if (action === 'reconcile') {
       if (!row || row.shipment_id) throw inpost.fail('Ta przesyłka nie wymaga przypisania identyfikatora.', 409);
@@ -112,38 +138,35 @@ async function operate(id, action, input = {}) {
       row.shipment_id = String(remote.id);
     }
     if (action !== 'get') row = await refreshRow(order, row);
-    if (action === 'offers' && row?.shipment_id && !row.buy_attempted && row.state !== 'confirmed' && !confirmed.has(row.remote?.status)) {
-      await inpost.request(`/shipments/${row.shipment_id}`, { method: 'PUT', body: {} });
-      row = await refreshRow(order, row);
+    if ((action === 'offers' || action === 'generate') && row?.shipment_id && !row.buy_attempted && !isPaid(row)) {
+      if (action === 'offers' || !offerFor(row)) {
+        await inpost.request(`/shipments/${row.shipment_id}`, { method: 'PUT', body: {} });
+        row = await refreshRow(order, row);
+      }
     }
-    if (action === 'buy') {
+    if (action === 'buy' || action === 'generate') {
       const offer = offerFor(row);
-      if (!row || !offer || row.buy_attempted || row.state === 'confirmed' || confirmed.has(row.remote?.status)) throw inpost.fail('Zakup już rozpoczęto lub oferta nie jest gotowa. Odśwież status.', 409);
-      const price = offerPrice(offer);
-      if (String(input.offerId) !== String(offer.id) || input.acceptedPrice !== price) throw inpost.fail('Oferta zmieniła się. Sprawdź cenę i potwierdź zakup ponownie.', 409);
-      if (offer.expires_at && new Date(offer.expires_at).getTime() <= Date.now()) throw inpost.fail('Oferta wygasła. Odśwież oferty.', 409);
-      await query("UPDATE order_inpost_shipments SET buy_attempted = 1, state = 'buy_pending' WHERE order_id = ?", [id]);
-      await inpost.request(`/shipments/${row.shipment_id}/buy`, { method: 'POST', body: { offer_id: offer.id } });
-      row.buy_attempted = 1;
-      row = await refreshRow(order, row);
+      if (action === 'buy') {
+        if (!row || !offer || row.buy_attempted || isPaid(row)) throw inpost.fail('Zakup już rozpoczęto lub oferta nie jest gotowa. Odśwież status.', 409);
+        if (String(input.offerId) !== String(offer.id) || input.acceptedPrice !== offerPrice(offer)) throw inpost.fail('Oferta zmieniła się. Sprawdź cenę i potwierdź zakup ponownie.', 409);
+        row = await buyOffer(id, row, offer);
+        row = await refreshRow(order, row);
+      } else if (offer && !row.buy_attempted && !isPaid(row)) {
+        // Panel "Generuj etykietę" accepts the live offer in this same request.
+        row = await buyOffer(id, row, offer);
+        row = await refreshRow(order, row);
+      }
     }
     if (action === 'label') {
-      if (!row || (row.state !== 'confirmed' && !confirmed.has(row.remote?.status))) throw inpost.fail('Etykieta będzie dostępna po potwierdzeniu zakupu przez InPost.', 409);
+      if (!row || !isPaid(row)) throw inpost.fail('Etykieta będzie dostępna po potwierdzeniu zakupu przez InPost.', 409);
       return inpost.request(`/shipments/${row.shipment_id}/label?format=Pdf&type=A6`, { pdf: true });
     }
     return view(order, row);
-  }).then(async result => {
-    // Email once the label is paid and tracking exists — not on GET/PDF, and never
-    // while still holding the InPost lock (SMTP must not block a second buy).
-    if (action !== 'get' && action !== 'label' && result && result.labelReady && result.trackingNumber) {
-      await notifyPrepared(id, { trackingNumber: result.trackingNumber, triggeredBy: 'system' });
-    }
-    return result;
   });
 }
 
-async function notifyPrepared(id, { downloaded = false, trackingNumber, triggeredBy = 'webhook' } = {}) {
-  // Two simultaneous notifies (buy + download, or webhook + cron) share this lock.
+async function notifyPrepared(id, { downloaded = false, trackingNumber, triggeredBy = 'admin' } = {}) {
+  // Two simultaneous notifies (buy + download) share this lock.
   return withNamedLocks([`shipment-email:${id}`], async () => {
     await query("UPDATE orders SET label_created_at = COALESCE(label_created_at, NOW()), fulfillment_status = IF(fulfillment_status = 'pending', 'processing', fulfillment_status) WHERE id = ?", [id]);
     if (downloaded) {
@@ -160,61 +183,47 @@ async function notifyPrepared(id, { downloaded = false, trackingNumber, triggere
   });
 }
 
-async function markLabelPrepared(id) {
-  return notifyPrepared(id, { downloaded: true, triggeredBy: 'admin' });
-}
-
-async function autoBuyIfReady(orderId, view, { refreshOffers = false } = {}) {
-  if (!view?.shipmentId || view.labelReady || view.needsReview) return view;
-  let current = view;
-  if (!current.canBuy && refreshOffers) {
-    try { current = await operate(orderId, 'offers'); }
-    catch (error) {
-      console.error('InPost auto-offers failed:', orderId, error.message);
-      return current;
+async function notifyShipped(id, { trackingNumber } = {}) {
+  return withNamedLocks([`shipment-email:${id}`], async () => {
+    try {
+      const order = await Payment.findPaymentById(id);
+      const payload = trackingNumber && !order?.trackingNumber ? { ...order, trackingNumber } : order;
+      const result = await sendShippingEmailForOrder(payload, 'admin');
+      return { email: result.skipped ? 'skipped' : result.sent ? 'sent' : 'failed', error: result.results[0]?.error || null };
+    } catch (error) {
+      return { email: 'failed', error: error.message };
     }
-  }
-  if (!current.canBuy || current.offerId == null) return current;
-  try {
-    return await operate(orderId, 'buy', { offerId: current.offerId, acceptedPrice: current.offerPrice });
-  } catch (error) {
-    console.error('InPost auto-buy failed:', orderId, error.message);
-    return { ...current, error: error.message };
-  }
+  });
 }
 
-// Stripe webhook / cron: create the ShipX shipment, buy the label when an offer
-// is already present. Missing offers are bought later by the InPost webhook or cron.
-// Failures stay in the panel for a manual retry and never block payment confirmation.
-async function ensureShipment(orderId) {
-  const order = await Payment.findPaymentById(orderId);
-  if (!order?.metadata?.inpostDelivery || order.status !== 'succeeded') return { skipped: true };
-  try {
-    const shipment = await autoBuyIfReady(orderId, await operate(orderId, 'create'));
-    return { skipped: false, shipment, ...(shipment.error ? { error: shipment.error } : {}) };
-  } catch (error) {
-    console.error('InPost auto-create failed:', orderId, error.message);
-    return { skipped: false, error: error.message };
-  }
+async function markLabelPrepared(id, { downloaded = true } = {}) {
+  return notifyPrepared(id, { downloaded, triggeredBy: 'admin' });
 }
 
-// InPost webhook / cron: refresh the live status, buy a ready offer, email the customer.
+async function markDispatched(id) {
+  const current = await withNamedLocks([`inpost:${id}`], async () => {
+    let { order, row } = await load(id);
+    row = await refreshRow(order, row);
+    const snapshot = await view(order, row);
+    if (!snapshot.labelReady) throw inpost.fail('Najpierw wygeneruj etykietę.', 409);
+    if (!snapshot.trackingNumber) throw inpost.fail('InPost nie zwrócił jeszcze numeru przesyłki. Odśwież status.', 409);
+    await query("UPDATE orders SET fulfillment_status = IF(fulfillment_status IN ('pending', 'processing'), 'shipped', fulfillment_status), shipped_at = COALESCE(shipped_at, NOW()) WHERE id = ?", [id]);
+    if (!['delivered', 'cancelled', 'hold'].includes(order.fulfillmentStatus)) order.fulfillmentStatus = 'shipped';
+    return view(order, row);
+  });
+  const notified = await notifyShipped(id, { trackingNumber: current.trackingNumber });
+  return {
+    ...current,
+    dispatched: true,
+    shippedNotified: notified.email === 'sent' || notified.email === 'skipped' || current.shippedNotified,
+    shippedEmail: notified.email,
+    shippedEmailError: notified.error,
+  };
+}
+
+// InPost webhook / cron: refresh live status only. Labels are bought from the panel.
 async function advanceShipment(orderId) {
-  return autoBuyIfReady(orderId, await operate(orderId, 'refresh'), { refreshOffers: true });
-}
-
-async function createMissingShipments({ limit = 20 } = {}) {
-  try { inpost.config(); } catch { return { skipped: true, created: 0, failed: 0 }; }
-  const [rows] = await query(`SELECT o.id FROM orders o LEFT JOIN order_inpost_shipments s ON s.order_id = o.id
-    WHERE o.status = 'succeeded' AND o.delivery_type LIKE '%inpost%' AND s.order_id IS NULL
-      AND o.fulfillment_status NOT IN ('delivered', 'cancelled')
-    ORDER BY o.created_at ASC LIMIT ?`, [limit]);
-  let created = 0, failed = 0;
-  for (const { id } of rows) {
-    const result = await ensureShipment(id);
-    if (result.shipment) created++; else if (result.error) failed++;
-  }
-  return { skipped: false, created, failed };
+  return operate(orderId, 'refresh');
 }
 
 // Fallback for missing/undeliverable webhooks (e.g. localhost): poll open shipments.
@@ -232,4 +241,4 @@ async function syncActiveShipments({ limit = 50 } = {}) {
   return { skipped: false, refreshed, failed };
 }
 
-module.exports = { operate, matches, offerPrice, markLabelPrepared, syncActiveShipments, ensureShipment, createMissingShipments, advanceShipment };
+module.exports = { operate, matches, offerPrice, markLabelPrepared, markDispatched, syncActiveShipments, advanceShipment };

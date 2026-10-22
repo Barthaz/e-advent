@@ -7,6 +7,7 @@ const stripe = require('../config/stripe');
 const { resolveCheckoutItems } = require('./orderCheckout');
 const { formatOrderNumber } = require('../utils/orderNumber');
 const { orderFingerprint } = require('./orderIdentity');
+const { normalizeCode } = require('./discountCodes');
 
 function hash(value) { return createHash('sha256').update(value).digest('hex'); }
 function conflict(message) { return Object.assign(new Error(message), { status: 409 }); }
@@ -19,13 +20,14 @@ async function initializeCheckout(request, clientIP) {
   }
   const owner = hash(request.checkoutToken);
   const rawItems = request.items?.length ? request.items : [{ calendarId: request.productId }];
-  const ids = [...new Set(rawItems.map(item => item.calendarId || item.productId).filter(Boolean))];
-  return withNamedLocks([`checkout:${owner}`, ...ids.map(id => `calendar:${id}`)], async () => {
+    const ids = [...new Set(rawItems.map(item => item.calendarId || item.productId).filter(Boolean))];
+    const discountLock = request.promoCode ? [`discount:${normalizeCode(request.promoCode)}`] : [];
+    return withNamedLocks([`checkout:${owner}`, ...ids.map(id => `calendar:${id}`), ...discountLock], async () => {
     const resolved = await resolveCheckoutItems(request);
     if (resolved.errors) throw Object.assign(new Error(resolved.errors[0].msg), {
       status: resolved.errors[0].msg.includes('Calendar not found') ? 404 : 400, errors: resolved.errors,
     });
-    const { items, totals, delivery, shippingAddress, primaryProductId, primarySku, primaryProductType, hasPhysical } = resolved;
+    const { items, totals, delivery, shippingAddress, primaryProductId, primarySku, primaryProductType, hasPhysical, discount } = resolved;
     if (Number(request.amount) !== totals.total) throw Object.assign(new Error(`Amount must be exactly ${totals.total} PLN for this order.`), { status: 400 });
     const customerEmail = String(request.customerEmail).trim().toLowerCase();
     const orderItems = items.map((item, index) => ({
@@ -40,7 +42,11 @@ async function initializeCheckout(request, clientIP) {
         calendarTitle: item.calendar.data.title || '',
       } : {}) },
     }));
-    const fingerprint = orderFingerprint({ metadata: delivery ? { inpostDelivery: delivery } : {}, customerEmail, shippingAddress, items: orderItems, currency: 'pln', amount: totals.total, shippingAmount: totals.shipping });
+    const fingerprint = orderFingerprint({
+      metadata: { ...(delivery ? { inpostDelivery: delivery } : {}), ...(discount ? { discount } : {}) },
+      customerEmail, shippingAddress, items: orderItems, currency: 'pln', amount: totals.total,
+      shippingAmount: totals.shipping, rabat: discount?.code || null,
+    });
     const [sessions] = await query('SELECT order_id FROM checkout_sessions WHERE id = ?', [owner]);
     let order = sessions[0]?.order_id ? await Payment.findPaymentById(sessions[0].order_id) : null;
     // A design may not belong to another open checkout, even for the same email.
@@ -71,6 +77,15 @@ async function initializeCheckout(request, clientIP) {
         intent = null;
       }
     }
+    if (discount && !discount.reusable) {
+      const [busy] = await query(
+        "SELECT id FROM orders WHERE rabat_code = ? AND status NOT IN ('canceled', 'succeeded') LIMIT 5",
+        [discount.code],
+      );
+      if (busy.some(row => row.id !== order?.id)) {
+        throw conflict('Ten kod rabatowy jest już używany w innym zamówieniu.');
+      }
+    }
     if (!order) {
       // Commit order + items + session BEFORE contacting Stripe. A retry after a
       // timeout recovers this exact order and uses its UUID as idempotency key.
@@ -80,12 +95,24 @@ async function initializeCheckout(request, clientIP) {
           vatAmount: totals.vatAmount, shippingNetto: totals.shippingNetto, shippingVat: totals.shippingVat,
           vatRate: totals.vatRate, currency: 'pln', customerEmail, productId: primaryProductId,
           productType: primaryProductType, sku: primarySku, shippingAddress, hasPhysical, items: orderItems,
-          metadata: { ...(delivery ? { inpostDelivery: delivery } : {}), checkoutVersion: 2, checkoutFingerprint: fingerprint, clientIP,
+          rabat: discount?.code || null,
+          metadata: { ...(delivery ? { inpostDelivery: delivery } : {}), ...(discount ? { discount } : {}),
+            checkoutVersion: 2, checkoutFingerprint: fingerprint, clientIP,
             clientOrderId: String(request.orderId || '').slice(0, 200) },
         });
         await query('INSERT INTO checkout_sessions (id, order_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE order_id = VALUES(order_id)', [owner, created.id]);
         return created;
       });
+    }
+    if (totals.total === 0) {
+      if (discount?.percent !== 100) throw Object.assign(new Error('Zero amount requires a 100% discount code.'), { status: 400 });
+      const { fulfillFreeOrder } = require('./paymentFulfillment');
+      await fulfillFreeOrder(order.id);
+      return {
+        free: true, clientSecret: null, paymentIntentId: null, paymentStatus: 'succeeded',
+        orderId: order.id, orderNumber: order.orderNumberDisplay || formatOrderNumber(order.orderNumber),
+        productId: primaryProductId, amount: 0, shipping: 0, subtotal: totals.subtotal, items: order.items,
+      };
     }
     intent = intent || await ensureIntent(order);
     return {

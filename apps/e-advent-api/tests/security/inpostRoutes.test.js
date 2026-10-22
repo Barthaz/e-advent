@@ -49,7 +49,7 @@ test('event from another organization cannot change local order', async () => {
   expect(res.status).toBe(400);
   expect(advanceShipment).not.toHaveBeenCalled();
 });
-test.each(['create', 'buy', 'refresh', 'offers', 'reconcile'])('admin %s requires authentication', async action => {
+test.each(['create', 'buy', 'refresh', 'offers', 'reconcile', 'generate', 'dispatch'])('admin %s requires authentication', async action => {
   expect((await request(app).post(`/admin/orders/uuid/inpost/${action}`).send({})).status).toBe(401);
   expect(operate).not.toHaveBeenCalled();
 });

@@ -2,11 +2,10 @@ const express = require('express');
 const router = express.Router();
 const stripe = require('../config/stripe');
 const Payment = require('../models/Payment');
-const { fulfillPaidIntent } = require('../services/paymentFulfillment');
+const { fulfillPaidIntent, redeemOrderDiscount } = require('../services/paymentFulfillment');
 const { body, validationResult } = require('express-validator');
 const { initializeCheckout } = require('../services/checkoutPayment');
 const { deliverOrderEmails } = require('../services/orderEmailJobs');
-const { ensureShipment } = require('../services/inpostFulfillment');
 const { timingSafeEqual } = require('node:crypto');
 const { query } = require('../config/database');
 
@@ -27,6 +26,7 @@ function extractRequestData(body) {
                 items: body.data.items,
                 delivery: body.data.delivery,
                 shippingAddress: body.data.shippingAddress || body.data.metadata?.shippingAddress,
+                promoCode: body.data.promoCode,
             };
         }
     }
@@ -43,8 +43,10 @@ router.post('/create-payment-intent', async (req, res) => {
             errors.push({ type: 'field', msg: 'Amount is required', path: 'amount', location: 'body' });
         } else {
             const amount = Number(requestData.amount);
-            if (isNaN(amount) || amount <= 0) {
-                errors.push({ type: 'field', msg: 'Amount must be a positive number', path: 'amount', location: 'body' });
+            if (isNaN(amount) || amount < 0) {
+                errors.push({ type: 'field', msg: 'Amount must be a non-negative number', path: 'amount', location: 'body' });
+            } else if (amount === 0 && !requestData.promoCode) {
+                errors.push({ type: 'field', msg: 'A 100% discount code is required for a free order', path: 'promoCode', location: 'body' });
             }
         }
 
@@ -73,11 +75,15 @@ router.post('/create-payment-intent', async (req, res) => {
             return res.status(400).json({ errors });
         }
 
-        if (!process.env.STRIPE_SECRET_KEY) {
+        const amount = Number(requestData.amount);
+        if (amount > 0 && !process.env.STRIPE_SECRET_KEY) {
             return res.status(500).json({ error: 'Stripe is not configured. Please set STRIPE_SECRET_KEY in .env file.' });
         }
 
         const result = await initializeCheckout(requestData, req.ip || 'unknown');
+        if (result.free) {
+            await deliverOrderEmails(result.orderId);
+        }
         res.json(result);
     } catch (error) {
         console.error('❌ Unexpected error creating payment intent:', error);
@@ -174,8 +180,8 @@ router.post('/webhook', async (req, res) => {
     try {
         if (event.type === 'payment_intent.succeeded') {
             const result = await fulfillPaidIntent(event.data.object);
+            await redeemOrderDiscount(result.orderId, result.rabatCode, result.email);
             await deliverOrderEmails(result.orderId);
-            await ensureShipment(result.orderId).catch(error => console.error('InPost auto-fulfillment error:', error.message));
         } else if (['payment_intent.payment_failed', 'payment_intent.canceled'].includes(event.type)) {
             // A delayed failed event must not reserve a second payment or undo
             // a later successful retry of this same PaymentIntent.

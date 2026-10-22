@@ -24,6 +24,11 @@ module.exports = function checkoutStore() {
     if (sql.startsWith('SELECT order_id FROM checkout_sessions')) return [sessions.has(args[0]) ? [{ order_id: sessions.get(args[0]) }] : []];
     if (sql.startsWith('INSERT INTO checkout_sessions')) sessions.set(args[0], args[1]);
     if (sql.startsWith('UPDATE orders SET stripe_payment_intent_id')) orders.get(args[1]).stripePaymentIntentId = args[0];
+    if (sql.includes('FROM orders WHERE rabat_code')) {
+      return [[...orders.values()]
+        .filter(order => (order.rabat || order.rabat_code) === args[0] && !['canceled', 'succeeded'].includes(order.status))
+        .map(order => ({ id: order.id }))];
+    }
     return [[], []];
   });
   Payment.createPayment.mockImplementation(async data => {

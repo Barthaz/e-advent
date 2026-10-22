@@ -4,6 +4,7 @@ const {
   getSkuForTypeAndFormat,
   isPhysicalProduct,
   computeOrderTotals,
+  applyPercentDiscount,
   PRODUCTS,
   SHIPPING_COST,
   FREE_SHIPPING_THRESHOLD,
@@ -176,6 +177,31 @@ describe('products catalog (unit)', () => {
 
   test('computeOrderTotals: unknown sku returns null', () => {
     expect(computeOrderTotals([{ sku: 'nope', quantity: 1 }])).toBeNull();
+  });
+
+  test('10% discount reduces products and leaves shipping', () => {
+    const totals = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }]);
+    const discounted = applyPercentDiscount(totals, 10);
+    expect(discounted).toMatchObject({
+      subtotal: 29,
+      discount: 2.9,
+      discountPercent: 10,
+      shipping: 5,
+      total: 31.1,
+    });
+  });
+
+  test('100% discount zeroes the whole order including shipping', () => {
+    const totals = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }]);
+    const discounted = applyPercentDiscount(totals, 100);
+    expect(discounted).toMatchObject({
+      subtotal: 29,
+      discount: 29,
+      discountPercent: 100,
+      shipping: 0,
+      total: 0,
+      freeShipping: true,
+    });
   });
 
   test('all catalog SKUs have positive basePrice', () => {

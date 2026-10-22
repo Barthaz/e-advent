@@ -361,6 +361,7 @@ export interface CreatePaymentIntentRequest {
     phone: string;
     country?: string;
   };
+  promoCode?: string;
   metadata?: {
     productName?: string;
     [key: string]: string | undefined;
@@ -377,8 +378,9 @@ export interface CreatePaymentIntentRequest {
 const PAYMENT_STARTED_STATUSES = ['succeeded', 'processing', 'requires_capture'];
 
 export interface CreatePaymentIntentSuccessResponse {
-  clientSecret: string;
-  paymentIntentId: string;
+  free?: boolean;
+  clientSecret: string | null;
+  paymentIntentId: string | null;
   /** Stripe PaymentIntent status */
   paymentStatus?: string;
   productId?: string | null;
@@ -429,6 +431,7 @@ export async function createPaymentIntent(
       })) } : {}),
       ...(data.delivery ? { delivery: data.delivery } : {}),
       ...(data.shippingAddress ? { shippingAddress: data.shippingAddress } : {}),
+      ...(data.promoCode ? { promoCode: data.promoCode } : {}),
       metadata: {
         ...(data.metadata || {}),
         ...(data.shippingAddress
@@ -452,6 +455,10 @@ export async function createPaymentIntent(
       responseData.errors?.[0]?.msg ||
       'Failed to create payment intent';
     throw new Error(msg);
+  }
+
+  if (responseData.free) {
+    return responseData as CreatePaymentIntentSuccessResponse;
   }
 
   sessionStorage.setItem(`e-advent-payment:${responseData.paymentIntentId}`, responseData.clientSecret);

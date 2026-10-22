@@ -32,7 +32,7 @@ describe('paid order activation', () => {
   });
   test('duplicate event does not reset fulfillment or credentials', async () => {
     order.status = 'succeeded';
-    await expect(fulfillPaidIntent(intent)).resolves.toEqual({ duplicate: true, orderId: 'order' });
+    await expect(fulfillPaidIntent(intent)).resolves.toMatchObject({ duplicate: true, orderId: 'order' });
     expect(writes()).toHaveLength(0);
   });
   test('does not mark an order paid when saved items are inconsistent', async () => {

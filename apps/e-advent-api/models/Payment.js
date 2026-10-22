@@ -243,6 +243,10 @@ const createPayment = async (paymentData) => withTransaction(async () => {
     ]
   );
 
+  if (paymentData.rabat) {
+    await query('UPDATE orders SET rabat_code = ? WHERE id = ?', [String(paymentData.rabat).slice(0, 50), id]);
+  }
+
   if (items.length > 0) {
     await insertOrderItems(id, items);
   } else if (calendarId || paymentData.sku) {

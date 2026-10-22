@@ -15,7 +15,7 @@ import { trackPurchase } from '../utils/analytics';
 import { CART_STORAGE_KEY } from '../utils/cartStorage';
 import { finishCheckout } from '../utils/checkoutSession';
 import { markCalendarPurchased } from '../utils/creatorStorage';
-import { clearOrderSummary, paymentItemsToOrderLines, type OrderLineItem } from '../utils/orderSummary';
+import { clearOrderSummary, loadOrderSummary, paymentItemsToOrderLines, type OrderLineItem } from '../utils/orderSummary';
 
 const ANDROID_APK_URL = 'https://e-advent.pl/download/e-advent.apk';
 
@@ -109,11 +109,23 @@ export default function Success() {
           finishCheckout(paymentIntent);
         } else if (searchParams.get('free') === 'true') {
           const id = searchParams.get('calendar_id');
-          if (!id) throw new Error('Missing free calendar ID');
-          const response = await getCalendar(id);
-          if (response.calendar.status !== 'succeeded') throw new Error('Calendar is not active');
-          ids = [id]; interactiveIds = [id];
-          setOrderItems([{ sku: response.calendar.sku || 'interactive', name: 'Kalendarz interaktywny', quantity: 1, price: 0 }]);
+          const summary = loadOrderSummary();
+          if (id) {
+            const response = await getCalendar(id);
+            if (response.calendar.status !== 'succeeded') throw new Error('Calendar is not active');
+            ids = [id]; interactiveIds = [id];
+            setOrderItems([{ sku: response.calendar.sku || 'interactive', name: 'Kalendarz interaktywny', quantity: 1, price: 0 }]);
+          } else if (summary) {
+            setOrderItems(summary.items);
+            setOrderNumber(summary.orderNumber || '');
+            physical = summary.items.some(item => isPhysicalProduct(item.sku));
+            setPhysicalDetails({ shipping: summary.shipping || undefined });
+            ids = [];
+          } else {
+            throw new Error('Missing free order');
+          }
+          finishCheckout();
+          clearOrderSummary();
         } else {
           throw new Error('Missing payment ID');
         }

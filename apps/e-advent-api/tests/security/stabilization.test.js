@@ -1,4 +1,4 @@
-jest.mock('../../services/paymentFulfillment', () => ({ fulfillPaidIntent: jest.fn() }));
+jest.mock('../../services/paymentFulfillment', () => ({ fulfillPaidIntent: jest.fn(), redeemOrderDiscount: jest.fn(), fulfillFreeOrder: jest.fn() }));
 jest.mock('../../config/database', () => ({
   connectDB: jest.fn().mockResolvedValue(undefined),
   getPool: jest.fn(() => ({
@@ -40,9 +40,17 @@ const { sendEmail } = require('../../config/email');
 
 
 const { fulfillPaidIntent } = require('../../services/paymentFulfillment');
+const db = require('../../config/database');
+const { installDiscountStore } = require('../helpers/discountFixture');
 describe('audit regression protections', () => {
  const app = loadApp();
- beforeEach(() => { jest.clearAllMocks(); require('../helpers/checkoutStore')(); Calendar.findCalendarById.mockResolvedValue(pendingCalendar({sku:'interactive'})); Payment.findPayments.mockResolvedValue([]); });
+ beforeEach(() => {
+   jest.clearAllMocks();
+   require('../helpers/checkoutStore')();
+   installDiscountStore(db.query);
+   Calendar.findCalendarById.mockResolvedValue(pendingCalendar({sku:'interactive'}));
+   Payment.findPayments.mockResolvedValue([]);
+ });
  test('cannot activate another calendar without its edit token', async () => {
    const res=await request(app).post('/api/v1/calendars/createFree').send({calendarId:'cal',email:'buyer@example.com',promoCode:'rabat100'});
    expect(res.status).toBe(403); expect(Calendar.updateCalendar).not.toHaveBeenCalled();
@@ -82,7 +90,13 @@ describe('audit regression protections', () => {
 
 describe('free activation payment handling', () => {
  const app = loadApp();
- beforeEach(() => { jest.clearAllMocks(); Calendar.findCalendarById.mockResolvedValue(pendingCalendar({sku:'interactive'})); Calendar.updateCalendar.mockResolvedValue(pendingCalendar({status:'succeeded',sku:'interactive'})); });
+ beforeEach(() => {
+   jest.clearAllMocks();
+   db.query.mockResolvedValue([[], []]);
+   installDiscountStore(db.query);
+   Calendar.findCalendarById.mockResolvedValue(pendingCalendar({sku:'interactive'}));
+   Calendar.updateCalendar.mockResolvedValue(pendingCalendar({status:'succeeded',sku:'interactive'}));
+ });
  test('cancels an unpaid intent without zeroing a paid order', async () => {
    Payment.findPayments.mockResolvedValue([{stripePaymentIntentId:'pi',items:[{calendarId:'cal'}]}]);
    stripe.paymentIntents.retrieve.mockResolvedValue({id:'pi',status:'requires_payment_method'});

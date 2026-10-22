@@ -126,6 +126,13 @@ describe('orderMailer', () => {
     expect(EmailSend.createSend).toHaveBeenCalledWith(expect.objectContaining({ type: 'shipping' }));
   });
 
+  test('sendShippingEmailForOrder skips a second successful send', async () => {
+    EmailSend.hasSuccessfulOrderEmail.mockResolvedValueOnce(true);
+    const result = await sendShippingEmailForOrder(physicalOrder(), 'admin');
+    expect(result).toMatchObject({ sent: 0, skipped: true });
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
   test('sendDailyWindowEmail skips non-email opening method', async () => {
     await expect(sendDailyWindowEmail(interactiveCalendar({
       data: { ...interactiveCalendar().data, openingMethod: 'app' },

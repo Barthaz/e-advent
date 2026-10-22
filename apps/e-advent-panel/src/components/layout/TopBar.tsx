@@ -28,6 +28,8 @@ function useBreadcrumbs(): Breadcrumb[] {
     crumbs.push({ label: 'Szablony e-mail' });
   } else if (segments[0] === 'tasks') {
     crumbs.push({ label: 'Zadania' });
+  } else if (segments[0] === 'rabaty') {
+    crumbs.push({ label: 'Rabaty' });
   }
 
   return crumbs;

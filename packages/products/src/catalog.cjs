@@ -213,6 +213,31 @@ function computeOrderTotals(items, options) {
   };
 }
 
+function applyPercentDiscount(totals, percent) {
+  const rate = Number(percent);
+  if (!totals || (rate !== 10 && rate !== 100)) return null;
+  const discount = roundPln(totals.subtotal * (rate / 100));
+  const shipping = rate === 100 ? 0 : totals.shipping;
+  const shippingNetto = rate === 100 ? 0 : totals.shippingNetto;
+  const shippingVat = rate === 100 ? 0 : totals.shippingVat;
+  const discountedSubtotal = roundPln(totals.subtotal - discount);
+  const subSplit = splitGrossAmount(discountedSubtotal, totals.vatRate);
+  return {
+    ...totals,
+    discountPercent: rate,
+    discount: discount,
+    shipping: shipping,
+    shippingNetto: shippingNetto,
+    shippingVat: shippingVat,
+    freeShipping: totals.freeShipping || rate === 100,
+    subtotalNetto: subSplit.netto,
+    subtotalVat: subSplit.vat,
+    amountNetto: roundPln(subSplit.netto + shippingNetto),
+    vatAmount: roundPln(subSplit.vat + shippingVat),
+    total: roundPln(discountedSubtotal + shipping),
+  };
+}
+
 function getProductPrice(sku) {
   const totals = computeOrderTotals([{ sku, quantity: 1 }]);
   return totals ? totals.total : null;
@@ -252,6 +277,7 @@ module.exports = {
   getProduct,
   getProductPrice,
   computeOrderTotals,
+  applyPercentDiscount,
   getSkuForTypeAndFormat,
   isPhysicalProduct,
   SANTA_CERTIFICATE_SKU,

@@ -186,6 +186,29 @@ CREATE TABLE IF NOT EXISTS email_sends (
   INDEX idx_es_daily (calendar_id, day, type, status),
   INDEX idx_es_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS discount_codes (
+  id          CHAR(36)      NOT NULL PRIMARY KEY,
+  code        VARCHAR(24)   NOT NULL,
+  percent     TINYINT       NOT NULL,
+  reusable    TINYINT       NOT NULL DEFAULT 0,
+  active      TINYINT       NOT NULL DEFAULT 1,
+  uses_count  INT           NOT NULL DEFAULT 0,
+  created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_discount_code (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS discount_redemptions (
+  id              CHAR(36)      NOT NULL PRIMARY KEY,
+  code_id         CHAR(36)      NOT NULL,
+  order_id        VARCHAR(36)   NULL,
+  customer_email  VARCHAR(255)  NOT NULL DEFAULT '',
+  created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_disc_code (code_id),
+  UNIQUE KEY uq_disc_order (order_id),
+  CONSTRAINT fk_disc_code FOREIGN KEY (code_id) REFERENCES discount_codes(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 `;
 
 async function main() {

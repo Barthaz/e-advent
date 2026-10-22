@@ -1,11 +1,13 @@
 jest.mock('../../config/database', () => ({ query: jest.fn(), withNamedLocks: jest.fn() }));
 jest.mock('../../models/Payment', () => ({ findPaymentById: jest.fn() }));
-jest.mock('../../services/orderMailer', () => ({ sendShipmentPreparedEmail: jest.fn() }));
+jest.mock('../../models/EmailSend', () => ({ hasSuccessfulOrderEmail: jest.fn() }));
+jest.mock('../../services/orderMailer', () => ({ sendShipmentPreparedEmail: jest.fn(), sendShippingEmailForOrder: jest.fn() }));
 const db = require('../../config/database');
 const Payment = require('../../models/Payment');
+const EmailSend = require('../../models/EmailSend');
 const inpost = require('../../services/inpost');
-const { sendShipmentPreparedEmail } = require('../../services/orderMailer');
-const { operate, ensureShipment, advanceShipment } = require('../../services/inpostFulfillment');
+const { sendShipmentPreparedEmail, sendShippingEmailForOrder } = require('../../services/orderMailer');
+const { operate, markDispatched, advanceShipment } = require('../../services/inpostFulfillment');
 const { orderFingerprint } = require('../../services/orderIdentity');
 const setup = require('../helpers/inpostFixture');
 let order, row, remote, network;
@@ -33,8 +35,12 @@ beforeEach(async () => {
     else if (sql.includes('SET buy_attempted')) { row.buy_attempted = 1; row.state = 'buy_pending'; }
     return [{ affectedRows: 1 }];
   });
+  EmailSend.hasSuccessfulOrderEmail.mockReset();
+  EmailSend.hasSuccessfulOrderEmail.mockResolvedValue(false);
   sendShipmentPreparedEmail.mockReset();
   sendShipmentPreparedEmail.mockResolvedValue({ sent: 1, failed: 0, skipped: false, results: [{}] });
+  sendShippingEmailForOrder.mockReset();
+  sendShippingEmailForOrder.mockResolvedValue({ sent: 1, failed: 0, skipped: false, results: [{}] });
   network = jest.spyOn(inpost, 'request').mockImplementation(async (path, options) => {
     if (path.includes('/buy')) { remote.status = 'confirmed'; remote.tracking_number = '123456789012345678901234'; }
     if (path.includes('/label')) return Buffer.from('%PDF-test');
@@ -116,37 +122,46 @@ test('does not allow label download before purchase', async () => {
   await expect(operate(order.id, 'label')).rejects.toThrow('po potwierdzeniu');
   expect(network.mock.calls.some(([path]) => path.includes('/label'))).toBe(false);
 });
-test('ensureShipment creates the shipment, buys the matching offer and notifies the customer', async () => {
-  await expect(ensureShipment(order.id)).resolves.toMatchObject({
-    skipped: false, shipment: { shipmentId: '456', labelReady: true, trackingNumber: '123456789012345678901234' },
+test('generate creates the shipment, buys the matching offer and does not email by itself', async () => {
+  await expect(operate(order.id, 'generate')).resolves.toMatchObject({
+    shipmentId: '456', labelReady: true, trackingNumber: '123456789012345678901234',
   });
   expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(1);
-  expect(sendShipmentPreparedEmail).toHaveBeenCalledWith(expect.objectContaining({ trackingNumber: '123456789012345678901234' }), 'system');
+  expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
 });
-test('ensureShipment does not buy when InPost has not prepared an offer yet', async () => {
+test('generate does not buy when InPost has not prepared an offer yet', async () => {
   remote.offers = [];
-  const result = await ensureShipment(order.id);
-  expect(result.shipment).toMatchObject({ shipmentId: '456', labelReady: false, canBuy: false });
+  await expect(operate(order.id, 'generate')).resolves.toMatchObject({ shipmentId: '456', labelReady: false, canBuy: false });
   expect(network.mock.calls.some(([path]) => path.endsWith('/buy'))).toBe(false);
-  expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
 });
-test('ensureShipment records an auto-buy failure without throwing so the panel can retry', async () => {
-  network.mockImplementation(async path => {
-    if (path.endsWith('/buy')) throw Object.assign(new Error('saldo'), { providerStatus: 422 });
-    return structuredClone(remote);
-  });
-  const result = await ensureShipment(order.id);
-  expect(result.error).toMatch(/saldo/);
-  expect(result.shipment.shipmentId).toBe('456');
-  expect(result.shipment.labelReady).toBe(false);
-  expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
+test('generate is idempotent after a paid label and does not buy again', async () => {
+  await operate(order.id, 'generate');
+  await expect(operate(order.id, 'generate')).resolves.toMatchObject({ labelReady: true, canBuy: false });
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(1);
 });
-test('advanceShipment buys a ready offer left after create and then notifies', async () => {
+test('advanceShipment refreshes status and never buys a label', async () => {
   await operate(order.id, 'create');
   expect(network.mock.calls.some(([path]) => path.endsWith('/buy'))).toBe(false);
-  await expect(advanceShipment(order.id)).resolves.toMatchObject({ labelReady: true, trackingNumber: '123456789012345678901234' });
-  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(1);
-  expect(sendShipmentPreparedEmail).toHaveBeenCalled();
+  await expect(advanceShipment(order.id)).resolves.toMatchObject({ shipmentId: '456', labelReady: false, canBuy: true });
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(0);
+  expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
+});
+test('markDispatched sets shipped and emails the customer once', async () => {
+  await operate(order.id, 'generate');
+  await expect(markDispatched(order.id)).resolves.toMatchObject({
+    dispatched: true, shippedEmail: 'sent', trackingNumber: '123456789012345678901234',
+  });
+  expect(sendShippingEmailForOrder).toHaveBeenCalledWith(expect.objectContaining({
+    trackingNumber: '123456789012345678901234',
+  }), 'admin');
+  sendShippingEmailForOrder.mockResolvedValueOnce({ sent: 0, failed: 0, skipped: true, results: [] });
+  EmailSend.hasSuccessfulOrderEmail.mockResolvedValue(true);
+  await expect(markDispatched(order.id)).resolves.toMatchObject({ shippedEmail: 'skipped' });
+});
+test('markDispatched refuses to ship before the label is paid', async () => {
+  await operate(order.id, 'create');
+  await expect(markDispatched(order.id)).rejects.toThrow('Najpierw wygeneruj etykietę');
+  expect(sendShippingEmailForOrder).not.toHaveBeenCalled();
 });
 test.each(['pending', 'canceled'])('unpaid %s order cannot buy or create', async status => {
   order.status = status;

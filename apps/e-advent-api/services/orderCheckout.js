@@ -7,6 +7,7 @@ const {
   isLetterAddonSku,
   SANTA_LETTER_SKU,
 } = require('../config/products');
+const { findByCode, isAvailable, applyToTotals } = require('./discountCodes');
 
 function parseShippingAddress(raw) {
   if (!raw) return null;
@@ -304,6 +305,38 @@ async function resolveCheckoutItems(requestData) {
     totals = computeOrderTotals(resolved, { shippingAmount: delivery.price });
   }
 
+  let discount = null;
+  if (requestData.promoCode) {
+    const row = await findByCode(requestData.promoCode);
+    if (!isAvailable(row)) {
+      return {
+        errors: [{
+          type: 'field',
+          msg: 'Kod rabatowy jest nieprawidłowy albo został już wykorzystany.',
+          path: 'promoCode',
+          location: 'body',
+        }],
+      };
+    }
+    totals = applyToTotals(totals, row);
+    if (!totals) {
+      return {
+        errors: [{
+          type: 'field',
+          msg: 'Nie udało się zastosować kodu rabatowego.',
+          path: 'promoCode',
+          location: 'body',
+        }],
+      };
+    }
+    discount = {
+      code: row.code,
+      percent: Number(row.percent),
+      amount: totals.discount,
+      reusable: Boolean(Number(row.reusable)),
+    };
+  }
+
   const primary = resolved.find((r) => r.sku === SANTA_LETTER_SKU)
     || resolved.find((r) => r.calendarId)
     || resolved[0];
@@ -316,6 +349,7 @@ async function resolveCheckoutItems(requestData) {
     primarySku: primary?.sku || null,
     primaryProductType: primary?.productType || null,
     hasPhysical: totals.hasPhysical,
+    discount,
   };
 }
 

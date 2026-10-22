@@ -60,6 +60,8 @@ export interface OrderTotals {
   amountNetto: number;
   vatAmount: number;
   lines: OrderLineVat[];
+  discountPercent?: number;
+  discount?: number;
 }
 
 export const SHIPPING_COST: number;
@@ -78,6 +80,10 @@ export function isPhysicalProduct(sku: string): boolean;
 export function computeOrderTotals(
   items: Array<{ sku: string; quantity?: number }>,
   options?: { shippingAmount?: number; vatRate?: number },
+): OrderTotals | null;
+export function applyPercentDiscount(
+  totals: OrderTotals,
+  percent: number,
 ): OrderTotals | null;
 export function getProductPrice(sku: string): number | null;
 export function getSkuForTypeAndFormat(

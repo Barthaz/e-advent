@@ -12,7 +12,7 @@ import { createPaymentIntent, createCalendar, type InternalCalendarData, validat
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import PriceBreakdown from '../components/PriceBreakdown';
-import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals } from '../config/products';
+import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals, applyPercentDiscount } from '../config/products';
 import ShippingForm from '../components/checkout/ShippingForm';
 import { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../utils/shippingAddress';
 import type { ProductType, ShippingAddress } from '../types/order';
@@ -25,8 +25,8 @@ import { getCheckoutToken } from '../utils/checkoutSession';
 /** Survives React Strict Mode remounts — prevents duplicate create-payment-intent calls */
 const checkoutPaymentInitCache: {
   key: string | null;
-  promise: Promise<{ clientSecret: string; paymentIntentId: string }> | null;
-  result: { clientSecret: string; paymentIntentId: string } | null;
+  promise: Promise<{ clientSecret: string | null; paymentIntentId: string | null }> | null;
+  result: { clientSecret: string | null; paymentIntentId: string | null } | null;
 } = { key: null, promise: null, result: null };
 
 const CHECKOUT_ORDER_ID_KEY = 'e-advent-checkout-order-id';
@@ -366,7 +366,7 @@ function PaymentForm({
         ) : isFree ? (
           <>
             <i className="fas fa-gift mr-2"></i>
-            Stwórz swój kalendarz
+            Dokończ zamówienie — 0 zł
           </>
         ) : (
           <>
@@ -415,12 +415,16 @@ export default function Checkout() {
       : [{ sku, quantity: 1 }],
     { shippingAmount: shippingQuote.quote?.price ?? 0 },
   );
+  const pricedTotals = promoCodeDiscount === 10 || promoCodeDiscount === 100
+    ? applyPercentDiscount(orderTotals, promoCodeDiscount)
+    : orderTotals;
   const product = getProduct(sku);
-  const totalPrice = orderTotals?.total ?? getProductPrice(sku) ?? 9;
-  const shippingCost = orderTotals?.shipping ?? 0;
-  const subtotal = orderTotals?.subtotal ?? (product?.basePrice ?? 9);
-  const isPhysical = orderTotals?.hasPhysical ?? isPhysicalProduct(sku);
-  const isFree = productType === 'interactive' && promoCodeDiscount === 100 && !cartMode && !letterOnly;
+  const totalPrice = pricedTotals?.total ?? getProductPrice(sku) ?? 9;
+  const shippingCost = pricedTotals?.shipping ?? 0;
+  const subtotal = pricedTotals?.subtotal ?? (product?.basePrice ?? 9);
+  const discountAmount = pricedTotals?.discount ?? 0;
+  const isPhysical = pricedTotals?.hasPhysical ?? isPhysicalProduct(sku);
+  const isFree = promoCodeDiscount === 100;
 
   /** Synchronous address check — never fire create-payment-intent with empty shipping */
   const shippingAddressComplete = useMemo(() => {
@@ -585,7 +589,7 @@ export default function Checkout() {
   }, [shippingAddress, isPhysical, productType, cartMode, calendarData, delivery.type]);
 
   const checkoutFingerprint = JSON.stringify({ checkoutToken: getCheckoutToken(), calendarData, cart: cartMode ? cartItems : null,
-    shipping: isPhysical ? normalizeShippingAddress(shippingAddress) : null, delivery: isPhysical ? delivery : null, quoteKey: shippingQuote.quote?.quoteKey, sku, totalPrice });
+    shipping: isPhysical ? normalizeShippingAddress(shippingAddress) : null, delivery: isPhysical ? delivery : null, quoteKey: shippingQuote.quote?.quoteKey, sku, totalPrice, promoCode: promoCodeDiscount ? promoCode.trim() : '' });
 
   // Utwórz Payment Intent raz na zestaw danych (bez pętli przy re-renderach)
   useEffect(() => {
@@ -604,6 +608,20 @@ export default function Checkout() {
       }
 
       const initKey = checkoutFingerprint;
+      if (promoCodeDiscount === 100) {
+        if (paymentInitKeyRef.current !== initKey) {
+          paymentInitLockRef.current = false;
+          paymentInitKeyRef.current = initKey;
+          checkoutPaymentInitCache.key = null;
+          checkoutPaymentInitCache.promise = null;
+          checkoutPaymentInitCache.result = null;
+          if (clientSecret) {
+            setClientSecret(null);
+            setPaymentIntentId(null);
+          }
+        }
+        return;
+      }
 
       // Zmiana danych wejściowych (email / kwota / koszyk) → reset i jedna nowa inicjalizacja
       if (paymentInitKeyRef.current && paymentInitKeyRef.current !== initKey) {
@@ -680,6 +698,7 @@ export default function Checkout() {
             currency: 'pln',
             customerEmail: calendarData.email,
             orderId,
+            ...(promoCodeDiscount ? { promoCode: promoCode.trim() } : {}),
             ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
             items,
             shippingAddress: normalizeShippingAddress(shippingAddress),
@@ -692,6 +711,9 @@ export default function Checkout() {
               clientOrderId: orderId,
             },
           });
+          if (!paymentIntent.clientSecret || !paymentIntent.paymentIntentId) {
+            throw new Error('Nie otrzymano danych płatności.');
+          }
           localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
           localStorage.setItem('orderId', paymentIntent.orderId || '');
           if (paymentIntent.orderNumber) {
@@ -878,6 +900,7 @@ export default function Checkout() {
           currency: 'pln',
           customerEmail: calendarData.email,
           orderId: orderId,
+          ...(promoCodeDiscount ? { promoCode: promoCode.trim() } : {}),
           productId: finalCalendarId,
           items: [{
             sku,
@@ -897,6 +920,9 @@ export default function Checkout() {
         }
 
         const paymentIntent = await createPaymentIntent(paymentIntentData);
+        if (!paymentIntent.clientSecret || !paymentIntent.paymentIntentId) {
+          throw new Error('Nie otrzymano danych płatności.');
+        }
 
         localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
         localStorage.setItem('orderId', paymentIntent.orderId || '');
@@ -986,7 +1012,7 @@ export default function Checkout() {
       cancelled = true;
       if (debounceTimer) clearTimeout(debounceTimer);
     };
-  }, [checkoutFingerprint, calendarData, clientSecret, shippingCost, shippingAddressComplete, isPhysical, totalPrice, productType, sku, shippingAddress, cartMode, cartItems, delivery, shippingQuote.quote]);
+  }, [checkoutFingerprint, calendarData, clientSecret, shippingCost, shippingAddressComplete, isPhysical, totalPrice, productType, sku, shippingAddress, cartMode, cartItems, delivery, shippingQuote.quote, promoCode, promoCodeDiscount]);
 
   // Funkcja do sprawdzania kodu promocyjnego
   const handlePromoCodeBlur = async () => {
@@ -1002,7 +1028,7 @@ export default function Checkout() {
     try {
       const response = await validatePromoCode(promoCode.trim());
       
-      if (response.success && response.valid && response.discount !== undefined) {
+      if (response.success && response.valid && (response.discount === 10 || response.discount === 100)) {
         setPromoCodeDiscount(response.discount);
         setPromoCodeError(null);
         console.log('[PromoCode] Kod promocyjny zwalidowany:', {
@@ -1194,6 +1220,44 @@ export default function Checkout() {
     }
   };
 
+  const completeFreeOrder = async () => {
+    if (!calendarData) throw new Error('Brak danych zamówienia');
+    if (!cartMode && !isPhysical) {
+      await handleCreateFreeCalendar();
+      return;
+    }
+    if (isPhysical && !shippingAddressComplete) {
+      throw new Error('Uzupełnij dane do wysyłki.');
+    }
+    const orderId = getStableCheckoutOrderId(checkoutFingerprint);
+    const items = cartMode
+      ? cartItems.map((i) => cartItemToCheckoutItem(i))
+      : [{ sku, quantity: 1, calendarId: getReusablePendingCalendarId() || undefined }];
+    const primaryCalendarId = (cartMode ? cartItems.find((i) => i.calendarId)?.calendarId : items[0]?.calendarId) || undefined;
+    const result = await createPaymentIntent({
+      amount: 0,
+      currency: 'pln',
+      customerEmail: calendarData.email,
+      orderId,
+      promoCode: promoCode.trim(),
+      ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
+      items,
+      ...(isPhysical ? {
+        shippingAddress: normalizeShippingAddress(shippingAddress),
+        delivery: { ...delivery, quoteKey: shippingQuote.quote?.quoteKey },
+      } : {}),
+    });
+    if (!result.free || !result.orderId) throw new Error('Nie udało się zrealizować darmowego zamówienia.');
+    saveOrderSummary({
+      items: cartMode ? cartItemsToOrderLines(cartItems) : [{ sku, name: getProduct(sku)?.name || sku, quantity: 1, price: 0 }],
+      shipping: isPhysical ? normalizeShippingAddress(shippingAddress) : null,
+      orderNumber: result.orderNumber || undefined,
+      customerEmail: calendarData.email,
+    });
+    if (cartMode) localStorage.removeItem(CART_STORAGE_KEY);
+    navigate(`/sukces?free=true&order_id=${encodeURIComponent(result.orderId)}`);
+  };
+
   if (!calendarData) {
     return <LoadingState message="Ładowanie..." />;
   }
@@ -1340,14 +1404,11 @@ export default function Checkout() {
                       shippingCost={shippingCost}
                       variant="checkout"
                       totalLabel="Do zapłaty"
-                      freeShipping={Boolean(orderTotals?.freeShipping)}
+                      freeShipping={Boolean(pricedTotals?.freeShipping)}
                       shippingPending={isPhysical && !shippingQuote.quote}
+                      discount={discountAmount}
+                      discountPercent={promoCodeDiscount ?? undefined}
                     />
-                  )}
-                  {promoCodeDiscount !== null && promoCodeDiscount > 0 && promoCodeDiscount < 100 && (
-                    <div className="mt-2 text-sm text-white/80">
-                      Zniżka: {promoCodeDiscount}%
-                    </div>
                   )}
                 </div>
                 {!cartMode && (
@@ -1387,10 +1448,9 @@ export default function Checkout() {
             </div>
           )}
 
-            {!isPhysical && (
-              <div className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-8">
+            <div className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-8">
                 <label htmlFor="promoCode" className="block text-sm font-medium text-parchment-muted mb-2">
-                  Kod promocyjny (opcjonalnie)
+                  Kod rabatowy (opcjonalnie)
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -1403,41 +1463,40 @@ export default function Checkout() {
                       setPromoCodeDiscount(null);
                     }}
                     onBlur={handlePromoCodeBlur}
-                    placeholder="Wpisz kod promocyjny"
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        void handlePromoCodeBlur();
+                      }
+                    }}
+                    placeholder="Wpisz kod rabatowy"
                     className="input-field flex-1"
                     disabled={isCheckingPromoCode}
+                    autoCapitalize="characters"
                   />
-                  {isCheckingPromoCode && (
-                    <div className="flex items-center px-4">
-                      <div className="spinner" style={{ width: '1.25rem', height: '1.25rem', borderWidth: '2px' }}></div>
-                    </div>
-                  )}
+                  <button type="button" className="btn-secondary" disabled={isCheckingPromoCode || !promoCode.trim()} onClick={() => void handlePromoCodeBlur()}>
+                    {isCheckingPromoCode ? 'Sprawdzam…' : 'Zastosuj'}
+                  </button>
                 </div>
                 {promoCodeError && (
                   <p className="mt-2 text-sm text-red-600">{promoCodeError}</p>
                 )}
                 {promoCodeDiscount !== null && promoCodeDiscount > 0 && !promoCodeError && (
                   <p className="mt-2 text-sm text-christmas-green font-semibold">
-                    {promoCodeDiscount === 100 ? (
-                      <span className="flex items-center">
-                        <i className="fas fa-gift mr-2"></i>
-                        Gratulacje! Masz kalendarz za darmo!
-                      </span>
-                    ) : (
-                      `Kod promocyjny aktywny — zniżka ${promoCodeDiscount}%`
-                    )}
+                    {promoCodeDiscount === 100
+                      ? 'Kod rabatowy aktywny — zamówienie za 0 zł.'
+                      : `Kod rabatowy aktywny — zniżka ${promoCodeDiscount}% od produktów.`}
                   </p>
                 )}
               </div>
-            )}
 
             {isFree && (
               <div className="rounded-2xl border border-christmas-green/30 bg-white/70 p-5 lg:col-span-8">
                 <h3 className="font-display text-xl font-semibold text-christmas-green mb-2">
-                  Kalendarz za darmo
+                  Zamówienie za 0 zł
                 </h3>
                 <p className="text-parchment-text text-sm">
-                  Twój kod promocyjny daje 100% zniżki. Kliknij „Stwórz swój kalendarz” poniżej, aby dokończyć zamówienie.
+                  Twój kod daje 100% zniżki. Zaakceptuj regulamin i dokończ zamówienie — nic nie zapłacisz.
                 </p>
               </div>
             )}
@@ -1474,7 +1533,17 @@ export default function Checkout() {
                 </div>
               )}
 
-              {clientSecret && paymentIntentId && activePaymentKey === checkoutFingerprint && emailReady && (!isPhysical || shippingAddressComplete) ? (
+              {isFree && emailReady && (!isPhysical || shippingAddressComplete) ? (
+                  <PaymentForm
+                    clientSecret=""
+                    paymentIntentId=""
+                    onError={setPaymentError}
+                    isFree
+                    onCreateFreeCalendar={completeFreeOrder}
+                    payAmount={0}
+                    billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
+                  />
+              ) : clientSecret && paymentIntentId && activePaymentKey === checkoutFingerprint && emailReady && (!isPhysical || shippingAddressComplete) ? (
                 <Elements
                   key={clientSecret}
                   stripe={stripePromise}
@@ -1489,8 +1558,8 @@ export default function Checkout() {
                     clientSecret={clientSecret}
                     paymentIntentId={paymentIntentId}
                     onError={setPaymentError}
-                    isFree={isFree}
-                    onCreateFreeCalendar={handleCreateFreeCalendar}
+                    isFree={false}
+                    onCreateFreeCalendar={completeFreeOrder}
                     payAmount={totalPrice}
                     billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
                   />

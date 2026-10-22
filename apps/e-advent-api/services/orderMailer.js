@@ -241,6 +241,9 @@ async function sendShippingEmailForOrder(order, triggeredBy = 'admin') {
   }
   const customerEmail = order.customerEmail;
   if (!customerEmail) throw MailerError('Brak adresu email klienta', 400, 'NO_EMAIL');
+  if (await EmailSend.hasSuccessfulOrderEmail(order.id, null, 'shipping', customerEmail)) {
+    return { sent: 0, failed: 0, skipped: true, results: [] };
+  }
 
   const subject = 'Twoja paczka e-Advent została wysłana';
   const payload = {

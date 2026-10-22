@@ -35,6 +35,8 @@ const Calendar = require('../../models/Calendar');
 const Payment = require('../../models/Payment');
 const stripe = require('../../config/stripe');
 const { sendEmail } = require('../../config/email');
+const db = require('../../config/database');
+const { installDiscountStore } = require('../helpers/discountFixture');
 
 describe('Faza 1 — payment bypass / promo (Pay-*)', () => {
   const app = loadApp();
@@ -42,6 +44,8 @@ describe('Faza 1 — payment bypass / promo (Pay-*)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     sendEmail.mockResolvedValue({ messageId: 'email-1' });
+    db.query.mockResolvedValue([[], []]);
+    installDiscountStore(db.query);
   });
 
   test('Pay-05: webhook without valid Stripe signature is rejected', async () => {

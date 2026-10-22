@@ -27,7 +27,8 @@
     "migrate:checkout": "node scripts/migrate-checkout.js",
     "migrate:special-windows": "node scripts/migrate-special-windows.js",
     "smoke:scratch-export": "node scripts/smoke-scratch-export.js",
-    "migrate:inpost": "node scripts/migrate-inpost.js"
+    "migrate:inpost": "node scripts/migrate-inpost.js",
+    "migrate:discount-codes": "node scripts/migrate-discount-codes.js"
   },
   "nodemonConfig": {
     "ignore": [

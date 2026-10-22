@@ -1,7 +1,12 @@
-const { operate, markLabelPrepared, syncActiveShipments } = require('../services/inpostFulfillment');
+const { operate, markLabelPrepared, markDispatched, syncActiveShipments } = require('../services/inpostFulfillment');
 module.exports = (router, authAdmin) => {
   const handler = action => async (req, res) => {
     try {
+      if (action === 'dispatch') {
+        const result = await markDispatched(req.params.id);
+        res.set('Cache-Control', 'no-store');
+        return res.json(result);
+      }
       const result = await operate(req.params.id, action, req.body);
       res.set('Cache-Control', 'no-store');
       if (action === 'label') {
@@ -9,6 +14,10 @@ module.exports = (router, authAdmin) => {
         res.set('X-Shipment-Email', prepared.email);
         if (prepared.error) res.set('X-Shipment-Email-Error', encodeURIComponent(prepared.error));
         return res.type('application/pdf').set('Content-Disposition', 'attachment; filename="inpost-label.pdf"').send(result);
+      }
+      if (action === 'generate' && result.labelReady && result.trackingNumber) {
+        const prepared = await markLabelPrepared(req.params.id, { downloaded: false });
+        return res.json({ ...result, email: prepared.email, emailError: prepared.error });
       }
       res.json(result);
     } catch (error) {
@@ -21,5 +30,7 @@ module.exports = (router, authAdmin) => {
   });
   router.get('/orders/:id/inpost', authAdmin, handler('get'));
   router.get('/orders/:id/inpost/label', authAdmin, handler('label'));
-  for (const action of ['create', 'refresh', 'offers', 'buy', 'reconcile']) router.post(`/orders/:id/inpost/${action}`, authAdmin, handler(action));
+  for (const action of ['create', 'refresh', 'offers', 'buy', 'reconcile', 'generate', 'dispatch']) {
+    router.post(`/orders/:id/inpost/${action}`, authAdmin, handler(action));
+  }
 };

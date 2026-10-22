@@ -31,6 +31,7 @@ function orderFingerprint(order, items = order.items) {
   }).sort();
   return createHash('sha256').update(JSON.stringify({
     customerEmail: order.customerEmail ?? order.customer_email,
+    rabat: order.rabat ?? order.rabat_code ?? metadata.discount?.code ?? null,
     currency: order.currency, amount: cents(order.amount), shippingAmount: cents(order.shippingAmount ?? order.shipping_amount),
     shipping: shipping ? [shipping.fullName || `${shipping.firstName || ''} ${shipping.lastName || ''}`.trim(),
       shipping.street || '', shipping.city || '', shipping.postalCode || '', shipping.phone] : null,

@@ -223,6 +223,38 @@ export function computeOrderTotals(items, options = {}) {
   };
 }
 
+/**
+ * 10% off products (shipping unchanged). 100% makes the whole order 0 zł.
+ * Catalog `subtotal` stays the original product total so the UI can show the rebate.
+ * @param {import('./index').OrderTotals} totals
+ * @param {number} percent
+ * @returns {import('./index').OrderTotals | null}
+ */
+export function applyPercentDiscount(totals, percent) {
+  const rate = Number(percent);
+  if (!totals || (rate !== 10 && rate !== 100)) return null;
+  const discount = roundPln(totals.subtotal * (rate / 100));
+  const shipping = rate === 100 ? 0 : totals.shipping;
+  const shippingNetto = rate === 100 ? 0 : totals.shippingNetto;
+  const shippingVat = rate === 100 ? 0 : totals.shippingVat;
+  const discountedSubtotal = roundPln(totals.subtotal - discount);
+  const subSplit = splitGrossAmount(discountedSubtotal, totals.vatRate);
+  return {
+    ...totals,
+    discountPercent: rate,
+    discount,
+    shipping,
+    shippingNetto,
+    shippingVat,
+    freeShipping: totals.freeShipping || rate === 100,
+    subtotalNetto: subSplit.netto,
+    subtotalVat: subSplit.vat,
+    amountNetto: roundPln(subSplit.netto + shippingNetto),
+    vatAmount: roundPln(subSplit.vat + shippingVat),
+    total: roundPln(discountedSubtotal + shipping),
+  };
+}
+
 export function getProductPrice(sku) {
   const totals = computeOrderTotals([{ sku, quantity: 1 }]);
   return totals ? totals.total : null;

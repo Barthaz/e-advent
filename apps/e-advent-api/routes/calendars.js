@@ -17,10 +17,8 @@ const { withNamedLocks } = require('../config/database');
 const { cancelCalendarCheckout } = require('../services/checkoutPayment');
 const { sendEmail } = require('../config/email');
 const { body, validationResult } = require('express-validator');
-const {
-  isFullDiscountPromo,
-  isSkuAllowedForPromo,
-} = require('../config/promocodes');
+const { isFullDiscountPromo, redeem } = require('../config/promocodes');
+const { isPhysicalProduct } = require('../config/products');
 const { createFreeLimiter, loginLimiter } = require('../middleware/rateLimits');
 const {
   buildInteractiveAccessEmail,
@@ -113,7 +111,7 @@ router.post('/createFree', createFreeLimiter, [
 
     const { calendarId, email, promoCode } = req.body;
 
-    if (!isFullDiscountPromo(promoCode)) {
+    if (!(await isFullDiscountPromo(promoCode))) {
       return res.status(403).json({
         error: 'Invalid promo code',
         message: 'Kod promocyjny jest nieprawidłowy lub nie uprawnia do darmowej aktywacji.',
@@ -143,14 +141,15 @@ router.post('/createFree', createFreeLimiter, [
       return res.status(400).json({ error: 'Email mismatch', message: 'Adres musi być zgodny z adresem właściciela kalendarza.' });
     }
     const sku = calendar.data?.sku || 'interactive';
-    if (!isSkuAllowedForPromo(promoCode, sku)) {
+    if (isPhysicalProduct(sku)) {
       return res.status(403).json({
         error: 'Promo not allowed for product',
-        message: 'Ten kod promocyjny nie obejmuje wybranego produktu.',
+        message: 'Darmowa aktywacja bez płatności dotyczy tylko kalendarza interaktywnego. Produkty fizyczne z kodem 100% dokończ w kasie.',
       });
     }
 
     if (calendar.status === 'pending') await cancelCalendarCheckout(calendarId, { singleOnly: true });
+    if (calendar.status === 'pending') await redeem(promoCode, { email: ownerEmail });
     const accessCode = calendar.accessCode || generateAccessCode();
     const updatedCalendar = calendar.status === 'succeeded' ? calendar : await Calendar.updateCalendar(calendarId, {
       status: 'succeeded', isFree: true, accessCode, fulfillmentStatus: 'delivered',
