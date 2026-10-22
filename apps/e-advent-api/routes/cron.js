@@ -21,6 +21,9 @@ async function handleInpostStatus(req, res) {
 router.get('/inpost-status', authCron, handleInpostStatus);
 router.post('/inpost-status', authCron, handleInpostStatus);
 
+// Vercel: 07:00 UTC = 8:00 Europe/Warsaw in December (CET). Also retries paid
+// emails and advances InPost. Window mails go only to email-opening calendars
+// whose today task is still closed.
 async function handleDailyWindows(req, res) {
   try {
     await retryOrderEmails();

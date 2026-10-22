@@ -337,6 +337,16 @@ async function sendDailyWindowEmail(calendar, day, { force = true, triggeredBy =
   const tasks = (calendar.data && calendar.data.tasks) || [];
   const task = tasks.find((t) => Number(t.day) === n);
   if (!task) throw MailerError(`Brak zadania na dzień ${n}.`, 400, 'NO_TASK');
+  if (!force && task.status === 'opened') {
+    return {
+      success: true,
+      skipped: true,
+      reason: 'already_opened',
+      recipient: to,
+      day: n,
+      calendarId: calendar.id || calendar._id,
+    };
+  }
 
   const calendarTitle = (calendar.data && calendar.data.title) || 'Kalendarz adwentowy';
   const taskBody = getTaskText(task);

@@ -51,7 +51,7 @@ const TEMPLATES = [
     id: 'daily_window',
     name: 'Codzienne okienko',
     description: 'Treść dnia dla kalendarzy z metodą otwierania „codzienny e-mail”.',
-    trigger: 'Cron / panel Wysyłki / karta kalendarza',
+    trigger: 'Cron o 8:00 czasu polskiego (1–24 grudnia) — tylko metoda „codzienny e-mail” i nieotwarte okienko; panel może wysłać ręcznie',
     subject: 'Dzień {n} kalendarza adwentowego — {tytuł}',
   },
   {

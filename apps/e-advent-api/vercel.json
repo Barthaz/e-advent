@@ -15,7 +15,7 @@
   "crons": [
     {
       "path": "/api/v1/cron/daily-windows",
-      "schedule": "0 6 * * *"
+      "schedule": "0 7 * * *"
     }
   ]
 }

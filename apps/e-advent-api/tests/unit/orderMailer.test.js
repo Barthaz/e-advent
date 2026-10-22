@@ -178,6 +178,25 @@ describe('orderMailer', () => {
     expect(sendEmail).toHaveBeenCalledTimes(1);
   });
 
+  test('cron skips a window the recipient already opened that day', async () => {
+    Calendar.findEmailOpeningCalendars.mockResolvedValue([interactiveCalendar({
+      data: {
+        ...interactiveCalendar().data,
+        tasks: [{ day: 1, task: 'Zrób pierniki', status: 'opened' }],
+      },
+    })]);
+
+    const skipped = await sendTodaysDailyWindows({
+      force: false,
+      triggeredBy: 'cron',
+      now: new Date('2026-12-01T08:00:00+01:00'),
+    });
+    expect(skipped.skippedCount).toBe(1);
+    expect(skipped.results[0].reason).toBe('already_opened');
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(Calendar.openTask).not.toHaveBeenCalled();
+  });
+
   test('bulk today outside advent is skipped', async () => {
     const result = await sendTodaysDailyWindows({
       now: new Date('2026-08-14T10:00:00+02:00'),
