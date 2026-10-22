@@ -54,14 +54,19 @@ async function initializeCheckout(request, clientIP) {
     if (order) {
       intent = await ensureIntent(order);
       if (order.metadata.checkoutFingerprint !== fingerprint || intent.status === 'canceled') {
-        if (['processing', 'succeeded', 'requires_capture'].includes(intent.status) || order.status === 'succeeded') {
+        const paid = order.status === 'succeeded' || intent.status === 'succeeded';
+        // An in-flight charge still belongs to the previous cart. A finished
+        // purchase does not: the same browser tab must be able to start the next order.
+        if (['processing', 'requires_capture'].includes(intent.status) && !paid) {
           throw conflict('Płatność została rozpoczęta. Poczekaj na jej wynik przed zmianą zamówienia.');
         }
-        if (intent.status !== 'canceled') {
-          const canceled = await stripe.paymentIntents.cancel(intent.id);
-          if (canceled.status !== 'canceled') throw conflict('Nie udało się anulować poprzedniej płatności.');
+        if (!paid) {
+          if (intent.status !== 'canceled') {
+            const canceled = await stripe.paymentIntents.cancel(intent.id);
+            if (canceled.status !== 'canceled') throw conflict('Nie udało się anulować poprzedniej płatności.');
+          }
+          await Payment.updatePaymentStatus(intent.id, 'canceled');
         }
-        await Payment.updatePaymentStatus(intent.id, 'canceled');
         order = null;
         intent = null;
       }

@@ -62,11 +62,23 @@ describe('checkout identity and concurrency', () => {
     expect(store.orders.get(first.orderId).shippingAddress.street).toBe('Ulica 1');
     expect(store.orders.get(second.orderId).shippingAddress.street).toBe('Ulica 2');
   });
-  test.each(['processing', 'succeeded'])('does not replace a %s payment', async status => {
+  test('does not replace a processing payment', async () => {
     const first = await initializeCheckout(request, 'test');
-    store.intents.get(first.paymentIntentId).status = status;
+    store.intents.get(first.paymentIntentId).status = 'processing';
     await expect(initializeCheckout({ ...request, customerEmail: 'other@example.com' }, 'test')).rejects.toMatchObject({ status: 409 });
     expect(store.orders.size).toBe(1);
+    expect(stripe.paymentIntents.cancel).not.toHaveBeenCalled();
+  });
+  test('a completed payment does not block the next checkout in the same browser session', async () => {
+    const first = await initializeCheckout(request, 'test');
+    store.intents.get(first.paymentIntentId).status = 'succeeded';
+    store.orders.get(first.orderId).status = 'succeeded';
+    const second = await initializeCheckout({ ...request, customerEmail: 'other@example.com' }, 'test');
+    expect(second.orderId).not.toBe(first.orderId);
+    expect(second.paymentIntentId).not.toBe(first.paymentIntentId);
+    expect(store.intents.get(first.paymentIntentId).status).toBe('succeeded');
+    expect(store.orders.get(first.orderId).status).toBe('succeeded');
+    expect(store.orders.size).toBe(2);
     expect(stripe.paymentIntents.cancel).not.toHaveBeenCalled();
   });
   test('retries recover the same intent after a DB binding failure', async () => {
