@@ -3,16 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const React = require('react');
-const {
-  renderToBuffer,
-  Document,
-  Page,
-  Text,
-  View,
-  Image,
-  Font,
-  StyleSheet,
-} = require('@react-pdf/renderer');
+const { loadReactPdf } = require('../reactPdf');
 
 const {
   assertGraphicsPresent,
@@ -31,7 +22,7 @@ const fontsDir = path.resolve(__dirname, '../../assets/fonts');
 
 let fontsRegistered = false;
 
-function ensureFonts() {
+function ensureFonts(Font) {
   if (fontsRegistered) return;
   Font.register({
     family: 'Source Serif 4',
@@ -120,7 +111,8 @@ function rectStyle(rect) {
  * @returns {Promise<Buffer>}
  */
 async function buildScratchPdfBuffer(input) {
-  ensureFonts();
+  const { renderToBuffer, Document, Page, Text, View, Image, Font, StyleSheet } = await loadReactPdf();
+  ensureFonts(Font);
   assertGraphicsPresent();
 
   const format = normalizeExportFormat(input.format);
