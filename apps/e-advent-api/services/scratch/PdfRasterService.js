@@ -10,6 +10,11 @@ const PNG_BORDER_PX = 22;
  * Load pdfjs legacy build (CommonJS-friendly) for Node.
  */
 async function loadPdfJs() {
+  // pdfjs resolves its fake worker with a computed import() that Vercel's file tracing
+  // misses; pre-registering it via a literal import ships the file and skips that lookup.
+  if (!globalThis.pdfjsWorker) {
+    globalThis.pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.mjs');
+  }
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
   return pdfjs;
 }
