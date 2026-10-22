@@ -76,6 +76,8 @@ const LAYOUT = {
   textInsetYMm: 2,
   /** Order number label in the bottom-right corner (font size in pt). */
   orderLabelFontSize: 11,
+  /** Shift the gold number left from the grid's right edge, ~one number width. */
+  orderLabelRightInsetMm: 18,
 };
 
 /**
@@ -250,8 +252,9 @@ function computeScratchLayout(pageSize) {
   const gridBottomY = gridOriginY + gridBlockH;
   const labelH = LAYOUT.orderLabelFontSize * 1.4;
   const labelW = cellW * 1.5;
+  const rightInset = LAYOUT.orderLabelRightInsetMm * PT_PER_MM;
   const orderLabelLocal = {
-    x: gridOriginX + gridBlockW - labelW,
+    x: gridOriginX + gridBlockW - labelW - rightInset,
     y: Math.min(H - labelH, gridBottomY + Math.max(0, (H - gridBottomY - labelH) / 2)),
     width: labelW,
     height: labelH,

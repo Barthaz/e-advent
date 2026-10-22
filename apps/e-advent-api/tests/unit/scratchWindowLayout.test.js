@@ -108,6 +108,8 @@ describe('scratchWindowLayout', () => {
     expect(cell.text.y + cell.text.height).toBeLessThan(inner.y + inner.height);
     expect(layout.orderLabel.x + layout.orderLabel.width)
       .toBeGreaterThan(layout.windows[3].x + layout.windows[3].width * 0.5);
+    expect(layout.orderLabel.x + layout.orderLabel.width)
+      .toBeLessThan(layout.windows[3].x + layout.windows[3].width);
     expect(layout.orderLabel.y).toBeGreaterThan(layout.windows[23].y + layout.windows[23].height);
   });
 
