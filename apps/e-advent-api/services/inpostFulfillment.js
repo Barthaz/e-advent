@@ -148,6 +148,33 @@ async function markLabelPrepared(id) {
   }
 }
 
+// Paid InPost orders get their ShipX shipment right away; failures stay visible in
+// the panel ("Przygotuj" retries) and never block payment confirmation.
+async function ensureShipment(orderId) {
+  const order = await Payment.findPaymentById(orderId);
+  if (!order?.metadata?.inpostDelivery || order.status !== 'succeeded') return { skipped: true };
+  try {
+    return { skipped: false, shipment: await operate(orderId, 'create') };
+  } catch (error) {
+    console.error('InPost auto-create failed:', orderId, error.message);
+    return { skipped: false, error: error.message };
+  }
+}
+
+async function createMissingShipments({ limit = 20 } = {}) {
+  try { inpost.config(); } catch { return { skipped: true, created: 0, failed: 0 }; }
+  const [rows] = await query(`SELECT o.id FROM orders o LEFT JOIN order_inpost_shipments s ON s.order_id = o.id
+    WHERE o.status = 'succeeded' AND o.delivery_type LIKE '%inpost%' AND s.order_id IS NULL
+      AND o.fulfillment_status NOT IN ('delivered', 'cancelled')
+    ORDER BY o.created_at ASC LIMIT ?`, [limit]);
+  let created = 0, failed = 0;
+  for (const { id } of rows) {
+    const result = await ensureShipment(id);
+    if (result.shipment) created++; else if (result.error) failed++;
+  }
+  return { skipped: false, created, failed };
+}
+
 // Fallback for missing/undeliverable webhooks (e.g. localhost): poll open shipments.
 async function syncActiveShipments({ limit = 50 } = {}) {
   let c;
@@ -163,4 +190,4 @@ async function syncActiveShipments({ limit = 50 } = {}) {
   return { skipped: false, refreshed, failed };
 }
 
-module.exports = { operate, matches, offerPrice, markLabelPrepared, syncActiveShipments };
+module.exports = { operate, matches, offerPrice, markLabelPrepared, syncActiveShipments, ensureShipment, createMissingShipments };
