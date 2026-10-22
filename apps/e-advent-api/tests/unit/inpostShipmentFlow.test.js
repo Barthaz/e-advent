@@ -58,12 +58,41 @@ test('prepared email waits for a tracking number instead of sending an empty one
   expect(sendEmail).not.toHaveBeenCalled();
 });
 
-test('InPost scan marks the order shipped and delivery marks it delivered, without customer email', async () => {
+test('simultaneous label downloads serialize the email check and send', async () => {
+  await operate(order.id, 'label');
+  const pending = new Map();
+  db.withNamedLocks.mockImplementation((keys, run) => {
+    const key = keys.join(':');
+    const next = (pending.get(key) || Promise.resolve()).then(run);
+    pending.set(key, next.catch(() => {}));
+    return next;
+  });
+  try {
+    const results = await Promise.all([markLabelPrepared(order.id), markLabelPrepared(order.id)]);
+    expect(results.map(result => result.email).sort()).toEqual(['sent', 'skipped']);
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(db.withNamedLocks).toHaveBeenCalledWith([`shipment-email:${order.id}`], expect.any(Function));
+  } finally {
+    db.withNamedLocks.mockImplementation((_keys, run) => run());
+  }
+});
+
+test('InPost scan marks the order shipped and delivery marks it delivered without a second customer email', async () => {
   remote.status = 'dispatched_by_sender';
   await expect(syncActiveShipments()).resolves.toEqual({ skipped: false, refreshed: 1, failed: 0 });
   expect(orderUpdates.some(([sql]) => sql.includes("fulfillment_status = 'shipped', shipped_at"))).toBe(true);
+  expect(sendEmail).toHaveBeenCalledTimes(1);
   remote.status = 'delivered';
   await operate(order.id, 'refresh');
   expect(orderUpdates.some(([sql]) => sql.includes("fulfillment_status = 'delivered'"))).toBe(true);
-  expect(sendEmail).not.toHaveBeenCalled();
+  expect(sendEmail).toHaveBeenCalledTimes(1);
+});
+
+test('confirmed label purchase emails the customer even before a PDF download', async () => {
+  await operate(order.id, 'refresh');
+  expect(sendEmail).toHaveBeenCalledTimes(1);
+  expect(sendEmail.mock.calls[0][0]).toMatchObject({ to: 'buyer@example.com' });
+  expect(sendEmail.mock.calls[0][0].text).toContain('TRACK123');
+  await expect(markLabelPrepared(order.id)).resolves.toEqual({ email: 'skipped', error: null });
+  expect(sendEmail).toHaveBeenCalledTimes(1);
 });

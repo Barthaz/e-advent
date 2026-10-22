@@ -372,12 +372,13 @@ describe('special headlines', () => {
     expect(registry.entries['set-1-task-7'].capabilities.canPrint).toBe(true);
   });
 
-  test('printable specials default to A5', () => {
-    const pages = Object.values(registry.entries)
-      .filter((entry) => entry.document)
-      .map((entry) => entry.document.defaultPage);
-    expect(pages.length).toBeGreaterThan(0);
-    expect(pages.every((size) => size === 'A5')).toBe(true);
+  test('craft sheets declare A4 and other printable cards keep A5', () => {
+    const { CRAFT_TEMPLATES } = require('../../services/special/CraftSheets');
+    const entries = Object.values(registry.entries).filter((entry) => entry.document);
+    expect(entries.length).toBeGreaterThan(0);
+    for (const { document } of entries) {
+      expect(document.defaultPage).toBe(CRAFT_TEMPLATES.has(document.templateId) ? 'A4' : 'A5');
+    }
   });
 
   test('mobile print is lists and letters, not bingo or games', () => {
@@ -454,8 +455,10 @@ describe('DocumentRegistry families', () => {
       {},
       'COLOR',
     );
-    expect(definition.nodes.some((n) => n.type === 'CutLine')).toBe(true);
-    expect(definition.nodes.some((n) => n.type === 'Kicker' && n.text === 'DIY')).toBe(true);
+    expect(definition.page).toMatchObject({size: 'A4', orientation: 'PORTRAIT'});
+    expect(definition.craftSheets[0].shapes.some(shape => shape.role === 'cut')).toBe(true);
+    expect(definition.craftSheets[0].shapes.some(shape => shape.role === 'fold')).toBe(true);
+    expect(definition.craftSheets[0].texts.some(label => label.text.includes('Podpórki'))).toBe(true);
   });
 
   test('labels sheet prints personalized rows', () => {
@@ -468,8 +471,9 @@ describe('DocumentRegistry families', () => {
       { fields: { Dla: 'Babcia', 'Krótka dedykacja': 'Wesołych Świąt' }, theme: 'Złoto' },
       'COLOR',
     );
-    expect(definition.nodes.some((n) => n.type === 'CutLine')).toBe(true);
-    expect(definition.nodes.some((n) => String(n.text || '').includes('Babcia'))).toBe(true);
+    expect(definition.craftSheets).toHaveLength(2);
+    expect(definition.craftSheets[0].shapes.filter(shape => shape.role === 'cut')).toHaveLength(8);
+    expect(definition.craftSheets[0].texts.filter(label => label.text.includes('Babcia'))).toHaveLength(8);
   });
 
   test('configured option result appears on recipe-like PDF', () => {

@@ -167,7 +167,6 @@ router.post('/webhook', async (req, res) => {
         console.error('Webhook signature verification failed:', err.message, {
             hasRawBody: Buffer.isBuffer(req.rawBody),
             bodyType: Buffer.isBuffer(req.body) ? 'buffer' : typeof req.body,
-            secretPrefix: String(process.env.STRIPE_WEBHOOK_SECRET || '').slice(0, 10),
         });
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
@@ -175,8 +174,8 @@ router.post('/webhook', async (req, res) => {
     try {
         if (event.type === 'payment_intent.succeeded') {
             const result = await fulfillPaidIntent(event.data.object);
-            await ensureShipment(result.orderId).catch(error => console.error('InPost auto-create error:', error.message));
             await deliverOrderEmails(result.orderId);
+            await ensureShipment(result.orderId).catch(error => console.error('InPost auto-fulfillment error:', error.message));
         } else if (['payment_intent.payment_failed', 'payment_intent.canceled'].includes(event.type)) {
             // A delayed failed event must not reserve a second payment or undo
             // a later successful retry of this same PaymentIntent.

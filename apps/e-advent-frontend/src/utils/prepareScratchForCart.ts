@@ -13,15 +13,15 @@ import {
 import {
   clearPendingCalendarSession,
   getReusablePendingCalendarId,
-  getStorageKeys,
   setPendingCalendarSession,
 } from './creatorStorage';
 import scratchPresetsData from '../data/scratch-presets.json';
+import { DEFAULT_SCRATCH_TITLE } from '../data/scratchColors';
 
 export interface ScratchCartPrepareInput {
-  name: string;
-  email: string;
-  calendarTitle: string;
+  name?: string;
+  email?: string;
+  calendarTitle?: string;
   tasks: CalendarTaskInput[];
   scratchContentMode: ScratchContentMode;
   selectedScratchPreset: number | null;
@@ -35,56 +35,25 @@ export interface ScratchCartPrepareInput {
 
 /**
  * Creates/updates a pending scratch calendar on the API so it can be added to cart with calendarId.
+ * Buyer name/email are collected at checkout, not on the product page.
  */
 export async function prepareScratchCalendarForCart(input: ScratchCartPrepareInput): Promise<{
   calendarId: string;
   editToken: string;
 }> {
   const presets = scratchPresetsData as ScratchPreset[];
-  const keys = getStorageKeys(input.productType);
-
-  let generatedTasks: Array<{
-    day: number;
-    task: string;
-    title?: string;
-  }> = [];
-
-  const savedGenerated = localStorage.getItem(keys.generatedCalendar)
-    || localStorage.getItem('e-advent-generated-calendar');
-
-  if (savedGenerated) {
-    try {
-      const parsed = JSON.parse(savedGenerated) as Array<{
-        day: number;
-        task: string;
-        title?: string;
-      }>;
-      generatedTasks = parsed.map(({ day, task, title }) => ({
-        day,
-        task,
-        ...(title?.trim() ? { title: title.trim() } : {}),
-      }));
-    } catch {
-      generatedTasks = [];
-    }
-  }
-
-  if (generatedTasks.length === 0) {
-    generatedTasks = buildScratchCalendarTasks({
-      presets,
-      mode: input.scratchContentMode,
-      selectedPreset: input.selectedScratchPreset,
-      customTasks: input.tasks,
-      shuffleCustomTasks: input.shuffleCustomTasks,
-    });
-  }
-
-  generatedTasks = generatedTasks.sort((a, b) => a.day - b.day);
+  const generatedTasks = buildScratchCalendarTasks({
+    presets,
+    mode: input.scratchContentMode,
+    selectedPreset: input.selectedScratchPreset,
+    customTasks: input.tasks,
+    shuffleCustomTasks: input.shuffleCustomTasks,
+  }).sort((a, b) => a.day - b.day);
 
   const calendarDataToSave: InternalCalendarData = {
-    name: input.name,
-    email: input.email,
-    calendarTitle: input.calendarTitle,
+    name: input.name?.trim() || undefined,
+    email: input.email?.trim() || undefined,
+    calendarTitle: input.calendarTitle?.trim() || DEFAULT_SCRATCH_TITLE,
     tasks: generatedTasks,
     dailyEmailReminders: input.dailyEmailReminders || false,
     productType: input.productType,

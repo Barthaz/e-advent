@@ -37,7 +37,7 @@ const TEMPLATES = [
     id: 'shipment_prepared',
     name: 'Paczka przygotowana',
     description: 'Numer przesyłki InPost i link do śledzenia, gdy etykieta jest gotowa. Wysyłany raz na zamówienie.',
-    trigger: 'Panel — automatycznie przy pierwszym „Pobierz etykietę PDF”',
+    trigger: 'Webhook Stripe/InPost — automatycznie po zakupie etykiety (panel ponawia przy pobraniu, jeśli mail się nie udał)',
     subject: 'Twoja paczka e-Advent jest przygotowana do wysyłki',
   },
   {

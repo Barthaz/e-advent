@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { timingSafeEqual } = require('node:crypto');
 const { query } = require('../config/database');
 const { config } = require('../services/inpost');
-const { operate } = require('../services/inpostFulfillment');
+const { advanceShipment } = require('../services/inpostFulfillment');
 const limiter = require('../middleware/rateLimits').rateLimit({ windowMs: 60000, max: 300, standardHeaders: true, legacyHeaders: false });
 
 router.post('/webhook', limiter, async (req, res) => {
@@ -18,7 +18,7 @@ router.post('/webhook', limiter, async (req, res) => {
       [c.environment, c.organizationId, String(req.body.payload.shipment_id)]);
     // A webhook is only a hint. Fetch the shipment with our own credentials;
     // never trust its customer, tracking number, status or price from the body.
-    if (rows[0]) await operate(rows[0].order_id, 'refresh');
+    if (rows[0]) await advanceShipment(rows[0].order_id);
     return res.sendStatus(200);
   } catch { return res.sendStatus(503); }
 });

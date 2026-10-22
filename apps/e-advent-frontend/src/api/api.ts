@@ -11,9 +11,9 @@ if (!API_BASE_URL) {
 
 // Wewnętrzna struktura danych (używana w aplikacji)
 export interface InternalCalendarData {
-  name: string;
-  email: string;
-  calendarTitle: string;
+  name?: string;
+  email?: string;
+  calendarTitle?: string;
   tasks: Array<{
     day: number;
     /** Treść / opis dnia */
@@ -49,9 +49,9 @@ export interface InternalCalendarData {
 // Struktura danych zgodna z API backendu
 export interface CreateCalendarRequest {
   id?: string; // Opcjonalne - tylko dla aktualizacji
-  title: string; // Tytuł kalendarza
-  author: string; // Imię autora
-  email: string; // Email autora
+  title?: string; // Tytuł kalendarza (wymagany przy interaktywnym)
+  author?: string; // Imię autora (wymagane przy interaktywnym)
+  email?: string; // Email autora (wymagany przy interaktywnym)
   creation?: string; // Data utworzenia (ISO string) - opcjonalne, backend może ustawić
   modified?: string; // Data modyfikacji (ISO string) - opcjonalne, backend może ustawić
   tasks: Array<{
@@ -99,11 +99,16 @@ function mapToApiFormat(
 ): CreateCalendarRequest {
   const openedDaysSet = new Set(openedDays || []);
   
+  const title = String(internalData.calendarTitle || '').trim()
+    || (internalData.productType === 'scratch' ? 'Kalendarz zdrapka' : '');
+  const author = String(internalData.name || '').trim();
+  const email = String(internalData.email || '').trim();
+
   return {
     id: calendarId || undefined,
-    title: internalData.calendarTitle,
-    author: internalData.name,
-    email: internalData.email,
+    title,
+    ...(author ? { author } : {}),
+    ...(email ? { email } : {}),
     tasks: internalData.tasks.map(task => {
       const dayTitle = task.title?.trim();
       // Zdrapka: title = nagłówek dnia, description = treść. Interaktywny: title = treść.

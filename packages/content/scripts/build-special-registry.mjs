@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
+const craftTemplates = new Set(JSON.parse(readFileSync(join(root, 'craft-templates.json'), 'utf8')));
 const catalog = JSON.parse(
   readFileSync(join(root, 'catalog', 'e-advent-calendars-data.json'), 'utf8'),
 );
@@ -73,7 +74,7 @@ const ENGINE_MATRIX = {
   'set-5-task-20': { engine: 'SCORECARD', contentKey: 'tea-tasting-v1', templateId: 'scorecard-v1' },
   'set-5-task-22': { engine: 'RECIPE', secondaryEngine: 'TEMPLATE_PERSONALIZER', contentKey: 'edible-gift-v1', templateId: 'recipe-gift-label-v1' },
   'set-5-task-24': { engine: 'SCORECARD', contentKey: 'cookie-duel-v1', templateId: 'scorecard-v1' },
-  'set-5-task-27': { engine: 'RECIPE', secondaryEngine: 'CARD_FORM', contentKey: 'family-recipe-v1', templateId: 'family-recipe-v1' },
+  'set-5-task-27': { engine: 'CARD_FORM', contentKey: 'family-recipe-v1', templateId: 'family-recipe-v1' },
   'set-6-task-1': { engine: 'CARD_FORM', dateGate: true, contentKey: 'future-self-letter-v1', templateId: 'private-letter-v1' },
   'set-6-task-2': { engine: 'CARD_FORM', contentKey: 'three-good-scenes-v1', templateId: 'memory-card-v1' },
   'set-6-task-3': { engine: 'CARD_FORM', contentKey: 'year-in-six-words-v1', templateId: 'typographic-card-v1' },
@@ -226,7 +227,7 @@ function buildDescriptor(taskId, task, matrixEntry) {
       templateId: matrixEntry.templateId,
       version: 1,
       variants: ['COLOR', 'INK_SAVER'],
-      defaultPage: 'A5',
+      defaultPage: craftTemplates.has(matrixEntry.templateId) ? 'A4' : 'A5',
     };
   }
 

@@ -18,8 +18,8 @@ interface Shipment {
 type Notice = { kind: 'success' | 'warning'; text: string };
 
 const EMAIL_NOTICE: Record<string, Notice> = {
-  sent: { kind: 'success', text: 'Etykieta pobrana. Klient dostał mail „Paczka przygotowana” z numerem przesyłki.' },
-  skipped: { kind: 'success', text: 'Etykieta pobrana ponownie. Mail „Paczka przygotowana” był już wysłany wcześniej.' },
+  sent: { kind: 'success', text: 'Etykieta pobrana. Wysłano do klienta mail „Paczka przygotowana” z numerem przesyłki.' },
+  skipped: { kind: 'success', text: 'Etykieta pobrana. Klient dostał już mail z numerem przesyłki po zakupie etykiety.' },
 };
 
 export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh }: {
@@ -128,7 +128,7 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh 
       <p>Klient zapłacił za dostawę: {delivery.price.toFixed(2)} zł</p>
     </div>
 
-    {!paid ? <p className="text-sm text-gray-500">Przygotowanie przesyłki będzie dostępne po potwierdzeniu płatności.</p> : <>
+    {!paid ? <p className="text-sm text-gray-500">Po potwierdzeniu płatności przesyłka i etykieta InPost tworzą się same. Tu zostaje ręczne ponowienie, jeśli automat się nie uda.</p> : <>
       <ol className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
         {steps.map((label, i) => {
           const n = i + 1;
@@ -150,14 +150,14 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh 
           {shipment.offerPrice == null ? 'Kup etykietę (rozliczenie wg umowy)' : `Kup etykietę za ${shipment.offerPrice.toFixed(2)} zł brutto`}
         </button>}
         {shipment?.labelReady && <button className="btn-primary" disabled={busy} onClick={() => act('label')}>
-          {shipment.labelDownloadedAt ? 'Pobierz etykietę PDF ponownie' : 'Pobierz etykietę PDF i powiadom klienta'}
+          {shipment.labelDownloadedAt ? 'Pobierz etykietę PDF ponownie' : 'Pobierz etykietę PDF'}
         </button>}
         {shipment?.shipmentId && !shipment.labelReady && !shipment.canBuy && !shipment.needsReview && <button className="btn-secondary" disabled={busy || waitingForOffers} onClick={() => act('offers')}>Odśwież oferty</button>}
         <button className="btn-secondary" disabled={busy} onClick={() => act('refresh')}>Odśwież status</button>
       </div>
 
       {waitingForOffers && <p className="text-sm text-gray-500" aria-live="polite">InPost przygotowuje oferty… sprawdzam automatycznie.</p>}
-      {step === 3 && <p className="text-sm text-gray-600">Po pobraniu etykiety zamówienie przejdzie w status „W realizacji”, a klient dostanie jednorazowy mail z numerem przesyłki.</p>}
+      {step === 3 && <p className="text-sm text-gray-600">Etykieta jest gotowa do pobrania. Klient dostaje mail z numerem śledzenia automatycznie po zakupie etykiety — pobranie ponowi go tylko, jeśli wcześniej się nie udał.</p>}
       {step === 4 && !shipment?.shipped && <p className="text-sm text-gray-600">Naklej etykietę i nadaj paczkę. Status „Wysłane” ustawi się sam po pierwszym skanie InPost (webhook, cron lub „Odśwież status”). Dalsze powiadomienia klient dostaje od InPost.</p>}
       {shipment?.shipped && shipment.providerStatus !== 'delivered' && <p className="text-sm text-christmas-green">Paczka jest w drodze — zamówienie oznaczone jako wysłane.</p>}
       {shipment?.providerStatus === 'delivered' && <p className="text-sm text-christmas-green">Paczka doręczona.</p>}

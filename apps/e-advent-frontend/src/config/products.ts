@@ -16,6 +16,7 @@ import {
 } from '@e-advent/products';
 import interactiveImage from '../assets/interactive.png';
 import letterImage from '../assets/list/list_1.webp';
+import scratchHeroImage from '../assets/scratch/wachlarz.webp';
 
 export {
   SHIPPING_COST,
@@ -72,7 +73,7 @@ export const PRODUCT_FAMILIES: ProductFamily[] = BASE_PRODUCT_FAMILIES.map((fami
   }
   return {
     ...family,
-    imageSrc: '/designs/scratch/red.png',
+    imageSrc: scratchHeroImage,
     imageAlt: 'Kalendarz adwentowy zdrapka',
     eyebrow: 'Fizyczny prezent',
   };

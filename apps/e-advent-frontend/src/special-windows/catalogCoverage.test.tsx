@@ -18,6 +18,29 @@ it('includes every source task and every special descriptor in the creator pool'
   for (const id of Object.keys(registry.entries)) expect(catalog.catalogTaskById).toHaveProperty(id);
 });
 
+for (const [platform, Engine] of [['web', WebEngine], ['mobile', MobileEngine]] as const) {
+  it(`${platform}: shows scoring next to the gingerbread photo and restores gift label fields`, () => {
+    for (const [id, payload, visible] of [
+      ['set-5-task-5', { scores: { 'Klasyczny ludzik': 4 } }, ['Klasyczny ludzik', 'Eksperyment domowy']],
+      ['set-5-task-22', { fields: { Dla: 'Babcia Zosia', 'Krótka dedykacja': 'Słodkich Świąt' } }, ['Babcia Zosia', 'Słodkich Świąt']],
+    ] as const) {
+      const descriptor = registry.entries[id] as SpecialWindowDescriptor;
+      const progress = { taskId: id, configId: descriptor.configId, status: 'IN_PROGRESS', payloadVersion: 1, updatedAt: '', payload } as SpecialWindowProgress;
+      const html = renderToStaticMarkup(<Engine descriptor={descriptor} progress={progress} onUpdate={() => {}} calendarId="preview-test" day={1} />);
+      for (const text of visible) expect(html).toContain(text);
+    }
+  });
+  it(`${platform}: family recipe restores editable ingredients, method and existing history`, () => {
+    const descriptor = registry.entries['set-5-task-27'] as SpecialWindowDescriptor;
+    expect(descriptor.engine).toBe('CARD_FORM');
+    const fields = { 'Składniki i ilości': '500 g mąki', 'Przygotowanie krok po kroku': 'Ulep pierogi.', 'Kto go przekazał': 'Babcia' };
+    const progress = { taskId: 'set-5-task-27', configId: descriptor.configId, status: 'IN_PROGRESS', payloadVersion: 1, updatedAt: '', payload: { fields } } as SpecialWindowProgress;
+    const html = renderToStaticMarkup(<Engine descriptor={descriptor} progress={progress} onUpdate={() => {}} calendarId="preview-test" day={1} />);
+    for (const value of Object.values(fields)) expect(html).toContain(value);
+    expect(html).toContain('Nazwa potrawy');
+  });
+}
+
 describe.each(Object.entries(registry.entries))('%s', (id, entry) => {
   const descriptor = entry as SpecialWindowDescriptor;
   it('has content and matching web/mobile print rules', () => {

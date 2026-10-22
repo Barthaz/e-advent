@@ -48,8 +48,10 @@ async function fulfillPaidIntent(intent) {
       if (!item.calendar_id) continue;
       const [calendars] = await conn.execute('SELECT id, access_code, email, sku, status FROM calendars WHERE id = ? FOR UPDATE', [item.calendar_id]);
       if (!calendars.length) throw new Error('Order calendar not found');
+      const calendarEmail = String(calendars[0].email || '').trim().toLowerCase();
+      const ownerEmail = String(itemMetadata.ownerEmail || '').trim().toLowerCase();
       if (canonicalOrder && (calendars[0].sku !== item.sku || calendars[0].status !== 'pending'
-          || String(calendars[0].email).trim().toLowerCase() !== itemMetadata.ownerEmail)) {
+          || (ownerEmail && calendarEmail !== ownerEmail))) {
         throw new Error('Calendar owner, product or status mismatch');
       }
       const physical = isPhysicalProduct(item.sku);

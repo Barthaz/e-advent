@@ -66,7 +66,7 @@ export const PRODUCTS = {
     type: 'scratch',
     slug: 'zdrapka',
     name: 'Kalendarz zdrapka A3',
-    description: 'Fizyczny kalendarz adwentowy ze zdrapkami w formacie A3.',
+    description: 'Fizyczny kalendarz adwentowy A3 ze złotymi zdrapkami — 3 warianty i gotowa przygoda albo własne zadania.',
     basePrice: 69,
     shippingCost: SHIPPING_COST,
     format: 'A3',
@@ -132,11 +132,11 @@ export const PRODUCT_FAMILIES = [
     type: 'scratch',
     slug: 'zdrapka',
     name: 'Kalendarz zdrapka',
-    shortDescription: 'Fizyczny kalendarz — zdrapuj okienko każdego dnia i odkryj zadanie lub cytat.',
+    shortDescription: 'Fizyczny kalendarz A3 — zdrapuj złote okienko każdego dnia i odkryj zadanie.',
     icon: 'fa-hand-sparkles',
     creatorRoute: '/stworz-kalendarz/zdrapka',
     priceFrom: 69,
-    features: ['Format A3 (29,7 × 42 cm)', 'Własna grafika', 'Realizacja 3–5 dni roboczych', 'Wysyłka InPost'],
+    features: ['Format A3 (29,7 × 42 cm)', '3 warianty', 'Gotowa przygoda lub własne zadania', 'Wysyłka InPost'],
     requiresShipping: true,
     requiresDesign: true,
   },
@@ -188,13 +188,12 @@ export function computeOrderTotals(items, options = {}) {
   let shipping = 0;
   let freeShipping = false;
   if (hasPhysical) {
-    if (options?.shippingAmount != null) {
-      shipping = roundPln(options.shippingAmount);
-      if (!Number.isFinite(shipping) || shipping < 0) return null;
-      freeShipping = shipping === 0;
-    } else if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
       shipping = 0;
       freeShipping = true;
+    } else if (options?.shippingAmount != null) {
+      shipping = roundPln(options.shippingAmount);
+      if (!Number.isFinite(shipping) || shipping < 0) return null;
     } else {
       shipping = SHIPPING_COST;
     }

@@ -1257,5 +1257,10 @@ const ENGINE_MAP: Partial<Record<SpecialEngineType, React.ComponentType<EnginePr
 
 export default function EngineRouter(props: EngineProps) {
   const Component = ENGINE_MAP[props.descriptor.engine] || GenericEngine;
-  return <Component {...props} />;
+  const secondary = props.descriptor.config?.secondaryEngine;
+  return <>
+    <Component {...props} />
+    {secondary === 'SCORECARD' && <ScorecardEngine {...props} />}
+    {secondary === 'TEMPLATE_PERSONALIZER' && <TemplatePersonalizerEngine {...props} />}
+  </>;
 }

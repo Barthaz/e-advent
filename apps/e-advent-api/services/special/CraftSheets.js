@@ -1,11 +1,7 @@
 'use strict';
 
 // All coordinates are millimetres on A4. Geometry is data, not a raster template.
-const CRAFT_TEMPLATES = new Set([
-  'paper-village-v1', 'paper-reindeer-v1', 'origami-guide-v1', 'garland-v1',
-  'salt-dough-guide-v1', 'stamp-guide-v1', 'envelope-decor-guide-v1', 'bookmarks-v1',
-  'wrapping-pattern-v1', 'memory-chain-v1', 'comic-sheet-v1', 'coupon-sheet-v1', 'labels-sheet-v1',
-]);
+const CRAFT_TEMPLATES = new Set(require('../../../../packages/content/craft-templates.json'));
 const sheet = (title, subtitle) => ({ title, subtitle, shapes: [], texts: [] });
 function shape(s, kind, attrs, role = 'decoration') { s.shapes.push({ kind, attrs, role }); }
 function line(s, x1, y1, x2, y2, role = 'cut') { shape(s, 'line', { x1, y1, x2, y2 }, role); }
@@ -211,7 +207,7 @@ function origami() {
   for(let i=0;i<6;i++) {
     const ox=24+i%2*94,oy=50+Math.floor(i/2)*70,scale=.36;
     const P=pts=>pts.map(([x,y])=>[ox+x*scale,oy+y*scale]);
-    const pts=i<3?[[60,0],[120,60],[60,120],[0,60]]:i===3?[[60,0],[95.15,35.15],[60,120],[24.85,35.15]]:i===4?[[24.85,35.15],[95.15,35.15],[60,120]]:[[60,0],[95.15,84.85],[24.85,84.85]];
+    const pts=i<2?[[60,0],[120,60],[60,120],[0,60]]:i===2?[[60,0],[120,60],[60,120],[24.85,35.15]]:i===3?[[60,0],[95.15,35.15],[60,120],[24.85,35.15]]:i===4?[[24.85,35.15],[95.15,35.15],[60,120]]:[[60,0],[95.15,84.85],[24.85,84.85]];
     polygon(s,P(pts),'decoration',i===5?'accent':'tint');
     if(i===1||i===2) {const [a,b]=P([[60,0],[60,120]]);line(s,...a,...b,'fold');}
     if(i===2) {
@@ -262,7 +258,7 @@ function personalized(kind,pack,payload) {
     const s=sheet('Kupony na wspólny czas','Wytnij trzy kupony. Wpisz własne pomysły w formularzu lub uzupełnij je po wydruku.');
     for(let i=0;i<3;i++) {
       const y=49+i*71;rect(s,18,y,174,63,'cut','tint');
-      line(s,48,y,48,y+63,'fold');star(s,33,y+29,9,'decoration');
+      line(s,48,y,48,y+63,'decoration');star(s,33,y+29,9,'decoration');
       text(s,55,y+5,128,`KUPON ${i+1}`,8,7);
       text(s,55,y+14,128,`Dla: ${fields['Dla kogo']||'________________________'}`,10,15);
       text(s,55,y+30,128,fields[`Kupon ${i+1}`]||['Wspólna kawa lub kakao','Spacer wśród lampek','Wieczór filmowy'][i],11,21);

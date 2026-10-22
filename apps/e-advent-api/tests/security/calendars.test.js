@@ -254,6 +254,21 @@ describe('Scratch calendars: A3 only', () => {
     expect(Calendar.createCalendar).toHaveBeenCalledWith({ data: expect.objectContaining({ sku: 'scratch-a3', format: 'A3' }) });
   });
 
+  test('accepts a scratch draft without name, title or email', async () => {
+    Calendar.createCalendar.mockResolvedValue(pendingCalendar({ sku: 'scratch-a3' }));
+    const res = await request(app).post('/api/v1/calendars').send({
+      calendar: {
+        productType: 'scratch',
+        sku: 'scratch-a3',
+        format: 'A3',
+        design: { imageUrl: '/designs/scratch/red.png' },
+        tasks: [{ day: 1, title: 'Start', description: 'Zdrap okienko', status: 'closed' }],
+      },
+    });
+    expect(res.status).toBe(201);
+    expect(Calendar.createCalendar).toHaveBeenCalled();
+  });
+
   test('cannot switch an existing draft to A4 through PUT', async () => {
     Calendar.findCalendarById.mockResolvedValue(pendingCalendar({ sku: 'scratch-a3' }));
     const res = await request(app).put('/api/v1/calendars/cal-pending-001').set('X-Calendar-Edit-Token', 'test-edit-token').send({ calendar: { format: 'A4' } });

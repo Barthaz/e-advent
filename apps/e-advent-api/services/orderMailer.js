@@ -269,7 +269,7 @@ async function sendShippingEmailForOrder(order, triggeredBy = 'admin') {
   };
 }
 
-/** Sent once per order, on the first label download; repeated downloads are skipped. */
+/** Sent once per order when the InPost label is bought (or on a later download retry). */
 async function sendShipmentPreparedEmail(order, triggeredBy = 'admin') {
   if (!order) throw MailerError('Zamówienie nie istnieje', 404, 'ORDER_NOT_FOUND');
   const trackingNumber = String(order.trackingNumber || '').trim();

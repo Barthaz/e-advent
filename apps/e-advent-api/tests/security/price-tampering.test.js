@@ -250,23 +250,29 @@ describe('Faza 1 — price tampering (P-*)', () => {
     expect(stripe.paymentIntents.create).toHaveBeenCalled();
   });
 
-  test('P-08: configured InPost delivery is charged even above the old free-shipping threshold', async () => {
+  test('P-08: shipping is free when merchandise reaches the free-shipping threshold', async () => {
     Calendar.findCalendarById.mockResolvedValue(pendingCalendar({ sku: 'scratch-a3' }));
+    const inpost = require('../../services/inpost');
+    const quote = inpost.quote(
+      [{ sku: 'scratch-a3', quantity: 1 }, { sku: 'santa-letter', quantity: 2 }],
+      'courier_inpost',
+    );
+    expect(quote.price).toBe(0);
     stripe.paymentIntents.create.mockImplementation(async params => ({ ...params,
       id: 'pi_free_ship',
       client_secret: 'secret',
       status: 'requires_payment_method',
-      amount: 13200,
+      amount: 12700,
       currency: 'pln',
     }));
 
-    // 69 + 29*2 + configured test tariff 5 = 132
+    // 69 + 29*2 = 127, delivery waived at 100 zł
     const res = await request(app)
       .post('/api/v1/stripe/create-payment-intent')
       .send({
-        data: { delivery, checkoutToken: 'a'.repeat(64),
+        data: { delivery: { type: 'courier_inpost', quoteKey: quote.quoteKey }, checkoutToken: 'a'.repeat(64),
           editToken: 'test-edit-token',
-          amount: 132,
+          amount: 127,
           currency: 'pln',
           customerEmail: 'buyer@example.com',
           orderId: 'order_free_ship',
@@ -285,7 +291,7 @@ describe('Faza 1 — price tampering (P-*)', () => {
       });
 
     expect(res.status).toBe(200);
-    expect(res.body.shipping).toBe(5);
+    expect(res.body.shipping).toBe(0);
   });
 
   test('P-09: santa-certificate without letter is rejected', async () => {

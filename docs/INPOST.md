@@ -41,12 +41,12 @@ Frontend pobiera wyłącznie publiczny token mapy i środowisko z `/api/v1/shipp
 
 ## Ceny i gabaryty
 
-Cena dla klienta pochodzi z `INPOST_PACKAGES_JSON`. To cennik **Twojego konta i rzeczywistych opakowań**, a nie stała cena 5 zł lub automatyczna darmowa dostawa od 100 zł. Wpisz ceny brutto wraz z należnymi dopłatami. Aktualizuj je, gdy InPost zmieni warunki. Nie ma automatycznej synchronizacji cennika z umową: API InPost może zwracać `rate: null` lub wartości domyślne dla kont rozliczanych umownie, również przy kalkulacji ceny. [Ograniczenie opisane przez InPost](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/18153505).
+Cena dla klienta pochodzi z `INPOST_PACKAGES_JSON` (brutto, z dopłatami). Ta sama stawka obowiązuje każde zamówienie, które mieści się w opakowaniu: obecnie 16,99 zł Paczkomat i 19,99 zł kurier. Powyżej `FREE_SHIPPING_THRESHOLD` (100 zł produktów) dostawa jest gratis — klient nie płaci stawki z cennika, ale paczkę nadal nadajemy InPost. Aktualizuj ceny, gdy InPost zmieni warunki. Nie ma automatycznej synchronizacji cennika z umową: API InPost może zwracać `rate: null` lub wartości domyślne dla kont rozliczanych umownie, również przy kalkulacji ceny. [Ograniczenie opisane przez InPost](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/18153505).
 
 Przykład **wyłącznie do sandboxa** — poniższe wymiary, pojemności i ceny są fikcyjnym przykładem formatu, nie pomiarami produktów ani ofertą InPost:
 
 ```dotenv
-INPOST_PACKAGES_JSON='[{"code":"test-flat","length":450,"width":330,"height":50,"weight":1,"capacity":{"scratch-a3":2,"santa-letter":4,"santa-certificate":20},"prices":{"parcel_inpost":17,"courier_inpost":22}},{"code":"test-box","length":600,"width":350,"height":150,"weight":3,"capacity":{"scratch-a3":8,"santa-letter":10,"santa-certificate":40},"prices":{"parcel_inpost":20,"courier_inpost":26}}]'
+INPOST_PACKAGES_JSON='[{"code":"test-flat","length":450,"width":330,"height":50,"weight":1,"capacity":{"scratch-a3":2,"santa-letter":4,"santa-certificate":20},"prices":{"parcel_inpost":16.99,"courier_inpost":19.99}},{"code":"test-box","length":600,"width":350,"height":150,"weight":3,"capacity":{"scratch-a3":8,"santa-letter":10,"santa-certificate":40},"prices":{"parcel_inpost":16.99,"courier_inpost":19.99}}]'
 ```
 
 W panelu zmiennych hostingu wklej sam JSON, bez zewnętrznych apostrofów. Dla produkcji zastąp cały przykład danymi ustalonymi po spakowaniu i zważeniu produktów:
@@ -54,7 +54,7 @@ W panelu zmiennych hostingu wklej sam JSON, bez zewnętrznych apostrofów. Dla p
 - `code`: unikalna nazwa opakowania, litery/cyfry/`_`/`-`.
 - `length`, `width`, `height`: zewnętrzne wymiary **zapakowanej** paczki w mm; `weight`: bezpieczna maksymalna masa pełnego opakowania w kg.
 - `capacity`: sprawdzona pojemność dla każdego SKU. Dla koszyka mieszanego liczymy sumę `liczba sztuk / pojemność danego SKU`; musi być ≤ 1. Przykład: 1 szt. przy pojemności 2 i 2 szt. przy pojemności 4 wypełniają opakowanie. Certyfikaty też zajmują miejsce. Zmierz i zweryfikuj również mieszane koszyki; algorytm nie symuluje przestrzennego pakowania.
-- `prices`: końcowa cena brutto PLN osobno dla `parcel_inpost` i `courier_inpost`. Brak ceny wyłącza dany sposób dostawy dla opakowania.
+- `prices`: końcowa cena brutto PLN osobno dla `parcel_inpost` i `courier_inpost`. Brak ceny wyłącza dany sposób dostawy dla opakowania. Przy koszyku od 100 zł klient płaci 0 zł, ale opakowanie i usługa zostają wybrane jak zwykle.
 
 Serwer wybiera najtańsze pasujące opakowanie. Gabaryt A/B/C wyznacza na podstawie wymiarów; C2C dopuszcza też D, kurier standard wymiary własne. Implementacja ogranicza paczkę do 25 kg i standardowych wymiarów (bez palet i niestandardów). Obecnie **jedno zamówienie = jedna paczka**; koszyk niemieszczący się w żadnym skonfigurowanym opakowaniu jest blokowany przed płatnością. Dodaj odpowiednio wycenione większe opakowanie, jeśli chcesz przyjmować większe koszyki. [Gabaryty usług ShipX](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/18153507/Shipment+sizes+and+services), [wymiary paczek kurierskich](https://inpost.pl/pomoc-rodzaje-i-wymiary-paczek-kurierskich).
 
@@ -76,10 +76,10 @@ Wdróż razem API, frontend i panel; konfiguracja API i migracja muszą być got
 ## Panel i odporność na powtórzenia
 
 1. Otwórz opłacone zamówienie. Sprawdź zapisany odbiorca/punkt, opakowanie i oznaczenie TEST.
-2. **Przygotuj przesyłkę** tworzy rekord ShipX z wyborem oferty, bez automatycznego zakupu.
-3. **Odśwież status** pobiera wynik asynchronicznego przetwarzania. **Odśwież oferty** odtwarza wygasłe oferty przed zakupem.
-4. **Kup etykietę za … zł brutto** (lub według umowy) jest świadomym zleceniem zakupu. Zmieniona oferta wymaga ponownego sprawdzenia ceny. Zakup jest asynchroniczny.
-5. Po potwierdzeniu pobierz PDF A6. Można pobierać go wielokrotnie bez kupowania kolejnej przesyłki. Etykieta jest dostępna tylko dla administratora. [Warunki pobierania etykiet](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/18153509). Pierwsze pobranie ustawia zamówienie na „W realizacji” i wysyła klientowi jednorazowy mail „Paczka przygotowana” z numerem i linkiem do śledzenia (typ `shipment_prepared` w historii maili). Kolejne pobrania nie wysyłają maila ponownie; jeśli wysyłka się nie udała, ponowne pobranie ją ponawia.
+2. Webhook Stripe po udanej płatności sam tworzy przesyłkę ShipX. Gdy InPost zwróci identyfikator i ofertę, od razu kupuje etykietę. Jeśli oferty nie ma jeszcze w odpowiedzi, zakup dokończy webhook InPost (`offers_prepared`) albo cron. Nieudany automat zostawia przyciski **Przygotuj przesyłkę** / **Kup etykietę** do ręcznego ponowienia.
+3. **Odśwież status** pobiera wynik asynchronicznego przetwarzania. **Odśwież oferty** odtwarza wygasłe oferty przed ręcznym zakupem.
+4. Ręczny **Kup etykietę za … zł brutto** (lub według umowy) zostaje na wypadek, gdy automat się nie udał. Zmieniona oferta wymaga ponownego sprawdzenia ceny. Zakup jest asynchroniczny; po timeout nie kupujemy drugi raz w ciemno.
+5. Po potwierdzeniu zakupu etykieta PDF A6 jest od razu do pobrania w panelu (wielokrotnie, bez kolejnego zakupu). Jest dostępna tylko dla administratora. [Warunki pobierania etykiet](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/18153509). Udany zakup ustawia zamówienie na „W realizacji” i wysyła klientowi jednorazowy mail „Paczka przygotowana” z numerem i linkiem do śledzenia (typ `shipment_prepared`). Pobranie PDF ponawia mail tylko wtedy, gdy wcześniejsza wysyłka się nie udała.
 6. Spakuj zgodnie z zapisanym profilem, naklej etykietę i przekaż paczkę InPost. Sam zakup etykiety nie oznacza wysłania paczki. Po pierwszym skanie InPost zamówienie samo przechodzi na „Wysłane” (`shipped_at`), a po odbiorze na „Dostarczone” (`delivered_at`). Sklep nie wysyła wtedy maili — klienta powiadamia InPost.
 
 Status przesyłki odświeża się: webhookiem InPost, przy otwarciu zamówienia w panelu, przy wejściu na listę zamówień (najwyżej co 5 min, także przyciskiem „Synchronizuj InPost”), w dziennym cronie oraz przez `POST /api/v1/cron/inpost-status` z nagłówkiem `Authorization: Bearer <CRON_SECRET>` (zalecane co 30–60 min na produkcji).
@@ -100,13 +100,13 @@ https://<host-api>/api/v1/inpost/webhook?token=<INPOST_WEBHOOK_SECRET>
 
 Adres wymaga publicznego HTTPS. To sekret Twojej integracji, nie token ShipX. Ukryj parametr `token` w logach hostingu/proxy; aplikacja loguje samą ścieżkę bez query. [Konfiguracja webhooków InPost](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/18153630).
 
-Obsługiwane zdarzenia: `offers_prepared`, `shipment_confirmed`, `shipment_status_changed`. Webhook sprawdza sekret i organizację, następnie pobiera faktyczny stan zapisanej przesyłki z ShipX. Nie przepisuje statusu/numeru śledzenia z treści zdarzenia i nigdy niczego nie kupuje. Opóźniony webhook odczytuje aktualny stan. Pobranie statusu uaktualnia numer śledzenia oraz wysłanie/doręczenie zamówienia; potwierdzenie etykiety nie oznacza wysyłki. Bez webhooka pozostaje ręczne odświeżanie w panelu. Sandbox nie odtwarza całej rzeczywistej drogi paczki.
+Obsługiwane zdarzenia: `offers_prepared`, `shipment_confirmed`, `shipment_status_changed`. Webhook sprawdza sekret i organizację, następnie pobiera faktyczny stan zapisanej przesyłki z ShipX. Nie przepisuje statusu, numeru śledzenia ani ceny z treści zdarzenia. Gdy po odświeżeniu czeka niewykupiona oferta, kupuje etykietę (ten sam lock i flaga `buy_attempted` co w panelu — po niejasnym wyniku nie ma drugiej próby). Opóźniony webhook odczytuje aktualny stan. Pobranie statusu uaktualnia numer śledzenia oraz wysłanie/doręczenie zamówienia; potwierdzenie etykiety nie oznacza wysyłki. Bez webhooka zostaje cron i ręczne odświeżanie w panelu. Sandbox nie odtwarza całej rzeczywistej drogi paczki.
 
 ## Próba odbiorcza na Twoim koncie
 
 - Zrób testowe zamówienie do Paczkomatu oraz osobne kurierem. Sprawdź opakowanie, cenę, telefon, adres i powiązanie numeru klienta z UUID w Stripe, bazie i referencji ShipX.
-- Zapłać Stripe test. Dopiero po webhooku płatniczym zamówienie ma być dostępne do nadania. Sprawdź mail potwierdzający.
-- Kup testową etykietę, pobierz PDF dwa razy, odśwież panel. W Managerze ma istnieć jedna przesyłka na zamówienie, z właściwym odbiorcą.
+- Zapłać Stripe test. Po webhooku płatniczym zamówienie ma być opłacone, a przesyłka InPost utworzona. Jeśli InPost od razu zwróci ofertę, etykieta ma być kupiona, mail „Paczka przygotowana” wysłany, a PDF dostępny w panelu bez ręcznego „Kup”.
+- Pobierz PDF dwa razy, odśwież panel. Drugie pobranie nie wysyła maila ponownie. W Managerze ma istnieć jedna przesyłka na zamówienie, z właściwym odbiorcą. Jeśli automat się nie uda, dokończ ręcznie z panelu.
 - Zmień Paczkomat/adres przed płatnością: poprzedni formularz płatności znika i stary PaymentIntent jest anulowany. Sprawdź koszyk z certyfikatem oraz koszyk przekraczający pojemność.
 - Porównaj kwotę oferty w panelu z Managerem/rozliczeniem, dobierz `INPOST_API_RATE_TAX`, właściwe ceny brutto i rzeczywiste profile opakowań.
 - Dopiero po udanym sandboxie skonfiguruj produkcyjne dane i wykonaj kontrolne realne zamówienie. Zakup produkcyjnej etykiety może obciążyć konto.

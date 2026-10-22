@@ -195,7 +195,7 @@ router.post('/:id?', [
   body('calendar').optional().isObject().withMessage('Calendar must be an object'),
   body('calendar.title').optional().isString(),
   body('calendar.author').optional().isString(),
-  body('calendar.email').optional().isEmail(),
+  body('calendar.email').optional({ values: 'falsy' }).isEmail(),
   body('calendar.tasks').optional().isArray(),
 ], async (req, res) => {
   try {
@@ -298,6 +298,9 @@ router.get('/:id', async (req, res) => {
 
 router.put('/:id', [
   body('calendar').optional().isObject(),
+  body('calendar.title').optional().isString(),
+  body('calendar.author').optional().isString(),
+  body('calendar.email').optional({ values: 'falsy' }).isEmail(),
   body('calendar.tasks').optional().isArray(),
 ], async (req, res) => {
   try {

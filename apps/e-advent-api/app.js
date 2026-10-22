@@ -59,7 +59,7 @@ if (testingMode) {
     allowedHeaders: corsAllowedHeaders,
     exposedHeaders: ['X-Shipment-Email', 'X-Shipment-Email-Error'],
   }));
-  console.log('âš ď¸Ź CORS w trybie testowym - zezwalanie na wszystkie originy (TESTING_MODE=true)');
+  console.log('CORS w trybie testowym - zezwalanie na wszystkie originy (TESTING_MODE=true)');
 } else {
   app.use(cors({
     origin: (origin, callback) => {
@@ -74,7 +74,7 @@ if (testingMode) {
     allowedHeaders: corsAllowedHeaders,
     exposedHeaders: ['X-Shipment-Email', 'X-Shipment-Email-Error'],
   }));
-  console.log('đź”’ CORS allowlist:', corsAllowlist.join(', '));
+  console.log('CORS allowlist:', corsAllowlist.join(', '));
 }
 
 // Stripe needs the exact raw bytes for signature verification. On Vercel the
@@ -196,7 +196,7 @@ io.on('connection', (socket) => {
 app.use((err, req, res, next) => {
     if (err?.type === 'entity.too.large' || err?.status === 413 || err?.name === 'PayloadTooLargeError') {
         return res.status(413).json({
-            error: 'ZdjÄ™cia sÄ… za duĹĽe do wysĹ‚ania. Wczytaj JPG, PNG, WEBP lub GIF do 10 MB.',
+            error: 'Zdjęcia są za duże do wysłania. Wczytaj JPG, PNG, WEBP lub GIF do 10 MB.',
         });
     }
     console.error(err.stack);

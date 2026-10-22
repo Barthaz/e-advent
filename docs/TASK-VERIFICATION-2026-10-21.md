@@ -1,5 +1,7 @@
 # Weryfikacja zadań — 21.10.2026
 
+Aktualizacja i wyniki kolejnej rundy: [22.10.2026](TASK-VERIFICATION-2026-10-22.md). Poniżej zachowano historyczny stan pierwszej weryfikacji.
+
 ## Wynik
 
 Nie należy jeszcze oznaczać całego modułu jako gotowego produkcyjnie. Renderowanie i eksport działają w opisanych testach, ale część materiałów kreatywnych jest nieukończona. Test na fizycznym Androidzie pozostaje do wykonania.

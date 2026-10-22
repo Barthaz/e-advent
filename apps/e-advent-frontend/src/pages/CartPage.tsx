@@ -25,7 +25,7 @@ export default function CartPage() {
 
       <FestivePage maxWidth="lg">
         <ParchmentCard padding="lg">
-          <h1 className="font-display text-3xl md:text-4xl font-semibold text-parchment-text text-center mb-2">
+          <h1 className="heading-page mb-2">
             Koszyk
           </h1>
           <div className="gold-divider mb-8" />

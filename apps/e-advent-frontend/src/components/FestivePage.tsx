@@ -8,7 +8,7 @@ interface FestivePageProps {
   containerClassName?: string;
   showLogo?: boolean;
   centered?: boolean;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   showSnow?: boolean;
   /** Defaults to photo (marketing look). Pass gradient only when explicitly needed. */
   variant?: 'photo' | 'gradient';
@@ -20,6 +20,7 @@ const maxWidthClasses = {
   md: 'max-w-3xl',
   lg: 'max-w-4xl',
   xl: 'max-w-5xl',
+  '2xl': 'max-w-6xl',
   full: 'max-w-7xl',
 };
 

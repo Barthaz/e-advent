@@ -1,6 +1,6 @@
 'use strict';
 
-const { getProduct } = require('../config/products');
+const { getProduct, FREE_SHIPPING_THRESHOLD, roundPln } = require('../config/products');
 const { createHash } = require('node:crypto');
 
 function fail(message, status = 400) { return Object.assign(new Error(message), { status }); }
@@ -82,7 +82,13 @@ function quote(items, type) {
   candidates.sort((a, b) => a.prices[type] - b.prices[type]);
   const p = candidates[0];
   if (!p) throw fail('Dla tego koszyka nie ma skonfigurowanej przesyłki. Zmień sposób dostawy lub skontaktuj się ze sklepem.');
-  const price = Math.round(p.prices[type] * 100) / 100;
+  let merchandise = 0;
+  for (const item of items) {
+    const product = getProduct(item.sku);
+    if (product) merchandise += product.basePrice * item.quantity;
+  }
+  const tariff = Math.round(p.prices[type] * 100) / 100;
+  const price = roundPln(merchandise) >= FREE_SHIPPING_THRESHOLD ? 0 : tariff;
   const parcel = { dimensions: { length: p.length, width: p.width, height: p.height, unit: 'mm' }, weight: { amount: Number(p.weight), unit: 'kg' },
     ...(type === 'parcel_inpost' || c.courierService === 'inpost_courier_c2c' ? { template: p.template } : {}) };
   const result = { type, price, currency: 'PLN', profile: p.code, parcel,

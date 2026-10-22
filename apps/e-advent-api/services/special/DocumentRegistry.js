@@ -118,22 +118,6 @@ function payloadNodes(data) {
   return nodes;
 }
 
-const DIY_TEMPLATES = new Set([
-  'paper-reindeer-v1',
-  'paper-village-v1',
-  'origami-guide-v1',
-  'garland-v1',
-  'salt-dough-guide-v1',
-  'stamp-guide-v1',
-  'envelope-decor-guide-v1',
-  'bookmarks-v1',
-  'wrapping-pattern-v1',
-  'memory-chain-v1',
-  'comic-sheet-v1',
-  'coupon-sheet-v1',
-  'labels-sheet-v1',
-]);
-
 function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR', layout) {
   const templateId = descriptor.document?.templateId;
   if (!templateId) return null;
@@ -389,6 +373,7 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
   }
 
   const CARD_TEMPLATES = new Set([
+    'family-recipe-v1',
     'form-card-v1',
     'gratitude-card-v1',
     'memory-card-v1',
@@ -419,16 +404,12 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
   const RECIPE_TEMPLATES = new Set([
     'recipe-v1',
     'scorecard-v1',
-    'family-recipe-v1',
     'recipe-gift-label-v1',
     'configured-card-v1',
     'configured-recipe-v1',
   ]);
 
   const LABEL_SHEET_TEMPLATES = new Set([
-    'labels-sheet-v1',
-    'coupon-sheet-v1',
-    'comic-sheet-v1',
     'prompt-sheet-v1',
     'suggestion-list-v1',
   ]);
@@ -437,6 +418,7 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
     const cards = formCardsFromPayload(pack, payload);
     const theme = String(payload.theme || '').trim();
     const kickerMap = {
+      'family-recipe-v1': 'Rodzinny przepis',
       'gratitude-card-v1': 'Wdzięczność',
       'memory-card-v1': 'Wspomnienie',
       'tradition-card-v1': 'Tradycja',
@@ -457,7 +439,7 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
     cards.forEach((card, index) => {
       if (card.name) nodes.push({ type: 'Heading', text: card.name, level: 2 });
       card.fields.forEach((field) => {
-        nodes.push({ type: 'Text', text: field.label, style: 'muted' });
+        nodes.push({ type: 'Text', text: field.label, style: 'muted', minPresenceAhead: 24 });
         nodes.push({ type: 'Text', text: field.value || '………………', style: field.value ? 'accent' : 'muted' });
       });
       if (index < cards.length - 1) nodes.push({ type: 'Divider' });
@@ -552,13 +534,9 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
   }
 
   if (LABEL_SHEET_TEMPLATES.has(templateId)) {
-    const fields = payload.fields && typeof payload.fields === 'object' ? payload.fields : {};
     const theme = String(payload.theme || '').trim();
-    const labelCount = Math.max(4, Math.floor(Number(pack.labelCount) || 6));
-    const primary = String(fields[Object.keys(fields)[0]] || fields['Dla kogo'] || fields.Dla || '').trim();
-    const dedication = String(fields[Object.keys(fields)[1]] || fields.Dedycacja || fields.Tekst || '').trim();
     const nodes = [
-      { type: 'Kicker', text: templateId === 'coupon-sheet-v1' ? 'Kupony' : templateId === 'comic-sheet-v1' ? 'Komiks' : 'Etykiety' },
+      { type: 'Kicker', text: 'Pomysły' },
       heading,
       theme ? { type: 'Text', text: `Motyw: ${theme}`, style: 'muted' } : null,
       { type: 'Divider' },
@@ -570,57 +548,10 @@ function buildDocumentDefinition(descriptor, progressPayload, variant = 'COLOR',
       prompts.slice(0, 12).forEach((prompt, idx) => {
         nodes.push({ type: 'Text', text: `${idx + 1}. ${prompt}` });
       });
-    } else if (templateId === 'comic-sheet-v1') {
-      nodes.push({
-        type: 'Table',
-        columns: ['Kadr 1', 'Kadr 2'],
-        rows: [
-          [dedication || primary || '………………', '………………'],
-          ['………………', '………………'],
-        ],
-      });
     } else {
-      for (let i = 0; i < labelCount; i += 1) {
-        nodes.push({
-          type: 'Text',
-          text: `□ ${primary || 'Dla: …………'} — ${dedication || '………………'}`,
-          style: 'accent',
-        });
-      }
+      nodes.push({ type: 'Text', text: 'Wybierz opcje w zadaniu, aby zapisać własne propozycje.' });
     }
     nodes.push({ type: 'CutLine', label: 'CIĘCIE' });
-    nodes.push(footer);
-    base.nodes = nodes;
-    return base;
-  }
-
-  if (DIY_TEMPLATES.has(templateId)) {
-    const steps = Array.isArray(pack.steps) ? pack.steps : [];
-    const notes = Array.isArray(pack.notes) ? pack.notes : [];
-    const printHint = String(pack.printHint || 'Wydrukuj w skali 100%. Linie cięcia oznaczone na arkuszu.').trim();
-    const cutLabel = String(pack.cutLabel || 'CIĘCIE').trim();
-    const nodes = [
-      { type: 'Kicker', text: 'DIY' },
-      ...intro,
-      { type: 'Text', text: printHint, style: 'muted' },
-    ];
-    notes.forEach((note) => nodes.push({ type: 'Text', text: String(note), style: 'muted' }));
-    if (steps.length) {
-      nodes.push({ type: 'Heading', text: 'Instrukcja', level: 2 });
-      steps.forEach((step, idx) => nodes.push({ type: 'Text', text: `${idx + 1}. ${step}` }));
-    }
-    if (templateId === 'paper-village-v1' || templateId === 'paper-reindeer-v1') {
-      nodes.push({ type: 'Text', text: '[Szablon do wycięcia — obrys na arkuszu]', style: 'accent' });
-    }
-    if (templateId === 'wrapping-pattern-v1') {
-      nodes.push({ type: 'Text', text: '◈ ◆ ★ · ◈ ◆ ★ · ◈ ◆ ★', style: 'accent' });
-      nodes.push({ type: 'Text', text: '★ · ◈ ◆ ★ · ◈ ◆ ★ · ◈', style: 'accent' });
-    }
-    if (templateId === 'origami-guide-v1' || templateId === 'garland-v1' || templateId === 'memory-chain-v1') {
-      nodes.push({ type: 'Text', text: '□ □ □ □ □ □', style: 'accent' });
-    }
-    nodes.push({ type: 'CutLine', label: cutLabel });
-    nodes.push(...payloadNodes(payload).filter((node) => node.type !== 'CheckboxList' || (node.items || []).some(Boolean)));
     nodes.push(footer);
     base.nodes = nodes;
     return base;

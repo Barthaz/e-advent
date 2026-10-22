@@ -539,7 +539,7 @@ export default function OrderDetailPage() {
             <p className="text-xs text-gray-500 mb-4">
               Webhook wysyła maile po opłaceniu automatycznie. Te przyciski służą do ręcznej wysyłki,
               gdy coś nie dotrze.
-              {isInpost && ' Mail „Paczka przygotowana” wychodzi sam przy pierwszym pobraniu etykiety InPost; o nadaniu i odbiorze informuje klienta InPost.'}
+              {isInpost && ' Mail „Paczka przygotowana” wychodzi sam po zakupie etykiety InPost; pobranie PDF ponawia go tylko, gdy wcześniej się nie udał. O nadaniu i odbiorze informuje klienta InPost.'}
             </p>
             <div className="space-y-2 mb-4">
               <button

@@ -27,6 +27,7 @@ interface ProductShowcaseProps {
   className?: string;
   /** Overlay scratch calendar template on the main image */
   overlayScratchTemplate?: boolean;
+  imageFit?: 'cover' | 'contain';
 }
 
 export default function ProductShowcase({
@@ -42,6 +43,7 @@ export default function ProductShowcase({
   headingLevel = 'h2',
   className = '',
   overlayScratchTemplate = false,
+  imageFit = 'cover',
 }: ProductShowcaseProps) {
   const primary = images[0];
   const isDark = tone === 'onDark';
@@ -69,9 +71,11 @@ export default function ProductShowcase({
       <div>
         <div
           className={`block w-full rounded-2xl overflow-hidden border shadow-xl ${
-            isDark
-              ? 'border-christmas-gold/30 bg-cream'
-              : 'border-christmas-gold/20 bg-cream'
+            imageFit === 'contain'
+              ? 'border-christmas-gold/30 bg-[#24150f]'
+              : isDark
+                ? 'border-christmas-gold/30 bg-cream'
+                : 'border-christmas-gold/20 bg-cream'
           }`}
         >
           {overlayScratchTemplate ? (
@@ -85,15 +89,15 @@ export default function ProductShowcase({
             <img
               src={primary.src}
               alt={primary.alt}
-              className="w-full aspect-[4/5] object-cover"
+              className={`w-full ${imageFit === 'contain' ? 'aspect-[4/3] object-contain bg-[#24150f]' : 'aspect-[4/5] object-cover'}`}
               width={800}
               height={1000}
             />
           )}
         </div>
         {images.length > 1 && (
-          <div className="mt-3 grid grid-cols-4 gap-2">
-            {images.slice(0, 4).map((img) => (
+          <div className={`mt-3 grid gap-2 ${images.length >= 5 ? 'grid-cols-5' : 'grid-cols-4'}`}>
+            {images.slice(0, 5).map((img) => (
               <div
                 key={img.src}
                 className="rounded-xl overflow-hidden border border-christmas-gold/20 opacity-90"

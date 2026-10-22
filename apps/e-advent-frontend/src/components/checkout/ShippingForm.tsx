@@ -20,11 +20,15 @@ export default function ShippingForm({ address, onChange, deliveryType, errors =
   };
 
   return (
-    <section className="mb-6">
-      <h2 className="heading-section mb-4">
-        <i className="fas fa-truck mr-2 text-christmas-green" />
+    <section className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6">
+      <h2 className="heading-section mb-1">
         Dane odbiorcy
       </h2>
+      <p className="text-parchment-muted text-sm mb-4">
+        {deliveryType === 'parcel_inpost'
+          ? 'Imię, nazwisko i telefon — adres zastąpi wybrany Paczkomat.'
+          : 'Adres, na który kurier InPost dostarczy przesyłkę.'}
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>

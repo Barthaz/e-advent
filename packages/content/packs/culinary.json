@@ -10,17 +10,17 @@
       ]
     },
     "recipe-truffles-v1": {
-      "title": "Trufle czekoladowe",
+      "title": "Trufle z herbatników bez pieczenia",
       "servings": 20,
-      "ingredients": ["200 g czekolady", "100 ml śmietanki"],
-      "steps": ["Podgrzej śmietankę", "Wymieszaj z czekoladą", "Formuj kulki"],
+      "ingredients": ["200 g herbatników", "150 g mascarpone", "100 g czekolady", "2–3 łyżki kakao lub wiórków kokosowych do obtoczenia"],
+      "steps": ["Pokrusz herbatniki na drobny piasek.", "Roztop czekoladę w kąpieli wodnej i odstaw, aż będzie letnia.", "Wymieszaj herbatniki z mascarpone i czekoladą. Schłódź masę przez około 30 minut, aby dała się formować.", "Uformuj około 20 kulek i obtocz w kakao lub wiórkach.", "Wstaw do lodówki na godzinę. Przechowuj w lodówce i wyjmij bezpośrednio przed podaniem."],
       "ctaLabel": "Otwórz przepis na trufle"
     },
     "recipe-cinnamon-rolls-v1": {
       "title": "Cynamonowe ślimaczki",
       "servings": 12,
-      "ingredients": ["Mąka", "Drożdże", "Cynamon", "Masło"],
-      "steps": ["Zagnieć ciasto", "Posmaruj nadzieniem", "Piecz 20 min"],
+      "ingredients": ["1 prostokątny arkusz ciasta francuskiego, około 275 g", "30 g miękkiego masła", "40 g cukru", "2 łyżeczki cynamonu"],
+      "steps": ["Rozgrzej piekarnik do 200°C, grzanie góra–dół; sprawdź też zalecenia na opakowaniu ciasta.", "Rozwiń ciasto, posmaruj masłem i posyp cukrem wymieszanym z cynamonem.", "Zwiń w rulon wzdłuż dłuższego boku. Pokrój na 12 plastrów.", "Ułóż plastry płasko na blasze z papierem do pieczenia, zachowując odstępy.", "Piecz około 18–22 minut, aż ciasto wyrośnie i się zezłoci. Odstaw do przestudzenia przed podaniem."],
       "ctaLabel": "Otwórz przepis na ślimaczki"
     },
     "gingerbread-test-v1": {
@@ -188,23 +188,15 @@
     },
     "family-recipe-v1": {
       "title": "Rodzinny przepis",
-      "servings": 6,
       "ctaLabel": "Zapisz kulinarną pamiątkę",
       "notes": [
         "Uzupełnij przepis i historię — powstanie karta, którą warto zachować na kolejne święta."
       ],
-      "ingredients": [
-        "Składnik 1",
-        "Składnik 2",
-        "Składnik 3",
-        "Składnik 4"
-      ],
-      "steps": [
-        "Zapisz kolejność przygotowania tak, jak robi to ktoś z rodziny.",
-        "Dopisz triki, bez których „nie smakuje tak samo”.",
-        "Odnotuj, ile osób przepis realnie karmi."
-      ],
       "fields": [
+        "Nazwa potrawy",
+        "Liczba porcji",
+        "Składniki i ilości",
+        "Przygotowanie krok po kroku",
         "Skąd wziął się ten przepis",
         "Kto go przekazał",
         "Jakie wspomnienie się z nim łączy",

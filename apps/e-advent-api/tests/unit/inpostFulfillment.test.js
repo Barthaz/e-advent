@@ -1,9 +1,11 @@
 jest.mock('../../config/database', () => ({ query: jest.fn(), withNamedLocks: jest.fn() }));
 jest.mock('../../models/Payment', () => ({ findPaymentById: jest.fn() }));
+jest.mock('../../services/orderMailer', () => ({ sendShipmentPreparedEmail: jest.fn() }));
 const db = require('../../config/database');
 const Payment = require('../../models/Payment');
 const inpost = require('../../services/inpost');
-const { operate } = require('../../services/inpostFulfillment');
+const { sendShipmentPreparedEmail } = require('../../services/orderMailer');
+const { operate, ensureShipment, advanceShipment } = require('../../services/inpostFulfillment');
 const { orderFingerprint } = require('../../services/orderIdentity');
 const setup = require('../helpers/inpostFixture');
 let order, row, remote, network;
@@ -23,14 +25,16 @@ beforeEach(async () => {
   db.query.mockImplementation(async (sql, a) => {
     if (sql.startsWith('SELECT')) return [row ? [{ ...row }] : []];
     if (sql.startsWith('INSERT')) { row = { order_id: a[0], environment: a[1], organization_id: a[2], state: a[3], payload: a[4], remote: null, buy_attempted: 0 }; }
-    else if (sql.includes('SET shipment_id = ?, state')) Object.assign(row, { shipment_id: a[0], state: a[1], remote: a[2] });
+    else if (sql.includes('SET shipment_id = ?, state')) Object.assign(row, { shipment_id: a[0], state: a[1], remote: JSON.parse(a[2]) });
     else if (sql.includes('SET shipment_id = ?')) row.shipment_id = a[0];
-    else if (sql.includes('SET remote = ?')) Object.assign(row, { remote: a[0], state: a[1] });
+    else if (sql.includes('SET remote = ?')) Object.assign(row, { remote: JSON.parse(a[0]), state: a[1] });
     else if (sql.includes("SET state = 'create_rejected'")) row.state = 'create_rejected';
     else if (sql.includes("SET state = 'create_pending'")) row.state = 'create_pending';
     else if (sql.includes('SET buy_attempted')) { row.buy_attempted = 1; row.state = 'buy_pending'; }
     return [{ affectedRows: 1 }];
   });
+  sendShipmentPreparedEmail.mockReset();
+  sendShipmentPreparedEmail.mockResolvedValue({ sent: 1, failed: 0, skipped: false, results: [{}] });
   network = jest.spyOn(inpost, 'request').mockImplementation(async (path, options) => {
     if (path.includes('/buy')) { remote.status = 'confirmed'; remote.tracking_number = '123456789012345678901234'; }
     if (path.includes('/label')) return Buffer.from('%PDF-test');
@@ -111,6 +115,38 @@ test('does not allow label download before purchase', async () => {
   await operate(order.id, 'create');
   await expect(operate(order.id, 'label')).rejects.toThrow('po potwierdzeniu');
   expect(network.mock.calls.some(([path]) => path.includes('/label'))).toBe(false);
+});
+test('ensureShipment creates the shipment, buys the matching offer and notifies the customer', async () => {
+  await expect(ensureShipment(order.id)).resolves.toMatchObject({
+    skipped: false, shipment: { shipmentId: '456', labelReady: true, trackingNumber: '123456789012345678901234' },
+  });
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(1);
+  expect(sendShipmentPreparedEmail).toHaveBeenCalledWith(expect.objectContaining({ trackingNumber: '123456789012345678901234' }), 'system');
+});
+test('ensureShipment does not buy when InPost has not prepared an offer yet', async () => {
+  remote.offers = [];
+  const result = await ensureShipment(order.id);
+  expect(result.shipment).toMatchObject({ shipmentId: '456', labelReady: false, canBuy: false });
+  expect(network.mock.calls.some(([path]) => path.endsWith('/buy'))).toBe(false);
+  expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
+});
+test('ensureShipment records an auto-buy failure without throwing so the panel can retry', async () => {
+  network.mockImplementation(async path => {
+    if (path.endsWith('/buy')) throw Object.assign(new Error('saldo'), { providerStatus: 422 });
+    return structuredClone(remote);
+  });
+  const result = await ensureShipment(order.id);
+  expect(result.error).toMatch(/saldo/);
+  expect(result.shipment.shipmentId).toBe('456');
+  expect(result.shipment.labelReady).toBe(false);
+  expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
+});
+test('advanceShipment buys a ready offer left after create and then notifies', async () => {
+  await operate(order.id, 'create');
+  expect(network.mock.calls.some(([path]) => path.endsWith('/buy'))).toBe(false);
+  await expect(advanceShipment(order.id)).resolves.toMatchObject({ labelReady: true, trackingNumber: '123456789012345678901234' });
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(1);
+  expect(sendShipmentPreparedEmail).toHaveBeenCalled();
 });
 test.each(['pending', 'canceled'])('unpaid %s order cannot buy or create', async status => {
   order.status = status;

@@ -80,7 +80,7 @@ export default function CalendarsHub() {
               <ProductShowcase
                 images={[
                   {
-                    src: secondary.imageSrc ?? '/designs/scratch/red.png',
+                    src: secondary.imageSrc!,
                     alt: secondary.imageAlt ?? secondary.name,
                   },
                 ]}
@@ -90,10 +90,9 @@ export default function CalendarsHub() {
                 priceLabel={`od ${formatPrice(secondary.priceFrom)}`}
                 priceHint="Wysyłka InPost · realizacja 3–5 dni roboczych"
                 features={secondary.features}
-                cta={{ label: 'Stwórz kalendarz', to: secondary.creatorRoute }}
+                cta={{ label: 'Zobacz kalendarz', to: secondary.creatorRoute }}
                 tone="onLight"
                 headingLevel="h2"
-                overlayScratchTemplate
               />
             </div>
           </section>
@@ -120,8 +119,9 @@ export default function CalendarsHub() {
                 >
                   zdrapka adwentowa
                 </Link>
-                . W przeciwieństwie do tradycyjnych kalendarzy adwentowych, nasze produkty dają pełną
-                personalizację — własne zadania, tytuł i (w przypadku zdrapki) własną grafikę.
+                . Interaktywny kalendarz personalizujesz imieniem, tytułem i zadaniami; fizyczna
+                zdrapka to gotowy plakat A3 — wybierasz wariant i przygodę, a dane do wysyłki podajesz
+                przy zamówieniu.
               </p>
               <p className="text-parchment-muted leading-relaxed mb-4">
                 Kalendarz adwentowy e-Advent to idealne rozwiązanie dla tych, którzy chcą stworzyć
@@ -153,17 +153,17 @@ export default function CalendarsHub() {
               </h3>
               <p className="text-parchment-muted leading-relaxed mb-4">
                 Preferujesz coś materialnego? Kalendarz zdrapka w formacie A3 to fizyczny
-                prezent z Twoją grafiką i zadaniami pod każdym okienkiem. Realizacja 3–5 dni
-                roboczych, wysyłka InPost.
+                prezent ze złotymi okienkami — trzy warianty i gotowa przygoda albo własne zadania.
+                Realizacja 3–5 dni roboczych, wysyłka InPost.
               </p>
 
               <h3 className="font-display text-2xl md:text-3xl font-semibold text-parchment-text mt-8 mb-4">
                 Jak działa spersonalizowany kalendarz adwentowy?
               </h3>
               <p className="text-parchment-muted leading-relaxed mb-4">
-                Wystarczy wybrać produkt, wypełnić krótki formularz, dodać własne zadania lub
-                wylosować je z gotowych zestawów, dokonać bezpiecznej płatności — i gotowe.
-                Interaktywny kalendarz otwierasz od razu; zdrapkę wysyłamy na podany adres.
+                Interaktywny kalendarz wypełniasz danymi i zadaniami, potem płacisz i dostajesz link.
+                Zdrapkę konfigurujesz wariantem i przygodą, dodajesz do koszyka, a e-mail oraz adres
+                podajesz dopiero przy płatności — potem wysyłamy kalendarz InPost.
               </p>
               <p className="text-parchment-muted leading-relaxed mb-6">
                 Dołącz do tysięcy zadowolonych użytkowników. Przeczytaj naszą{' '}

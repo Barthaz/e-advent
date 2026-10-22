@@ -1,7 +1,7 @@
 'use strict';
 
 // Offline verification: real document renderer, synthetic data, no DB/Stripe/SMTP.
-// node scripts/verify-special-windows.js [--render]
+// node scripts/verify-special-windows.js [--render] [--craft-only] [--skip-village]
 const fs = require('node:fs');
 const path = require('node:path');
 const { loadRegistry } = require('../services/special/SpecialConfigRegistry');
@@ -14,7 +14,10 @@ const output = path.join(root, craftOnly ? '.cache/craft-verification' : '.cache
 async function main() {
   fs.mkdirSync(output, { recursive: true });
   const { CRAFT_TEMPLATES } = require('../services/special/CraftSheets');
-  const entries = Object.entries(loadRegistry().entries).filter(([, d]) => !craftOnly || CRAFT_TEMPLATES.has(d.document?.templateId));
+  const allEntries = Object.entries(loadRegistry().entries);
+  const deferred = process.argv.includes('--skip-village')
+    ? allEntries.filter(([, d]) => d.document?.templateId === 'paper-village-v1').map(([id]) => id) : [];
+  const entries = allEntries.filter(([id, d]) => !deferred.includes(id) && (!craftOnly || CRAFT_TEMPLATES.has(d.document?.templateId)));
   const tasks = catalog.sets.flatMap(set => set.tasks);
   const ids = new Set(tasks.map(task => task.catalogTaskId));
   const results = [];
@@ -38,7 +41,7 @@ async function main() {
     const labels = pack?.fields || pack?.prompts || Array.from({ length: pack?.fieldCount || 3 }, (_, i) =>
       (pack?.fieldCount === 1 ? (pack?.fieldNoun || 'Pole') : `${pack?.fieldNoun || 'Pole'} ${i + 1}`));
     const payload = { started: true };
-    if (['CARD_FORM', 'TEMPLATE_PERSONALIZER'].includes(descriptor.engine)) {
+    if (['CARD_FORM', 'TEMPLATE_PERSONALIZER'].includes(descriptor.engine) || descriptor.config?.secondaryEngine === 'TEMPLATE_PERSONALIZER') {
       payload.name = 'Żaneta Łącka';
       payload.fields = Object.fromEntries(labels.map(label => [label, 'Żółć, święta i wspólne wspomnienia.']));
     }
@@ -50,9 +53,11 @@ async function main() {
       payload.columns = Array.isArray(pack?.columns) ? pack.columns : ['Zadanie', 'Termin'];
       payload.rows = [payload.columns.map(() => 'Próba')];
     }
-    if (descriptor.engine === 'SCORECARD') payload.scores = { 'Próba': 4 };
+    if (descriptor.engine === 'SCORECARD' || descriptor.config?.secondaryEngine === 'SCORECARD') payload.scores = { [pack?.samples?.[0] || 'Próba']: 4 };
     if (descriptor.engine === 'QUIZ') Object.assign(payload, { score: 5, total: 7 });
-    if (descriptor.engine === 'IMAGE_CARD') payload.photos = { then: { dataUrl }, now: { dataUrl } };
+    if (descriptor.engine === 'IMAGE_CARD') payload.photos = Object.fromEntries(
+      (pack?.slots || [{ id: 'then' }, { id: 'now' }]).map(slot => [slot.id, { dataUrl }]),
+    );
     if (descriptor.engine === 'OPTION_CONFIGURATOR') payload.result = ['Wybrana opcja: świąteczny zestaw'];
     if (row.pdf) {
       const definition = buildDocumentDefinition(descriptor, payload);
@@ -67,7 +72,12 @@ async function main() {
             let text = '';
             for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
               const page = await pdf.getPage(pageNo);
-              text += (await page.getTextContent()).items.map(item => item.str || '').join(' ');
+              if (definition.craftSheets && (Math.abs(page.view[2] - 210 * 72 / 25.4) > 1 || Math.abs(page.view[3] - 297 * 72 / 25.4) > 1)) {
+                throw new Error(`Invalid craft page size: ${page.view.join(', ')}`);
+              }
+              const pageText = (await page.getTextContent()).items.map(item => item.str || '').join(' ');
+              if (pageText.length <= 20) throw new Error(`Empty text on page ${pageNo}`);
+              text += pageText;
               if (variant === 'COLOR' || craftOnly) {
                 const viewport = page.getViewport({ scale: 0.85 });
                 const canvas = createCanvas(Math.ceil(viewport.width), Math.ceil(viewport.height));
@@ -89,6 +99,7 @@ async function main() {
   }
   const summary = {
     tasks: tasks.length, uniqueIds: ids.size, special: entries.length,
+    deferred,
     standard: tasks.filter(task => !task.isSpecial).length,
     printable: results.filter(r => r.pdf).length,
     mobilePrintable: results.filter(r => r.mobilePdf).length,

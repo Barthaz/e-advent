@@ -3,7 +3,8 @@ import { useInpostQuote, type InpostChoice } from '../components/checkout/useInp
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
-import ContentCard from '../components/ContentCard';
+import ParchmentCard from '../components/ParchmentCard';
+import FormField from '../components/FormField';
 import LoadingState from '../components/LoadingState';
 import { validateCalendarConfiguration, buildCalendarTasks } from '../utils/calendarGenerator';
 import { textToCatalogTaskId } from '../utils/catalogTaskIds';
@@ -274,7 +275,7 @@ function PaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {!isFree && (
-        <div className="panel-bordered">
+        <div className="rounded-2xl border border-christmas-gold/25 bg-white/70 p-4 md:p-5">
           <PaymentElement
             options={{
               fields: {
@@ -298,7 +299,7 @@ function PaymentForm({
             className="checkbox-field"
             required
           />
-          <label htmlFor="acceptTerms" className="text-sm text-gray-700 cursor-pointer">
+          <label htmlFor="acceptTerms" className="text-sm text-parchment-text cursor-pointer">
             Akceptuję{' '}
             <a
               href="/regulamin"
@@ -322,7 +323,7 @@ function PaymentForm({
             className="checkbox-field"
             required
           />
-          <label htmlFor="acceptPrivacy" className="text-sm text-gray-700 cursor-pointer">
+          <label htmlFor="acceptPrivacy" className="text-sm text-parchment-text cursor-pointer">
             Akceptuję{' '}
             <a
               href="/polityka-prywatnosci"
@@ -337,7 +338,7 @@ function PaymentForm({
           </label>
         </div>
         
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-parchment-muted">
           * Pola wymagane. Kliknij na linki, aby zapoznać się z pełną treścią regulaminu i polityki prywatności.
         </p>
       </div>
@@ -349,7 +350,7 @@ function PaymentForm({
             ? (isProcessing || !acceptTerms || !acceptPrivacy)
             : (!stripe || !elements || isProcessing || !acceptTerms || !acceptPrivacy)
         }
-        className={`btn-green-gradient ${
+        className={`btn-gold w-full justify-center px-8 py-3.5 text-lg ${
           (isFree
             ? isProcessing || !acceptTerms || !acceptPrivacy
             : !stripe || !elements || isProcessing || !acceptTerms || !acceptPrivacy)
@@ -1197,318 +1198,328 @@ export default function Checkout() {
     return <LoadingState message="Ładowanie..." />;
   }
 
+  const resetPaymentForEmail = (email: string) => {
+    setCalendarData({ ...calendarData, email });
+    setClientSecret(null);
+    setPaymentIntentId(null);
+    paymentInitLockRef.current = false;
+    paymentInitKeyRef.current = null;
+    checkoutPaymentInitCache.key = null;
+    checkoutPaymentInitCache.promise = null;
+    checkoutPaymentInitCache.result = null;
+  };
+
   return (
-    <FestivePage className="py-4" maxWidth="md">
-      <ContentCard padding="md" className="checkout-page">
-          <h1 className="heading-page mb-8">
-            Podsumowanie zamówienia
-          </h1>
+    <FestivePage className="py-4" maxWidth={isPhysical ? 'full' : 'lg'}>
+      <ParchmentCard padding="lg" className="checkout-page">
+        <h1 className="heading-page mb-2">Zamówienie</h1>
+        <div className="gold-divider mb-8" />
 
-          {validationError && (
-            <div className="alert-error mb-6">
-              <h3 className="font-bold mb-2">Nie można wygenerować kalendarza</h3>
-              <p>{validationError}</p>
-              <button
-                onClick={() => navigate('/stworz-kalendarz')}
-                className="link-inline mt-3"
-              >
-                Wróć i popraw konfigurację →
-              </button>
-            </div>
-          )}
+        {validationError && (
+          <div className="alert-error mb-6">
+            <h3 className="font-bold mb-2">Nie można wygenerować kalendarza</h3>
+            <p>{validationError}</p>
+            <button
+              onClick={() => navigate('/stworz-kalendarz')}
+              className="link-inline mt-3"
+            >
+              Wróć i popraw konfigurację →
+            </button>
+          </div>
+        )}
 
-          <div className="space-y-6 mb-8">
-            <div className="checkout-summary-section border-b pb-4">
-              <h2 className="summary-section-title">Twoje dane</h2>
-              {cartMode ? (
-                <div className="mt-2 space-y-3">
+        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
+          <section className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-12">
+            <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 lg:items-start">
+              <div className="lg:col-span-7">
+                <div className="flex items-start gap-3 mb-4">
+                  <span className="option-card-icon mt-0.5" aria-hidden>
+                    <i className="fas fa-envelope" />
+                  </span>
                   <div>
-                    <label className="block text-sm font-medium mb-1" htmlFor="checkout-email">
-                      E-mail (potwierdzenie zamówienia)
-                    </label>
-                    <input
-                      id="checkout-email"
+                    <h2 className="heading-section">Twoje dane</h2>
+                    <p className="text-parchment-muted text-sm mt-1">
+                      {isPhysical
+                        ? 'Potwierdzenie zamówienia wyślemy na e-mail. Paczkomat, kuriera i dane odbiorcy podasz poniżej.'
+                        : 'Na ten adres wyślemy potwierdzenie zakupu i link do kalendarza.'}
+                    </p>
+                  </div>
+                </div>
+                {cartMode ? (
+                  <>
+                    <FormField
+                      label="E-mail (potwierdzenie zamówienia)"
                       type="email"
-                      className="w-full border border-christmas-green/30 rounded px-3 py-2"
+                      id="checkout-email"
+                      name="checkout-email"
+                      autoComplete="email"
                       value={calendarData.email}
-                      onChange={(e) => {
-                        setCalendarData({ ...calendarData, email: e.target.value.trim() });
-                        setClientSecret(null);
-                        setPaymentIntentId(null);
-                        paymentInitLockRef.current = false;
-                        paymentInitKeyRef.current = null;
-                        checkoutPaymentInitCache.key = null;
-                        checkoutPaymentInitCache.promise = null;
-                        checkoutPaymentInitCache.result = null;
-                      }}
+                      onChange={(v) => resetPaymentForEmail(v.trim())}
                       placeholder="jan@example.com"
                       required
                     />
+                    {calendarData.name ? (
+                      <p className="text-sm text-parchment-muted"><strong>Imię:</strong> {calendarData.name}</p>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="text-parchment-text space-y-1">
+                    <p><strong>Imię:</strong> {calendarData.name}</p>
+                    <p><strong>Email:</strong> {calendarData.email}</p>
                   </div>
-                  {calendarData.name ? (
-                    <p className="text-sm text-gray-600"><strong>Imię:</strong> {calendarData.name}</p>
-                  ) : null}
-                </div>
-              ) : (
-                <>
-                  <p><strong>Imię:</strong> {calendarData.name}</p>
-                  <p><strong>Email:</strong> {calendarData.email}</p>
-                </>
-              )}
-            </div>
+                )}
+                {isPhysical && (
+                  <ol className="mt-2 space-y-2.5 text-sm text-parchment-text !list-none pl-0">
+                    <li className="flex items-center gap-3">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-christmas-green/10 text-christmas-green text-xs font-semibold shrink-0">1</span>
+                      Wybierz Paczkomat albo kuriera InPost
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-christmas-green/10 text-christmas-green text-xs font-semibold shrink-0">2</span>
+                      Uzupełnij dane odbiorcy
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-christmas-green/10 text-christmas-green text-xs font-semibold shrink-0">3</span>
+                      Opłać zamówienie
+                    </li>
+                  </ol>
+                )}
+              </div>
 
-            <div className="checkout-summary-section border-b pb-4">
-              <h2 className="summary-section-title">Zamówienie</h2>
-              {cartItems.length > 0 ? (
-                <ul className="space-y-2">
-                  {cartItems.map((item) => {
-                    const p = getProduct(item.sku);
-                    const unit = item.unitPrice ?? p?.basePrice ?? 0;
-                    const displayName = getCartItemDisplayName(item);
-                    return (
-                      <li key={item.id} className="flex justify-between gap-3 text-sm sm:text-base">
-                        <span>
-                          <strong>{displayName}</strong>
-                          {item.format ? ` (${item.format})` : ''}
-                          {' '}× {item.quantity}
-                        </span>
-                        <span className="whitespace-nowrap font-medium">{formatPrice(unit * item.quantity)}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p><strong>{product?.name || 'Kalendarz adwentowy'}</strong></p>
-              )}
-              {calendarData.format && !cartMode && <p><strong>Format:</strong> {calendarData.format}</p>}
-              {calendarData.design?.imageUrl && !cartMode && (
-                <img src={calendarData.design.imageUrl} alt="Grafika" className="mt-2 max-h-24 rounded border" />
-              )}
-              {isPhysical && (
-                <p className="mt-2 text-sm text-gray-600">
-                  <i className="fas fa-clock mr-2 text-christmas-green" />
-                  Czas realizacji: {PHYSICAL_FULFILLMENT_TIME}. Wysyłka: InPost.
-                  {orderTotals?.freeShipping
-                    ? ' Darmowa wysyłka (próg 100 zł).'
-                    : null}
-                </p>
-              )}
-              {cartMode && (
-                <p className="mt-2 text-sm text-gray-500">
-                  Wszystkie pozycje z koszyka zostaną opłacone jako jedno zamówienie.
-                </p>
-              )}
-            </div>
-
-            {!cartMode && (
-            <div className="checkout-summary-section border-b pb-4">
-              <h2 className="summary-section-title">Kalendarz</h2>
-              <p><strong>Tytuł:</strong> {calendarData.calendarTitle}</p>
-              {(
-                <>
-                  <p><strong>Liczba własnych zadań:</strong> {calendarData.tasks.length} / 24</p>
-                  {calendarData.tasks.length > 0 && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      <p className="mb-1"><i className="fas fa-random mr-2"></i>Zadania będą losowo przypisane do dni</p>
-                      {calendarData.tasks.some(t => t.lockedDay !== undefined) && (
-                        <p className="mb-1">
-                          <i className="fas fa-lock mr-2 text-christmas-red"></i>
-                          {calendarData.tasks.filter(t => t.lockedDay !== undefined).length} zadanie(zadań) zablokowanych na konkretne dni
-                        </p>
-                      )}
-                      {calendarData.tasks.some(t => t.latestDay !== undefined) && (
-                        <p>
-                          <i className="fas fa-calendar-check mr-2 text-christmas-green"></i>
-                          {calendarData.tasks.filter(t => t.latestDay !== undefined).length} zadanie(zadań) z ograniczeniem najpóźniejszej daty
-                        </p>
-                      )}
+              <div className="lg:col-span-5 lg:border-l lg:border-christmas-gold/25 lg:pl-8">
+                <h2 className="heading-section mb-3">Zamówienie</h2>
+                {cartItems.length > 0 ? (
+                  <ul className="space-y-3">
+                    {cartItems.map((item) => {
+                      const p = getProduct(item.sku);
+                      const unit = item.unitPrice ?? p?.basePrice ?? 0;
+                      const displayName = getCartItemDisplayName(item);
+                      return (
+                        <li key={item.id} className="flex justify-between gap-3 text-sm">
+                          <span className="text-parchment-text">
+                            <strong>{displayName}</strong>
+                            {item.format ? ` (${item.format})` : ''}
+                            {' '}× {item.quantity}
+                          </span>
+                          <span className="whitespace-nowrap font-medium text-christmas-green">
+                            {formatPrice(unit * item.quantity)}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="text-parchment-text"><strong>{product?.name || 'Kalendarz adwentowy'}</strong></p>
+                )}
+                {calendarData.format && !cartMode && (
+                  <p className="text-sm text-parchment-muted mt-2">Format: {calendarData.format}</p>
+                )}
+                {calendarData.design?.imageUrl && !cartMode && (
+                  <img src={calendarData.design.imageUrl} alt="Grafika" className="mt-2 max-h-24 rounded border border-christmas-gold/20" />
+                )}
+                {isPhysical && (
+                  <p className="mt-3 text-sm text-parchment-muted">
+                    Realizacja {PHYSICAL_FULFILLMENT_TIME}. Wysyłka InPost.
+                    {orderTotals?.freeShipping ? ' Wysyłka gratis.' : ' Darmowa wysyłka od 100 zł.'}
+                  </p>
+                )}
+                {cartMode && (
+                  <p className="mt-3 text-sm text-parchment-muted">
+                    Wszystkie pozycje opłacisz jako jedno zamówienie.
+                  </p>
+                )}
+                <div className="price-box mt-5">
+                  {isFree ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold">Do zapłaty:</span>
+                      <span className="text-4xl font-bold text-christmas-gold-light">0 zł</span>
+                    </div>
+                  ) : (
+                    <PriceBreakdown
+                      basePrice={subtotal}
+                      shippingCost={shippingCost}
+                      variant="checkout"
+                      totalLabel="Do zapłaty"
+                      freeShipping={Boolean(orderTotals?.freeShipping)}
+                      shippingPending={isPhysical && !shippingQuote.quote}
+                    />
+                  )}
+                  {promoCodeDiscount !== null && promoCodeDiscount > 0 && promoCodeDiscount < 100 && (
+                    <div className="mt-2 text-sm text-white/80">
+                      Zniżka: {promoCodeDiscount}%
                     </div>
                   )}
-                </>
-              )}
-              {(calendarData.openingMethod === 'email' || calendarData.dailyEmailReminders) && (
-                <p className="text-christmas-green mt-2">
-                  ✓ Codzienna treść okienka na: {calendarData.dailyContentEmail || calendarData.email}
-                </p>
-              )}
-              {calendarData.openingMethod === 'app' && (
-                <p className="text-christmas-green mt-2">✓ Otwieranie w aplikacji Android</p>
-              )}
-              {calendarData.openingMethod === 'online' && (
-                <p className="text-christmas-green mt-2">✓ Otwieranie online przez unikalny link</p>
-              )}
-            </div>
-            )}
-
-            <div className="price-box">
-              {isFree ? (
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold">Do zapłaty:</span>
-                  <span className="text-4xl font-bold text-christmas-gold-light">0 zł</span>
                 </div>
-              ) : (
-                <PriceBreakdown
-                  basePrice={subtotal}
-                  shippingCost={shippingCost}
-                  variant="checkout"
-                  totalLabel="Do zapłaty"
-                  freeShipping={false}
-                  shippingPending={isPhysical && !shippingQuote.quote}
-                />
-              )}
-              {promoCodeDiscount !== null && promoCodeDiscount > 0 && promoCodeDiscount < 100 && (
-                <div className="mt-2 text-sm text-gray-200">
-                  Zniżka: {promoCodeDiscount}%
-                </div>
-              )}
+                {!cartMode && (
+                  <div className="mt-5 text-sm text-parchment-text space-y-1">
+                    <h2 className="heading-section mb-3">Kalendarz</h2>
+                    <p><strong>Tytuł:</strong> {calendarData.calendarTitle}</p>
+                    <p><strong>Własne zadania:</strong> {calendarData.tasks.length} / 24</p>
+                    {calendarData.tasks.length > 0 && (
+                      <p className="text-parchment-muted">Zadania będą losowo przypisane do dni.</p>
+                    )}
+                    {(calendarData.openingMethod === 'email' || calendarData.dailyEmailReminders) && (
+                      <p className="text-christmas-green mt-2">
+                        Codzienna treść na: {calendarData.dailyContentEmail || calendarData.email}
+                      </p>
+                    )}
+                    {calendarData.openingMethod === 'app' && (
+                      <p className="text-christmas-green mt-2">Otwieranie w aplikacji Android</p>
+                    )}
+                    {calendarData.openingMethod === 'online' && (
+                      <p className="text-christmas-green mt-2">Otwieranie online przez unikalny link</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </section>
 
           {isPhysical && (
-            <>
+            <div className="lg:col-span-12">
               <InpostDelivery value={delivery} onChange={setDelivery} {...shippingQuote} />
-              <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} deliveryType={delivery.type} />
-            </>
+            </div>
           )}
 
-          {/* Pole kodu promocyjnego — tylko interaktywny */}
-          {!isPhysical && (
-          <div className="panel-bordered mb-6">
-            <label htmlFor="promoCode" className="block text-sm font-medium text-gray-700 mb-2">
-              Kod promocyjny (opcjonalnie)
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                id="promoCode"
-                value={promoCode}
-                onChange={(e) => {
-                  setPromoCode(e.target.value);
-                  setPromoCodeError(null);
-                  setPromoCodeDiscount(null);
-                }}
-                onBlur={handlePromoCodeBlur}
-                placeholder="Wpisz kod promocyjny"
-                className="input-field flex-1"
-                disabled={isCheckingPromoCode}
-              />
-              {isCheckingPromoCode && (
-                <div className="flex items-center px-4">
-                  <div className="spinner" style={{ width: '1.25rem', height: '1.25rem', borderWidth: '2px' }}></div>
+          {isPhysical && (
+            <div className="lg:col-span-12">
+              <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} deliveryType={delivery.type} />
+            </div>
+          )}
+
+            {!isPhysical && (
+              <div className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-8">
+                <label htmlFor="promoCode" className="block text-sm font-medium text-parchment-muted mb-2">
+                  Kod promocyjny (opcjonalnie)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    id="promoCode"
+                    value={promoCode}
+                    onChange={(e) => {
+                      setPromoCode(e.target.value);
+                      setPromoCodeError(null);
+                      setPromoCodeDiscount(null);
+                    }}
+                    onBlur={handlePromoCodeBlur}
+                    placeholder="Wpisz kod promocyjny"
+                    className="input-field flex-1"
+                    disabled={isCheckingPromoCode}
+                  />
+                  {isCheckingPromoCode && (
+                    <div className="flex items-center px-4">
+                      <div className="spinner" style={{ width: '1.25rem', height: '1.25rem', borderWidth: '2px' }}></div>
+                    </div>
+                  )}
+                </div>
+                {promoCodeError && (
+                  <p className="mt-2 text-sm text-red-600">{promoCodeError}</p>
+                )}
+                {promoCodeDiscount !== null && promoCodeDiscount > 0 && !promoCodeError && (
+                  <p className="mt-2 text-sm text-christmas-green font-semibold">
+                    {promoCodeDiscount === 100 ? (
+                      <span className="flex items-center">
+                        <i className="fas fa-gift mr-2"></i>
+                        Gratulacje! Masz kalendarz za darmo!
+                      </span>
+                    ) : (
+                      `Kod promocyjny aktywny — zniżka ${promoCodeDiscount}%`
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {isFree && (
+              <div className="rounded-2xl border border-christmas-green/30 bg-white/70 p-5 lg:col-span-8">
+                <h3 className="font-display text-xl font-semibold text-christmas-green mb-2">
+                  Kalendarz za darmo
+                </h3>
+                <p className="text-parchment-text text-sm">
+                  Twój kod promocyjny daje 100% zniżki. Kliknij „Stwórz swój kalendarz” poniżej, aby dokończyć zamówienie.
+                </p>
+              </div>
+            )}
+
+            <div className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-12">
+              <h3 className="heading-section mb-2">Bezpieczna płatność</h3>
+              <p className="text-parchment-muted text-sm mb-6">
+                {isPhysical
+                  ? 'Po złożeniu zamówienia otrzymasz potwierdzenie na e-mail. Przygotujemy przesyłkę i wyślemy ją InPost.'
+                  : 'Po złożeniu zamówienia otrzymasz unikalny link do swojego kalendarza na podany adres e-mail.'}
+              </p>
+
+              {paymentError && (
+                <div className="notice-amber mb-6">
+                  <h3 className="notice-amber-title">
+                    <i className="fas fa-snowflake mr-2" />
+                    {/wysyłk|adres|shipping/i.test(paymentError)
+                      ? 'Brakuje danych do wysyłki'
+                      : /połączeniem|serwerem|Failed to fetch|Network/i.test(paymentError)
+                        ? 'Chwilowy problem z połączeniem'
+                        : 'Nie udało się przygotować płatności'}
+                  </h3>
+                  <div className="notice-amber-body">{paymentError}</div>
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                    <button onClick={() => window.location.reload()} className="btn-gold px-4 py-2 text-sm">
+                      <i className="fas fa-redo" />
+                      Odśwież stronę
+                    </button>
+                    <button onClick={() => setPaymentError(null)} className="btn-secondary">
+                      <i className="fas fa-times" />
+                      Zamknij
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {clientSecret && paymentIntentId && activePaymentKey === checkoutFingerprint && emailReady && (!isPhysical || shippingAddressComplete) ? (
+                <Elements
+                  key={clientSecret}
+                  stripe={stripePromise}
+                  options={{
+                    clientSecret,
+                    appearance: {
+                      theme: 'stripe',
+                    },
+                  }}
+                >
+                  <PaymentForm
+                    clientSecret={clientSecret}
+                    paymentIntentId={paymentIntentId}
+                    onError={setPaymentError}
+                    isFree={isFree}
+                    onCreateFreeCalendar={handleCreateFreeCalendar}
+                    payAmount={totalPrice}
+                    billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
+                  />
+                </Elements>
+              ) : isPhysical && !shippingAddressComplete ? (
+                <div className="text-center py-6">
+                  <i className="fas fa-truck text-christmas-green text-2xl mb-3" />
+                  <p className="text-parchment-text font-medium">
+                    Uzupełnij dane do wysyłki, aby sfinalizować płatność.
+                  </p>
+                  <p className="text-parchment-muted text-sm mt-2">
+                    Formularz płatności pojawi się po wycenie dostawy oraz wyborze Paczkomatu lub podaniu adresu kuriera.
+                  </p>
+                </div>
+              ) : cartMode && !emailReady ? (
+                <div className="text-center py-6">
+                  <p className="text-parchment-text font-medium">
+                    Podaj adres e-mail, aby przygotować płatność.
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <div className="spinner mx-auto mb-4"></div>
+                  <p className="text-parchment-muted">Przygotowywanie formularza płatności...</p>
                 </div>
               )}
             </div>
-            {promoCodeError && (
-              <p className="mt-2 text-sm text-red-600">{promoCodeError}</p>
-            )}
-            {promoCodeDiscount !== null && promoCodeDiscount > 0 && !promoCodeError && (
-              <p className="mt-2 text-sm text-green-600 font-semibold">
-                {promoCodeDiscount === 100 ? (
-                  <span className="flex items-center">
-                    <i className="fas fa-gift mr-2"></i>
-                    Gratulacje! Masz kalendarz za darmo! 🎉
-                  </span>
-                ) : (
-                  `Kod promocyjny aktywny - zniżka ${promoCodeDiscount}%`
-                )}
-              </p>
-            )}
-          </div>
-          )}
-
-          {isFree && (
-            <div className="bg-green-50 border-l-4 border-green-400 p-6 mb-6 rounded-lg">
-              <div className="flex items-start">
-                <i className="fas fa-gift text-green-500 text-2xl mr-3 mt-1"></i>
-                <div>
-                  <h3 className="font-bold text-green-800 mb-2 text-lg">
-                    Kalendarz za darmo!
-                  </h3>
-                  <p className="text-green-700">
-                    Twój kod promocyjny daje Ci 100% zniżki. Kliknij "Stwórz swój kalendarz" poniżej, aby dokończyć zamówienie.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="creator-form-well mb-6">
-            <h3 className="font-bold mb-2 text-christmas-green">🔒 Bezpieczna płatność</h3>
-            <p className="text-gray-600 text-sm">
-              {isPhysical
-                ? 'Po złożeniu zamówienia otrzymasz potwierdzenie na e-mail. Przygotujemy i wyślemy kalendarz na podany adres.'
-                : 'Po złożeniu zamówienia otrzymasz unikalny link do swojego kalendarza na podany adres e-mail.'}
-            </p>
-          </div>
-
-          {paymentError && (
-            <div className="notice-amber">
-              <h3 className="notice-amber-title">
-                <i className="fas fa-snowflake mr-2" />
-                {/wysyłk|adres|shipping/i.test(paymentError)
-                  ? 'Brakuje danych do wysyłki'
-                  : /połączeniem|serwerem|Failed to fetch|Network/i.test(paymentError)
-                    ? 'Chwilowy problem z połączeniem'
-                    : 'Nie udało się przygotować płatności'}
-              </h3>
-              <div className="notice-amber-body">{paymentError}</div>
-              <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                <button onClick={() => window.location.reload()} className="btn-gold px-4 py-2 text-sm">
-                  <i className="fas fa-redo" />
-                  Odśwież stronę
-                </button>
-                <button onClick={() => setPaymentError(null)} className="btn-secondary">
-                  <i className="fas fa-times" />
-                  Zamknij
-                </button>
-              </div>
-            </div>
-          )}
-
-          {clientSecret && paymentIntentId && activePaymentKey === checkoutFingerprint && emailReady && (!isPhysical || shippingAddressComplete) ? (
-            <Elements
-              key={clientSecret}
-              stripe={stripePromise}
-              options={{
-                clientSecret,
-                appearance: {
-                  theme: 'stripe',
-                },
-              }}
-            >
-              <PaymentForm
-                clientSecret={clientSecret}
-                paymentIntentId={paymentIntentId}
-                onError={setPaymentError}
-                isFree={isFree}
-                onCreateFreeCalendar={handleCreateFreeCalendar}
-                payAmount={totalPrice}
-                billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
-              />
-            </Elements>
-          ) : isPhysical && !shippingAddressComplete ? (
-            <div className="creator-form-well text-center py-8">
-              <i className="fas fa-truck text-christmas-green text-2xl mb-3" />
-              <p className="text-gray-700 font-medium">
-                Uzupełnij dane do wysyłki, aby sfinalizować płatność.
-              </p>
-              <p className="text-gray-500 text-sm mt-2">
-                Formularz płatności pojawi się po wycenie dostawy oraz wyborze Paczkomatu lub podaniu adresu kuriera.
-              </p>
-            </div>
-          ) : cartMode && !emailReady ? (
-            <div className="creator-form-well text-center py-8">
-              <p className="text-gray-700 font-medium">
-                Podaj adres e-mail, aby przygotować płatność.
-              </p>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="spinner mx-auto mb-4"></div>
-              <p className="text-gray-600">Przygotowywanie formularza płatności...</p>
-            </div>
-          )}
-        </ContentCard>
+        </div>
+      </ParchmentCard>
     </FestivePage>
   );
 }

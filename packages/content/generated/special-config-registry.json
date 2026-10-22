@@ -96,7 +96,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-1-task-10": {
@@ -494,7 +494,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-2-task-19": {
@@ -697,7 +697,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-3-task-13": {
@@ -833,7 +833,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-3": {
@@ -861,7 +861,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-4": {
@@ -913,7 +913,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-6": {
@@ -939,7 +939,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-7": {
@@ -965,7 +965,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-10": {
@@ -991,7 +991,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-11": {
@@ -1017,7 +1017,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-13": {
@@ -1043,7 +1043,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-16": {
@@ -1069,7 +1069,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-17": {
@@ -1115,7 +1115,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-21": {
@@ -1141,7 +1141,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-25": {
@@ -1167,7 +1167,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-4-task-28": {
@@ -1193,7 +1193,7 @@
           "COLOR",
           "INK_SAVER"
         ],
-        "defaultPage": "A5"
+        "defaultPage": "A4"
       }
     },
     "set-5-task-2": {
@@ -1482,7 +1482,7 @@
     },
     "set-5-task-27": {
       "configId": "set-5-task-27-v1",
-      "engine": "RECIPE",
+      "engine": "CARD_FORM",
       "version": 1,
       "headline": "Rodzinny przepis — kuchenna pamiątka",
       "description": "Kuchenna pamiątka — rodzinny przepis",
@@ -1491,13 +1491,12 @@
         "type": "MANUAL_OR_ENGINE_DEFAULT"
       },
       "capabilities": {
+        "canShareImage": true,
         "canPrint": true,
         "canPrintMobile": false,
         "dateGate": false
       },
-      "config": {
-        "secondaryEngine": "CARD_FORM"
-      },
+      "config": {},
       "document": {
         "templateId": "family-recipe-v1",
         "version": 1,

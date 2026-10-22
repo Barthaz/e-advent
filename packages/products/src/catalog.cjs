@@ -178,13 +178,12 @@ function computeOrderTotals(items, options) {
   let shipping = 0;
   let freeShipping = false;
   if (hasPhysical) {
-    if (options?.shippingAmount != null) {
-      shipping = roundPln(options.shippingAmount);
-      if (!Number.isFinite(shipping) || shipping < 0) return null;
-      freeShipping = shipping === 0;
-    } else if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
       shipping = 0;
       freeShipping = true;
+    } else if (options?.shippingAmount != null) {
+      shipping = roundPln(options.shippingAmount);
+      if (!Number.isFinite(shipping) || shipping < 0) return null;
     } else {
       shipping = SHIPPING_COST;
     }

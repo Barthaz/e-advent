@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import ParchmentCard from '../ParchmentCard';
-import ScratchDesignPreview from '../ScratchDesignPreview';
 import type { ProductFamily } from '../../config/products';
 import { formatPrice } from '../../config/products';
+import scratchCardImage from '../../assets/scratch/wachlarz-card.webp';
 
 interface ProductCardProps {
   product: ProductFamily;
@@ -14,23 +14,14 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
     <ParchmentCard padding="md" className={`h-full flex flex-col ${featured ? 'ring-2 ring-christmas-gold' : ''}`}>
       {product.imageSrc ? (
         <div className="mb-4 rounded-xl overflow-hidden border border-christmas-gold/20 bg-cream">
-          {product.type === 'scratch' ? (
-            <ScratchDesignPreview
-              imageSrc={product.imageSrc}
-              alt={product.imageAlt ?? product.name}
-              aspectClassName="aspect-[4/5]"
-              className="w-full"
-            />
-          ) : (
-            <img
-              src={product.imageSrc}
-              alt={product.imageAlt ?? product.name}
-              className="w-full aspect-[4/5] object-cover"
-              width={480}
-              height={600}
-              decoding="async"
-            />
-          )}
+          <img
+            src={product.type === 'scratch' ? scratchCardImage : product.imageSrc}
+            alt={product.imageAlt ?? product.name}
+            className="w-full aspect-[4/5] object-cover object-center"
+            width={480}
+            height={600}
+            decoding="async"
+          />
         </div>
       ) : (
         <div className="text-center mb-4">
@@ -62,7 +53,7 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
         </p>
         <Link to={product.creatorRoute} className="btn-gold w-full inline-flex justify-center px-6 py-3">
           <i className="fas fa-gift mr-2" />
-          {product.type === 'letter' ? 'Zobacz zestaw' : 'Stwórz kalendarz'}
+          {product.type === 'letter' ? 'Zobacz zestaw' : product.type === 'scratch' ? 'Zobacz kalendarz' : 'Stwórz kalendarz'}
         </Link>
       </div>
     </ParchmentCard>

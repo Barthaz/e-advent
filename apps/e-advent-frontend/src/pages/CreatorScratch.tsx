@@ -1,49 +1,157 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import FestivePage from '../components/FestivePage';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import PageBackground from '../components/PageBackground';
 import ParchmentCard from '../components/ParchmentCard';
-import WizardShell from '../components/creator/WizardShell';
-import StepBasicInfo from '../components/creator/StepBasicInfo';
+import SEOHead from '../components/SEOHead';
 import StepScratchTasks from '../components/creator/StepScratchTasks';
-import StepDesign from '../components/creator/StepDesign';
-import StepSummary from '../components/creator/StepSummary';
-import { useCreatorWizard } from '../hooks/useCreatorWizard';
-import {
-  formatPrice,
-  getProduct,
-  getCheckoutCtaLabel,
-  PHYSICAL_ADD_TO_CART_HINT,
-} from '../config/products';
+import { formatPrice, getProduct } from '../config/products';
 import { useCart } from '../context/useCart';
-import { prepareScratchCalendarForCart } from '../utils/prepareScratchForCart';
+import scratchPresetsData from '../data/scratch-presets.json';
+import {
+  DEFAULT_SCRATCH_COLOR_ID,
+  DEFAULT_SCRATCH_TITLE,
+  SCRATCH_COLOR_OPTIONS,
+  designFromScratchColor,
+  scratchColorFromDesign,
+  type ScratchColorId,
+} from '../data/scratchColors';
+import { SCRATCH_GALLERY } from '../data/scratchProductMedia';
+import logo from '@e-advent/assets/brand/eadvent-logo.png';
 import { trackViewItem } from '../utils/analytics';
+import {
+  loadDesign,
+  loadScratchMode,
+  loadScratchPreset,
+  loadScratchShuffle,
+  loadTasks,
+  saveDesign,
+  saveScratchMode,
+  saveScratchPreset,
+  saveScratchShuffle,
+  saveTasks,
+} from '../utils/creatorStorage';
+import { prepareScratchCalendarForCart } from '../utils/prepareScratchForCart';
+import { validateScratchTasksStep, type ScratchPreset } from '../utils/scratchCalendarGenerator';
+import type { CalendarTaskInput, ScratchContentMode } from '../types/order';
 
-const STEPS = ['design', 'basic', 'tasks', 'summary'];
-const STEP_LABELS = ['Grafika i format', 'Dane', 'Świąteczna przygoda', 'Podsumowanie'];
+const SKU = 'scratch-a3';
+const PRESETS = scratchPresetsData as ScratchPreset[];
+
+const FAQ = [
+  {
+    q: 'Czym różni się zdrapka od kalendarza interaktywnego?',
+    a: 'Zdrapka to fizyczny kalendarz A3, który wysyłamy InPost. Interaktywny otwierasz online — tam podajesz imię, e-mail i tytuł, bo link trafia na skrzynkę.',
+  },
+  {
+    q: 'Czy muszę podawać imię i e-mail na tej stronie?',
+    a: 'Nie. Adres e-mail i dane do wysyłki uzupełnisz dopiero w koszyku, przy składaniu zamówienia.',
+  },
+  {
+    q: 'Co jest pod złotymi okienkami?',
+    a: 'Gotowa świąteczna przygoda (24 dni w stałej kolejności) albo Twoje własne zadania — jeśli wybierzesz własną przygodę, uzupełniasz okienka przed dodaniem do koszyka.',
+  },
+  {
+    q: 'Jak wybrać wariant?',
+    a: 'Kalendarz jest w trzech wariantach: Zielona Gwiazdka, Czerwony Mikołaj i Błękitna Noc. Wybierz opcję przy produkcie — grafika na zdjęciach pokazuje gotowy wygląd zdrapki.',
+  },
+  {
+    q: 'Jak długo trwa wysyłka?',
+    a: 'Przygotowanie i wysyłka InPost zwykle zajmują 3–5 dni roboczych od opłacenia zamówienia.',
+  },
+];
+
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: 'Kalendarz zdrapka A3',
+  description:
+    'Fizyczny kalendarz adwentowy A3 ze złotymi zdrapkami. Trzy warianty, gotowa przygoda albo własne zadania. Wysyłka InPost.',
+  image: SCRATCH_GALLERY.map((g) => `https://e-advent.pl${g.src}`),
+  brand: { '@type': 'Brand', name: 'e-Advent' },
+  offers: {
+    '@type': 'Offer',
+    url: 'https://e-advent.pl/stworz-kalendarz/zdrapka',
+    priceCurrency: 'PLN',
+    price: '69.00',
+    availability: 'https://schema.org/InStock',
+  },
+};
 
 export default function CreatorScratch() {
   const navigate = useNavigate();
   const { addItem } = useCart();
-  const wizard = useCreatorWizard({ productType: 'scratch', steps: STEPS, requiresDesign: true });
+  const product = getProduct(SKU);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [addedFlash, setAddedFlash] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const [colorId, setColorId] = useState<ScratchColorId>(DEFAULT_SCRATCH_COLOR_ID);
+  const [mode, setMode] = useState<ScratchContentMode>('preset');
+  const [selectedPreset, setSelectedPreset] = useState<number | null>(0);
+  const [tasks, setTasks] = useState<CalendarTaskInput[]>([]);
+  const [shuffleCustomTasks, setShuffleCustomTasks] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
-  const sku = wizard.getSku();
-  const product = getProduct(sku);
+  const basePrice = product?.basePrice ?? 69;
+  const color = scratchColorFromDesign(designFromScratchColor(colorId));
+  const active = SCRATCH_GALLERY[activeIndex];
+
+  useEffect(() => {
+    const savedDesign = loadDesign('scratch');
+    const savedMode = loadScratchMode('scratch');
+    const savedPreset = loadScratchPreset('scratch');
+    setColorId(scratchColorFromDesign(savedDesign).id);
+    setMode(savedMode);
+    setSelectedPreset(savedMode === 'preset' ? savedPreset ?? 0 : null);
+    setShuffleCustomTasks(loadScratchShuffle('scratch'));
+    setTasks(loadTasks('scratch'));
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    saveDesign('scratch', designFromScratchColor(colorId));
+    saveScratchMode('scratch', mode);
+    saveScratchPreset('scratch', selectedPreset);
+    saveScratchShuffle('scratch', shuffleCustomTasks);
+    saveTasks('scratch', tasks);
+  }, [hydrated, colorId, mode, selectedPreset, shuffleCustomTasks, tasks]);
 
   useEffect(() => {
     trackViewItem({
-      sku,
+      sku: SKU,
       name: product?.name ?? 'Kalendarz zdrapka',
-      price: product?.basePrice ?? 0,
+      price: basePrice,
       category: 'scratch',
     });
-  }, [sku, product?.name, product?.basePrice]);
+  }, [basePrice, product?.name]);
 
-  const handleAddToCart = async () => {
-    if (!wizard.validateBasicStep() || !wizard.validateTasksStep() || !wizard.validateDesignStep()) return;
-    if (!wizard.design?.imageUrl) {
-      setAddError('Wybierz grafikę kalendarza.');
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxOpen]);
+
+  const adventureLabel = useMemo(() => {
+    if (mode === 'preset' && selectedPreset != null) {
+      return PRESETS[selectedPreset]?.name ?? 'Gotowa przygoda';
+    }
+    return tasks.length ? `Własna przygoda (${tasks.length} zadań)` : 'Własna przygoda';
+  }, [mode, selectedPreset, tasks.length]);
+
+  const handleAddToCart = async (goToCart = false) => {
+    const validation = validateScratchTasksStep({
+      presets: PRESETS,
+      mode,
+      selectedPreset,
+      customTasks: tasks,
+    });
+    if (!validation.valid) {
+      setAddError(validation.error || 'Wybierz przygodę albo dodaj własne zadania.');
       return;
     }
 
@@ -51,138 +159,333 @@ export default function CreatorScratch() {
     setAddError(null);
 
     try {
-      wizard.prepareCheckoutData();
-      const cartSku = wizard.getSku();
-      const cartProduct = getProduct(cartSku);
+      const design = designFromScratchColor(colorId);
       const { calendarId } = await prepareScratchCalendarForCart({
-        name: wizard.name,
-        email: wizard.email,
-        calendarTitle: wizard.calendarTitle,
-        tasks: wizard.tasks,
-        scratchContentMode: wizard.scratchContentMode,
-        selectedScratchPreset: wizard.selectedScratchPreset,
-        shuffleCustomTasks: wizard.shuffleCustomTasks,
-        dailyEmailReminders: wizard.dailyEmailReminders,
+        calendarTitle: DEFAULT_SCRATCH_TITLE,
+        tasks,
+        scratchContentMode: mode,
+        selectedScratchPreset: selectedPreset,
+        shuffleCustomTasks,
         productType: 'scratch',
-        sku: cartSku,
-        format: wizard.format,
-        design: wizard.design,
+        sku: SKU,
+        format: 'A3',
+        design,
       });
 
       addItem({
-        sku: cartSku,
+        sku: SKU,
         quantity: 1,
         calendarId,
-        label: cartProduct?.name ?? 'Kalendarz zdrapka',
-        unitPrice: cartProduct?.basePrice,
-        customerEmail: wizard.email.trim(),
-        customerName: wizard.name.trim(),
-        format: wizard.format,
+        label: `${product?.name ?? DEFAULT_SCRATCH_TITLE} · ${color.label} · ${adventureLabel}`,
+        unitPrice: product?.basePrice,
+        format: 'A3',
       });
 
-      navigate('/koszyk');
+      setAddedFlash(true);
+      window.setTimeout(() => setAddedFlash(false), 2000);
+      if (goToCart) navigate('/koszyk');
     } catch (err) {
       console.error('[CreatorScratch] Add to cart failed:', err);
       setAddError(err instanceof Error ? err.message : 'Nie udało się dodać do koszyka. Spróbuj ponownie.');
+    } finally {
       setIsAdding(false);
     }
   };
 
-  const stepId = STEPS[wizard.currentStep];
-
-  const tasksSummaryLabel = (() => {
-    if (wizard.scratchContentMode === 'preset' && wizard.selectedScratchPreset != null) {
-      const name = wizard.scratchPresets[wizard.selectedScratchPreset]?.name;
-      return name ? `Przygoda: ${name}` : 'Gotowa świąteczna przygoda';
-    }
-    const n = wizard.tasks.length;
-    const order = wizard.shuffleCustomTasks ? 'przetasowane' : 'w kolejności';
-    return `${n} własnych zadań (${order})`;
-  })();
-
   return (
-    <FestivePage className="py-4">
-      <ParchmentCard padding="lg">
-        <WizardShell title="Kalendarz zdrapka" steps={STEPS} stepLabels={STEP_LABELS} currentStep={wizard.currentStep}>
-          {stepId === 'basic' && (
-            <StepBasicInfo name={wizard.name} setName={wizard.setName} email={wizard.email} setEmail={wizard.setEmail} calendarTitle={wizard.calendarTitle} setCalendarTitle={wizard.setCalendarTitle} />
-          )}
-          {stepId === 'tasks' && (
-            <StepScratchTasks
-              presets={wizard.scratchPresets}
-              mode={wizard.scratchContentMode}
-              setMode={wizard.setScratchContentMode}
-              selectedPreset={wizard.selectedScratchPreset}
-              setSelectedPreset={wizard.setSelectedScratchPreset}
-              tasks={wizard.tasks}
-              setTasks={wizard.setTasks}
-              shuffleCustomTasks={wizard.shuffleCustomTasks}
-              setShuffleCustomTasks={wizard.setShuffleCustomTasks}
-              validationError={wizard.validationError}
-              setValidationError={wizard.setValidationError}
-            />
-          )}
-          {stepId === 'design' && (
-            <StepDesign productType="scratch" format={wizard.format} design={wizard.design} setDesign={wizard.setDesign} validationError={wizard.validationError} setValidationError={wizard.setValidationError} />
-          )}
-          {stepId === 'summary' && (
-            <StepSummary
-              productType="scratch"
-              sku={sku}
-              name={wizard.name}
-              email={wizard.email}
-              calendarTitle={wizard.calendarTitle}
-              tasksLabel={tasksSummaryLabel}
-              format={wizard.format}
-              design={wizard.design}
-            />
-          )}
+    <>
+      <SEOHead
+        title="Kalendarz zdrapka A3 — złote okienka, 3 warianty | e-Advent"
+        description="Fizyczny kalendarz adwentowy A3 ze złotymi zdrapkami. Wybierz wariant i przygodę — gotową historię albo własne zadania. Cena 69 zł, dostawa InPost wyceniana przy zamówieniu."
+        keywords="kalendarz adwentowy zdrapka, kalendarz zdrapka A3, adwentowy kalendarz fizyczny, e-advent"
+        canonical="https://e-advent.pl/stworz-kalendarz/zdrapka"
+        ogImage={`https://e-advent.pl${SCRATCH_GALLERY[0].src}`}
+        jsonLd={JSON_LD}
+      />
 
-          {addError && (
-            <div className="alert-error mt-4">
-              <p>{addError}</p>
+      <div className="min-h-screen">
+        <PageBackground className="py-8 md:py-12" showSnow overlayOpacity="medium">
+          <div className="container mx-auto px-4 max-w-6xl">
+            <div className="mb-6 flex justify-center">
+              <Link to="/">
+                <img src={logo} alt="e-Advent" className="h-16 md:h-20 w-auto drop-shadow-xl" />
+              </Link>
             </div>
-          )}
 
-          <div className="flex flex-col gap-3 mt-8">
-            <div className="flex gap-4">
-              {wizard.currentStep > 0 && (
-                <button type="button" onClick={wizard.goBack} className="btn-outline-parchment px-6 py-3" disabled={isAdding}>
-                  <i className="fas fa-arrow-left mr-2" />Wstecz
-                </button>
-              )}
-              {wizard.currentStep < STEPS.length - 1 ? (
-                <button type="button" onClick={wizard.goNext} className="btn-green-full flex-1">Dalej<i className="fas fa-arrow-right ml-2" /></button>
-              ) : (
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+              <div>
                 <button
                   type="button"
-                  onClick={handleAddToCart}
-                  className="btn-green-full flex-1"
-                  disabled={isAdding}
+                  onClick={() => setLightboxOpen(true)}
+                  className="block w-full rounded-2xl overflow-hidden border border-christmas-gold/30 bg-cream shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-christmas-gold"
+                  aria-label="Powiększ zdjęcie"
                 >
-                  {isAdding ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin mr-2" />
-                      Dodawanie do koszyka…
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-shopping-basket mr-2" />
-                      {getCheckoutCtaLabel(formatPrice(product?.basePrice ?? 0), true)}
-                    </>
-                  )}
+                  <img
+                    src={active.src}
+                    alt={active.alt}
+                    className="w-full aspect-[4/3] object-contain bg-[#24150f]"
+                    width={960}
+                    height={1200}
+                    decoding="async"
+                  />
                 </button>
-              )}
+                <div className="mt-3 grid grid-cols-5 gap-2">
+                  {SCRATCH_GALLERY.map((img, i) => (
+                    <button
+                      key={img.src}
+                      type="button"
+                      onClick={() => setActiveIndex(i)}
+                      className={`rounded-xl overflow-hidden border-2 transition-colors ${
+                        i === activeIndex
+                          ? 'border-christmas-gold'
+                          : 'border-transparent opacity-80 hover:opacity-100'
+                      }`}
+                      aria-label={img.alt}
+                      aria-current={i === activeIndex}
+                    >
+                      <img
+                        src={img.thumb}
+                        alt=""
+                        className="w-full aspect-square object-cover"
+                        width={180}
+                        height={180}
+                        decoding="async"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-white">
+                <p className="text-christmas-gold text-sm tracking-[0.2em] uppercase mb-3">
+                  Fizyczny prezent
+                </p>
+                <h1 className="font-display text-3xl md:text-5xl font-semibold text-christmas-gold-light mb-4 leading-tight">
+                  Kalendarz zdrapka
+                </h1>
+                <p className="text-white/80 text-base md:text-lg leading-relaxed mb-6">
+                  Świąteczny kalendarz A3 ze złotymi okienkami. Każdego dnia zdrapujesz pole
+                  i odkrywasz zadanie — gotową przygodę albo własną historię, którą ułożysz tutaj.
+                </p>
+
+                <div className="mb-6">
+                  <p className="font-display text-4xl font-semibold text-christmas-gold-light">
+                    {formatPrice(basePrice)}
+                  </p>
+                  <p className="text-white/60 text-sm mt-2">
+                    + dostawa InPost — wycena przy zamówieniu
+                  </p>
+                </div>
+
+                <ul className="space-y-2 mb-6 text-white/85 text-sm">
+                  {['Format A3 (29,7 × 42 cm)', 'Złote okienka do zdrapania', '3 warianty', 'Wysyłka InPost'].map(
+                    (f) => (
+                      <li key={f} className="flex items-center gap-2">
+                        <i className="fas fa-check text-christmas-gold text-xs" />
+                        {f}
+                      </li>
+                    ),
+                  )}
+                </ul>
+
+                <div className="mb-6 rounded-2xl border border-christmas-gold/35 bg-white/5 p-4 md:p-5 backdrop-blur-sm">
+                  <p className="font-display text-[15px] sm:text-lg text-christmas-gold-light mb-3">
+                    Wariant kalendarza
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {SCRATCH_COLOR_OPTIONS.map((option) => {
+                      const selected = option.id === colorId;
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => setColorId(option.id)}
+                          className={`rounded-xl border-2 px-1.5 py-3 text-center transition-colors ${
+                            selected
+                              ? 'border-christmas-gold bg-white/10 text-christmas-gold-light'
+                              : 'border-white/20 text-white/80 hover:border-christmas-gold/50'
+                          }`}
+                          aria-pressed={selected}
+                        >
+                          <span
+                            className="mx-auto mb-2 block h-6 w-6 rounded-full border border-white/30"
+                            style={{ backgroundColor: option.swatch }}
+                            aria-hidden
+                          />
+                          <span className="block text-[12px] sm:text-[13px] font-medium leading-tight">
+                            {option.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="mb-6 rounded-2xl border border-christmas-gold/35 bg-white/5 p-4 md:p-5 backdrop-blur-sm">
+                  <p className="font-display text-[15px] sm:text-lg text-christmas-gold-light mb-3">
+                    Przygoda pod okienkami
+                  </p>
+                  <StepScratchTasks
+                    presets={PRESETS}
+                    mode={mode}
+                    setMode={setMode}
+                    selectedPreset={selectedPreset}
+                    setSelectedPreset={setSelectedPreset}
+                    tasks={tasks}
+                    setTasks={setTasks}
+                    shuffleCustomTasks={shuffleCustomTasks}
+                    setShuffleCustomTasks={setShuffleCustomTasks}
+                    validationError={addError}
+                    setValidationError={setAddError}
+                    tone="onDark"
+                    hideIntro
+                  />
+                </div>
+
+                {addError && (
+                  <p className="mb-4 text-sm text-red-200" role="alert">
+                    <i className="fas fa-exclamation-circle mr-1.5" />
+                    {addError}
+                  </p>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => handleAddToCart(false)}
+                    className="btn-gold px-8 py-3.5 text-lg"
+                    disabled={isAdding}
+                  >
+                    <i className={`fas ${isAdding ? 'fa-spinner fa-spin' : 'fa-shopping-basket'}`} />
+                    {isAdding ? 'Dodawanie…' : addedFlash ? 'Dodano do koszyka!' : 'Dodaj do koszyka'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAddToCart(true)}
+                    className="btn-outline-gold px-8 py-3.5 text-lg"
+                    disabled={isAdding}
+                  >
+                    Dodaj i idź do koszyka
+                  </button>
+                </div>
+                <p className="text-white/45 text-xs">
+                  Realizacja 3–5 dni roboczych · E-mail i adres podasz przy zamówieniu
+                </p>
+              </div>
             </div>
-            {stepId === 'summary' && (
-              <p className="text-sm text-parchment-muted text-center">
-                <i className="fas fa-info-circle mr-1 text-christmas-green" />
-                {PHYSICAL_ADD_TO_CART_HINT}
-              </p>
-            )}
           </div>
-        </WizardShell>
-      </ParchmentCard>
-    </FestivePage>
+        </PageBackground>
+
+        <section className="section-cream py-16 md:py-20">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <h2 className="section-title mb-4 text-center">Co jest w zestawie?</h2>
+            <div className="gold-divider mb-10" />
+            <div className="grid sm:grid-cols-3 gap-5">
+              {[
+                {
+                  icon: 'fa-ruler-combined',
+                  title: 'Kalendarz A3',
+                  text: 'Duży, świąteczny plakat 29,7 × 42 cm — gotowy do powieszenia i zdrapywania.',
+                },
+                {
+                  icon: 'fa-gem',
+                  title: '24 złote okienka',
+                  text: 'Każdego dnia zdrapujesz pole i odkrywasz zadanie albo cytat pod folią.',
+                },
+                {
+                  icon: 'fa-palette',
+                  title: 'Twój wariant',
+                  text: 'Zielona Gwiazdka, Czerwony Mikołaj albo Błękitna Noc plus gotowa przygoda lub własne 24 dni.',
+                },
+              ].map((card) => (
+                <ParchmentCard key={card.title} padding="md" className="h-full text-center">
+                  <div className="icon-circle mx-auto mb-3">
+                    <i className={`fas ${card.icon} text-parchment-text`} />
+                  </div>
+                  <h3 className="font-display text-xl font-semibold text-parchment-text mb-2">
+                    {card.title}
+                  </h3>
+                  <p className="text-parchment-muted text-sm leading-relaxed">{card.text}</p>
+                </ParchmentCard>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white py-16 md:py-20">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <h2 className="section-title mb-4 text-center">Jak zamówić zdrapkę?</h2>
+            <div className="gold-divider mb-10" />
+            <ParchmentCard padding="lg">
+              <ol className="space-y-4">
+                {[
+                  'Wybierz wariant kalendarza — Zielona Gwiazdka, Czerwony Mikołaj albo Błękitna Noc.',
+                  'Wybierz gotową świąteczną przygodę albo ułóż własne zadania pod okienka.',
+                  'Dodaj kalendarz do koszyka. Imię, e-mail i adres podasz dopiero przy płatności.',
+                  'Po opłaceniu przygotujemy przesyłkę i wyślemy ją InPost w 3–5 dni roboczych.',
+                ].map((step, i) => (
+                  <li key={step} className="step-row">
+                    <span className="step-badge">{i + 1}</span>
+                    <p className="text-parchment-text leading-relaxed">{step}</p>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-6 pt-6 divider-parchment text-center">
+                <Link to="/list-do-swietego-mikolaja" className="text-christmas-green hover:text-christmas-gold font-medium underline transition-colors">
+                  Dołącz List do Świętego Mikołaja →
+                </Link>
+              </div>
+            </ParchmentCard>
+          </div>
+        </section>
+
+        <section className="section-cream py-16 md:py-20">
+          <div className="container mx-auto px-4 max-w-3xl">
+            <h2 className="section-title mb-4 text-center">Najczęstsze pytania</h2>
+            <div className="gold-divider mb-10" />
+            <div className="space-y-4">
+              {FAQ.map((item) => (
+                <ParchmentCard key={item.q} padding="md">
+                  <h3 className="font-display text-lg md:text-xl font-semibold text-parchment-text mb-2">
+                    {item.q}
+                  </h3>
+                  <p className="text-parchment-muted text-sm leading-relaxed">{item.a}</p>
+                </ParchmentCard>
+              ))}
+            </div>
+            <div className="text-center mt-10">
+              <Link to="/stworz-kalendarz/interaktywny" className="btn-gold px-8 py-3">
+                Wolisz kalendarz interaktywny?
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Powiększone zdjęcie"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl p-2"
+            aria-label="Zamknij"
+            onClick={() => setLightboxOpen(false)}
+          >
+            <i className="fas fa-times" />
+          </button>
+          <img
+            src={active.src}
+            alt={active.alt}
+            className="max-h-[90vh] max-w-full rounded-xl shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
   );
 }

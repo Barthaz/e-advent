@@ -437,7 +437,8 @@ function createStyles(variant, layout, size) {
     },
     photoFrame: {
       width: '100%',
-      height: wide ? 252 : 188,
+      // Leave space for the title, labels and footer on a landscape A5 card.
+      height: compact && wide ? 160 : wide ? 252 : 188,
       borderWidth: 2.2,
       borderColor: COLORS.gold,
       padding: 7,
@@ -508,6 +509,7 @@ function renderNodes(nodes, styles) {
           Text,
           {
             key: index,
+            minPresenceAhead: node.minPresenceAhead,
             style: node.style === 'accent' ? styles.accent : node.style === 'muted' ? styles.muted : styles.body,
           },
           node.text,
@@ -700,7 +702,7 @@ async function renderDocumentDefinition(definition) {
   ensureFonts();
   if (definition.craftSheets) {
     const { craftPdfDocument } = require('./CraftPdfDocument');
-    return renderToBuffer(craftPdfDocument(definition));
+    return renderToBuffer(await craftPdfDocument(definition));
   }
   await hydratePhotoNodes(definition.nodes);
   const variant = definition.variant === 'INK_SAVER' ? 'INK_SAVER' : 'COLOR';

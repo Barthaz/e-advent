@@ -1485,9 +1485,12 @@ const ENGINE_MAP: Partial<Record<SpecialEngineType, React.ComponentType<EnginePr
 
 export default function EngineRouter(props: EngineProps) {
   const Component = ENGINE_MAP[props.descriptor.engine] || GenericEngine;
+  const secondary = props.descriptor.config?.secondaryEngine;
   return (
     <ScrollView style={{ maxHeight: 420 }} nestedScrollEnabled>
       <Component {...props} />
+      {secondary === 'SCORECARD' && <ScorecardEngine {...props} />}
+      {secondary === 'TEMPLATE_PERSONALIZER' && <TemplatePersonalizerEngine {...props} />}
     </ScrollView>
   );
 }

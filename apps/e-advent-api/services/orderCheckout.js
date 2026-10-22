@@ -116,12 +116,14 @@ async function resolveCheckoutItems(requestData) {
         continue;
       }
       const data = calendar.data || {};
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.email || '').trim())) {
+      const sku = data.sku || 'interactive';
+      const product = getProduct(sku);
+      // Interactive calendars need an owner email for access. Physical scratch
+      // orders collect the buyer email at checkout, so the calendar may omit it.
+      if (!isPhysicalProduct(sku) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.email || '').trim())) {
         errors.push({ type: 'field', msg: 'Calendar owner email is required for delivery', path: `items[${i}].calendarId`, location: 'body' });
         continue;
       }
-      const sku = data.sku || 'interactive';
-      const product = getProduct(sku);
       if (product?.discontinued || (product?.type === 'scratch' && data.format && data.format !== 'A3')) {
         errors.push({ type: 'field', msg: 'Kalendarz zdrapka jest dostępny wyłącznie w formacie A3. Utwórz go ponownie w kreatorze.', path: `items[${i}].calendarId`, location: 'body' });
         continue;

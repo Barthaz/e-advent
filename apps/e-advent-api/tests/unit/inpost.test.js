@@ -14,6 +14,20 @@ test('tariff is server configured; quantity and certificate occupy parcel capaci
   expect(() => inpost.quote([{ sku: 'santa-letter', quantity: 2 }, { sku: 'santa-certificate', quantity: 1 }], 'courier_inpost')).toThrow('nie ma skonfigurowanej');
   expect(() => inpost.quote([{ sku: 'santa-letter', quantity: -1 }], 'courier_inpost')).toThrow('pozycja');
 });
+test('customer pays the same locker/courier tariff for every fitting package, and nothing over 100 zł', () => {
+  process.env.INPOST_PACKAGES_JSON = JSON.stringify([
+    { code: 'flat', length: 450, width: 330, height: 50, weight: 1,
+      capacity: { 'scratch-a3': 2, 'santa-letter': 4, 'santa-certificate': 20 },
+      prices: { parcel_inpost: 16.99, courier_inpost: 19.99 } },
+    { code: 'box', length: 600, width: 350, height: 150, weight: 3,
+      capacity: { 'scratch-a3': 8, 'santa-letter': 10, 'santa-certificate': 40 },
+      prices: { parcel_inpost: 16.99, courier_inpost: 19.99 } },
+  ]);
+  expect(inpost.quote(items, 'parcel_inpost').price).toBe(16.99);
+  expect(inpost.quote(items, 'courier_inpost').price).toBe(19.99);
+  expect(inpost.quote([{ sku: 'scratch-a3', quantity: 2 }], 'parcel_inpost').price).toBe(0);
+  expect(inpost.quote([{ sku: 'scratch-a3', quantity: 1 }, { sku: 'santa-letter', quantity: 2 }], 'courier_inpost').price).toBe(0);
+});
 test('missing configuration fails closed rather than charging legacy five PLN', () => {
   delete process.env.INPOST_PACKAGES_JSON;
   expect(() => inpost.quote(items, 'courier_inpost')).toThrow('Brak cennika');

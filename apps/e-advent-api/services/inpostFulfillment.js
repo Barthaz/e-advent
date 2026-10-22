@@ -132,33 +132,75 @@ async function operate(id, action, input = {}) {
       return inpost.request(`/shipments/${row.shipment_id}/label?format=Pdf&type=A6`, { pdf: true });
     }
     return view(order, row);
+  }).then(async result => {
+    // Email once the label is paid and tracking exists — not on GET/PDF, and never
+    // while still holding the InPost lock (SMTP must not block a second buy).
+    if (action !== 'get' && action !== 'label' && result && result.labelReady && result.trackingNumber) {
+      await notifyPrepared(id, { trackingNumber: result.trackingNumber, triggeredBy: 'system' });
+    }
+    return result;
   });
 }
 
-// Called after a successful label download: the parcel is packed, so the order
-// moves to "processing" and the customer gets one "prepared" email.
+async function notifyPrepared(id, { downloaded = false, trackingNumber, triggeredBy = 'webhook' } = {}) {
+  // Two simultaneous notifies (buy + download, or webhook + cron) share this lock.
+  return withNamedLocks([`shipment-email:${id}`], async () => {
+    await query("UPDATE orders SET label_created_at = COALESCE(label_created_at, NOW()), fulfillment_status = IF(fulfillment_status = 'pending', 'processing', fulfillment_status) WHERE id = ?", [id]);
+    if (downloaded) {
+      await query('UPDATE order_inpost_shipments SET label_downloaded_at = COALESCE(label_downloaded_at, NOW()) WHERE order_id = ?', [id]);
+    }
+    try {
+      const order = await Payment.findPaymentById(id);
+      const payload = trackingNumber && !order?.trackingNumber ? { ...order, trackingNumber } : order;
+      const result = await sendShipmentPreparedEmail(payload, triggeredBy);
+      return { email: result.skipped ? 'skipped' : result.sent ? 'sent' : 'failed', error: result.results[0]?.error || null };
+    } catch (error) {
+      return { email: 'failed', error: error.message };
+    }
+  });
+}
+
 async function markLabelPrepared(id) {
-  await query("UPDATE orders SET label_created_at = COALESCE(label_created_at, NOW()), fulfillment_status = IF(fulfillment_status = 'pending', 'processing', fulfillment_status) WHERE id = ?", [id]);
-  await query('UPDATE order_inpost_shipments SET label_downloaded_at = COALESCE(label_downloaded_at, NOW()) WHERE order_id = ?', [id]);
+  return notifyPrepared(id, { downloaded: true, triggeredBy: 'admin' });
+}
+
+async function autoBuyIfReady(orderId, view, { refreshOffers = false } = {}) {
+  if (!view?.shipmentId || view.labelReady || view.needsReview) return view;
+  let current = view;
+  if (!current.canBuy && refreshOffers) {
+    try { current = await operate(orderId, 'offers'); }
+    catch (error) {
+      console.error('InPost auto-offers failed:', orderId, error.message);
+      return current;
+    }
+  }
+  if (!current.canBuy || current.offerId == null) return current;
   try {
-    const result = await sendShipmentPreparedEmail(await Payment.findPaymentById(id), 'admin');
-    return { email: result.skipped ? 'skipped' : result.sent ? 'sent' : 'failed', error: result.results[0]?.error || null };
+    return await operate(orderId, 'buy', { offerId: current.offerId, acceptedPrice: current.offerPrice });
   } catch (error) {
-    return { email: 'failed', error: error.message };
+    console.error('InPost auto-buy failed:', orderId, error.message);
+    return { ...current, error: error.message };
   }
 }
 
-// Paid InPost orders get their ShipX shipment right away; failures stay visible in
-// the panel ("Przygotuj" retries) and never block payment confirmation.
+// Stripe webhook / cron: create the ShipX shipment, buy the label when an offer
+// is already present. Missing offers are bought later by the InPost webhook or cron.
+// Failures stay in the panel for a manual retry and never block payment confirmation.
 async function ensureShipment(orderId) {
   const order = await Payment.findPaymentById(orderId);
   if (!order?.metadata?.inpostDelivery || order.status !== 'succeeded') return { skipped: true };
   try {
-    return { skipped: false, shipment: await operate(orderId, 'create') };
+    const shipment = await autoBuyIfReady(orderId, await operate(orderId, 'create'));
+    return { skipped: false, shipment, ...(shipment.error ? { error: shipment.error } : {}) };
   } catch (error) {
     console.error('InPost auto-create failed:', orderId, error.message);
     return { skipped: false, error: error.message };
   }
+}
+
+// InPost webhook / cron: refresh the live status, buy a ready offer, email the customer.
+async function advanceShipment(orderId) {
+  return autoBuyIfReady(orderId, await operate(orderId, 'refresh'), { refreshOffers: true });
 }
 
 async function createMissingShipments({ limit = 20 } = {}) {
@@ -185,9 +227,9 @@ async function syncActiveShipments({ limit = 50 } = {}) {
     ORDER BY s.updated_at ASC LIMIT ?`, [c.environment, c.organizationId, limit]);
   let refreshed = 0, failed = 0;
   for (const { order_id: orderId } of rows) {
-    try { await operate(orderId, 'refresh'); refreshed++; } catch { failed++; }
+    try { await advanceShipment(orderId); refreshed++; } catch { failed++; }
   }
   return { skipped: false, refreshed, failed };
 }
 
-module.exports = { operate, matches, offerPrice, markLabelPrepared, syncActiveShipments, ensureShipment, createMissingShipments };
+module.exports = { operate, matches, offerPrice, markLabelPrepared, syncActiveShipments, ensureShipment, createMissingShipments, advanceShipment };

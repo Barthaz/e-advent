@@ -144,6 +144,26 @@ describe('products catalog (unit)', () => {
     expect(t.freeShipping).toBe(true);
   });
 
+  test('computeOrderTotals: InPost quote is waived at the free-shipping threshold', () => {
+    const t = computeOrderTotals(
+      [{ sku: 'scratch-a3', quantity: 1 }, { sku: 'santa-letter', quantity: 2 }],
+      { shippingAmount: 16.99 },
+    );
+    expect(t.shipping).toBe(0);
+    expect(t.freeShipping).toBe(true);
+    expect(t.total).toBe(127);
+  });
+
+  test('computeOrderTotals: InPost quote applies below the free-shipping threshold', () => {
+    const t = computeOrderTotals(
+      [{ sku: 'santa-letter', quantity: 1 }],
+      { shippingAmount: 16.99 },
+    );
+    expect(t.shipping).toBe(16.99);
+    expect(t.freeShipping).toBe(false);
+    expect(t.total).toBe(45.99);
+  });
+
   test('computeOrderTotals: mixed below threshold still ships once', () => {
     const t = computeOrderTotals([
       { sku: 'interactive', quantity: 1 },

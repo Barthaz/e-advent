@@ -4,7 +4,7 @@
     "wrapping-pattern-v1": {
       "intro": "Wydrukuj wzory i owiń prezent własnym papierem e‑Advent.",
       "ctaLabel": "Otwórz wzory papieru",
-      "printHint": "Drukuj na zwykłym A4/A5; sklej arkusze taśmą od spodu, jeśli paczka jest większa.",
+      "printHint": "Drukuj na A4 w skali 100%; sklej arkusze taśmą od spodu, jeśli paczka jest większa.",
       "notes": [
         "Wybierz jeden motyw albo mieszaj paski wzorów na jednej paczce."
       ],
@@ -140,17 +140,17 @@
       "steps": [
         "Wydrukuj szablon.",
         "Wytnij elementy po liniach ciągłych.",
-        "Zagnij i złącz korpus z nogami według oznaczeń.",
-        "Wsuń poroże i ustaw renifera na równej powierzchni."
+        "Zagnij paski podpórek w trzech miejscach i sklej je w trójkątne tunele.",
+        "Przyklej podpórki z tyłu nóg i ustaw lekko odchyloną figurkę na równej powierzchni."
       ],
-      "cutLabels": ["Wytnij", "Zagnij", "Wsuń / złącz"]
+      "cutLabels": ["Wytnij", "Zagnij", "Sklej podpórki"]
     },
     "origami-guide-v1": {
-      "intro": "Złóż świąteczne origami: gwiazdę, choinkę albo prostą bombkę z papieru.",
+      "intro": "Złóż prostą płaską choinkę origami z jednego kwadratu papieru.",
       "ctaLabel": "Otwórz przewodnik origami",
       "printHint": "Kwadratowy papier; możesz wyciąć kwadrat z A4 według oznaczeń.",
       "notes": [
-        "Zaczynaj od prostej gwiazdy — kolejne modele dodawaj, gdy ręka złapie rytm."
+        "Karta zawiera sześć kroków i kwadrat startowy 120 × 120 mm. Drukuj na A4 w skali 100%."
       ],
       "steps": [
         "Przygotuj kwadratowy arkusz.",
