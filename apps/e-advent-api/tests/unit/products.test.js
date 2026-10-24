@@ -5,6 +5,8 @@ const {
   isPhysicalProduct,
   computeOrderTotals,
   applyPercentDiscount,
+  paidItemPrices,
+  roundPln,
   PRODUCTS,
   SHIPPING_COST,
   FREE_SHIPPING_THRESHOLD,
@@ -193,6 +195,7 @@ describe('products catalog (unit)', () => {
       shipping: 5,
       total: 31.1,
     });
+    expect(discounted.lines[0]).toMatchObject({ unitPrice: 26.1, lineBrutto: 26.1 });
   });
 
   test('20% discount reduces products and leaves shipping', () => {
@@ -205,6 +208,7 @@ describe('products catalog (unit)', () => {
       shipping: 5,
       total: 28.2,
     });
+    expect(discounted.lines[0]).toMatchObject({ unitPrice: 23.2, lineBrutto: 23.2 });
   });
 
   test('100% discount zeroes the whole order including shipping', () => {
@@ -218,6 +222,37 @@ describe('products catalog (unit)', () => {
       total: 0,
       freeShipping: true,
     });
+    expect(discounted.lines[0]).toMatchObject({ unitPrice: 0, lineBrutto: 0 });
+  });
+
+  test('20% discount scales mixed letter and certificate lines to paid amounts', () => {
+    const totals = computeOrderTotals([
+      { sku: 'santa-letter', quantity: 3 },
+      { sku: 'santa-certificate', quantity: 3 },
+    ]);
+    const discounted = applyPercentDiscount(totals, 20);
+    expect(discounted.subtotal).toBe(114);
+    expect(discounted.discount).toBe(22.8);
+    expect(discounted.total).toBe(91.2);
+    expect(discounted.lines[0]).toMatchObject({ sku: 'santa-letter', unitPrice: 23.2, lineBrutto: 69.6 });
+    expect(discounted.lines[1]).toMatchObject({ sku: 'santa-certificate', unitPrice: 7.2, lineBrutto: 21.6 });
+    expect(roundPln(discounted.lines.reduce((sum, line) => sum + line.lineBrutto, 0))).toBe(91.2);
+  });
+
+  test('paidItemPrices leaves already discounted lines unchanged', () => {
+    const items = [{ sku: 'santa-letter', quantity: 1, unitPrice: 23.2, lineBrutto: 23.2 }];
+    expect(paidItemPrices(items, { percent: 20 }, 23.2)).toBe(items);
+  });
+
+  test('paidItemPrices scales catalog lines to the paid product total', () => {
+    const items = [
+      { sku: 'santa-letter', quantity: 1, unitPrice: 29, lineBrutto: 29 },
+      { sku: 'santa-certificate', quantity: 1, unitPrice: 9, lineBrutto: 9 },
+    ];
+    const paid = paidItemPrices(items, { percent: 20, amount: 7.6 }, 30.4);
+    expect(paid).not.toBe(items);
+    expect(paid[0]).toMatchObject({ unitPrice: 23.2, lineBrutto: 23.2 });
+    expect(paid[1]).toMatchObject({ unitPrice: 7.2, lineBrutto: 7.2 });
   });
 
   test('letter promo window ends when calendars go on sale', () => {

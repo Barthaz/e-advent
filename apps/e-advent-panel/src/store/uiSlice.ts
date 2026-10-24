@@ -10,12 +10,12 @@ export interface Toast {
 
 interface UiState {
   toasts: Toast[];
-  sidebarCollapsed: boolean;
+  sidebarOpen: boolean;
 }
 
 const initialState: UiState = {
   toasts: [],
-  sidebarCollapsed: false,
+  sidebarOpen: false,
 };
 
 const uiSlice = createSlice({
@@ -32,10 +32,13 @@ const uiSlice = createSlice({
       state.toasts = state.toasts.filter((t) => t.id !== action.payload);
     },
     toggleSidebar(state) {
-      state.sidebarCollapsed = !state.sidebarCollapsed;
+      state.sidebarOpen = !state.sidebarOpen;
+    },
+    setSidebarOpen(state, action: PayloadAction<boolean>) {
+      state.sidebarOpen = action.payload;
     },
   },
 });
 
-export const { addToast, removeToast, toggleSidebar } = uiSlice.actions;
+export const { addToast, removeToast, toggleSidebar, setSidebarOpen } = uiSlice.actions;
 export default uiSlice.reducer;

@@ -1,5 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import { STOREFRONT_URL } from '../../config/env';
+import { useAppDispatch } from '../../hooks/useAppDispatch';
+import { toggleSidebar } from '../../store/uiSlice';
 
 interface Breadcrumb {
   label: string;
@@ -37,10 +39,19 @@ function useBreadcrumbs(): Breadcrumb[] {
 
 export default function TopBar() {
   const breadcrumbs = useBreadcrumbs();
+  const dispatch = useAppDispatch();
 
   return (
-    <header className="topbar h-14 px-6 flex items-center flex-shrink-0">
-      <nav aria-label="Breadcrumb">
+    <header className="topbar h-14 px-4 md:px-6 flex items-center flex-shrink-0 gap-3">
+      <button
+        type="button"
+        className="lg:hidden w-10 h-10 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-christmas-green"
+        aria-label="Otwórz menu"
+        onClick={() => dispatch(toggleSidebar())}
+      >
+        <i className="fa-solid fa-bars" />
+      </button>
+      <nav aria-label="Breadcrumb" className="min-w-0 overflow-hidden">
         <ol className="flex items-center gap-1.5 text-sm">
           {breadcrumbs.map((crumb, idx) => (
             <li key={idx} className="flex items-center gap-1.5">

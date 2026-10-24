@@ -41,6 +41,7 @@ describe('checkout identity and concurrency', () => {
     expect(result.orderNumber).toBe('000001');
     expect(intent.metadata).toMatchObject({ orderId: order.id, orderNumber: '000001', customerEmail: order.customerEmail });
     expect(intent.key).toBe(`order:${order.id}`);
+    expect(order.clientIP).toBe('test');
   });
   test('simultaneous retries produce one order, number and PaymentIntent', async () => {
     const results = await Promise.all(Array.from({ length: 8 }, () => initializeCheckout(request, 'test')));
@@ -130,6 +131,11 @@ describe('checkout identity and concurrency', () => {
     expect(store.orders.get(result.orderId).rabat).toBe('SAVE10');
     expect(store.orders.get(result.orderId).amount).toBe(31.1);
     expect(store.orders.get(result.orderId).shippingAmount).toBe(5);
+    expect(store.orders.get(result.orderId).items[0]).toMatchObject({
+      sku: 'santa-letter',
+      unitPrice: 26.1,
+      lineBrutto: 26.1,
+    });
   });
   test('20% code discounts products and keeps shipping', async () => {
     installDiscountStore(db.query, [discountRow({ code: 'MIKOLAJ20', percent: 20, reusable: 1 })]);
@@ -137,6 +143,11 @@ describe('checkout identity and concurrency', () => {
     expect(result.amount).toBe(28.2);
     expect(store.orders.get(result.orderId).rabat).toBe('MIKOLAJ20');
     expect(store.orders.get(result.orderId).shippingAmount).toBe(5);
+    expect(store.orders.get(result.orderId).items[0]).toMatchObject({
+      sku: 'santa-letter',
+      unitPrice: 23.2,
+      lineBrutto: 23.2,
+    });
   });
   test('calendar checkout is rejected while the November sale is closed', async () => {
     const previous = process.env.EADVENT_CALENDARS_ON_SALE;
@@ -163,5 +174,22 @@ describe('checkout identity and concurrency', () => {
     installDiscountStore(db.query, []);
     await expect(initializeCheckout({ ...request, promoCode: 'NOPE12' }, 'test')).rejects.toMatchObject({ status: 400 });
     expect(store.orders.size).toBe(0);
+  });
+  test('stores required terms and privacy acceptance on the order', async () => {
+    const acceptedAt = '2026-10-24T15:00:00.000Z';
+    const result = await initializeCheckout({
+      ...request,
+      acceptanceData: {
+        termsAccepted: true,
+        privacyAccepted: true,
+        termsAcceptedAt: acceptedAt,
+        privacyAcceptedAt: acceptedAt,
+        clientIP: '1.2.3.4',
+      },
+    }, 'test');
+    const order = store.orders.get(result.orderId);
+    expect(order.termsAcceptedAt).toBe(acceptedAt);
+    expect(order.privacyPolicyAcceptedAt).toBe(acceptedAt);
+    expect(order.clientIP).toBe('test');
   });
 });

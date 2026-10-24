@@ -29,6 +29,9 @@ export interface CartContextValue {
   addItem: (input: AddItemInput) => CartItem;
   addSantaLetterBundle: (input: AddSantaLetterBundleInput) => CartItem[];
   removeItem: (id: string) => void;
+  removeCertificate: (id: string) => void;
+  setLetterQuantity: (quantity: number) => void;
+  removeLetterPack: () => void;
   updateQty: (id: string, quantity: number) => void;
   clear: () => void;
 }

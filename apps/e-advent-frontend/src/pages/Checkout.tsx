@@ -18,7 +18,7 @@ import ShippingForm from '../components/checkout/ShippingForm';
 import { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../utils/shippingAddress';
 import type { ProductType, ShippingAddress } from '../types/order';
 import { getActiveProduct, getStorageKeys, loadShipping, saveShipping, loadCheckoutCalendarData, resolveCheckoutProduct, getReusablePendingCalendarId, getPendingCalendarSession, setPendingCalendarSession, getPurchasedCalendarIds, markCalendarPurchased, PENDING_EDIT_TOKEN_KEY, PURCHASED_CALENDAR_IDS_KEY } from '../utils/creatorStorage';
-import { CART_STORAGE_KEY, loadCart, getCartTotals, cartItemToCheckoutItem, getCartItemDisplayName, clearCartStorage, type CartItem } from '../utils/cartStorage';
+import { CART_STORAGE_KEY, loadCart, getCartTotals, checkoutItemsFromCart, getCartItemDisplayName, buildCartDisplayRows, clearCartStorage, type CartItem } from '../utils/cartStorage';
 import { trackBeginCheckout, saveGaPurchasePayload } from '../utils/analytics';
 import { saveOrderSummary, cartItemsToOrderLines } from '../utils/orderSummary';
 import { getCheckoutToken, notifyCartChanged } from '../utils/checkoutSession';
@@ -696,7 +696,7 @@ export default function Checkout() {
         const runCartPaymentInit = async () => {
           setPaymentError(null);
           const orderId = getStableCheckoutOrderId(initKey);
-          const items = cartItems.map((i) => cartItemToCheckoutItem(i));
+          const items = checkoutItemsFromCart(cartItems);
           const primaryCalendarId = cartItems.find((i) => i.calendarId)?.calendarId;
           const paymentIntent = await createPaymentIntent({
             amount: totalPrice,
@@ -1248,9 +1248,10 @@ export default function Checkout() {
     }
     const orderId = getStableCheckoutOrderId(checkoutFingerprint);
     const items = cartMode
-      ? cartItems.map((i) => cartItemToCheckoutItem(i))
+      ? checkoutItemsFromCart(cartItems)
       : [{ sku, quantity: 1, calendarId: getReusablePendingCalendarId() || undefined }];
     const primaryCalendarId = (cartMode ? cartItems.find((i) => i.calendarId)?.calendarId : items[0]?.calendarId) || undefined;
+    const acceptanceTimestamp = new Date().toISOString();
     const result = await createPaymentIntent({
       amount: 0,
       currency: 'pln',
@@ -1259,6 +1260,13 @@ export default function Checkout() {
       promoCode: promoCode.trim(),
       ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
       items,
+      acceptanceData: {
+        termsAccepted: true,
+        privacyAccepted: true,
+        termsAcceptedAt: acceptanceTimestamp,
+        privacyAcceptedAt: acceptanceTimestamp,
+        clientIP: null,
+      },
       ...(isPhysical ? {
         shippingAddress: normalizeShippingAddress(shippingAddress),
         delivery: { ...delivery, quoteKey: shippingQuote.quote?.quoteKey },
@@ -1380,7 +1388,32 @@ export default function Checkout() {
                 <h2 className="heading-section mb-3">Zamówienie</h2>
                 {cartItems.length > 0 ? (
                   <ul className="space-y-3">
-                    {cartItems.map((item) => {
+                    {buildCartDisplayRows(cartItems).map((row) => {
+                      if (row.kind === 'letter-group') {
+                        return (
+                          <li key="letter-pack" className="text-sm">
+                            <div className="flex justify-between gap-3">
+                              <span className="text-parchment-text">
+                                <strong>{row.label}</strong>
+                                {' '}× {row.quantity}
+                              </span>
+                              <span className="whitespace-nowrap font-medium text-christmas-green">
+                                {formatPrice(row.unitPrice * row.quantity)}
+                              </span>
+                            </div>
+                            {row.certificates.map((cert) => {
+                              const unit = cert.unitPrice ?? getProduct(cert.sku)?.basePrice ?? 0;
+                              return (
+                                <div key={cert.id} className="mt-1.5 ml-3 flex justify-between gap-3 text-parchment-muted">
+                                  <span>{getCartItemDisplayName(cert)}</span>
+                                  <span className="whitespace-nowrap text-christmas-green">{formatPrice(unit)}</span>
+                                </div>
+                              );
+                            })}
+                          </li>
+                        );
+                      }
+                      const item = row.item;
                       const p = getProduct(item.sku);
                       const unit = item.unitPrice ?? p?.basePrice ?? 0;
                       const displayName = getCartItemDisplayName(item);

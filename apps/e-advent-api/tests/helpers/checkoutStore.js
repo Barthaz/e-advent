@@ -38,6 +38,11 @@ module.exports = function checkoutStore() {
     return order;
   });
   Payment.findPaymentById.mockImplementation(async id => orders.get(id) || null);
+  Payment.updatePayment.mockImplementation(async (stripeId, patch) => {
+    const order = [...orders.values()].find(row => row.stripePaymentIntentId === stripeId);
+    if (order) Object.assign(order, patch);
+    return order || null;
+  });
   Payment.findPayments.mockImplementation(async ({ productId }) => [...orders.values()].filter(order => order.items.some(item => item.calendarId === productId)));
   Payment.updatePaymentStatus.mockImplementation(async (id, status) => {
     const order = [...orders.values()].find(order => order.stripePaymentIntentId === id);

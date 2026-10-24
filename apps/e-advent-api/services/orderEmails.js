@@ -276,7 +276,9 @@ function itemsTableHtml(items) {
       const name = escapeHtml(itemDisplayName(i.sku, i.metadata));
       const qty = Math.max(1, parseInt(i.quantity, 10) || 1);
       const unit = i.unitPrice != null ? Number(i.unitPrice) : (getProduct(i.sku)?.basePrice ?? null);
-      const lineTotal = unit != null ? unit * qty : null;
+      const lineTotal = i.lineBrutto != null
+        ? Number(i.lineBrutto)
+        : (unit != null ? unit * qty : null);
       return `<tr>
         <td class="c-ink" style="padding:7px 0; border-bottom:1px solid ${border}; color:${ink} !important; font-size:13px;">${name} × ${qty}</td>
         <td class="c-ink" style="padding:7px 0; border-bottom:1px solid ${border}; color:${ink} !important; font-size:13px; text-align:right; white-space:nowrap;">${lineTotal != null ? escapeHtml(formatPln(lineTotal)) : ''}</td>

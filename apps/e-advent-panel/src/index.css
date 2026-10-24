@@ -202,7 +202,6 @@ body {
   background: linear-gradient(180deg, #0a3d2e 0%, #0f5132 60%, #0a3d2e 100%);
   border-right: 1px solid rgba(244, 208, 63, 0.2);
   height: 100vh;
-  position: sticky;
   top: 0;
 }
 

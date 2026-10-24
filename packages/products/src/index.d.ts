@@ -35,7 +35,7 @@ export interface OrderLineVat {
   sku: string;
   quantity: number;
   vatRate: number;
-  /** Cena jednostkowa brutto (jak w katalogu / Stripe) */
+  /** Cena jednostkowa brutto faktycznie opłacona (po rabacie, jeśli był) */
   unitPrice: number;
   unitPriceNetto: number;
   lineBrutto: number;
@@ -85,6 +85,24 @@ export function applyPercentDiscount(
   totals: OrderTotals,
   percent: number,
 ): OrderTotals | null;
+export function applyPercentDiscountToLines(
+  lines: OrderLineVat[],
+  percent: number,
+  vatRate?: number,
+): OrderLineVat[] | null;
+export function paidItemPrices<T extends {
+  quantity?: number;
+  unitPrice?: number;
+  unit_price?: number;
+  lineBrutto?: number;
+  line_brutto?: number;
+  vatRate?: number;
+  vat_rate?: number;
+}>(
+  items: T[],
+  discount?: { percent?: number; amount?: number } | null,
+  paidProductTotal?: number | null,
+): T[];
 export function getProductPrice(sku: string): number | null;
 export function getSkuForTypeAndFormat(
   type: ProductType,

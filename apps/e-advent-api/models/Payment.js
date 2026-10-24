@@ -209,8 +209,9 @@ const createPayment = async (paymentData) => withTransaction(async () => {
         customer_email, customer_name, customer_phone,
         delivery_type, shipping_street, shipping_city, shipping_postal_code,
         product_type, sku, fulfillment_status, metadata, parcel_locker_id, parcel_locker_name, parcel_locker_address,
-        shipping_building_number, shipping_apartment_number, shipping_country)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        shipping_building_number, shipping_apartment_number, shipping_country,
+        terms_accepted_at, privacy_policy_accepted_at, client_ip)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       calendarId,
@@ -240,6 +241,9 @@ const createPayment = async (paymentData) => withTransaction(async () => {
       delivery?.receiver?.address?.building_number || null,
       delivery?.receiver?.address?.flat_number || null,
       delivery ? (delivery.receiver?.address?.country_code || 'PL') : null,
+      paymentData.termsAcceptedAt || null,
+      paymentData.privacyPolicyAcceptedAt || null,
+      paymentData.clientIP || paymentData.metadata?.clientIP || null,
     ]
   );
 

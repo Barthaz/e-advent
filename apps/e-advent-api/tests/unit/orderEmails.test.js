@@ -54,6 +54,7 @@ describe('orderEmails templates', () => {
       logoUrl: 'https://e-advent.pl/assets/brand/eadvent-logo.png',
     });
     expect(confirmation).toContain('ord-1');
+    expect(confirmation).toContain('49 zł');
     expect(confirmation).toContain('Poczta Polska');
     expect(access).toContain('ABC123');
     expect(access).toContain('Otwórz kalendarz');
@@ -109,6 +110,26 @@ describe('orderEmails templates', () => {
     });
     expect(html).toContain('PX123456789PL');
     expect(html).toContain('Kurier InPost');
+  });
+
+  test('order confirmation uses paid line amounts after a discount', () => {
+    const html = buildOrderConfirmationEmail({
+      orderId: '000017',
+      items: [
+        { sku: 'santa-letter', quantity: 3, unitPrice: 23.2, lineBrutto: 69.6 },
+        { sku: 'santa-certificate', quantity: 1, unitPrice: 7.2, lineBrutto: 7.2, metadata: { childName: 'Janek' } },
+      ],
+      shipping: { fullName: 'Jan', street: 'ul. 1', city: 'Warszawa', postalCode: '00-001', phone: '500' },
+      amount: 91.2,
+      shippingAmount: 0,
+      hasPhysical: true,
+      deliveryType: 'parcel_inpost',
+      parcelLocker: { id: 'POZ09M', name: 'Paczkomat', address: 'Poznań' },
+    });
+    expect(html).toContain('69.60 zł');
+    expect(html).toContain('7.20 zł');
+    expect(html).not.toContain('87 zł');
+    expect(html).toContain('91.20 zł');
   });
 
   test('collaboration invite uses shared shell', () => {

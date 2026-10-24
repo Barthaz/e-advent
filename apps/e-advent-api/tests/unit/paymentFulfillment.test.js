@@ -29,6 +29,9 @@ describe('paid order activation', () => {
     expect(withTransaction).toHaveBeenCalledTimes(1);
     expect(writes()).toHaveLength(2);
     expect(writes()[0][1]).toEqual(['KEEP12', 'delivered', 'cal']);
+    expect(writes()[1][0]).toMatch(/terms_accepted_at/);
+    expect(writes()[1][0]).toMatch(/privacy_policy_accepted_at/);
+    expect(writes()[1][1]).toEqual(['delivered', 'order']);
   });
   test('duplicate event does not reset fulfillment or credentials', async () => {
     order.status = 'succeeded';
@@ -65,5 +68,26 @@ describe('paid order activation', () => {
   test('email retry job is persisted in the same transaction as activation', async () => {
     await fulfillPaidIntent(intent);
     expect(conn.execute).toHaveBeenCalledWith('INSERT IGNORE INTO order_email_jobs (order_id) VALUES (?)', ['order']);
+  });
+  test('accepts items already stored at the paid discounted price', async () => {
+    items[0].unit_price = 7.2;
+    items[0].quantity = 1;
+    order.amount = 7.2;
+    intent.amount = 720;
+    intent.amount_received = 720;
+    order.metadata.discount = { code: 'MIKOLAJ20', percent: 20, amount: 1.8 };
+    order.metadata.checkoutFingerprint = require('../../services/orderIdentity').orderFingerprint(order, items);
+    intent.metadata.checkoutFingerprint = order.metadata.checkoutFingerprint;
+    await expect(fulfillPaidIntent(intent)).resolves.toMatchObject({ duplicate: false });
+  });
+  test('accepts legacy catalog item prices with discount metadata', async () => {
+    items[0].unit_price = 9;
+    order.amount = 7.2;
+    intent.amount = 720;
+    intent.amount_received = 720;
+    order.metadata.discount = { code: 'MIKOLAJ20', percent: 20, amount: 1.8 };
+    order.metadata.checkoutFingerprint = require('../../services/orderIdentity').orderFingerprint(order, items);
+    intent.metadata.checkoutFingerprint = order.metadata.checkoutFingerprint;
+    await expect(fulfillPaidIntent(intent)).resolves.toMatchObject({ duplicate: false });
   });
 });

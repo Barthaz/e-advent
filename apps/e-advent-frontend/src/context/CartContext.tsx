@@ -17,9 +17,12 @@ import {
   hasLinkedCertificate,
   loadCart,
   removeCartItem,
+  removeCertificate as dropCertificate,
+  removeLetterPack as dropLetterPack,
   sanitizeCartItems,
   saveCart,
   SANTA_CERTIFICATE_SKU,
+  setLetterPackQuantity,
   type CartItem,
 } from '../utils/cartStorage';
 import { reconcilePendingCheckout } from '../utils/reconcileCheckout';
@@ -162,6 +165,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const removeCertificateItem = useCallback((id: string) => {
+    setItems((prev) => {
+      const next = dropCertificate(prev, id);
+      saveCart(next);
+      return next;
+    });
+  }, []);
+
+  const setLetterQuantity = useCallback((quantity: number) => {
+    setItems((prev) => {
+      const next = setLetterPackQuantity(prev, quantity);
+      saveCart(next);
+      return next;
+    });
+  }, []);
+
+  const removeLetters = useCallback(() => {
+    setItems((prev) => {
+      const next = dropLetterPack(prev);
+      saveCart(next);
+      return next;
+    });
+  }, []);
+
   const updateQty = useCallback((id: string, quantity: number) => {
     setItems((prev) => {
       const target = prev.find((item) => item.id === id);
@@ -196,10 +223,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addItem,
       addSantaLetterBundle,
       removeItem,
+      removeCertificate: removeCertificateItem,
+      setLetterQuantity,
+      removeLetterPack: removeLetters,
       updateQty,
       clear,
     }),
-    [items, itemCount, totals, addItem, addSantaLetterBundle, removeItem, updateQty, clear],
+    [items, itemCount, totals, addItem, addSantaLetterBundle, removeItem, removeCertificateItem, setLetterQuantity, removeLetters, updateQty, clear],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -79,6 +79,8 @@ export interface OrderDetail extends OrderListItem {
   parcel_locker_name: string | null;
   parcel_locker_address: string | null;
   discount_code: string | null;
+  discount_percent: number | null;
+  discount_amount: number | null;
   terms_accepted_at: string | null;
   privacy_policy_accepted_at: string | null;
   ip_address: string | null;

@@ -12,16 +12,38 @@ import {
   isCalendarsOnSale,
   isLetterPromoActive,
 } from '../config/products';
-import { buildCartDisplayRows, getCartItemDisplayName } from '../utils/cartStorage';
+import {
+  buildCartDisplayRows,
+  certificatesRemovedByLetterDrop,
+  getCartItemDisplayName,
+} from '../utils/cartStorage';
 
 export default function CartPage() {
-  const { items, totals, updateQty, removeItem } = useCart();
+  const {
+    items,
+    totals,
+    updateQty,
+    removeItem,
+    removeCertificate,
+    setLetterQuantity,
+    removeLetterPack,
+  } = useCart();
   const displayRows = buildCartDisplayRows(items);
   const hasRetiredProduct = items.some((item) => getProduct(item.sku)?.discontinued);
   const hasUnsaleableCalendar = !isCalendarsOnSale() && items.some((item) => isCalendarSku(item.sku));
   const letterPromo = isLetterPromoActive() && items.some((item) => getProduct(item.sku)?.type === 'letter');
   const checkoutBlocked = hasRetiredProduct || hasUnsaleableCalendar;
 
+  const confirmLetterDrop = (nextQty: number) => {
+    const dropped = certificatesRemovedByLetterDrop(items, nextQty);
+    if (dropped.length === 0) return true;
+    const names = dropped.map((cert) => cert.childName || 'certyfikat').join(', ');
+    return window.confirm(
+      nextQty < 1
+        ? `Usunąć wszystkie listy z koszyka? Zostaną też usunięte certyfikaty (${names}).`
+        : `Zmniejszenie liczby listów usunie ostatni certyfikat${dropped.length > 1 ? 'y' : ''} (${names}). Kontynuować?`,
+    );
+  };
 
   return (
     <>
@@ -54,42 +76,115 @@ export default function CartPage() {
             <>
               <ul className="space-y-4 mb-8">
                 {displayRows.map((row) => {
+                  if (row.kind === 'letter-group') {
+                    return (
+                      <li key="letter-pack" className="py-4 border-b border-parchment-dark/20 last:border-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-display font-semibold text-parchment-text text-xl">
+                              {row.label}
+                            </p>
+                            <p className="text-parchment-muted text-sm">
+                              {formatPrice(row.unitPrice)} / szt.
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <label className="sr-only" htmlFor="qty-letter-pack">
+                              Liczba listów
+                            </label>
+                            <input
+                              id="qty-letter-pack"
+                              type="number"
+                              min={1}
+                              max={99}
+                              value={row.quantity}
+                              onChange={(e) => {
+                                const nextQty = Number(e.target.value);
+                                if (!confirmLetterDrop(nextQty)) return;
+                                setLetterQuantity(nextQty);
+                              }}
+                              className="w-16 rounded-lg border border-parchment-dark/30 bg-cream px-2 py-1.5 text-center text-parchment-text"
+                            />
+                            <p className="font-semibold text-christmas-green min-w-[4.5rem] text-right">
+                              {formatPrice(row.unitPrice * row.quantity)}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!confirmLetterDrop(0)) return;
+                                removeLetterPack();
+                              }}
+                              className="text-parchment-muted hover:text-christmas-red transition-colors p-2"
+                              aria-label="Usuń listy"
+                            >
+                              <i className="fas fa-trash-alt" />
+                            </button>
+                          </div>
+                        </div>
+                        {row.certificates.length > 0 && (
+                          <ul className="mt-3 ml-3 sm:ml-5 space-y-2 border-l-2 border-christmas-gold/35 pl-4">
+                            {row.certificates.map((cert) => {
+                              const name = getCartItemDisplayName(cert);
+                              const unit = cert.unitPrice ?? getProduct(cert.sku)?.basePrice ?? 0;
+                              return (
+                                <li key={cert.id} className="flex items-center gap-3 py-1.5">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-display font-semibold text-parchment-text">
+                                      <i className="fas fa-award text-christmas-gold/80 text-sm mr-2" aria-hidden />
+                                      {name}
+                                    </p>
+                                    <p className="text-parchment-muted text-sm">
+                                      {formatPrice(unit)} · dodatek do listu
+                                    </p>
+                                  </div>
+                                  <p className="font-semibold text-christmas-green min-w-[4.5rem] text-right">
+                                    {formatPrice(unit)}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (!window.confirm(`Usunąć certyfikat${cert.childName ? ` dla ${cert.childName}` : ''}? List pozostanie w koszyku.`)) {
+                                        return;
+                                      }
+                                      removeCertificate(cert.id);
+                                    }}
+                                    className="text-parchment-muted hover:text-christmas-red transition-colors p-2"
+                                    aria-label={`Usuń ${name}`}
+                                  >
+                                    <i className="fas fa-trash-alt" />
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </li>
+                    );
+                  }
+
                   const item = row.item;
                   const product = getProduct(item.sku);
                   const name = getCartItemDisplayName(item);
                   const unit = item.unitPrice ?? product?.basePrice ?? 0;
                   const isPersonalized = Boolean(item.calendarId);
-                  const isAddon = row.kind === 'addon';
-                  const lockQuantity = row.kind === 'item' ? row.lockQuantity : true;
-                  const removable = row.kind === 'item' ? row.removable : false;
 
                   return (
                     <li
                       key={item.id}
-                      className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-4 border-b border-parchment-dark/20 last:border-0 ${
-                        isAddon ? 'ml-4 sm:ml-6 pl-4 border-l-2 border-christmas-gold/35 bg-cream/20 rounded-r-xl' : ''
-                      }`}
+                      className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 py-4 border-b border-parchment-dark/20 last:border-0"
                     >
                       <div className="flex-1 min-w-0">
-                        <p
-                          className={`font-display font-semibold text-parchment-text ${
-                            isAddon ? 'text-lg' : 'text-xl'
-                          }`}
-                        >
-                          {isAddon && (
-                            <i className="fas fa-link text-christmas-gold/80 text-sm mr-2" aria-hidden />
-                          )}
+                        <p className="font-display font-semibold text-parchment-text text-xl">
                           {name}
                         </p>
                         <p className="text-parchment-muted text-sm">
                           {formatPrice(unit)} / szt.
                           {item.format ? ` · format ${item.format}` : ''}
                           {isPersonalized ? ' · spersonalizowany' : ''}
-                          {isAddon ? ' · dodatek do listu' : ''}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        {lockQuantity ? (
+                        {row.lockQuantity ? (
                           <span className="w-16 text-center text-parchment-text font-medium">1</span>
                         ) : (
                           <>
@@ -110,7 +205,7 @@ export default function CartPage() {
                         <p className="font-semibold text-christmas-green min-w-[4.5rem] text-right">
                           {formatPrice(unit * item.quantity)}
                         </p>
-                        {removable ? (
+                        {row.removable ? (
                           <button
                             type="button"
                             onClick={() => removeItem(item.id)}
@@ -119,15 +214,7 @@ export default function CartPage() {
                           >
                             <i className="fas fa-trash-alt" />
                           </button>
-                        ) : (
-                          <span
-                            className="w-9 text-center text-parchment-muted/40 p-2"
-                            title="Certyfikat usuwa się razem z listem"
-                            aria-hidden
-                          >
-                            <i className="fas fa-trash-alt" />
-                          </span>
-                        )}
+                        ) : null}
                       </div>
                     </li>
                   );

@@ -441,6 +441,7 @@ export async function createPaymentIntent(
       ...(data.delivery ? { delivery: data.delivery } : {}),
       ...(data.shippingAddress ? { shippingAddress: data.shippingAddress } : {}),
       ...(data.promoCode ? { promoCode: data.promoCode } : {}),
+      ...(data.acceptanceData ? { acceptanceData: data.acceptanceData } : {}),
       metadata: {
         ...(data.metadata || {}),
         ...(data.shippingAddress

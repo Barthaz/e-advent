@@ -230,9 +230,83 @@ export function isSupportedDiscountPercent(percent) {
   return DISCOUNT_PERCENTS.includes(Number(percent));
 }
 
+function lineGross(line) {
+  if (!line) return 0;
+  if (line.lineBrutto != null || line.line_brutto != null) {
+    return roundPln(Number(line.lineBrutto != null ? line.lineBrutto : line.line_brutto));
+  }
+  const qty = Math.max(1, parseInt(line.quantity, 10) || 1);
+  const unit = line.unitPrice != null ? line.unitPrice : line.unit_price;
+  return roundPln(Number(unit || 0) * qty);
+}
+
+function pricedLine(line, lineBrutto, vatRate) {
+  const qty = Math.max(1, parseInt(line.quantity, 10) || 1);
+  const rate = vatRate != null
+    ? Number(vatRate)
+    : Number(line.vatRate != null ? line.vatRate : (line.vat_rate != null ? line.vat_rate : DEFAULT_VAT_RATE));
+  const split = splitGrossAmount(lineBrutto, rate);
+  const unitPrice = roundPln(lineBrutto / qty);
+  const unitSplit = splitGrossAmount(unitPrice, rate);
+  return {
+    ...line,
+    vatRate: rate,
+    unitPrice,
+    unitPriceNetto: unitSplit.netto,
+    lineBrutto: split.brutto,
+    lineNetto: split.netto,
+    lineVat: split.vat,
+  };
+}
+
+/**
+ * Scale product lines to the amounts actually paid after a percent rebate.
+ * Remainder grosze land on the last line so the sum matches the discounted subtotal.
+ */
+export function applyPercentDiscountToLines(lines, percent, vatRate) {
+  const rate = Number(percent);
+  if (!Array.isArray(lines) || !isSupportedDiscountPercent(rate)) return null;
+  const first = lines[0] || {};
+  const sourceVat = vatRate != null
+    ? Number(vatRate)
+    : Number(first.vatRate != null ? first.vatRate : (first.vat_rate != null ? first.vat_rate : DEFAULT_VAT_RATE));
+  const subtotal = roundPln(lines.reduce((sum, line) => sum + lineGross(line), 0));
+  const discount = rate === 100 ? subtotal : roundPln(subtotal * (rate / 100));
+  const target = roundPln(subtotal - discount);
+  const factor = rate === 100 ? 0 : 1 - rate / 100;
+  const next = lines.map((line) => pricedLine(line, roundPln(lineGross(line) * factor), sourceVat));
+  if (!next.length) return next;
+  const drift = roundPln(target - next.reduce((sum, line) => sum + line.lineBrutto, 0));
+  if (drift !== 0) {
+    const last = next[next.length - 1];
+    next[next.length - 1] = pricedLine(last, roundPln(last.lineBrutto + drift), sourceVat);
+  }
+  return next;
+}
+
+/**
+ * If stored lines are still catalog prices, return the amounts actually paid.
+ * Already-discounted lines (sum matches the paid product total) are left unchanged.
+ */
+export function paidItemPrices(items, discount, paidProductTotal) {
+  if (!Array.isArray(items) || items.length === 0) return items;
+  const percent = Number(discount?.percent);
+  if (!isSupportedDiscountPercent(percent)) return items;
+  const sum = roundPln(items.reduce((total, item) => total + lineGross(item), 0));
+  const target = paidProductTotal != null
+    ? roundPln(paidProductTotal)
+    : roundPln(sum - (percent === 100 ? sum : roundPln(sum * (percent / 100))));
+  if (sum === target) return items;
+  const priced = applyPercentDiscountToLines(items, percent);
+  if (!priced) return items;
+  const newSum = roundPln(priced.reduce((total, item) => total + item.lineBrutto, 0));
+  return newSum === target ? priced : items;
+}
+
 /**
  * 10% and 20% off products (shipping unchanged). 100% makes the whole order 0 zł.
  * Catalog `subtotal` stays the original product total so the UI can show the rebate.
+ * Line amounts are the prices actually paid.
  * @param {import('./index').OrderTotals} totals
  * @param {number} percent
  * @returns {import('./index').OrderTotals | null}
@@ -246,8 +320,10 @@ export function applyPercentDiscount(totals, percent) {
   const shippingVat = rate === 100 ? 0 : totals.shippingVat;
   const discountedSubtotal = roundPln(totals.subtotal - discount);
   const subSplit = splitGrossAmount(discountedSubtotal, totals.vatRate);
+  const lines = applyPercentDiscountToLines(totals.lines || [], rate, totals.vatRate) || totals.lines;
   return {
     ...totals,
+    lines,
     discountPercent: rate,
     discount,
     shipping,

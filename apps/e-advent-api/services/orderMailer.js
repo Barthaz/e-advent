@@ -24,6 +24,7 @@ const {
   getSpecialDescriptor,
   isPremiumCalendar,
 } = require('./special/SpecialConfigRegistry');
+const { withPaidItemList } = require('./orderPaidPrices');
 
 function generateAccessCode() {
   const { randomInt } = require('node:crypto');
@@ -58,7 +59,7 @@ function dailyRecipient(calendar) {
 }
 
 function orderLineItems(order) {
-  if (Array.isArray(order.items) && order.items.length > 0) return order.items;
+  if (Array.isArray(order.items) && order.items.length > 0) return withPaidItemList(order.items, order);
   if (order.sku) {
     return [{
       sku: order.sku,

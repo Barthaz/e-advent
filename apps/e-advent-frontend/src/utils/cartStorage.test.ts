@@ -6,7 +6,11 @@ import {
   loadCart,
   saveCart,
   appendSantaLetterBundle,
+  buildCartDisplayRows,
+  checkoutItemsFromCart,
   removeCartItem,
+  removeCertificate,
+  removeOneLetter,
   sanitizeCartItems,
   hasLinkedCertificate,
   SANTA_CERTIFICATE_SKU,
@@ -125,11 +129,43 @@ describe('cartStorage + order totals', () => {
     expect(next).toHaveLength(0);
   });
 
-  it('removeCartItem ignores certificate-only removal', () => {
+  it('removeCertificate deletes only that certificate and keeps the letter', () => {
     const { items } = appendSantaLetterBundle([], { childName: 'Jan' });
     const certId = items[1].id;
-    const next = removeCartItem(items, certId);
-    expect(next).toHaveLength(2);
+    const next = removeCertificate(items, certId);
+    expect(next).toHaveLength(1);
+    expect(next[0].sku).toBe('santa-letter');
+  });
+
+  it('three named letters display as one ×3 line with nested certificates', () => {
+    const { items } = appendSantaLetterBundle([], {
+      letterQuantity: 3,
+      childNames: ['Kasia', 'Jan', 'Ola'],
+    });
+    const rows = buildCartDisplayRows(items);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ kind: 'letter-group', quantity: 3 });
+    if (rows[0].kind === 'letter-group') {
+      expect(rows[0].certificates.map((c) => c.childName)).toEqual(['Kasia', 'Jan', 'Ola']);
+    }
+    expect(checkoutItemsFromCart(items)).toEqual([
+      { sku: 'santa-letter', quantity: 3 },
+      { sku: 'santa-certificate', quantity: 1, metadata: { childName: 'Kasia' } },
+      { sku: 'santa-certificate', quantity: 1, metadata: { childName: 'Jan' } },
+      { sku: 'santa-certificate', quantity: 1, metadata: { childName: 'Ola' } },
+    ]);
+  });
+
+  it('removeOneLetter drops the last certificate', () => {
+    const { items } = appendSantaLetterBundle([], {
+      letterQuantity: 3,
+      childNames: ['Kasia', 'Jan', 'Ola'],
+    });
+    const next = removeOneLetter(items);
+    const letters = next.filter((item) => item.sku === 'santa-letter');
+    const certs = next.filter((item) => item.sku === SANTA_CERTIFICATE_SKU);
+    expect(letters.reduce((sum, item) => sum + item.quantity, 0)).toBe(2);
+    expect(certs.map((item) => item.childName)).toEqual(['Kasia', 'Jan']);
   });
 
   it('sanitizeCartItems drops orphan certificates', () => {

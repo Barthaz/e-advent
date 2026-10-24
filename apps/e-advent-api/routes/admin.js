@@ -17,6 +17,7 @@ const {
 const { listEmailTemplates, getEmailTemplatePreview } = require('../services/emailTemplates');
 const { formatOrderNumber, parseOrderNumberSearch } = require('../utils/orderNumber');
 const { registerScratchExportRoutes } = require('./adminScratchExport');
+const { withPaidItemList } = require('../services/orderPaidPrices');
 
 // ── POST /admin/login ──────────────────────────────────────────────────────────
 
@@ -240,6 +241,15 @@ router.get('/orders/:id', authAdmin, async (req, res) => {
             items = [];
         }
 
+        const metadata = typeof row.metadata === 'string'
+            ? (JSON.parse(row.metadata) || {})
+            : (row.metadata || {});
+        items = withPaidItemList(items, {
+            amount: row.amount,
+            shipping_amount: row.shipping_amount,
+            metadata,
+        });
+
         const order = {
             id:                        row.id,
             orderNumber:               row.order_number != null ? Number(row.order_number) : null,
@@ -287,9 +297,9 @@ router.get('/orders/:id', authAdmin, async (req, res) => {
             privacyPolicyAcceptedAt:  row.privacy_policy_accepted_at,
             clientIP:                 row.client_ip,
             rabatCode:                row.rabat_code,
-            metadata:                 typeof row.metadata === 'string'
-                                        ? JSON.parse(row.metadata)
-                                        : (row.metadata || {}),
+            discountPercent:          metadata.discount?.percent ?? null,
+            discountAmount:           metadata.discount?.amount ?? null,
+            metadata,
             createdAt:                row.created_at,
             updatedAt:                row.updated_at,
             calendar: row.calendar_id ? {
@@ -406,6 +416,7 @@ registerScratchExportRoutes(router, authAdmin);
 require('./adminInpost')(router, authAdmin);
 require('./adminDiscountCodes')(router, authAdmin);
 require('./adminCertificates')(router, authAdmin);
+require('./adminOrderItems')(router, authAdmin);
 
 // ── GET /admin/calendars/:id — podgląd kalendarza ─────────────────────────────
 

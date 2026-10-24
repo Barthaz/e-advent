@@ -10,6 +10,8 @@ export {
   getProductPrice,
   computeOrderTotals,
   applyPercentDiscount,
+  applyPercentDiscountToLines,
+  paidItemPrices,
   getSkuForTypeAndFormat,
   isPhysicalProduct,
   SANTA_CERTIFICATE_SKU,

@@ -6,6 +6,18 @@ const { generateAccessCode } = require('./orderMailer');
 const { orderFingerprint } = require('./orderIdentity');
 const { redeem } = require('./discountCodes');
 
+// Checkout cannot complete without terms + privacy checkboxes, so a paid order
+// always records acceptance even when the storefront did not send timestamps.
+function markOrderPaid(conn, orderId, fulfillmentStatus) {
+  return conn.execute(
+    `UPDATE orders SET status = 'succeeded', fulfillment_status = ?,
+       terms_accepted_at = COALESCE(terms_accepted_at, NOW()),
+       privacy_policy_accepted_at = COALESCE(privacy_policy_accepted_at, NOW())
+     WHERE id = ?`,
+    [fulfillmentStatus, orderId],
+  );
+}
+
 // Lock the order while validating its saved price and activating every calendar.
 // A failed update rolls back the whole order; a repeated event keeps existing codes.
 async function fulfillPaidIntent(intent) {
@@ -30,8 +42,11 @@ async function fulfillPaidIntent(intent) {
     const [items] = await conn.execute('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
     if (!items.length) throw new Error('Payment has no saved order items');
     const itemCents = items.reduce((sum, item) => sum + Math.round(Number(item.unit_price) * 100) * Number(item.quantity), 0);
+    const shippingCents = Math.round(Number(order.shipping_amount || 0) * 100);
     const discountCents = Math.round(Number(metadata.discount?.amount || 0) * 100);
-    if (itemCents + Math.round(Number(order.shipping_amount || 0) * 100) - discountCents !== cents) {
+    const paidFromItems = itemCents + shippingCents;
+    const paidFromLegacyDiscount = paidFromItems - discountCents;
+    if (paidFromItems !== cents && paidFromLegacyDiscount !== cents) {
       throw new Error('Saved order items do not match the payment total');
     }
     // This durable job survives SMTP outages and application restarts.
@@ -62,8 +77,7 @@ async function fulfillPaidIntent(intent) {
         [physical ? calendars[0].access_code : (calendars[0].access_code || generateAccessCode()), physical ? 'pending' : 'delivered', item.calendar_id],
       );
     }
-    await conn.execute("UPDATE orders SET status = 'succeeded', fulfillment_status = ? WHERE id = ?",
-      [hasPhysical ? 'pending' : 'delivered', order.id]);
+    await markOrderPaid(conn, order.id, hasPhysical ? 'pending' : 'delivered');
     return { duplicate: false, orderId: order.id, rabatCode: order.rabat_code, email: order.customer_email };
   });
 }
@@ -107,8 +121,7 @@ async function fulfillFreeOrder(orderId) {
         [physical ? calendars[0].access_code : (calendars[0].access_code || generateAccessCode()), physical ? 'pending' : 'delivered', item.calendar_id],
       );
     }
-    await conn.execute("UPDATE orders SET status = 'succeeded', fulfillment_status = ? WHERE id = ?",
-      [hasPhysical ? 'pending' : 'delivered', order.id]);
+    await markOrderPaid(conn, order.id, hasPhysical ? 'pending' : 'delivered');
     return { duplicate: false, orderId: order.id };
   });
   return result;

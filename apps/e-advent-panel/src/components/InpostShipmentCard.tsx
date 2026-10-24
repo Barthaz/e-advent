@@ -29,8 +29,8 @@ const SHIPPED_NOTICE: Record<string, Notice> = {
   skipped: { kind: 'success', text: 'Zamówienie jest już oznaczone jako wysłane. Klient dostał mail o nadaniu.' },
 };
 
-export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh }: {
-  orderId: string; delivery: SavedInpostDelivery; paid: boolean; onRefresh: () => void;
+export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh, compact = false }: {
+  orderId: string; delivery: SavedInpostDelivery; paid: boolean; onRefresh: () => void; compact?: boolean;
 }) {
   const token = useAppSelector(s => s.auth.token);
   const [shipment, setShipment] = useState<Shipment>();
@@ -174,12 +174,13 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh 
       ? 'Generuj etykietę'
       : `Generuj etykietę · ${shipment.offerPrice.toFixed(2)} zł brutto`;
 
-  return <section className="panel-card p-5 space-y-4">
+  return <section className={compact ? 'space-y-4' : 'panel-card p-5 space-y-4'}>
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h2 className="heading-section">Dostawa InPost {delivery.environment === 'sandbox' && <span className="text-amber-700">— SANDBOX (test)</span>}</h2>
       {shipment?.providerStatus && <span className="text-sm font-medium text-christmas-green">{getInpostStatusLabel(shipment.providerStatus)}</span>}
     </div>
 
+    {!compact && (
     <div className="grid gap-1 text-sm text-gray-700">
       <p><strong>{r.first_name} {r.last_name}</strong> · {r.phone} · {r.email}</p>
       {delivery.point
@@ -188,6 +189,16 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh 
       <p>Opakowanie: {delivery.profile} · {p.dimensions.length} × {p.dimensions.width} × {p.dimensions.height} mm · {p.weight.amount} kg{p.template ? ` · gabaryt ${p.template}` : ''}</p>
       <p>Klient zapłacił za dostawę: {delivery.price.toFixed(2)} zł</p>
     </div>
+    )}
+    {compact && (
+      <p className="text-sm text-gray-600">
+        {delivery.point
+          ? <>Paczkomat <strong>{delivery.point.id}</strong> · {delivery.point.address}</>
+          : a ? <>Kurier: {a.street} {a.building_number}{a.flat_number ? '/' + a.flat_number : ''}, {a.post_code} {a.city}</> : null}
+        {' · '}opakowanie {delivery.profile}
+        {' · '}klient zapłacił {delivery.price.toFixed(2)} zł
+      </p>
+    )}
 
     {!paid ? <p className="text-sm text-gray-500">Po opłaceniu zamówienia etykietę generujesz tutaj ręcznie — InPost nie jest obciążany automatycznie.</p> : <>
       <ol className="grid grid-cols-3 gap-2 text-xs">

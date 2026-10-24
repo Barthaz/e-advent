@@ -27,6 +27,7 @@ function extractRequestData(body) {
                 delivery: body.data.delivery,
                 shippingAddress: body.data.shippingAddress || body.data.metadata?.shippingAddress,
                 promoCode: body.data.promoCode,
+                acceptanceData: body.data.acceptanceData,
             };
         }
     }

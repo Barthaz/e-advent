@@ -10,7 +10,7 @@ import type {
   DeliveryType,
 } from '../types/order';
 import type { CalendarDetail, CalendarTaskDetail } from '../types/calendar';
-import { getOrderItemDisplayName } from '@e-advent/products';
+import { getOrderItemDisplayName, paidItemPrices, roundPln } from '@e-advent/products';
 
 /** Surowy wiersz z GET /admin/orders (snake_case z MySQL) */
 interface RawOrderListRow {
@@ -51,7 +51,13 @@ interface RawOrderListRow {
 
 /** Odpowiedź GET /admin/orders/:id — camelCase opakowana w { order } */
 interface RawOrderDetail {
-  metadata?: { inpostDelivery?: OrderDetail['inpostDelivery'] };
+  metadata?: {
+    inpostDelivery?: OrderDetail['inpostDelivery'];
+    clientIP?: string;
+    discount?: { code?: string; percent?: number; amount?: number };
+  };
+  discountPercent?: number | null;
+  discountAmount?: number | null;
   id: string;
   orderNumber?: number | string | null;
   orderNumberDisplay?: string | null;
@@ -339,12 +345,20 @@ export function mapOrderDetail(raw: RawOrderDetail): OrderDetail {
     parcel_locker_id: raw.parcelLocker?.id ?? null,
     parcel_locker_name: raw.parcelLocker?.name ?? null,
     parcel_locker_address: raw.parcelLocker?.address ?? null,
-    discount_code: raw.rabatCode ?? null,
+    discount_code: raw.rabatCode ?? raw.metadata?.discount?.code ?? null,
+    discount_percent: raw.discountPercent ?? raw.metadata?.discount?.percent ?? null,
+    discount_amount: raw.discountAmount ?? raw.metadata?.discount?.amount ?? null,
     terms_accepted_at: raw.termsAcceptedAt ?? null,
     privacy_policy_accepted_at: raw.privacyPolicyAcceptedAt ?? null,
-    ip_address: raw.clientIP ?? null,
+    ip_address: raw.clientIP ?? raw.metadata?.clientIP ?? null,
     sku: raw.sku ?? null,
-    items: mapOrderItems(raw.items),
+    items: paidItemPrices(
+      mapOrderItems(raw.items),
+      raw.metadata?.discount ?? (
+        raw.discountPercent != null ? { percent: raw.discountPercent, amount: raw.discountAmount ?? undefined } : null
+      ),
+      roundPln(toNumber(raw.amount) - toNumber(raw.shippingAmount ?? 0)),
+    ),
     calendar,
   };
 }
@@ -395,6 +409,8 @@ export function mapPatchedOrder(raw: Record<string, unknown>): OrderDetail {
     parcel_locker_name: (raw.parcel_locker_name as string) ?? null,
     parcel_locker_address: (raw.parcel_locker_address as string) ?? null,
     discount_code: (raw.rabat_code as string) ?? null,
+    discount_percent: raw.discount_percent != null ? toNumber(raw.discount_percent as number | string) : null,
+    discount_amount: raw.discount_amount != null ? toNumber(raw.discount_amount as number | string) : null,
     terms_accepted_at: (raw.terms_accepted_at as string) ?? null,
     privacy_policy_accepted_at: (raw.privacy_policy_accepted_at as string) ?? null,
     ip_address: (raw.client_ip as string) ?? null,

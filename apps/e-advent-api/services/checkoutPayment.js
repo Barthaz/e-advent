@@ -32,7 +32,7 @@ async function initializeCheckout(request, clientIP) {
     const customerEmail = String(request.customerEmail).trim().toLowerCase();
     const orderItems = items.map((item, index) => ({
       sku: item.sku, productType: item.productType, quantity: item.quantity,
-      unitPrice: item.unitPrice, calendarId: item.calendarId,
+      unitPrice: totals.lines[index].unitPrice, calendarId: item.calendarId,
       requiresShipping: item.requiresShipping,
       vatRate: totals.lines[index].vatRate, unitPriceNetto: totals.lines[index].unitPriceNetto,
       lineNetto: totals.lines[index].lineNetto, lineVat: totals.lines[index].lineVat, lineBrutto: totals.lines[index].lineBrutto,
@@ -96,12 +96,21 @@ async function initializeCheckout(request, clientIP) {
           vatRate: totals.vatRate, currency: 'pln', customerEmail, productId: primaryProductId,
           productType: primaryProductType, sku: primarySku, shippingAddress, hasPhysical, items: orderItems,
           rabat: discount?.code || null,
+          clientIP,
+          termsAcceptedAt: request.acceptanceData?.termsAcceptedAt || null,
+          privacyPolicyAcceptedAt: request.acceptanceData?.privacyAcceptedAt || null,
           metadata: { ...(delivery ? { inpostDelivery: delivery } : {}), ...(discount ? { discount } : {}),
             checkoutVersion: 2, checkoutFingerprint: fingerprint, clientIP,
             clientOrderId: String(request.orderId || '').slice(0, 200) },
         });
         await query('INSERT INTO checkout_sessions (id, order_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE order_id = VALUES(order_id)', [owner, created.id]);
         return created;
+      });
+    } else if (request.acceptanceData?.termsAcceptedAt && order.stripePaymentIntentId) {
+      await Payment.updatePayment(order.stripePaymentIntentId, {
+        termsAcceptedAt: request.acceptanceData.termsAcceptedAt,
+        privacyPolicyAcceptedAt: request.acceptanceData.privacyAcceptedAt || request.acceptanceData.termsAcceptedAt,
+        clientIP: request.acceptanceData.clientIP || clientIP,
       });
     }
     if (totals.total === 0) {

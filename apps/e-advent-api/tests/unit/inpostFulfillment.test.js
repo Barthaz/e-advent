@@ -163,6 +163,31 @@ test('markDispatched refuses to ship before the label is paid', async () => {
   await expect(markDispatched(order.id)).rejects.toThrow('Najpierw wygeneruj etykietę');
   expect(sendShippingEmailForOrder).not.toHaveBeenCalled();
 });
+test('refresh saves live status even when InPost parcel snapshot drifted', async () => {
+  await operate(order.id, 'create');
+  remote.status = 'confirmed';
+  remote.tracking_number = '123456789012345678901234';
+  remote.parcels = [{ template: 'large', weight: { amount: 99 } }];
+  await expect(operate(order.id, 'refresh')).resolves.toMatchObject({
+    providerStatus: 'confirmed',
+    trackingNumber: '123456789012345678901234',
+    needsReview: false,
+    labelReady: true,
+  });
+});
+test('refresh maps database errors to a retryable 503', async () => {
+  await operate(order.id, 'create');
+  const realQuery = db.query.getMockImplementation();
+  db.query.mockImplementation(async (sql, a) => {
+    if (sql.includes('SET remote = ?') && !sql.includes('SET shipment_id')) {
+      const err = new Error("Data too long for column 'inpost_status'");
+      err.code = 'ER_DATA_TOO_LONG';
+      throw err;
+    }
+    return realQuery(sql, a);
+  });
+  await expect(operate(order.id, 'refresh')).rejects.toMatchObject({ status: 503 });
+});
 test.each(['pending', 'canceled'])('unpaid %s order cannot buy or create', async status => {
   order.status = status;
   await expect(operate(order.id, 'create')).rejects.toMatchObject({ status: 409 });

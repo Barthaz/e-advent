@@ -53,6 +53,10 @@ test.each(['create', 'buy', 'refresh', 'offers', 'reconcile', 'generate', 'dispa
   expect((await request(app).post(`/admin/orders/uuid/inpost/${action}`).send({})).status).toBe(401);
   expect(operate).not.toHaveBeenCalled();
 });
+test('status refresh cannot be read without administrator credentials', async () => {
+  expect((await request(app).get('/admin/orders/uuid/inpost/refresh')).status).toBe(401);
+  expect(operate).not.toHaveBeenCalled();
+});
 test('label download cannot be accessed without administrator credentials', async () => {
   expect((await request(app).get('/admin/orders/uuid/inpost/label')).status).toBe(401);
   expect(operate).not.toHaveBeenCalled();

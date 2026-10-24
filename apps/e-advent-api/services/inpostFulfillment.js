@@ -5,7 +5,44 @@ const EmailSend = require('../models/EmailSend');
 const inpost = require('./inpost');
 const { orderFingerprint, canonical } = require('./orderIdentity');
 const { sendShipmentPreparedEmail, sendShippingEmailForOrder } = require('./orderMailer');
-const parse = value => typeof value === 'string' ? JSON.parse(value) : value;
+const parse = (value) => {
+  try {
+    if (value == null) return null;
+    const raw = Buffer.isBuffer(value) ? value.toString('utf8') : value;
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  } catch {
+    throw inpost.fail('Zapis przesyłki jest uszkodzony. Sprawdź zamówienie w Managerze Paczek.', 409);
+  }
+};
+
+function snapshotRemote(remote) {
+  if (!remote || typeof remote !== 'object') return remote;
+  const slimOffer = (offer) => offer && ({
+    id: offer.id,
+    status: offer.status,
+    currency: offer.currency,
+    rate: offer.rate,
+    expires_at: offer.expires_at,
+    service: offer.service,
+  });
+  return {
+    id: remote.id,
+    status: remote.status,
+    tracking_number: remote.tracking_number,
+    service: remote.service,
+    reference: remote.reference,
+    custom_attributes: remote.custom_attributes,
+    receiver: remote.receiver,
+    parcels: remote.parcels,
+    offers: Array.isArray(remote.offers) ? remote.offers.map(slimOffer) : remote.offers,
+    selected_offer: slimOffer(remote.selected_offer),
+  };
+}
+
+function clip(value, max) {
+  if (value == null || value === '') return null;
+  return String(value).slice(0, max);
+}
 const shippedStatuses = new Set(['dispatched_by_sender', 'collected_from_sender', 'taken_by_courier', 'adopted_at_source_branch', 'sent_from_source_branch', 'adopted_at_sorting_center', 'sent_from_sorting_center', 'adopted_at_target_branch', 'out_for_delivery', 'ready_to_pickup', 'avizo']);
 const confirmed = new Set(['confirmed', 'dispatched_by_sender', 'collected_from_sender', 'taken_by_courier', 'adopted_at_source_branch', 'sent_from_source_branch', 'adopted_at_sorting_center', 'sent_from_sorting_center', 'adopted_at_target_branch', 'out_for_delivery', 'ready_to_pickup', 'delivered', 'avizo', 'claimed', 'returned_to_sender']);
 
@@ -17,30 +54,47 @@ async function load(id) {
   if (orderFingerprint(order) !== order.metadata.checkoutFingerprint) throw inpost.fail('Dane zamówienia wymagają sprawdzenia przed wysyłką.', 409);
   const [rows] = await query('SELECT * FROM order_inpost_shipments WHERE order_id = ?', [id]);
   const row = rows[0] ? { ...rows[0], payload: parse(rows[0].payload), remote: parse(rows[0].remote) } : null;
-  if (row && (row.environment !== order.metadata.inpostDelivery.environment || String(row.organization_id) !== order.metadata.inpostDelivery.organizationId)) throw inpost.fail('Niezgodne konto przesyłki.', 409);
-  if (row && JSON.stringify(canonical(row.payload)) !== JSON.stringify(canonical(payload))) throw inpost.fail('Zapis przesyłki nie odpowiada danym zamówienia.', 409);
+  const delivery = order.metadata?.inpostDelivery;
+  if (row && delivery && (row.environment !== delivery.environment || String(row.organization_id) !== String(delivery.organizationId))) throw inpost.fail('Niezgodne konto przesyłki.', 409);
+  if (row && row.payload && JSON.stringify(canonical(row.payload)) !== JSON.stringify(canonical(payload))) throw inpost.fail('Zapis przesyłki nie odpowiada danym zamówienia.', 409);
   return { order, payload, row };
 }
 
-function matches(remote, payload) {
+function shipmentMatches(remote, payload) {
+  if (!remote || !payload) return false;
   if (remote.reference !== payload.reference) return false;
-  const a = remote.receiver || {}, b = payload.receiver;
-  if (['email', 'phone', 'first_name', 'last_name'].some(k => String(a[k] || '') !== String(b[k] || ''))) return false;
+  const a = remote.receiver || {};
+  const b = payload.receiver || {};
+  if (['email', 'phone', 'first_name', 'last_name'].some((k) => String(a[k] || '') !== String(b[k] || ''))) return false;
   if ((remote.custom_attributes?.target_point || null) !== (payload.custom_attributes?.target_point || null)) return false;
-  if (b.address && Object.keys(b.address).some(k => String(a.address?.[k] || '') !== String(b.address[k] || ''))) return false;
+  if (b.address && Object.keys(b.address).some((k) => String(a.address?.[k] || '') !== String(b.address[k] || ''))) return false;
   if (!Array.isArray(remote.parcels) || remote.parcels.length !== 1) return false;
-  const p = remote.parcels[0], expected = payload.parcels[0];
-  if (Number(p.weight?.amount) !== Number(expected.weight.amount) && !(expected.template && Number(p.weight?.amount) === 25)) return false;
+  const p = remote.parcels[0];
+  const expected = payload.parcels?.[0];
+  if (!p || !expected) return false;
+  if (Number(p.weight?.amount) !== Number(expected.weight?.amount) && !(expected.template && Number(p.weight?.amount) === 25)) return false;
   // Locker templates may be expanded by ShipX to template dimensions.
-  if (expected.template) { if (p.template !== expected.template) return false; }
-  else if (['length', 'width', 'height'].some(k => Number(p.dimensions?.[k]) !== Number(expected.dimensions[k]))) return false;
+  if (expected.template) {
+    if (p.template !== expected.template) return false;
+  } else if (['length', 'width', 'height'].some((k) => Number(p.dimensions?.[k]) !== Number(expected.dimensions?.[k]))) {
+    return false;
+  }
   const service = remote.selected_offer?.service?.id || remote.service;
   return !service || service === payload.service;
 }
 
+function matches(remote, payload) {
+  try {
+    return shipmentMatches(remote, payload);
+  } catch {
+    return false;
+  }
+}
+
 function offerFor(row) {
-  return row?.remote?.offers?.find(o => o.service?.id === row.payload.service && ['available', 'selected'].includes(o.status))
-    || (row?.remote?.selected_offer?.service?.id === row?.payload.service ? row.remote.selected_offer : null);
+  const service = row?.payload?.service;
+  return row?.remote?.offers?.find(o => o.service?.id === service && ['available', 'selected'].includes(o.status))
+    || (row?.remote?.selected_offer?.service?.id === service ? row.remote.selected_offer : null);
 }
 function offerPrice(offer) {
   if (offer?.rate == null) return null;
@@ -57,9 +111,14 @@ async function view(order, row) {
   const offer = offerFor(row);
   const labelReady = isPaid(row);
   const trackingNumber = row?.remote?.tracking_number || null;
-  const shippedNotified = order.customerEmail
-    ? await EmailSend.hasSuccessfulOrderEmail(order.id, null, 'shipping', order.customerEmail)
-    : false;
+  let shippedNotified = false;
+  try {
+    shippedNotified = order.customerEmail
+      ? await EmailSend.hasSuccessfulOrderEmail(order.id, null, 'shipping', order.customerEmail)
+      : false;
+  } catch (error) {
+    console.error('InPost shipping-email lookup failed:', order.id, error.message);
+  }
   return { orderId: order.id, delivery: order.metadata.inpostDelivery,
     shipmentId: row?.shipment_id || null, state: row?.state || 'not_created',
     providerStatus: row?.remote?.status || null, trackingNumber,
@@ -67,21 +126,54 @@ async function view(order, row) {
     shipped: shippedStatuses.has(row?.remote?.status) || row?.remote?.status === 'delivered',
     dispatched: ['shipped', 'delivered'].includes(order.fulfillmentStatus),
     shippedNotified: Boolean(shippedNotified),
-    offerId: offer?.id || null, offerPrice: offerPrice(offer),
+    offerId: offer?.id || null, offerPrice: safeOfferPrice(offer),
     canBuy: Boolean(offer && !row?.buy_attempted && !labelReady),
-    needsReview: Boolean(row && !row.shipment_id && row.state !== 'create_rejected') || Boolean(row?.buy_attempted && !labelReady),
+    needsReview: Boolean(row && !row.shipment_id && row.state !== 'create_rejected')
+      || Boolean(row?.buy_attempted && !labelReady),
   };
+}
+
+function safeOfferPrice(offer) {
+  try {
+    return offerPrice(offer);
+  } catch (error) {
+    if (error.status === 503) return null;
+    throw error;
+  }
+}
+
+async function persistShipment(order, row) {
+  try {
+    await query(
+      'UPDATE order_inpost_shipments SET remote = ?, state = ? WHERE order_id = ?',
+      [JSON.stringify(snapshotRemote(row.remote)), row.state, order.id],
+    );
+    await query(
+      'UPDATE orders SET inpost_shipment_id = ?, inpost_status = ?, tracking_number = COALESCE(?, tracking_number) WHERE id = ?',
+      [
+        clip(row.shipment_id, 30),
+        clip(row.remote?.status, 50),
+        clip(row.remote?.tracking_number, 100),
+        order.id,
+      ],
+    );
+  } catch (error) {
+    if (error.status) throw error;
+    console.error('InPost shipment persist failed:', order.id, error.code || error.message);
+    throw inpost.fail(`Nie udało się zapisać stanu przesyłki${error.code ? ` (${error.code})` : ''}. Odśwież status przed kolejną próbą.`, 503);
+  }
 }
 
 async function refreshRow(order, row) {
   if (!row?.shipment_id) return row;
   const remote = await inpost.request(`/shipments/${row.shipment_id}`);
-  if (String(remote.id) !== String(row.shipment_id) || !matches(remote, row.payload)) throw inpost.fail('Dane przesyłki w InPost różnią się od zamówienia. Wymagane sprawdzenie w Managerze Paczek.', 409);
+  if (String(remote.id) !== String(row.shipment_id)) {
+    throw inpost.fail('Dane przesyłki w InPost różnią się od zamówienia. Wymagane sprawdzenie w Managerze Paczek.', 409);
+  }
+  // Same ShipX id: persist live status. Parcel drift is ignored here — matches() is for reconcile.
   row.remote = remote;
   row.state = isPaid(row) ? 'confirmed' : row.buy_attempted ? 'buy_pending' : 'prepared';
-  await query('UPDATE order_inpost_shipments SET remote = ?, state = ? WHERE order_id = ?', [JSON.stringify(remote), row.state, order.id]);
-  await query('UPDATE orders SET inpost_shipment_id = ?, inpost_status = ?, tracking_number = COALESCE(?, tracking_number) WHERE id = ?',
-    [String(row.shipment_id), remote.status || null, remote.tracking_number || null, order.id]);
+  await persistShipment(order, row);
   if (remote.tracking_number) order.trackingNumber = order.trackingNumber || remote.tracking_number;
   // Provider scans update local status as a fallback. The customer "wysłane"
   // mail is sent only from the panel dispatch action.
@@ -111,7 +203,7 @@ async function createShipment(id, payload, row) {
     throw error;
   }
   if (!/^\d+$/.test(String(remote.id || ''))) throw inpost.fail('Brak identyfikatora przesyłki w odpowiedzi InPost. Sprawdź Manager Paczek.', 502);
-  await query('UPDATE order_inpost_shipments SET shipment_id = ?, state = ?, remote = ? WHERE order_id = ?', [String(remote.id), 'prepared', JSON.stringify(remote), id]);
+  await query('UPDATE order_inpost_shipments SET shipment_id = ?, state = ?, remote = ? WHERE order_id = ?', [String(remote.id), 'prepared', JSON.stringify(snapshotRemote(remote)), id]);
   return { order_id: id, payload, shipment_id: String(remote.id), state: 'prepared', remote, buy_attempted: 0 };
 }
 

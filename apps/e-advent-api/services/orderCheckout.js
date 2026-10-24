@@ -348,6 +348,9 @@ async function resolveCheckoutItems(requestData) {
       amount: totals.discount,
       reusable: Boolean(Number(row.reusable)),
     };
+    for (let i = 0; i < resolved.length; i++) {
+      if (totals.lines[i]) resolved[i].unitPrice = totals.lines[i].unitPrice;
+    }
   }
 
   const primary = resolved.find((r) => r.sku === SANTA_LETTER_SKU)

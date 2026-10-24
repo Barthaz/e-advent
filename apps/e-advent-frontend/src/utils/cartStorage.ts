@@ -204,10 +204,96 @@ export function appendSantaLetterBundle(
   return { items: current, added };
 }
 
+function mergeUnlinkedLetters(items: CartItem[]): CartItem[] {
+  const unlinked = items.filter(
+    (item) => item.sku === SANTA_LETTER_SKU && !hasLinkedCertificate(items, item.id),
+  );
+  if (unlinked.length <= 1) return items;
+  const [first, ...rest] = unlinked;
+  const merged: CartItem = {
+    ...first,
+    quantity: unlinked.reduce((sum, item) => sum + item.quantity, 0),
+  };
+  const restIds = new Set(rest.map((item) => item.id));
+  return items
+    .filter((item) => !restIds.has(item.id))
+    .map((item) => (item.id === first.id ? merged : item));
+}
+
+export function letterPackQuantity(items: CartItem[]): number {
+  return items
+    .filter((item) => item.sku === SANTA_LETTER_SKU)
+    .reduce((sum, item) => sum + item.quantity, 0);
+}
+
+export function letterPackCertificates(items: CartItem[]): CartItem[] {
+  return sanitizeCartItems(items).filter((item) => item.sku === SANTA_CERTIFICATE_SKU);
+}
+
+export function removeCertificate(items: CartItem[], certificateId: string): CartItem[] {
+  const target = items.find((item) => item.id === certificateId);
+  if (!target || target.sku !== SANTA_CERTIFICATE_SKU) return items;
+  return mergeUnlinkedLetters(sanitizeCartItems(items.filter((item) => item.id !== certificateId)));
+}
+
+function decreaseLetters(items: CartItem[], count: number): CartItem[] {
+  let remaining = Math.max(0, Math.floor(count));
+  if (remaining === 0) return items;
+  const next = [...items];
+  for (let index = next.length - 1; index >= 0 && remaining > 0; index -= 1) {
+    const item = next[index];
+    if (item.sku !== SANTA_LETTER_SKU) continue;
+    if (item.quantity > remaining) {
+      next[index] = { ...item, quantity: item.quantity - remaining };
+      remaining = 0;
+      break;
+    }
+    remaining -= item.quantity;
+    next.splice(index, 1);
+  }
+  return mergeUnlinkedLetters(sanitizeCartItems(next));
+}
+
+export function removeOneLetter(items: CartItem[]): CartItem[] {
+  if (letterPackQuantity(items) < 1) return items;
+  const certificates = letterPackCertificates(items);
+  const lastCertificate = certificates[certificates.length - 1];
+  const withoutCert = lastCertificate ? removeCertificate(items, lastCertificate.id) : items;
+  return decreaseLetters(withoutCert, 1);
+}
+
+export function removeLetterPack(items: CartItem[]): CartItem[] {
+  return items.filter(
+    (item) => item.sku !== SANTA_LETTER_SKU && item.sku !== SANTA_CERTIFICATE_SKU,
+  );
+}
+
+export function certificatesRemovedByLetterDrop(items: CartItem[], nextQuantity: number): CartItem[] {
+  const current = letterPackQuantity(items);
+  const drop = Math.max(0, current - Math.max(0, Math.floor(nextQuantity)));
+  if (drop === 0) return [];
+  return letterPackCertificates(items).slice(-drop);
+}
+
+export function setLetterPackQuantity(items: CartItem[], nextQuantity: number): CartItem[] {
+  const qty = Math.max(0, Math.min(99, Math.floor(nextQuantity)));
+  const current = letterPackQuantity(items);
+  if (qty === current) return items;
+  if (qty < 1) return removeLetterPack(items);
+  if (qty > current) return addPlainLetters(items, qty - current).items;
+
+  let next = items;
+  for (let i = 0; i < current - qty; i += 1) {
+    next = removeOneLetter(next);
+  }
+  return next;
+}
+
 export function removeCartItem(items: CartItem[], id: string): CartItem[] {
   const target = items.find((item) => item.id === id);
   if (!target) return items;
-  if (target.sku === SANTA_CERTIFICATE_SKU) return items;
+  if (target.sku === SANTA_CERTIFICATE_SKU) return removeCertificate(items, id);
+  if (target.sku === SANTA_LETTER_SKU) return removeLetterPack(items);
   return sanitizeCartItems(
     items.filter((item) => item.id !== id && item.linkedLetterId !== id),
   );
@@ -221,29 +307,41 @@ export type CartDisplayRow =
       lockQuantity: boolean;
     }
   | {
-      kind: 'addon';
-      item: CartItem;
-      parentId: string;
+      kind: 'letter-group';
+      quantity: number;
+      unitPrice: number;
+      label: string;
+      certificates: CartItem[];
     };
 
 export function buildCartDisplayRows(items: CartItem[]): CartDisplayRow[] {
   const sanitized = sanitizeCartItems(items);
+  const letters = sanitized.filter((item) => item.sku === SANTA_LETTER_SKU);
   const certificates = sanitized.filter((item) => item.sku === SANTA_CERTIFICATE_SKU);
-  const mains = sanitized.filter((item) => item.sku !== SANTA_CERTIFICATE_SKU);
+  const mains = sanitized.filter(
+    (item) => item.sku !== SANTA_CERTIFICATE_SKU && item.sku !== SANTA_LETTER_SKU,
+  );
   const rows: CartDisplayRow[] = [];
 
+  if (letters.length > 0) {
+    const quantity = letters.reduce((sum, item) => sum + item.quantity, 0);
+    const sample = letters[0];
+    rows.push({
+      kind: 'letter-group',
+      quantity,
+      unitPrice: sample.unitPrice ?? getProduct(SANTA_LETTER_SKU)?.basePrice ?? 0,
+      label: sample.label ?? getProduct(SANTA_LETTER_SKU)?.name ?? 'List do Świętego Mikołaja',
+      certificates,
+    });
+  }
+
   for (const item of mains) {
-    const letterWithCert =
-      item.sku === SANTA_LETTER_SKU && hasLinkedCertificate(sanitized, item.id);
     rows.push({
       kind: 'item',
       item,
       removable: true,
-      lockQuantity: Boolean(item.calendarId) || letterWithCert,
+      lockQuantity: Boolean(item.calendarId),
     });
-    for (const certificate of certificates.filter((c) => c.linkedLetterId === item.id)) {
-      rows.push({ kind: 'addon', item: certificate, parentId: item.id });
-    }
   }
 
   return rows;
@@ -267,6 +365,18 @@ export function cartItemToCheckoutItem(item: CartItem): {
     ...(item.calendarId ? { calendarId: item.calendarId } : {}),
     ...(item.childName ? { metadata: { childName: item.childName } } : {}),
   };
+}
+
+export function checkoutItemsFromCart(items: CartItem[]): Array<ReturnType<typeof cartItemToCheckoutItem>> {
+  const sanitized = sanitizeCartItems(items);
+  const letters = sanitized.filter((item) => item.sku === SANTA_LETTER_SKU);
+  const others = sanitized.filter((item) => item.sku !== SANTA_LETTER_SKU);
+  const letterQty = letters.reduce((sum, item) => sum + item.quantity, 0);
+  const rows = others.map(cartItemToCheckoutItem);
+  if (letterQty > 0) {
+    rows.unshift({ sku: SANTA_LETTER_SKU, quantity: letterQty });
+  }
+  return rows;
 }
 
 export function getCartItemDisplayName(item: CartItem): string {

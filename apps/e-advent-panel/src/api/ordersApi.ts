@@ -67,7 +67,39 @@ export const ordersApi = createApi({
       query: () => ({ url: '/inpost/sync', method: 'POST' }),
       invalidatesTags: ['OrderList', 'Order'],
     }),
+
+    deleteOrderItem: builder.mutation<{ removed: string; itemId: string }, { orderId: string; itemId: string }>({
+      query: ({ orderId, itemId }) => ({
+        url: `/orders/${orderId}/items/${itemId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { orderId }) => [
+        { type: 'Order', id: orderId },
+        'OrderList',
+      ],
+    }),
+
+    removeOrderLetter: builder.mutation<
+      { removed: string; certificateId: string | null; removedCertificate: boolean },
+      string
+    >({
+      query: (orderId) => ({
+        url: `/orders/${orderId}/letter-pack/remove-letter`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, orderId) => [
+        { type: 'Order', id: orderId },
+        'OrderList',
+      ],
+    }),
   }),
 });
 
-export const { useGetOrdersQuery, useGetOrderQuery, usePatchOrderMutation, useSyncInpostMutation } = ordersApi;
+export const {
+  useGetOrdersQuery,
+  useGetOrderQuery,
+  usePatchOrderMutation,
+  useSyncInpostMutation,
+  useDeleteOrderItemMutation,
+  useRemoveOrderLetterMutation,
+} = ordersApi;

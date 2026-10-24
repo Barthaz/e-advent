@@ -21,7 +21,14 @@ module.exports = (router, authAdmin) => {
       }
       res.json(result);
     } catch (error) {
-      res.status(error.status || 503).json({ error: error.status ? error.message : 'Nie udało się zapisać stanu przesyłki. Odśwież status przed kolejną próbą.' });
+      console.error('InPost admin action failed:', action, req.params.id, error);
+      res.status(error.status || 503).json({
+        error: error.status
+          ? error.message
+          : (error.message
+            ? `Nie udało się zapisać stanu przesyłki: ${error.message}`
+            : 'Nie udało się zapisać stanu przesyłki. Odśwież status przed kolejną próbą.'),
+      });
     }
   };
   router.post('/inpost/sync', authAdmin, async (req, res) => {
@@ -30,6 +37,7 @@ module.exports = (router, authAdmin) => {
   });
   router.get('/orders/:id/inpost', authAdmin, handler('get'));
   router.get('/orders/:id/inpost/label', authAdmin, handler('label'));
+  router.get('/orders/:id/inpost/refresh', authAdmin, handler('refresh'));
   for (const action of ['create', 'refresh', 'offers', 'buy', 'reconcile', 'generate', 'dispatch']) {
     router.post(`/orders/:id/inpost/${action}`, authAdmin, handler(action));
   }
