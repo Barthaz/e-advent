@@ -60,6 +60,17 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh,
     let active = true;
     load().then(async data => {
       if (!active) return;
+      if (!data.shipmentId && !data.needsReview) {
+        if (active) setBusy(true);
+        try {
+          data = await load('create');
+        } catch (e) {
+          if (active) setError(e instanceof Error ? e.message : 'Nie udało się utworzyć przesyłki.');
+        } finally {
+          if (active) setBusy(false);
+        }
+      }
+      if (!active) return;
       setShipment(data);
       if (data.shipmentId && data.providerStatus !== 'delivered' && !data.needsReview) {
         const fresh = await load('refresh');
@@ -200,7 +211,7 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh,
       </p>
     )}
 
-    {!paid ? <p className="text-sm text-gray-500">Po opłaceniu zamówienia etykietę generujesz tutaj ręcznie — InPost nie jest obciążany automatycznie.</p> : <>
+    {!paid ? <p className="text-sm text-gray-500">Po opłaceniu przesyłka powstanie w InPost automatycznie. Etykietę kupujesz tutaj ręcznie — konto sklepu nie jest obciążane samo.</p> : <>
       <ol className="grid grid-cols-3 gap-2 text-xs">
         {steps.map((label, i) => {
           const n = i + 1;
@@ -239,7 +250,7 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh,
       </div>
 
       {waitingForOffers && <p className="text-sm text-gray-500" aria-live="polite">InPost przygotowuje oferty… sprawdzam automatycznie, potem kupię etykietę.</p>}
-      {step === 1 && <p className="text-sm text-gray-600">„Generuj etykietę” tworzy przesyłkę w InPost, opłaca ofertę z konta sklepu, wysyła klientowi mail z numerem śledzenia i pobiera PDF.</p>}
+      {step === 1 && <p className="text-sm text-gray-600">Przesyłka w InPost powstaje po płatności. „Generuj etykietę” opłaca ofertę z konta sklepu, wysyła klientowi mail z numerem śledzenia i pobiera PDF.</p>}
       {step === 2 && <p className="text-sm text-gray-600">Naklej etykietę i nadaj paczkę. Gdy wyjdzie z magazynu, kliknij „Oznacz jako wysłane” — klient dostanie mail, że paczka została nadana.</p>}
       {shipment?.shippedNotified && shipment.providerStatus !== 'delivered' && <p className="text-sm text-christmas-green">Klient dostał informację o nadaniu.</p>}
       {shipment?.providerStatus === 'delivered' && <p className="text-sm text-christmas-green">Paczka doręczona.</p>}

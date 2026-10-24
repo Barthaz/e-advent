@@ -7,7 +7,7 @@ const Payment = require('../../models/Payment');
 const EmailSend = require('../../models/EmailSend');
 const inpost = require('../../services/inpost');
 const { sendShipmentPreparedEmail, sendShippingEmailForOrder } = require('../../services/orderMailer');
-const { operate, markDispatched, advanceShipment } = require('../../services/inpostFulfillment');
+const { operate, markDispatched, advanceShipment, ensureShipment, createMissingShipments } = require('../../services/inpostFulfillment');
 const { orderFingerprint } = require('../../services/orderIdentity');
 const setup = require('../helpers/inpostFixture');
 let order, row, remote, network;
@@ -146,6 +146,41 @@ test('advanceShipment refreshes status and never buys a label', async () => {
   expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(0);
   expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
 });
+test('ensureShipment creates the shipment and never buys a label', async () => {
+  await expect(ensureShipment(order.id)).resolves.toMatchObject({
+    skipped: false, shipment: { shipmentId: '456', labelReady: false, canBuy: true },
+  });
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(0);
+  expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
+});
+test('ensureShipment skips unpaid or digital orders', async () => {
+  order.status = 'pending';
+  await expect(ensureShipment(order.id)).resolves.toEqual({ skipped: true });
+  order.status = 'succeeded';
+  order.metadata = { ...order.metadata, inpostDelivery: undefined };
+  await expect(ensureShipment(order.id)).resolves.toEqual({ skipped: true });
+  expect(network).not.toHaveBeenCalled();
+});
+test('ensureShipment records a create failure without throwing', async () => {
+  network.mockRejectedValueOnce(Object.assign(new Error('timeout'), { providerStatus: 504 }));
+  await expect(ensureShipment(order.id)).resolves.toMatchObject({ skipped: false, error: 'timeout' });
+});
+test('createMissingShipments creates paid InPost orders that have no shipment row', async () => {
+  const realQuery = db.query.getMockImplementation();
+  db.query.mockImplementation(async (sql, a) => {
+    if (sql.includes('LEFT JOIN order_inpost_shipments')) return [[{ id: order.id }]];
+    return realQuery(sql, a);
+  });
+  await expect(createMissingShipments()).resolves.toEqual({ skipped: false, created: 1, failed: 0 });
+  expect(network.mock.calls.some(([path]) => path.includes('/organizations/') && path.endsWith('/shipments'))).toBe(true);
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(0);
+});
+test('panel generate buys a label after auto-create without buying twice', async () => {
+  await ensureShipment(order.id);
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(0);
+  await expect(operate(order.id, 'generate')).resolves.toMatchObject({ labelReady: true, canBuy: false });
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(1);
+});
 test('markDispatched sets shipped and emails the customer once', async () => {
   await operate(order.id, 'generate');
   await expect(markDispatched(order.id)).resolves.toMatchObject({
@@ -162,6 +197,15 @@ test('markDispatched refuses to ship before the label is paid', async () => {
   await operate(order.id, 'create');
   await expect(markDispatched(order.id)).rejects.toThrow('Najpierw wygeneruj etykietę');
   expect(sendShippingEmailForOrder).not.toHaveBeenCalled();
+});
+test('get and refresh succeed before a shipment exists', async () => {
+  await expect(operate(order.id, 'get')).resolves.toMatchObject({
+    shipmentId: null, state: 'not_created', labelReady: false, canBuy: false, needsReview: false,
+  });
+  await expect(operate(order.id, 'refresh')).resolves.toMatchObject({
+    shipmentId: null, state: 'not_created',
+  });
+  expect(network).not.toHaveBeenCalled();
 });
 test('refresh saves live status even when InPost parcel snapshot drifted', async () => {
   await operate(order.id, 'create');

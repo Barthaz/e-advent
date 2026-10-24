@@ -93,8 +93,9 @@ function matches(remote, payload) {
 
 function offerFor(row) {
   const service = row?.payload?.service;
-  return row?.remote?.offers?.find(o => o.service?.id === service && ['available', 'selected'].includes(o.status))
-    || (row?.remote?.selected_offer?.service?.id === service ? row.remote.selected_offer : null);
+  if (!row?.remote || !service) return null;
+  return row.remote.offers?.find(o => o.service?.id === service && ['available', 'selected'].includes(o.status))
+    || (row.remote.selected_offer?.service?.id === service ? row.remote.selected_offer : null);
 }
 function offerPrice(offer) {
   if (offer?.rate == null) return null;
@@ -143,6 +144,7 @@ function safeOfferPrice(offer) {
 }
 
 async function persistShipment(order, row) {
+  if (!order || !row) return;
   try {
     await query(
       'UPDATE order_inpost_shipments SET remote = ?, state = ? WHERE order_id = ?',
@@ -313,9 +315,36 @@ async function markDispatched(id) {
   };
 }
 
+// Stripe webhook / cron: create the ShipX shipment only. The label is bought from the panel.
+async function ensureShipment(orderId) {
+  const order = await Payment.findPaymentById(orderId);
+  if (!order?.metadata?.inpostDelivery || order.status !== 'succeeded') return { skipped: true };
+  try {
+    return { skipped: false, shipment: await operate(orderId, 'create') };
+  } catch (error) {
+    console.error('InPost auto-create failed:', orderId, error.message);
+    return { skipped: false, error: error.message };
+  }
+}
+
 // InPost webhook / cron: refresh live status only. Labels are bought from the panel.
 async function advanceShipment(orderId) {
   return operate(orderId, 'refresh');
+}
+
+async function createMissingShipments({ limit = 20 } = {}) {
+  try { inpost.config(); } catch { return { skipped: true, created: 0, failed: 0 }; }
+  const [rows] = await query(`SELECT o.id FROM orders o LEFT JOIN order_inpost_shipments s ON s.order_id = o.id
+    WHERE o.status = 'succeeded' AND o.delivery_type LIKE '%inpost%' AND s.order_id IS NULL
+      AND o.fulfillment_status NOT IN ('delivered', 'cancelled')
+    ORDER BY o.created_at ASC LIMIT ?`, [limit]);
+  let created = 0, failed = 0;
+  for (const { id } of rows) {
+    const result = await ensureShipment(id);
+    if (result.shipment) created++;
+    else if (result.error) failed++;
+  }
+  return { skipped: false, created, failed };
 }
 
 // Fallback for missing/undeliverable webhooks (e.g. localhost): poll open shipments.
@@ -333,4 +362,7 @@ async function syncActiveShipments({ limit = 50 } = {}) {
   return { skipped: false, refreshed, failed };
 }
 
-module.exports = { operate, matches, offerPrice, markLabelPrepared, markDispatched, syncActiveShipments, advanceShipment };
+module.exports = {
+  operate, matches, offerPrice, markLabelPrepared, markDispatched,
+  syncActiveShipments, ensureShipment, createMissingShipments, advanceShipment,
+};

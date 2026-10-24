@@ -8,10 +8,6 @@ import { groupOrderItems } from '../../utils/groupOrderItems';
 import { formatAmount, getProductTypeLabel } from '../../utils/formatters';
 import { downloadScratchExport } from '../../api/scratchExport';
 import { downloadCertificatePdf, type CertificateVariant } from '../../api/certificateExport';
-import {
-  useDeleteOrderItemMutation,
-  useRemoveOrderLetterMutation,
-} from '../../api/ordersApi';
 import { useToast } from '../../hooks/useToast';
 import ExportGeneratingModal from '../calendar/ExportGeneratingModal';
 import type { ProductType } from '../../types/order';
@@ -24,7 +20,6 @@ interface OrderItemsPanelProps {
   shippingNetto?: number;
   shippingVat?: number;
   amount: number;
-  canEditPack: boolean;
 }
 
 function serialLabel(item: OrderItem): string | null {
@@ -38,22 +33,16 @@ function ActionButton({
   icon,
   onClick,
   disabled,
-  tone = 'default',
 }: {
   label: string;
   icon: string;
   onClick: () => void;
   disabled?: boolean;
-  tone?: 'default' | 'danger';
 }) {
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium disabled:opacity-50 ${
-        tone === 'danger'
-          ? 'border-red-200 text-christmas-red hover:bg-red-50'
-          : 'border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-christmas-green'
-      }`}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-christmas-green disabled:opacity-50"
       disabled={disabled}
       onClick={onClick}
     >
@@ -71,16 +60,11 @@ export default function OrderItemsPanel({
   shippingNetto,
   shippingVat,
   amount,
-  canEditPack,
 }: OrderItemsPanelProps) {
   const lines = groupOrderItems(items);
   const toast = useToast();
   const store = useStore<RootState>();
-  const [deleteItem, { isLoading: deletingItem }] = useDeleteOrderItemMutation();
-  const [removeLetter, { isLoading: removingLetter }] = useRemoveOrderLetterMutation();
   const [busy, setBusy] = useState<string | null>(null);
-
-  const packBusy = deletingItem || removingLetter;
 
   const handleScratch = async (calendarId: string, kind: 'pdf' | 'png') => {
     const key = `${calendarId}:${kind}`;
@@ -110,33 +94,6 @@ export default function OrderItemsPanel({
       toast.error(err instanceof Error ? err.message : 'Nie udało się wygenerować certyfikatu.');
     } finally {
       setBusy(null);
-    }
-  };
-
-  const handleRemoveCertificate = async (item: OrderItem) => {
-    const name = item.metadata?.childName?.trim() || 'ten certyfikat';
-    if (!window.confirm(`Usunąć certyfikat dla ${name}? List pozostanie w zamówieniu.`)) return;
-    try {
-      await deleteItem({ orderId, itemId: item.id }).unwrap();
-      toast.success('Usunięto certyfikat.');
-    } catch (err) {
-      const message = (err as { data?: { error?: string } })?.data?.error;
-      toast.error(message || 'Nie udało się usunąć certyfikatu.');
-    }
-  };
-
-  const handleRemoveLetter = async (certificates: OrderItem[]) => {
-    const last = certificates[certificates.length - 1];
-    const certNote = last
-      ? ` Zostanie też usunięty ostatni certyfikat${last.metadata?.childName ? ` (${last.metadata.childName})` : ''}.`
-      : '';
-    if (!window.confirm(`Usunąć jeden list z zamówienia?${certNote} Kwota opłacona się nie zmieni.`)) return;
-    try {
-      await removeLetter(orderId).unwrap();
-      toast.success(last ? 'Usunięto list i ostatni certyfikat.' : 'Usunięto jeden list.');
-    } catch (err) {
-      const message = (err as { data?: { error?: string } })?.data?.error;
-      toast.error(message || 'Nie udało się usunąć listu.');
     }
   };
 
@@ -189,15 +146,6 @@ export default function OrderItemsPanel({
               disabled={busy === `${item.id}:ona`}
               onClick={() => void handleCertificate(item, 'ona')}
             />
-            {canEditPack && (
-              <ActionButton
-                label="Usuń"
-                icon="fa-trash"
-                tone="danger"
-                disabled={packBusy}
-                onClick={() => void handleRemoveCertificate(item)}
-              />
-            )}
           </>
         )}
       </div>
@@ -232,9 +180,6 @@ export default function OrderItemsPanel({
                       key="letter-pack"
                       line={line}
                       currency={currency}
-                      canEditPack={canEditPack}
-                      packBusy={packBusy}
-                      onRemoveLetter={() => void handleRemoveLetter(line.certificates)}
                       renderCertActions={itemActions}
                     />
                   );
@@ -301,16 +246,10 @@ export default function OrderItemsPanel({
 function LetterGroupRows({
   line,
   currency,
-  canEditPack,
-  packBusy,
-  onRemoveLetter,
   renderCertActions,
 }: {
   line: Extract<ReturnType<typeof groupOrderItems>[number], { kind: 'letter-group' }>;
   currency: string;
-  canEditPack: boolean;
-  packBusy: boolean;
-  onRemoveLetter: () => void;
   renderCertActions: (item: OrderItem) => ReactNode;
 }) {
   return (
@@ -325,17 +264,7 @@ function LetterGroupRows({
         <td className="py-3 text-right">{formatAmount(line.lineNetto, currency)}</td>
         <td className="py-3 text-right">{formatAmount(line.lineVat, currency)}</td>
         <td className="py-3 text-right font-medium">{formatAmount(line.lineBrutto, currency)}</td>
-        <td className="py-3 text-right">
-          {canEditPack && (
-            <ActionButton
-              label="Usuń 1 list"
-              icon="fa-minus"
-              tone="danger"
-              disabled={packBusy}
-              onClick={onRemoveLetter}
-            />
-          )}
-        </td>
+        <td className="py-3 text-right" />
       </tr>
       {line.certificates.map((cert) => {
         const childName = cert.metadata?.childName?.trim() || '—';

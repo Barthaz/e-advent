@@ -75,8 +75,8 @@ Wdróż razem API, frontend i panel; konfiguracja API i migracja muszą być got
 
 ## Panel i odporność na powtórzenia
 
-1. Otwórz opłacone zamówienie. Sprawdź zapisany odbiorca/punkt, opakowanie i oznaczenie TEST. Płatność **nie** tworzy przesyłki ani nie kupuje etykiety.
-2. **Generuj etykietę** tworzy przesyłkę ShipX, opłaca ofertę z konta sklepu, wysyła klientowi jednorazowy mail „Paczka przygotowana” (`shipment_prepared`) i pobiera PDF A6. Jeśli InPost nie zdążył jeszcze zwrócić oferty, panel chwilę poczeka i dokończy zakup. Po timeout nie kupujemy drugi raz w ciemno.
+1. Otwórz opłacone zamówienie. Sprawdź zapisany odbiorca/punkt, opakowanie i oznaczenie TEST. Po potwierdzeniu płatności API **tworzy przesyłkę ShipX**, ale **nie** kupuje etykiety. Cron i otwarcie zamówienia w panelu powtarzają samo utworzenie, jeśli webhook nie zdążył.
+2. **Generuj etykietę** opłaca ofertę z konta sklepu, wysyła klientowi jednorazowy mail „Paczka przygotowana” (`shipment_prepared`) i pobiera PDF A6. Jeśli przesyłka jeszcze nie istnieje, ten sam przycisk ją utworzy. Jeśli InPost nie zdążył jeszcze zwrócić oferty, panel chwilę poczeka i dokończy zakup. Po timeout nie kupujemy drugi raz w ciemno.
 3. **Odśwież status** pobiera wynik asynchronicznego przetwarzania. **Odśwież oferty** odtwarza wygasłe oferty, gdy zakup jeszcze nie ruszył.
 4. PDF można pobrać wielokrotnie, bez kolejnego zakupu. Jest dostępny tylko dla administratora. [Warunki pobierania etykiet](https://dokumentacja-inpost.atlassian.net/wiki/spaces/PL/pages/18153509). Pobranie ponawia mail „Paczka przygotowana” tylko wtedy, gdy wcześniejsza wysyłka się nie udała.
 5. Spakuj zgodnie z zapisanym profilem, naklej etykietę i nadaj paczkę. **Oznacz jako wysłane** ustawia zamówienie na „Wysłane” i wysyła jednorazowy mail „Paczka została wysłana” (`shipping`). Sam zakup etykiety nie oznacza nadania.
@@ -105,7 +105,7 @@ Obsługiwane zdarzenia: `offers_prepared`, `shipment_confirmed`, `shipment_statu
 ## Próba odbiorcza na Twoim koncie
 
 - Zrób testowe zamówienie do Paczkomatu oraz osobne kurierem. Sprawdź opakowanie, cenę, telefon, adres i powiązanie numeru klienta z UUID w Stripe, bazie i referencji ShipX.
-- Zapłać Stripe test. Po webhooku płatniczym zamówienie ma być opłacone, ale **bez** przesyłki InPost i **bez** etykiety. W panelu kliknij **Generuj etykietę**: ma powstać przesyłka, zejść opłata z konta InPost, pójść mail „Paczka przygotowana” i pobrać się PDF.
+- Zapłać Stripe test. Po webhooku płatniczym zamówienie ma być opłacone, **z przesyłką** w InPost/Managerze Paczek, ale **bez** kupionej etykiety. W panelu kliknij **Generuj etykietę**: ma zejść opłata z konta InPost, pójść mail „Paczka przygotowana” i pobrać się PDF.
 - Pobierz PDF dwa razy, odśwież panel. Drugie pobranie nie wysyła maila ponownie. W Managerze ma istnieć jedna przesyłka na zamówienie, z właściwym odbiorcą.
 - Kliknij **Oznacz jako wysłane**: status realizacji ma być „Wysłane”, a klient ma dostać mail „Paczka została wysłana”. Ponowne kliknięcie nie wysyła drugiego maila.
 - Zmień Paczkomat/adres przed płatnością: poprzedni formularz płatności znika i stary PaymentIntent jest anulowany. Sprawdź koszyk z certyfikatem oraz koszyk przekraczający pojemność.

@@ -6,6 +6,7 @@ const { fulfillPaidIntent, redeemOrderDiscount } = require('../services/paymentF
 const { body, validationResult } = require('express-validator');
 const { initializeCheckout } = require('../services/checkoutPayment');
 const { deliverOrderEmails } = require('../services/orderEmailJobs');
+const { ensureShipment } = require('../services/inpostFulfillment');
 const { timingSafeEqual } = require('node:crypto');
 const { query } = require('../config/database');
 
@@ -83,6 +84,7 @@ router.post('/create-payment-intent', async (req, res) => {
 
         const result = await initializeCheckout(requestData, req.ip || 'unknown');
         if (result.free) {
+            await ensureShipment(result.orderId).catch(error => console.error('InPost auto-create error:', error.message));
             await deliverOrderEmails(result.orderId);
         }
         res.json(result);
@@ -182,6 +184,7 @@ router.post('/webhook', async (req, res) => {
         if (event.type === 'payment_intent.succeeded') {
             const result = await fulfillPaidIntent(event.data.object);
             await redeemOrderDiscount(result.orderId, result.rabatCode, result.email);
+            await ensureShipment(result.orderId).catch(error => console.error('InPost auto-create error:', error.message));
             await deliverOrderEmails(result.orderId);
         } else if (['payment_intent.payment_failed', 'payment_intent.canceled'].includes(event.type)) {
             // A delayed failed event must not reserve a second payment or undo

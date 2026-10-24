@@ -416,7 +416,6 @@ registerScratchExportRoutes(router, authAdmin);
 require('./adminInpost')(router, authAdmin);
 require('./adminDiscountCodes')(router, authAdmin);
 require('./adminCertificates')(router, authAdmin);
-require('./adminOrderItems')(router, authAdmin);
 
 // ── GET /admin/calendars/:id — podgląd kalendarza ─────────────────────────────
 

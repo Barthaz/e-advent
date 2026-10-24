@@ -138,7 +138,6 @@ export default function OrderDetailPage() {
   const isInpost = Boolean(order.inpostDelivery);
   const trackingReady = Boolean((form.tracking_number ?? order.tracking_number ?? '').trim());
   const canSendPaid = order.status === 'succeeded';
-  const canEditPack = order.fulfillment_status !== 'cancelled';
   const locker = order.delivery_type === 'parcel_inpost';
   const courier = order.delivery_type === 'courier_inpost' || order.delivery_type === 'poczta_polska';
 
@@ -338,7 +337,6 @@ export default function OrderDetailPage() {
         shippingNetto={order.shipping_netto}
         shippingVat={order.shipping_vat}
         amount={order.amount}
-        canEditPack={canEditPack}
       />
 
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
