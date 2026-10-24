@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { buildCertificatePdf, formatCertificateLabel } = require('../../services/certificate/certificatePdf');
+const { buildCertificatePdf, formatCertificateLabel, LAYOUT } = require('../../services/certificate/certificatePdf');
 
 async function extractText(buffer) {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
@@ -41,6 +41,10 @@ test('personalized certificate keeps A4 and overlays name plus serial on both va
     assert.ok(nameHits >= 2, 'child name appears twice');
     const serial = parsed.items.find((item) => item.str.includes('SN-2026-001284'));
     assert.ok(serial, label);
-    assert.ok(Math.abs(serial.transform[5] - 32) < 8, 'serial sits near the bottom edge');
+    assert.ok(Math.abs(serial.transform[5] - LAYOUT.serial.y) < 8, 'serial sits near the bottom edge');
+    const secondName = parsed.items.filter((item) => item.str.includes('Żaneta'))
+      .sort((a, b) => a.transform[5] - b.transform[5])[0];
+    assert.ok(secondName, 'second name overlay');
+    assert.ok(Math.abs(secondName.transform[5] - LAYOUT.serifName.y) < 8, 'second name sits lower in its gap');
   }
 });

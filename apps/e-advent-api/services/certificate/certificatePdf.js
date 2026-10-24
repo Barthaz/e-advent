@@ -13,6 +13,7 @@ const TEMPLATE_PATHS = {
 };
 const SCRIPT_FONT_PATH = path.join(__dirname, '../../assets/fonts/GreatVibes-Regular.ttf');
 const SERIF_FONT_PATH = path.join(__dirname, '../../assets/fonts/InriaSerif-Regular.ttf');
+const SERIF_BOLD_FONT_PATH = path.join(__dirname, '../../assets/fonts/InriaSerif-Bold.ttf');
 
 const NAME_COLOR = rgb(0xad / 255, 0, 0);
 const SERIAL_COLOR = rgb(0x17 / 255, 0x33 / 255, 0x08 / 255);
@@ -21,10 +22,10 @@ const SERIAL_COLOR = rgb(0x17 / 255, 0x33 / 255, 0x08 / 255);
 const LAYOUT = {
   /** Large handwritten name in the blank under „oświadcza się, że”. */
   scriptName: { y: 458, size: 44, maxWidth: 500 },
-  /** Second name at ~2/3 of the page height (gap above „znajduje się…”). */
-  serifName: { y: 293, size: 15, maxWidth: 500 },
-  /** Serial, centered, ~20–32pt from the bottom edge (just inside the gold frame). */
-  serial: { y: 32, size: 13, maxWidth: 520 },
+  /** Second name, bold, in the gap above „znajduje się na Liście…”. */
+  serifName: { y: 286, size: 15, maxWidth: 500 },
+  /** Serial, centered, just inside the gold frame. */
+  serial: { y: 18, size: 11, maxWidth: 520 },
 };
 
 function fail(message, status = 400, code = 'CERTIFICATE_ERROR') {
@@ -97,14 +98,15 @@ async function buildCertificatePdf({ variant, childName, serialNumber }) {
 
   const pdfDoc = await PDFDocument.load(loadTemplateBytes(normalized));
   pdfDoc.registerFontkit(fontkit);
-  const [scriptFont, serifFont] = await Promise.all([
+  const [scriptFont, serifFont, serifBoldFont] = await Promise.all([
     pdfDoc.embedFont(fs.readFileSync(SCRIPT_FONT_PATH), { subset: true }),
     pdfDoc.embedFont(fs.readFileSync(SERIF_FONT_PATH), { subset: true }),
+    pdfDoc.embedFont(fs.readFileSync(SERIF_BOLD_FONT_PATH), { subset: true }),
   ]);
 
   const page = pdfDoc.getPages()[0];
   drawCentered(page, scriptFont, name, { ...LAYOUT.scriptName, color: NAME_COLOR });
-  drawCentered(page, serifFont, name, { ...LAYOUT.serifName, color: NAME_COLOR });
+  drawCentered(page, serifBoldFont, name, { ...LAYOUT.serifName, color: NAME_COLOR });
   drawCentered(page, serifFont, formatCertificateLabel(serialNumber), {
     ...LAYOUT.serial,
     color: SERIAL_COLOR,
