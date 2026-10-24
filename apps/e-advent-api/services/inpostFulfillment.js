@@ -106,7 +106,33 @@ function offerPrice(offer) {
   return Math.round(amount * (tax === 'net' ? 1.23 : 1) * 100) / 100;
 }
 function isPaid(row) {
-  return Boolean(row && (row.state === 'confirmed' || confirmed.has(row.remote?.status)));
+  return Boolean(row && (
+    row.state === 'confirmed'
+    || confirmed.has(row.remote?.status)
+    || (row.buy_attempted && row.remote?.tracking_number)
+  ));
+}
+function labelReadyRow(row) {
+  return Boolean(isPaid(row) && row.remote?.tracking_number);
+}
+function pollDelayMs() {
+  return process.env.NODE_ENV === 'test' ? 0 : 800;
+}
+function sleep(ms) {
+  return ms ? new Promise((resolve) => setTimeout(resolve, ms)) : Promise.resolve();
+}
+async function waitFor(order, row, { ready, attempts, delayMs, refreshOffers = false }) {
+  for (let i = 0; i < attempts; i++) {
+    if (i > 0) {
+      if (refreshOffers && row?.shipment_id && !row.buy_attempted && !isPaid(row) && !offerFor(row)) {
+        await inpost.request(`/shipments/${row.shipment_id}`, { method: 'PUT', body: {} });
+      }
+      await sleep(delayMs);
+    }
+    row = await refreshRow(order, row);
+    if (ready(row)) return row;
+  }
+  return row;
 }
 async function view(order, row) {
   const offer = offerFor(row);
@@ -212,7 +238,18 @@ async function createShipment(id, payload, row) {
 async function buyOffer(id, row, offer) {
   if (offer.expires_at && new Date(offer.expires_at).getTime() <= Date.now()) throw inpost.fail('Oferta wygasła. Odśwież oferty.', 409);
   await query("UPDATE order_inpost_shipments SET buy_attempted = 1, state = 'buy_pending' WHERE order_id = ?", [id]);
-  await inpost.request(`/shipments/${row.shipment_id}/buy`, { method: 'POST', body: { offer_id: offer.id } });
+  try {
+    await inpost.request(`/shipments/${row.shipment_id}/buy`, { method: 'POST', body: { offer_id: offer.id } });
+  } catch (error) {
+    if ([400, 401, 403, 404, 422].includes(error.providerStatus)) {
+      await query("UPDATE order_inpost_shipments SET buy_attempted = 0, state = 'prepared' WHERE order_id = ?", [id]);
+      row.buy_attempted = 0;
+      if (error.providerStatus === 422) {
+        throw inpost.fail('InPost odrzucił zakup etykiety. Sprawdź saldo w Managerze Paczek.', 409);
+      }
+    }
+    throw error;
+  }
   row.buy_attempted = 1;
   return row;
 }
@@ -238,6 +275,14 @@ async function operate(id, action, input = {}) {
         row = await refreshRow(order, row);
       }
     }
+    if (action === 'generate' && row?.shipment_id && !row.buy_attempted && !isPaid(row) && !offerFor(row)) {
+      row = await waitFor(order, row, {
+        ready: (current) => Boolean(offerFor(current) || isPaid(current)),
+        attempts: 6,
+        delayMs: pollDelayMs(),
+        refreshOffers: true,
+      });
+    }
     if (action === 'buy' || action === 'generate') {
       const offer = offerFor(row);
       if (action === 'buy') {
@@ -249,7 +294,24 @@ async function operate(id, action, input = {}) {
         // Panel "Generuj etykietę" accepts the live offer in this same request.
         row = await buyOffer(id, row, offer);
         row = await refreshRow(order, row);
+      } else if (action === 'generate' && !isPaid(row) && !row?.buy_attempted) {
+        throw inpost.fail('InPost nie przygotował oferty. Spróbuj ponownie za chwilę.', 409);
       }
+    }
+    if (action === 'generate' && !labelReadyRow(row)) {
+      row = await waitFor(order, row, {
+        ready: labelReadyRow,
+        attempts: 8,
+        delayMs: pollDelayMs(),
+      });
+    }
+    if (action === 'generate' && !labelReadyRow(row)) {
+      throw inpost.fail(
+        row?.buy_attempted
+          ? 'InPost nie potwierdził zakupu etykiety. Sprawdź saldo w Managerze Paczek i spróbuj ponownie.'
+          : 'InPost nie przygotował oferty. Spróbuj ponownie za chwilę.',
+        409,
+      );
     }
     if (action === 'label') {
       if (!row || !isPaid(row)) throw inpost.fail('Etykieta będzie dostępna po potwierdzeniu zakupu przez InPost.', 409);

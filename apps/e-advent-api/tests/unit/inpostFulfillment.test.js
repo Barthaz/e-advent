@@ -129,10 +129,37 @@ test('generate creates the shipment, buys the matching offer and does not email 
   expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(1);
   expect(sendShipmentPreparedEmail).not.toHaveBeenCalled();
 });
-test('generate does not buy when InPost has not prepared an offer yet', async () => {
+test('generate fails when InPost has not prepared an offer yet', async () => {
   remote.offers = [];
-  await expect(operate(order.id, 'generate')).resolves.toMatchObject({ shipmentId: '456', labelReady: false, canBuy: false });
+  await expect(operate(order.id, 'generate')).rejects.toThrow(/oferty/);
   expect(network.mock.calls.some(([path]) => path.endsWith('/buy'))).toBe(false);
+});
+test('generate waits for InPost to confirm the purchase and return tracking', async () => {
+  network.mockImplementation(async (path) => {
+    if (path.includes('/buy')) {
+      remote.status = 'offer_selected';
+      return structuredClone(remote);
+    }
+    if (String(path).includes(`/shipments/${remote.id}`) && !path.includes('/buy')) {
+      if (remote.status === 'offer_selected') {
+        remote.status = 'confirmed';
+        remote.tracking_number = '123456789012345678901234';
+      }
+      return structuredClone(remote);
+    }
+    return structuredClone(remote);
+  });
+  await expect(operate(order.id, 'generate')).resolves.toMatchObject({
+    shipmentId: '456', labelReady: true, trackingNumber: '123456789012345678901234',
+  });
+  expect(network.mock.calls.filter(([path]) => path.endsWith('/buy'))).toHaveLength(1);
+});
+test('generate maps a rejected purchase to a saldo error', async () => {
+  network.mockImplementation(async (path) => {
+    if (path.endsWith('/buy')) throw Object.assign(new Error('unprocessable'), { providerStatus: 422 });
+    return structuredClone(remote);
+  });
+  await expect(operate(order.id, 'generate')).rejects.toThrow(/saldo/);
 });
 test('generate is idempotent after a paid label and does not buy again', async () => {
   await operate(order.id, 'generate');

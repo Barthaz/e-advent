@@ -117,6 +117,27 @@ body {
 }
 .btn-green:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: var(--color-christmas-green);
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 16px rgba(15, 81, 50, 0.3);
+  transition: all 0.3s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-christmas-green-light);
+  transform: translateY(-1px);
+}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .btn-red {
   display: inline-flex;
   align-items: center;

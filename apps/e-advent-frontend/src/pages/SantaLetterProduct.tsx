@@ -16,6 +16,7 @@ import { trackViewItem } from '../utils/analytics';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 import LetterPromoNotice from '../components/campaign/LetterPromoNotice';
 import LetterPackComposer, { MAX_LETTER_QTY } from '../components/letter/LetterPackComposer';
+import AddedToCartModal from '../components/AddedToCartModal';
 import letter1 from '../assets/list/list_1.webp';
 import letter2 from '../assets/list/list_2.webp';
 import letter3 from '../assets/list/list_3.webp';
@@ -80,7 +81,7 @@ export default function SantaLetterProduct() {
   const product = getProduct(SKU);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [addedFlash, setAddedFlash] = useState(false);
+  const [cartAdded, setCartAdded] = useState(false);
   const [letterQty, setLetterQty] = useState(1);
   const [certNames, setCertNames] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
@@ -113,7 +114,7 @@ export default function SantaLetterProduct() {
     return () => window.removeEventListener('keydown', onKey);
   }, [lightboxOpen]);
 
-  const handleAddToCart = (goToCart = false) => {
+  const handleAddToCart = () => {
     setFormError(null);
     const trimmedNames = certNames.map((name) => name.replace(/\s+/g, ' ').trim());
     if (trimmedNames.some((name) => name.length > 0 && name.length < 2)) {
@@ -135,12 +136,8 @@ export default function SantaLetterProduct() {
       childNames: trimmedNames,
     });
 
-    setAddedFlash(true);
-    window.setTimeout(() => setAddedFlash(false), 2000);
-    if (goToCart) navigate('/koszyk');
+    setCartAdded(true);
   };
-
-  const handleBuyNow = () => handleAddToCart(true);
 
   const active = GALLERY[activeIndex];
 
@@ -280,17 +277,10 @@ export default function SantaLetterProduct() {
                   error={formError}
                 />
 
-                <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                  <button type="button" onClick={() => handleAddToCart(false)} className="btn-gold px-8 py-3.5 text-lg">
+                <div className="mb-4">
+                  <button type="button" onClick={handleAddToCart} className="btn-gold px-8 py-3.5 text-lg">
                     <i className="fas fa-shopping-basket" />
-                    {addedFlash ? 'Dodano do koszyka!' : 'Dodaj do koszyka'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleBuyNow}
-                    className="btn-outline-gold px-8 py-3.5 text-lg"
-                  >
-                    Dodaj i idź do koszyka
+                    Dodaj do koszyka
                   </button>
                 </div>
                 <p className="text-white/45 text-xs">
@@ -414,6 +404,11 @@ export default function SantaLetterProduct() {
           />
         </div>
       )}
+      <AddedToCartModal
+        open={cartAdded}
+        onContinue={() => setCartAdded(false)}
+        onGoToCart={() => navigate('/koszyk')}
+      />
     </>
   );
 }

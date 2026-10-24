@@ -32,6 +32,7 @@ import {
   saveTasks,
 } from '../utils/creatorStorage';
 import { prepareScratchCalendarForCart } from '../utils/prepareScratchForCart';
+import AddedToCartModal from '../components/AddedToCartModal';
 import { validateScratchTasksStep, type ScratchPreset } from '../utils/scratchCalendarGenerator';
 import type { CalendarTaskInput, ScratchContentMode } from '../types/order';
 
@@ -85,7 +86,7 @@ export default function CreatorScratch() {
   const product = getProduct(SKU);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [addedFlash, setAddedFlash] = useState(false);
+  const [cartAdded, setCartAdded] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [colorId, setColorId] = useState<ScratchColorId>(DEFAULT_SCRATCH_COLOR_ID);
@@ -147,7 +148,7 @@ export default function CreatorScratch() {
 
   const calendarsOnSale = isCalendarsOnSale();
 
-  const handleAddToCart = async (goToCart = false) => {
+  const handleAddToCart = async () => {
     if (!calendarsOnSale) return;
     const validation = validateScratchTasksStep({
       presets: PRESETS,
@@ -186,9 +187,7 @@ export default function CreatorScratch() {
         format: 'A3',
       });
 
-      setAddedFlash(true);
-      window.setTimeout(() => setAddedFlash(false), 2000);
-      if (goToCart) navigate('/koszyk');
+      setCartAdded(true);
     } catch (err) {
       console.error('[CreatorScratch] Add to cart failed:', err);
       setAddError(err instanceof Error ? err.message : 'Nie udało się dodać do koszyka. Spróbuj ponownie.');
@@ -361,23 +360,15 @@ export default function CreatorScratch() {
                 )}
 
                 {calendarsOnSale ? (
-                  <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                  <div className="mb-4">
                     <button
                       type="button"
-                      onClick={() => handleAddToCart(false)}
+                      onClick={() => void handleAddToCart()}
                       className="btn-gold px-8 py-3.5 text-lg"
                       disabled={isAdding}
                     >
                       <i className={`fas ${isAdding ? 'fa-spinner fa-spin' : 'fa-shopping-basket'}`} />
-                      {isAdding ? 'Dodawanie…' : addedFlash ? 'Dodano do koszyka!' : 'Dodaj do koszyka'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleAddToCart(true)}
-                      className="btn-outline-gold px-8 py-3.5 text-lg"
-                      disabled={isAdding}
-                    >
-                      Dodaj i idź do koszyka
+                      {isAdding ? 'Dodawanie…' : 'Dodaj do koszyka'}
                     </button>
                   </div>
                 ) : (
@@ -501,6 +492,11 @@ export default function CreatorScratch() {
           />
         </div>
       )}
+      <AddedToCartModal
+        open={cartAdded}
+        onContinue={() => setCartAdded(false)}
+        onGoToCart={() => navigate('/koszyk')}
+      />
     </>
   );
 }

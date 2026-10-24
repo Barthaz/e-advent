@@ -81,19 +81,30 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh,
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load, paid]);
 
-  async function waitForOffers() {
+  async function waitUntilLabelReady(start?: Shipment) {
     setWaitingForOffers(true);
+    let current = start;
     try {
-      for (let attempt = 0; attempt < 8 && mounted.current; attempt++) {
-        await new Promise(r => setTimeout(r, 2500));
-        const fresh = await load('refresh');
-        if (!mounted.current) return fresh;
-        setShipment(fresh);
-        if (fresh.canBuy || fresh.labelReady || fresh.needsReview) return fresh;
+      for (let attempt = 0; attempt < 12 && mounted.current; attempt++) {
+        if (current?.labelReady && current.trackingNumber) return current;
+        if (current?.canBuy && !current.labelReady) {
+          try {
+            current = await load('generate');
+          } catch {
+            current = await load('refresh');
+          }
+          if (mounted.current) setShipment(current);
+          continue;
+        }
+        await new Promise(r => setTimeout(r, 1500));
+        current = await load('refresh');
+        if (!mounted.current) return current;
+        setShipment(current);
       }
-    } catch { /* manual refresh remains available */ }
-    finally { if (mounted.current) setWaitingForOffers(false); }
-    return mounted.current ? await load() : undefined;
+    } finally {
+      if (mounted.current) setWaitingForOffers(false);
+    }
+    return current;
   }
 
   async function downloadLabel(current?: Shipment) {
@@ -118,24 +129,29 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh,
     if (busy) return;
     setBusy(true); setError(''); setNotice(null);
     try {
-      let current = shipment?.labelReady ? shipment : await load('generate');
+      let current = shipment?.labelReady ? shipment : undefined;
+      if (!current?.labelReady) {
+        try {
+          current = await load('generate');
+        } catch (e) {
+          const message = e instanceof Error ? e.message : '';
+          if (/saldo|oferty|odrzu/i.test(message)) throw e;
+          current = await waitUntilLabelReady(shipment);
+          if (!current?.labelReady || !current.trackingNumber) throw e;
+        }
+      }
       if (mounted.current) setShipment(current);
-      if (!current.labelReady && !current.canBuy && !current.needsReview && current.shipmentId) {
-        const waited = await waitForOffers();
+      if (!current.labelReady || !current.trackingNumber) {
+        const waited = await waitUntilLabelReady(current);
         if (!mounted.current) return;
         current = waited || current;
         setShipment(current);
       }
-      if (current.canBuy && !current.labelReady) {
-        current = await load('generate');
-        if (mounted.current) setShipment(current);
-      }
-      if (current.labelReady) {
+      if (current.labelReady && current.trackingNumber) {
         await downloadLabel(current);
         return;
       }
-      if (current.needsReview) setError('Operacja oczekuje na potwierdzenie. Odśwież status albo sprawdź przesyłkę w Managerze Paczek.');
-      else setError('InPost jeszcze przygotowuje ofertę. Spróbuj ponownie za chwilę.');
+      setError('InPost nie potwierdził zakupu etykiety. Sprawdź saldo w Managerze Paczek i spróbuj ponownie.');
       onRefresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Nie udało się wygenerować etykiety.');
@@ -228,8 +244,8 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh,
       </div>}
 
       <div className="flex flex-wrap gap-3">
-        {paid && !shipment?.labelReady && !shipment?.needsReview && (
-          <button className="btn-primary" disabled={busy || !shipment || waitingForOffers} onClick={() => void generateLabel()}>
+        {paid && !shipment?.labelReady && !(shipment?.needsReview && !shipment.shipmentId) && (
+          <button type="button" className="btn-primary" disabled={busy || !shipment || waitingForOffers} onClick={() => void generateLabel()}>
             {generateLabelText}
           </button>
         )}
@@ -249,13 +265,13 @@ export default function InpostShipmentCard({ orderId, delivery, paid, onRefresh,
         <button className="btn-secondary" disabled={busy} onClick={() => void act('refresh')}>Odśwież status</button>
       </div>
 
-      {waitingForOffers && <p className="text-sm text-gray-500" aria-live="polite">InPost przygotowuje oferty… sprawdzam automatycznie, potem kupię etykietę.</p>}
-      {step === 1 && <p className="text-sm text-gray-600">Przesyłka w InPost powstaje po płatności. „Generuj etykietę” opłaca ofertę z konta sklepu, wysyła klientowi mail z numerem śledzenia i pobiera PDF.</p>}
+      {waitingForOffers && <p className="text-sm text-gray-500" aria-live="polite">InPost potwierdza zakup etykiety… numer i PDF pojawią się same, bez odświeżania.</p>}
+      {step === 1 && <p className="text-sm text-gray-600">Przesyłka w InPost powstaje po płatności. „Generuj etykietę” opłaca ofertę, nadaje numer, wysyła klientowi mail „Paczka przygotowana” i pobiera PDF.</p>}
       {step === 2 && <p className="text-sm text-gray-600">Naklej etykietę i nadaj paczkę. Gdy wyjdzie z magazynu, kliknij „Oznacz jako wysłane” — klient dostanie mail, że paczka została nadana.</p>}
       {shipment?.shippedNotified && shipment.providerStatus !== 'delivered' && <p className="text-sm text-christmas-green">Klient dostał informację o nadaniu.</p>}
       {shipment?.providerStatus === 'delivered' && <p className="text-sm text-christmas-green">Paczka doręczona.</p>}
 
-      {shipment?.needsReview && <p className="text-amber-800 text-sm">Operacja oczekuje na potwierdzenie. Odśwież status. Jeśli stan się nie zmienia, sprawdź tę przesyłkę w Managerze Paczek przed kolejną operacją.</p>}
+      {shipment?.needsReview && !shipment.shipmentId && !busy && <p className="text-amber-800 text-sm">Tworzenie przesyłki wymaga sprawdzenia w Managerze Paczek przed kolejną operacją.</p>}
       {shipment?.needsReview && !shipment.shipmentId && <div className="space-y-2 text-sm">
         <p>Po sprawdzeniu referencji zamówienia w Managerze możesz połączyć utworzoną przesyłkę. Serwer sprawdzi zgodność odbiorcy i paczki.</p>
         <label className="block">ID przesyłki InPost <input className="input-field" value={shipmentId} onChange={e => setShipmentId(e.target.value)} /></label>
