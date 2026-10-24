@@ -6,6 +6,7 @@ export const background: string;
 /** @deprecated use eadventLogo */
 export const logo: string;
 export const eadventLogo: string;
+export const eadventLogoName: string;
 export const eadventMark: string;
 export const christmasAmbient: {
   landscape: string;

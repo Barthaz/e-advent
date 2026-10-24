@@ -12,15 +12,16 @@ import { createPaymentIntent, createCalendar, type InternalCalendarData, validat
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import PriceBreakdown from '../components/PriceBreakdown';
-import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals, applyPercentDiscount } from '../config/products';
+import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
+import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals, applyPercentDiscount, isSupportedDiscountPercent, isCalendarsOnSale, isCalendarSku, isLetterPromoActive, LETTER_PROMO_CODE } from '../config/products';
 import ShippingForm from '../components/checkout/ShippingForm';
 import { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../utils/shippingAddress';
 import type { ProductType, ShippingAddress } from '../types/order';
 import { getActiveProduct, getStorageKeys, loadShipping, saveShipping, loadCheckoutCalendarData, resolveCheckoutProduct, getReusablePendingCalendarId, getPendingCalendarSession, setPendingCalendarSession, getPurchasedCalendarIds, markCalendarPurchased, PENDING_EDIT_TOKEN_KEY, PURCHASED_CALENDAR_IDS_KEY } from '../utils/creatorStorage';
-import { CART_STORAGE_KEY, loadCart, getCartTotals, cartItemToCheckoutItem, getCartItemDisplayName, type CartItem } from '../utils/cartStorage';
+import { CART_STORAGE_KEY, loadCart, getCartTotals, cartItemToCheckoutItem, getCartItemDisplayName, clearCartStorage, type CartItem } from '../utils/cartStorage';
 import { trackBeginCheckout, saveGaPurchasePayload } from '../utils/analytics';
 import { saveOrderSummary, cartItemsToOrderLines } from '../utils/orderSummary';
-import { getCheckoutToken } from '../utils/checkoutSession';
+import { getCheckoutToken, notifyCartChanged } from '../utils/checkoutSession';
 
 /** Survives React Strict Mode remounts — prevents duplicate create-payment-intent calls */
 const checkoutPaymentInitCache: {
@@ -403,6 +404,7 @@ export default function Checkout() {
   /** Blokada przed pętlą createCalendar + createPaymentIntent w useEffect */
   const paymentInitLockRef = useRef(false);
   const paymentInitKeyRef = useRef<string | null>(null);
+  const autoPromoRef = useRef(false);
 
   const [delivery, setDelivery] = useState<InpostChoice>({ type: 'parcel_inpost' });
   const deliveryItems = cartItems.length ? cartItems.map(i => ({ sku: i.sku, quantity: i.quantity })) : [{ sku, quantity: 1 }];
@@ -414,8 +416,8 @@ export default function Checkout() {
       : [{ sku, quantity: 1 }],
     { shippingAmount: shippingQuote.quote?.price ?? 0 },
   );
-  const pricedTotals = (promoCodeDiscount === 10 || promoCodeDiscount === 100) && orderTotals
-    ? applyPercentDiscount(orderTotals, promoCodeDiscount)
+  const pricedTotals = isSupportedDiscountPercent(promoCodeDiscount ?? 0) && orderTotals
+    ? applyPercentDiscount(orderTotals, promoCodeDiscount as number)
     : orderTotals;
   const product = getProduct(sku);
   const totalPrice = pricedTotals?.total ?? getProductPrice(sku) ?? 9;
@@ -432,6 +434,9 @@ export default function Checkout() {
   }, [isPhysical, shippingAddress, delivery, shippingQuote.quote]);
 
   const emailReady = isValidCheckoutEmail(calendarData?.email);
+  const checkoutSkus = cartItems.length ? cartItems : [{ sku }];
+  const calendarSaleBlocked = !isCalendarsOnSale() && checkoutSkus.some((item) => isCalendarSku(item.sku));
+  const letterOnlyCheckout = checkoutSkus.every((item) => getProduct(item.sku)?.type === 'letter');
 
   useEffect(() => {
     const cookieConsent = localStorage.getItem('cookieConsent');
@@ -597,6 +602,9 @@ export default function Checkout() {
       if (!calendarData) return;
 
       // Gate API on live address/email — never send create-payment-intent early for physical
+      if (calendarSaleBlocked) {
+        return;
+      }
       if (isPhysical && !shippingAddressComplete) {
         return;
       }
@@ -1009,11 +1017,11 @@ export default function Checkout() {
       cancelled = true;
       if (debounceTimer) clearTimeout(debounceTimer);
     };
-  }, [checkoutFingerprint, calendarData, clientSecret, shippingCost, shippingAddressComplete, isPhysical, totalPrice, productType, sku, shippingAddress, cartMode, cartItems, delivery, shippingQuote.quote, promoCode, promoCodeDiscount]);
+  }, [checkoutFingerprint, calendarData, clientSecret, shippingCost, shippingAddressComplete, isPhysical, totalPrice, productType, sku, shippingAddress, cartMode, cartItems, delivery, shippingQuote.quote, promoCode, promoCodeDiscount, calendarSaleBlocked]);
 
-  // Funkcja do sprawdzania kodu promocyjnego
-  const handlePromoCodeBlur = async () => {
-    if (!promoCode || promoCode.trim() === '') {
+  const applyPromoCode = async (code: string) => {
+    const trimmed = code.trim();
+    if (!trimmed) {
       setPromoCodeError(null);
       setPromoCodeDiscount(null);
       return;
@@ -1023,13 +1031,13 @@ export default function Checkout() {
     setPromoCodeError(null);
 
     try {
-      const response = await validatePromoCode(promoCode.trim());
-      
-      if (response.success && response.valid && (response.discount === 10 || response.discount === 100)) {
-        setPromoCodeDiscount(response.discount);
+      const response = await validatePromoCode(trimmed);
+      const discount = response.discount;
+      if (response.success && response.valid && typeof discount === 'number' && isSupportedDiscountPercent(discount)) {
+        setPromoCodeDiscount(discount);
         setPromoCodeError(null);
         console.log('[PromoCode] Kod promocyjny zwalidowany:', {
-          code: promoCode,
+          code: trimmed,
           discount: response.discount,
         });
       } else {
@@ -1044,6 +1052,18 @@ export default function Checkout() {
       setIsCheckingPromoCode(false);
     }
   };
+
+  const handlePromoCodeBlur = async () => {
+    await applyPromoCode(promoCode);
+  };
+
+  useEffect(() => {
+    if (autoPromoRef.current || !calendarData || calendarSaleBlocked) return;
+    if (!isLetterPromoActive() || !letterOnlyCheckout) return;
+    autoPromoRef.current = true;
+    setPromoCode(LETTER_PROMO_CODE);
+    void applyPromoCode(LETTER_PROMO_CODE);
+  }, [calendarData, calendarSaleBlocked, letterOnlyCheckout]);
 
   // Funkcja do tworzenia darmowego kalendarza
   const handleCreateFreeCalendar = async () => {
@@ -1251,7 +1271,10 @@ export default function Checkout() {
       orderNumber: result.orderNumber || undefined,
       customerEmail: calendarData.email,
     });
-    if (cartMode) localStorage.removeItem(CART_STORAGE_KEY);
+    if (cartMode) {
+      clearCartStorage();
+      notifyCartChanged();
+    }
     navigate(`/sukces?free=true&order_id=${encodeURIComponent(result.orderId)}`);
   };
 
@@ -1276,6 +1299,12 @@ export default function Checkout() {
         <h1 className="heading-page mb-2">Zamówienie</h1>
         <div className="gold-divider mb-8" />
 
+        {calendarSaleBlocked && (
+          <div className="mb-8">
+            <CalendarWaitNotice />
+          </div>
+        )}
+
         {validationError && (
           <div className="alert-error mb-6">
             <h3 className="font-bold mb-2">Nie można wygenerować kalendarza</h3>
@@ -1289,7 +1318,7 @@ export default function Checkout() {
           </div>
         )}
 
-        <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
+        {!calendarSaleBlocked && <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
           <section className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-12">
             <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 lg:items-start">
               <div className="lg:col-span-7">
@@ -1389,24 +1418,58 @@ export default function Checkout() {
                     Wszystkie pozycje opłacisz jako jedno zamówienie.
                   </p>
                 )}
-                <div className="price-box mt-5">
-                  {isFree ? (
-                    <div className="flex items-center justify-between">
-                      <span className="text-xl font-bold">Do zapłaty:</span>
-                      <span className="text-4xl font-bold text-christmas-gold-light">0 zł</span>
-                    </div>
-                  ) : (
-                    <PriceBreakdown
-                      basePrice={subtotal}
-                      shippingCost={shippingCost}
-                      variant="checkout"
-                      totalLabel="Do zapłaty"
-                      freeShipping={Boolean(pricedTotals?.freeShipping)}
-                      shippingPending={isPhysical && !shippingQuote.quote}
-                      discount={discountAmount}
-                      discountPercent={promoCodeDiscount ?? undefined}
+                <div className="mt-5">
+                  <label htmlFor="promoCode" className="block text-sm font-medium text-parchment-muted mb-2">
+                    Kod rabatowy
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="promoCode"
+                      value={promoCode}
+                      onChange={(e) => {
+                        setPromoCode(e.target.value);
+                        setPromoCodeError(null);
+                        setPromoCodeDiscount(null);
+                      }}
+                      onBlur={handlePromoCodeBlur}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          void handlePromoCodeBlur();
+                        }
+                      }}
+                      placeholder="Wpisz kod rabatowy"
+                      className="input-field flex-1"
+                      disabled={isCheckingPromoCode}
+                      autoCapitalize="characters"
                     />
+                    <button type="button" className="btn-secondary shrink-0" disabled={isCheckingPromoCode || !promoCode.trim()} onClick={() => void handlePromoCodeBlur()}>
+                      {isCheckingPromoCode ? 'Sprawdzam…' : 'Zastosuj'}
+                    </button>
+                  </div>
+                  {promoCodeError && (
+                    <p className="mt-2 text-sm text-red-600">{promoCodeError}</p>
                   )}
+                  {promoCodeDiscount !== null && promoCodeDiscount > 0 && !promoCodeError && (
+                    <p className="mt-2 text-sm text-christmas-green font-semibold">
+                      {promoCodeDiscount === 100
+                        ? 'Kod zastosowany — zamówienie za 0 zł.'
+                        : `Kod zastosowany — zniżka ${promoCodeDiscount}% od produktów.`}
+                    </p>
+                  )}
+                </div>
+                <div className="price-box mt-4">
+                  <PriceBreakdown
+                    basePrice={subtotal}
+                    shippingCost={shippingCost}
+                    variant="checkout"
+                    totalLabel="Do zapłaty"
+                    freeShipping={Boolean(isPhysical && pricedTotals?.freeShipping)}
+                    shippingPending={isPhysical && !shippingQuote.quote}
+                    discount={discountAmount}
+                    discountPercent={promoCodeDiscount ?? undefined}
+                  />
                 </div>
                 {!cartMode && (
                   <div className="mt-5 text-sm text-parchment-text space-y-1">
@@ -1444,59 +1507,6 @@ export default function Checkout() {
               <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} deliveryType={delivery.type} />
             </div>
           )}
-
-            <div className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-8">
-                <label htmlFor="promoCode" className="block text-sm font-medium text-parchment-muted mb-2">
-                  Kod rabatowy (opcjonalnie)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    id="promoCode"
-                    value={promoCode}
-                    onChange={(e) => {
-                      setPromoCode(e.target.value);
-                      setPromoCodeError(null);
-                      setPromoCodeDiscount(null);
-                    }}
-                    onBlur={handlePromoCodeBlur}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.preventDefault();
-                        void handlePromoCodeBlur();
-                      }
-                    }}
-                    placeholder="Wpisz kod rabatowy"
-                    className="input-field flex-1"
-                    disabled={isCheckingPromoCode}
-                    autoCapitalize="characters"
-                  />
-                  <button type="button" className="btn-secondary" disabled={isCheckingPromoCode || !promoCode.trim()} onClick={() => void handlePromoCodeBlur()}>
-                    {isCheckingPromoCode ? 'Sprawdzam…' : 'Zastosuj'}
-                  </button>
-                </div>
-                {promoCodeError && (
-                  <p className="mt-2 text-sm text-red-600">{promoCodeError}</p>
-                )}
-                {promoCodeDiscount !== null && promoCodeDiscount > 0 && !promoCodeError && (
-                  <p className="mt-2 text-sm text-christmas-green font-semibold">
-                    {promoCodeDiscount === 100
-                      ? 'Kod rabatowy aktywny — zamówienie za 0 zł.'
-                      : `Kod rabatowy aktywny — zniżka ${promoCodeDiscount}% od produktów.`}
-                  </p>
-                )}
-              </div>
-
-            {isFree && (
-              <div className="rounded-2xl border border-christmas-green/30 bg-white/70 p-5 lg:col-span-8">
-                <h3 className="font-display text-xl font-semibold text-christmas-green mb-2">
-                  Zamówienie za 0 zł
-                </h3>
-                <p className="text-parchment-text text-sm">
-                  Twój kod daje 100% zniżki. Zaakceptuj regulamin i dokończ zamówienie — nic nie zapłacisz.
-                </p>
-              </div>
-            )}
 
             <div className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-12">
               <h3 className="heading-section mb-2">Bezpieczna płatność</h3>
@@ -1584,7 +1594,7 @@ export default function Checkout() {
                 </div>
               )}
             </div>
-        </div>
+        </div>}
       </ParchmentCard>
     </FestivePage>
   );

@@ -98,3 +98,13 @@ export function getOrderItemDisplayName(
   sku: string,
   metadata?: { childName?: string } | null,
 ): string;
+
+export const DISCOUNT_PERCENTS: number[];
+export function isSupportedDiscountPercent(percent: number): boolean;
+export function isCalendarProductType(type: string | null | undefined): boolean;
+export function isCalendarSku(sku: string): boolean;
+export const LETTER_PROMO_CODE: string;
+export const LETTER_PROMO_PERCENT: number;
+export const CALENDARS_ON_SALE_FROM: string;
+export function isCalendarsOnSale(now?: Date | string | number): boolean;
+export function isLetterPromoActive(now?: Date | string | number): boolean;

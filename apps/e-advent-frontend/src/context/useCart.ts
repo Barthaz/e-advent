@@ -17,6 +17,8 @@ export interface AddItemInput {
 export interface AddSantaLetterBundleInput {
   letterLabel?: string;
   childName?: string;
+  childNames?: string[];
+  letterQuantity?: number;
 }
 
 export interface CartContextValue {

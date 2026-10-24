@@ -18,7 +18,8 @@ const { cancelCalendarCheckout } = require('../services/checkoutPayment');
 const { sendEmail } = require('../config/email');
 const { body, validationResult } = require('express-validator');
 const { isFullDiscountPromo, redeem } = require('../config/promocodes');
-const { isPhysicalProduct } = require('../config/products');
+const { isPhysicalProduct, isCalendarSku } = require('../config/products');
+const { calendarsCurrentlyOnSale, calendarSaleClosedMessage } = require('../services/seasonSale');
 const { createFreeLimiter, loginLimiter } = require('../middleware/rateLimits');
 const {
   buildInteractiveAccessEmail,
@@ -141,6 +142,12 @@ router.post('/createFree', createFreeLimiter, [
       return res.status(400).json({ error: 'Email mismatch', message: 'Adres musi być zgodny z adresem właściciela kalendarza.' });
     }
     const sku = calendar.data?.sku || 'interactive';
+    if (isCalendarSku(sku) && !calendarsCurrentlyOnSale()) {
+      return res.status(403).json({
+        error: 'Calendar sale closed',
+        message: calendarSaleClosedMessage(),
+      });
+    }
     if (isPhysicalProduct(sku)) {
       return res.status(403).json({
         error: 'Promo not allowed for product',

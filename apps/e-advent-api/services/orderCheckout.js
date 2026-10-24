@@ -8,6 +8,7 @@ const {
   SANTA_LETTER_SKU,
 } = require('../config/products');
 const { findByCode, isAvailable, applyToTotals } = require('./discountCodes');
+const { assertCalendarsPurchasable } = require('./seasonSale');
 
 function parseShippingAddress(raw) {
   if (!raw) return null;
@@ -238,6 +239,18 @@ async function resolveCheckoutItems(requestData) {
 
   if (errors.length > 0) {
     return { errors };
+  }
+
+  const calendarSaleError = assertCalendarsPurchasable(resolved);
+  if (calendarSaleError) {
+    return {
+      errors: [{
+        type: 'field',
+        msg: calendarSaleError,
+        path: 'items',
+        location: 'body',
+      }],
+    };
   }
 
   const letterCount = resolved

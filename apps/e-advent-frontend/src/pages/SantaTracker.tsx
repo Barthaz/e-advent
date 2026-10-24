@@ -247,7 +247,7 @@ export default function SantaTracker() {
                       className="btn-gold px-8 py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <i className="fas fa-globe-europe" />
-                      {tracking ? 'Śledzenie aktywne' : 'Śledź Mikołaja'}
+                      {tracking ? 'Śledzenie aktywne' : 'Śledź Świętego Mikołaja'}
                     </button>
                     {debug && tracking && (
                       <button

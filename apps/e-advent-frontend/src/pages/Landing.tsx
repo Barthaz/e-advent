@@ -6,7 +6,8 @@ import DemoCalendar from '../components/DemoCalendar';
 import SocialShare from '../components/SocialShare';
 import SEOHead from '../components/SEOHead';
 import ProductCard from '../components/products/ProductCard';
-import { PRODUCT_FAMILIES } from '../config/products';
+import LetterPromoNotice from '../components/campaign/LetterPromoNotice';
+import { isLetterPromoActive, PRODUCT_FAMILIES } from '../config/products';
 import { formatCountdown, getDaysUntilChristmas } from '../utils/countdown';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
@@ -96,11 +97,7 @@ export default function Landing() {
               </Link>
             </div>
 
-            <p className={`text-christmas-gold text-sm md:text-base tracking-[0.25em] uppercase mb-4 ${heroClass('delay-100')}`}>
-              e-Advent
-            </p>
-
-            <h1 className={`font-display text-3xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight text-christmas-gold-light ${heroClass('delay-200')}`}>
+            <h1 className={`font-display text-3xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight text-christmas-gold-light ${heroClass('delay-100')}`}>
               Niezapomniane chwile świąt
             </h1>
 
@@ -149,14 +146,20 @@ export default function Landing() {
               List do Świętego Mikołaja, kalendarze adwentowe i magia oczekiwania — żeby grudzień przeżywać w cieple i miłej atmosferze.
             </p>
 
+            {isLetterPromoActive() && (
+              <div className={`max-w-2xl mx-auto mb-8 text-left ${heroClass('delay-550')}`}>
+                <LetterPromoNotice tone="onDark" showCta />
+              </div>
+            )}
+
             <div className={`hero-actions ${heroClass('delay-600')}`}>
               <Link to="/list-do-swietego-mikolaja" className="hero-action hero-action--letter">
                 <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-envelope-open-text" /></span>
                 <span className="hero-action-content">
-                  <span className="hero-action-eyebrow">Mały list, wielkie marzenia</span>
+                  <span className="hero-action-eyebrow">{isLetterPromoActive() ? 'Do końca października −20%' : 'Mały list, wielkie marzenia'}</span>
                   <span className="hero-action-title">List do Mikołaja</span>
                   <span className="hero-action-description">Zestaw z kopertą i naklejkami na najważniejsze świąteczne życzenia.</span>
-                  <span className="hero-action-footer"><span>Zobacz zestaw <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od 29 zł</span></span>
+                  <span className="hero-action-footer"><span>Zobacz zestaw <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">{isLetterPromoActive() ? '−20%' : 'od 29 zł'}</span></span>
                 </span>
               </Link>
               <Link to="/kalendarze-adwentowe" className="hero-action hero-action--calendar">

@@ -1,10 +1,10 @@
 'use strict';
 const { randomBytes, randomUUID } = require('node:crypto');
 const { query, withTransaction } = require('../config/database');
-const { applyPercentDiscount } = require('../config/products');
+const { applyPercentDiscount, DISCOUNT_PERCENTS } = require('../config/products');
 
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const PERCENTS = new Set([10, 100]);
+const PERCENTS = new Set(DISCOUNT_PERCENTS);
 
 function normalizeCode(code) {
   return String(code || '').trim().toUpperCase().replace(/\s+/g, '');
@@ -103,7 +103,7 @@ async function redeem(code, { orderId, email } = {}) {
 
 async function createCodes({ percent, reusable, count = 1 }) {
   if (!PERCENTS.has(Number(percent))) {
-    throw Object.assign(new Error('Rabat może wynosić 10% albo 100%.'), { status: 400 });
+    throw Object.assign(new Error('Rabat może wynosić 10%, 20% albo 100%.'), { status: 400 });
   }
   const n = Number(count);
   if (!Number.isInteger(n) || n < 1 || n > 50) {
@@ -133,6 +133,38 @@ async function createCodes({ percent, reusable, count = 1 }) {
   return created;
 }
 
+async function ensureNamedCode({ code, percent, reusable }) {
+  const normalized = normalizeCode(code);
+  if (!isCodeFormat(normalized)) {
+    throw Object.assign(new Error('Kod rabatowy może mieć 4–24 znaki (litery, cyfry, myślnik).'), { status: 400 });
+  }
+  if (!PERCENTS.has(Number(percent))) {
+    throw Object.assign(new Error('Rabat może wynosić 10%, 20% albo 100%.'), { status: 400 });
+  }
+  const existing = await findByCode(normalized);
+  if (existing) {
+    await query(
+      'UPDATE discount_codes SET percent = ?, reusable = ?, active = 1 WHERE id = ?',
+      [Number(percent), reusable ? 1 : 0, existing.id],
+    );
+    const [rows] = await query('SELECT * FROM discount_codes WHERE id = ?', [existing.id]);
+    return rowToCode(rows[0]);
+  }
+  const id = randomUUID();
+  await query(
+    'INSERT INTO discount_codes (id, code, percent, reusable, active, uses_count) VALUES (?, ?, ?, ?, 1, 0)',
+    [id, normalized, Number(percent), reusable ? 1 : 0],
+  );
+  return {
+    id,
+    code: normalized,
+    percent: Number(percent),
+    reusable: Boolean(reusable),
+    active: true,
+    usesCount: 0,
+  };
+}
+
 async function listCodes() {
   const [rows] = await query('SELECT * FROM discount_codes ORDER BY created_at DESC LIMIT 200');
   return rows.map(rowToCode);
@@ -154,6 +186,7 @@ module.exports = {
   applyToTotals,
   redeem,
   createCodes,
+  ensureNamedCode,
   listCodes,
   setActive,
   PERCENTS: [...PERCENTS],

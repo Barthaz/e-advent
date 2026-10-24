@@ -75,7 +75,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link to="/sledz-mikolaja" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
-                  Śledź Mikołaja
+                  Śledź Świętego Mikołaja
                 </Link>
               </li>
             </ul>

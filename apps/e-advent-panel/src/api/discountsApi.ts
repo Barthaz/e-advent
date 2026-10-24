@@ -5,7 +5,7 @@ import type { RootState } from '../store';
 export type DiscountCode = {
   id: string;
   code: string;
-  percent: 10 | 100;
+  percent: 10 | 20 | 100;
   reusable: boolean;
   active: boolean;
   usesCount: number;
@@ -29,7 +29,7 @@ export const discountsApi = createApi({
       transformResponse: (response: { codes: DiscountCode[] }) => response.codes ?? [],
       providesTags: ['DiscountCode'],
     }),
-    createDiscountCodes: builder.mutation<DiscountCode[], { percent: 10 | 100; reusable: boolean; count?: number }>({
+    createDiscountCodes: builder.mutation<DiscountCode[], { percent: 10 | 20 | 100; reusable: boolean; count?: number }>({
       query: (body) => ({ url: '/discount-codes', method: 'POST', body }),
       transformResponse: (response: { codes: DiscountCode[] }) => response.codes ?? [],
       invalidatesTags: ['DiscountCode'],

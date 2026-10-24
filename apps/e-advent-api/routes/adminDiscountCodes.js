@@ -15,7 +15,7 @@ module.exports = (router, authAdmin) => {
   });
 
   router.post('/discount-codes', authAdmin, [
-    body('percent').toInt().isIn([10, 100]).withMessage('Rabat może wynosić 10% albo 100%.'),
+    body('percent').toInt().isIn([10, 20, 100]).withMessage('Rabat może wynosić 10%, 20% albo 100%.'),
     body('reusable').custom(isNativeBoolean).withMessage('Wybierz, czy kod jest wielorazowy.'),
     body('count').optional().toInt().isInt({ min: 1, max: 50 }).withMessage('Można wygenerować od 1 do 50 kodów.'),
   ], async (req, res) => {

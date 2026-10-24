@@ -1,4 +1,4 @@
-import { formatPrice } from '../config/products';
+import { formatPrice, roundPln } from '../config/products';
 
 export type PriceBreakdownVariant = 'inline' | 'panel' | 'checkout' | 'format';
 
@@ -28,7 +28,7 @@ export default function PriceBreakdown({
   discountPercent,
 }: PriceBreakdownProps) {
   const rebate = Number(discount) > 0 ? Number(discount) : 0;
-  const total = basePrice - rebate + shippingCost;
+  const total = roundPln(basePrice - rebate + shippingCost);
 
   if (shippingPending) return <div className="price-breakdown"><p>Produkty: {formatPrice(basePrice)}</p><p>Dostawa InPost: wybierz sposób dostawy, aby obliczyć koszt.</p></div>;
 

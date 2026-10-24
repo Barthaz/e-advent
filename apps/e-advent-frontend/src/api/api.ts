@@ -400,12 +400,21 @@ export interface CreatePaymentIntentErrorResponse {
   }>;
 }
 
+export class PaymentLookupError extends Error {
+  status: number;
+  constructor(status: number) {
+    super(`Payment not found (${status})`);
+    this.name = 'PaymentLookupError';
+    this.status = status;
+  }
+}
+
 export async function createPaymentIntent(
   data: CreatePaymentIntentRequest
 ): Promise<CreatePaymentIntentSuccessResponse> {
   const url = `${API_BASE_URL}/stripe/create-payment-intent`;
-  const cartSnapshot = data.items?.length ? localStorage.getItem('e-advent-cart') : null;
-  const { getCheckoutToken } = await import('../utils/checkoutSession');
+  const cartSnapshot = data.metadata?.cartCheckout === '1' ? localStorage.getItem('e-advent-cart') : null;
+  const { getCheckoutToken, savePendingCheckout } = await import('../utils/checkoutSession');
   const checkoutToken = getCheckoutToken();
 
   if (!data.orderId || (typeof data.orderId === 'string' && data.orderId.trim() === '')) {
@@ -464,6 +473,16 @@ export async function createPaymentIntent(
   sessionStorage.setItem(`e-advent-payment:${responseData.paymentIntentId}`, responseData.clientSecret);
   sessionStorage.setItem(`e-advent-checkout-owner:${responseData.paymentIntentId}`, checkoutToken);
   if (cartSnapshot) sessionStorage.setItem(`e-advent-checkout-cart:${responseData.paymentIntentId}`, cartSnapshot);
+  if (responseData.paymentIntentId && responseData.clientSecret) {
+    savePendingCheckout({
+      paymentIntentId: responseData.paymentIntentId,
+      orderId: responseData.orderId || String(data.orderId),
+      orderNumber: responseData.orderNumber || null,
+      clientSecret: responseData.clientSecret,
+      cartSnapshot,
+      createdAt: Date.now(),
+    });
+  }
   // Stripe refuses to mount Elements on a paid / in-flight PaymentIntent; show its result instead.
   if (PAYMENT_STARTED_STATUSES.includes(responseData.paymentStatus)) {
     window.location.assign(`/sukces?payment_intent=${encodeURIComponent(responseData.paymentIntentId)}`);
@@ -525,11 +544,15 @@ export interface PaymentOrderResponse {
 
 export async function getPaymentByIntentId(paymentIntentId: string): Promise<PaymentOrderResponse> {
   const url = `${API_BASE_URL}/stripe/payment/${encodeURIComponent(paymentIntentId)}`;
+  const { loadPendingCheckout } = await import('../utils/checkoutSession');
+  const pending = loadPendingCheckout();
   const clientSecret = new URLSearchParams(window.location.search).get('payment_intent_client_secret')
-    || sessionStorage.getItem(`e-advent-payment:${paymentIntentId}`) || '';
+    || sessionStorage.getItem(`e-advent-payment:${paymentIntentId}`)
+    || (pending?.paymentIntentId === paymentIntentId ? pending.clientSecret : '')
+    || '';
   const response = await fetch(url, { headers: { 'X-Payment-Client-Secret': clientSecret } });
   if (!response.ok) {
-    throw new Error(`Payment not found (${response.status})`);
+    throw new PaymentLookupError(response.status);
   }
   return response.json() as Promise<PaymentOrderResponse>;
 }

@@ -20,7 +20,7 @@ export default function DiscountCodesPage() {
   const { data: codes = [], isLoading, isError, refetch } = useGetDiscountCodesQuery();
   const [createCodes, { isLoading: creating }] = useCreateDiscountCodesMutation();
   const [setActive, { isLoading: toggling }] = useSetDiscountCodeActiveMutation();
-  const [percent, setPercent] = useState<10 | 100>(10);
+  const [percent, setPercent] = useState<10 | 20 | 100>(10);
   const [reusable, setReusable] = useState(false);
   const [count, setCount] = useState(1);
   const [copied, setCopied] = useState('');
@@ -60,7 +60,7 @@ export default function DiscountCodesPage() {
       <div>
         <h1 className="heading-page">Kody rabatowe</h1>
         <p className="text-sm text-gray-500 mt-1">
-          10% obniża produkty (dostawa bez zmian). 100% zdejmuje całą kwotę, w tym dostawę.
+          10% i 20% obniżają produkty (dostawa bez zmian). 100% zdejmuje całą kwotę, w tym dostawę.
         </p>
       </div>
 
@@ -72,9 +72,10 @@ export default function DiscountCodesPage() {
             <select
               className="admin-select"
               value={percent}
-              onChange={(event) => setPercent(Number(event.target.value) as 10 | 100)}
+              onChange={(event) => setPercent(Number(event.target.value) as 10 | 20 | 100)}
             >
               <option value={10}>10%</option>
+              <option value={20}>20%</option>
               <option value={100}>100%</option>
             </select>
           </div>

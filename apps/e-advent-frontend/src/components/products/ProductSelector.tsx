@@ -2,11 +2,19 @@ import { Link } from 'react-router-dom';
 import FestivePage from '../FestivePage';
 import ParchmentCard from '../ParchmentCard';
 import ProductCard from './ProductCard';
-import { PRODUCT_FAMILIES } from '../../config/products';
+import CalendarWaitNotice from '../campaign/CalendarWaitNotice';
+import { isCalendarsOnSale, PRODUCT_FAMILIES } from '../../config/products';
 
 export default function ProductSelector() {
+  const calendarsOnSale = isCalendarsOnSale();
+
   return (
     <FestivePage className="py-4" maxWidth="full">
+      {!calendarsOnSale && (
+        <div className="max-w-3xl mx-auto mb-10">
+          <CalendarWaitNotice tone="onDark" />
+        </div>
+      )}
       <div className="text-center mb-10">
         <h1 className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light mb-3 leading-tight">
           Wybierz swój kalendarz

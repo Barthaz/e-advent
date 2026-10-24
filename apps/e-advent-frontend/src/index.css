@@ -58,6 +58,19 @@ html.embed-window-preview #root {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(95, 67, 38, 0.08);
 }
 
+/* Product gallery follows the long details column on wide screens */
+@media (width >= 64rem) {
+  .product-gallery-pin {
+    position: sticky;
+    top: calc(var(--santa-banner-h, 0px) + 5rem);
+    align-self: start;
+  }
+
+  .product-gallery-pin > button img {
+    max-height: calc(100dvh - var(--santa-banner-h, 0px) - 18rem);
+  }
+}
+
 /* Przycisk złoty — gradient jak w aplikacji */
 .btn-gold {
   display: inline-flex;
@@ -1217,11 +1230,6 @@ html.embed-window-preview #root {
   accent-color: var(--color-christmas-gold);
 }
 
-.scratch-adventure-more--on-dark {
-  border-top-color: rgb(255 255 255 / 0.15);
-  color: rgb(255 255 255 / 0.7);
-}
-
 .task-list-item--on-dark {
   background: rgb(255 255 255 / 0.06);
   border-color: rgb(255 255 255 / 0.12);
@@ -1305,9 +1313,22 @@ html.embed-window-preview #root {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid color-mix(in srgb, var(--color-parchment-dark) 18%, transparent);
-  font-size: 0.875rem;
-  line-height: 1.55;
-  color: var(--color-parchment-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  font-weight: 500;
+  color: var(--color-parchment-text);
+}
+
+.scratch-adventure-more--on-dark {
+  border-top: none;
+  color: #f6f0e4;
+  font-size: 1rem;
+  line-height: 1.7;
+  font-weight: 500;
+  background: rgb(8 14 10 / 0.55);
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.4);
 }
 
 .creator-form-well {

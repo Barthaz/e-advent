@@ -48,6 +48,15 @@ function installDiscountStore(query, seed = [discountRow()]) {
     if (text.includes('FROM discount_codes ORDER BY')) {
       return [[...codes.values()]];
     }
+    if (text.startsWith('UPDATE discount_codes SET percent')) {
+      const row = [...codes.values()].find(item => item.id === args[2]);
+      if (row) {
+        row.percent = args[0];
+        row.reusable = args[1] ? 1 : 0;
+        row.active = 1;
+      }
+      return [{ affectedRows: row ? 1 : 0 }];
+    }
     if (text.startsWith('UPDATE discount_codes SET active')) {
       const row = [...codes.values()].find(item => item.id === args[1]);
       if (row) row.active = args[0] ? 1 : 0;

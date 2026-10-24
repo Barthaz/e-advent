@@ -6,12 +6,16 @@ import SEOHead from '../components/SEOHead';
 import {
   formatPrice,
   getProduct,
+  isLetterPromoActive,
+  LETTER_PROMO_CODE,
+  letterPromoPrice,
   SANTA_CERTIFICATE_SKU,
 } from '../config/products';
 import { useCart } from '../context/useCart';
 import { trackViewItem } from '../utils/analytics';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
-import certificatePreview from '../assets/certyficate-preview.webp';
+import LetterPromoNotice from '../components/campaign/LetterPromoNotice';
+import LetterPackComposer, { MAX_LETTER_QTY } from '../components/letter/LetterPackComposer';
 import letter1 from '../assets/list/list_1.webp';
 import letter2 from '../assets/list/list_2.webp';
 import letter3 from '../assets/list/list_3.webp';
@@ -28,28 +32,30 @@ const GALLERY = [
   { src: letter3, thumb: letter3Thumb, alt: 'Koperta i naklejki świąteczne' },
 ];
 
-const FAQ = [
-  {
-    q: 'Co dokładnie jest w zestawie?',
-    a: 'Dwie wersje listu (do wyboru lub wypełnienia obu), opisana koperta adresowana do Świętego Mikołaja oraz naklejki świąteczne do ozdobienia.',
-  },
-  {
-    q: 'Jak długo trwa wysyłka?',
-    a: 'Przygotowanie i wysyłka InPost zwykle zajmują 3–5 dni roboczych od opłacenia zamówienia.',
-  },
-  {
-    q: 'Czym jest Certyfikat Grzecznego Dziecka?',
-    a: 'To opcjonalny dodatek (+9 zł) — elegancki dokument od Świętego Mikołaja z imieniem dziecka. Idealny do wręczenia razem z listem. Dostępny wyłącznie przy zamówieniu listu.',
-  },
-  {
-    q: 'Czy mogę zamówić kilka zestawów?',
-    a: 'Tak — dodaj więcej sztuk do koszyka. Koszt dostawy InPost zależy od zawartości koszyka i wybranej metody dostawy.',
-  },
-  {
-    q: 'Czy list jest personalizowany online?',
-    a: 'Nie — to gotowy fizyczny zestaw. Dziecko samo wypełnia list i ozdabia kopertę naklejkami.',
-  },
-];
+function buildFaq(certificatePriceNote: string) {
+  return [
+    {
+      q: 'Co dokładnie jest w zestawie?',
+      a: 'Dwie wersje listu (do wyboru lub wypełnienia obu), opisana koperta adresowana do Świętego Mikołaja oraz naklejki świąteczne do ozdobienia.',
+    },
+    {
+      q: 'Jak długo trwa wysyłka?',
+      a: 'Przygotowanie i wysyłka InPost zwykle zajmują 3–5 dni roboczych od opłacenia zamówienia.',
+    },
+    {
+      q: 'Czym jest Certyfikat Grzecznego Dziecka?',
+      a: `To opcjonalny dodatek (${certificatePriceNote}) — elegancki dokument od Świętego Mikołaja z imieniem dziecka. Idealny do wręczenia razem z listem. Dostępny wyłącznie przy zamówieniu listu.`,
+    },
+    {
+      q: 'Czy mogę zamówić kilka zestawów?',
+      a: 'Tak — na stronie produktu ustaw liczbę listów i dopisz imiona tylko do tych dzieci, które mają dostać certyfikat. Cały pakiet trafia do koszyka jednym kliknięciem. Koszt dostawy InPost zależy od zawartości koszyka i wybranej metody dostawy.',
+    },
+    {
+      q: 'Czy list jest personalizowany online?',
+      a: 'Nie — to gotowy fizyczny zestaw. Dziecko samo wypełnia list i ozdabia kopertę naklejkami.',
+    },
+  ];
+}
 
 const JSON_LD = {
   '@context': 'https://schema.org',
@@ -75,12 +81,19 @@ export default function SantaLetterProduct() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [addedFlash, setAddedFlash] = useState(false);
-  const [addCertificate, setAddCertificate] = useState(false);
-  const [childName, setChildName] = useState('');
+  const [letterQty, setLetterQty] = useState(1);
+  const [certNames, setCertNames] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
 
   const basePrice = product?.basePrice ?? 29;
-  const standaloneTotal = basePrice;
+  const letterPromo = isLetterPromoActive();
+  const displayLetterPrice = letterPromo ? letterPromoPrice(basePrice) : basePrice;
+  const displayCertPrice = letterPromo ? letterPromoPrice(CERTIFICATE_PRICE) : CERTIFICATE_PRICE;
+  const faq = buildFaq(
+    letterPromo
+      ? `+${formatPrice(displayCertPrice)} z kodem ${LETTER_PROMO_CODE} zamiast ${formatPrice(CERTIFICATE_PRICE)}`
+      : `+${formatPrice(CERTIFICATE_PRICE)}`,
+  );
 
   useEffect(() => {
     trackViewItem({
@@ -102,15 +115,24 @@ export default function SantaLetterProduct() {
 
   const handleAddToCart = (goToCart = false) => {
     setFormError(null);
-    const trimmedName = childName.trim();
-    if (addCertificate && trimmedName.length < 2) {
-      setFormError('Podaj imię dziecka na certyfikat (min. 2 znaki).');
+    const trimmedNames = certNames.map((name) => name.replace(/\s+/g, ' ').trim());
+    if (trimmedNames.some((name) => name.length > 0 && name.length < 2)) {
+      setFormError('Każde imię na certyfikacie musi mieć co najmniej 2 znaki.');
+      return;
+    }
+    if (trimmedNames.some((name) => name.length === 0)) {
+      setFormError('Dopisz imię albo usuń puste pole certyfikatu.');
+      return;
+    }
+    if (trimmedNames.length > letterQty) {
+      setFormError('Liczba certyfikatów nie może przekraczać liczby listów.');
       return;
     }
 
     addSantaLetterBundle({
       letterLabel: product?.name,
-      childName: addCertificate ? trimmedName : undefined,
+      letterQuantity: Math.min(MAX_LETTER_QTY, Math.max(1, letterQty)),
+      childNames: trimmedNames,
     });
 
     setAddedFlash(true);
@@ -126,7 +148,7 @@ export default function SantaLetterProduct() {
     <>
       <SEOHead
         title="List do Świętego Mikołaja — zestaw listów, koperta i naklejki | e-Advent"
-        description="Gotowy zestaw List do Świętego Mikołaja: 2 wersje listu, opisana koperta i naklejki. Cena od 29 zł, dostawa do Paczkomatu lub kurierem InPost wyceniana przy zamówieniu. Idealny prezent adwentowy dla dzieci."
+        description="Gotowy zestaw List do Świętego Mikołaja: 2 wersje listu, opisana koperta i naklejki. Cena od 29 zł + dostawa. Idealny prezent adwentowy dla dzieci."
         keywords="list do świętego mikołaja, list do mikołaja, zestaw list mikołaj, koperta do mikołaja, prezent adwentowy, e-advent"
         canonical="https://e-advent.pl/list-do-swietego-mikolaja"
         ogImage={`https://e-advent.pl${GALLERY[0].src}`}
@@ -144,7 +166,7 @@ export default function SantaLetterProduct() {
 
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
               {/* Gallery */}
-              <div>
+              <div className="product-gallery-pin">
                 <button
                   type="button"
                   onClick={() => setLightboxOpen(true)}
@@ -200,15 +222,32 @@ export default function SantaLetterProduct() {
                   Magiczny rytuał, który dzieci zapamiętają na lata.
                 </p>
 
+                {letterPromo && (
+                  <div className="mb-6">
+                    <LetterPromoNotice tone="onDark" />
+                  </div>
+                )}
+
                 <div className="mb-6">
                   <p className="font-display text-4xl font-semibold text-christmas-gold-light">
-                    {formatPrice(basePrice)}
+                    {letterPromo ? (
+                      <>
+                        <span className="mr-3 text-white/45 line-through decoration-white/40 text-2xl md:text-3xl">
+                          {formatPrice(basePrice)}
+                        </span>
+                        {formatPrice(displayLetterPrice)}
+                      </>
+                    ) : (
+                      formatPrice(basePrice)
+                    )}
                   </p>
                   <p className="text-white/60 text-sm mt-2">
-                    + dostawa InPost — wycena przy zamówieniu
+                    + dostawa
                   </p>
                   <p className="text-white/50 text-xs mt-1">
-                    Jedna sztuka (bez dostawy): {formatPrice(standaloneTotal)}
+                    {letterPromo
+                      ? `Cena za jeden zestaw z kodem ${LETTER_PROMO_CODE}, bez dostawy`
+                      : 'Cena za jeden zestaw, bez dostawy'}
                   </p>
                 </div>
 
@@ -223,75 +262,23 @@ export default function SantaLetterProduct() {
                   )}
                 </ul>
 
-                {/* Opcjonalny certyfikat */}
-                <div className="mb-6 rounded-2xl border border-christmas-gold/35 bg-white/5 p-4 md:p-5 backdrop-blur-sm">
-                  <label className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={addCertificate}
-                      onChange={(e) => {
-                        setAddCertificate(e.target.checked);
-                        setFormError(null);
-                        if (!e.target.checked) setChildName('');
-                      }}
-                      className="h-4 w-4 shrink-0 rounded border-christmas-gold/50 text-christmas-green focus:ring-christmas-gold"
-                    />
-                    <span className="font-display text-[15px] sm:text-lg text-christmas-gold-light leading-none whitespace-nowrap">
-                      Dodaj Certyfikat Grzecznego Dziecka (+{formatPrice(CERTIFICATE_PRICE)})
-                    </span>
-                  </label>
-
-                  <div className="mt-3 flex gap-4 items-start">
-                    <figure className="w-[104px] sm:w-[128px] shrink-0 rounded-lg border border-christmas-gold/30 bg-cream/10 p-1.5 shadow-lg">
-                      <img
-                        src={certificatePreview}
-                        alt="Podgląd Certyfikatu Grzecznego Dziecka"
-                        width={280}
-                        height={364}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-auto rounded-md object-contain"
-                      />
-                    </figure>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="text-white/70 text-sm leading-relaxed">
-                        Oficjalny dokument od Świętego Mikołaja z imieniem dziecka — piękna pamiątka
-                        do wręczenia razem z listem.
-                      </p>
-
-                      {addCertificate && (
-                        <div className="mt-3">
-                          <label htmlFor="certificate-child-name" className="block text-sm text-white/80 mb-1.5">
-                            Imię dziecka na certyfikacie
-                          </label>
-                          <input
-                            id="certificate-child-name"
-                            type="text"
-                            value={childName}
-                            onChange={(e) => {
-                              setChildName(e.target.value);
-                              setFormError(null);
-                            }}
-                            placeholder="np. Kasia"
-                            maxLength={60}
-                            className="w-full rounded-xl border border-christmas-gold/40 bg-cream/95 px-4 py-2.5 text-parchment-text placeholder:text-parchment-muted/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-christmas-gold"
-                          />
-                          <p className="text-white/50 text-xs mt-1.5">
-                            Imię pojawi się elegancką czcionką na certyfikacie.
-                          </p>
-                        </div>
-                      )}
-
-                      {formError && (
-                        <p className="mt-3 text-sm text-red-200" role="alert">
-                          <i className="fas fa-exclamation-circle mr-1.5" />
-                          {formError}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <LetterPackComposer
+                  letterQty={letterQty}
+                  onLetterQtyChange={(qty) => {
+                    setLetterQty(qty);
+                    setFormError(null);
+                  }}
+                  certNames={certNames}
+                  onCertNamesChange={(names) => {
+                    setCertNames(names);
+                    setFormError(null);
+                  }}
+                  letterPrice={displayLetterPrice}
+                  certificatePrice={displayCertPrice}
+                  letterCompareAt={letterPromo ? basePrice : undefined}
+                  certificateCompareAt={letterPromo ? CERTIFICATE_PRICE : undefined}
+                  error={formError}
+                />
 
                 <div className="flex flex-col sm:flex-row gap-3 mb-4">
                   <button type="button" onClick={() => handleAddToCart(false)} className="btn-gold px-8 py-3.5 text-lg">
@@ -385,7 +372,7 @@ export default function SantaLetterProduct() {
             <h2 className="section-title mb-4 text-center">Najczęstsze pytania</h2>
             <div className="gold-divider mb-10" />
             <div className="space-y-4">
-              {FAQ.map((item) => (
+              {faq.map((item) => (
                 <ParchmentCard key={item.q} padding="md">
                   <h3 className="font-display text-lg md:text-xl font-semibold text-parchment-text mb-2">
                     {item.q}

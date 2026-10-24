@@ -405,6 +405,7 @@ router.patch('/orders/:id', authAdmin, [
 registerScratchExportRoutes(router, authAdmin);
 require('./adminInpost')(router, authAdmin);
 require('./adminDiscountCodes')(router, authAdmin);
+require('./adminCertificates')(router, authAdmin);
 
 // ── GET /admin/calendars/:id — podgląd kalendarza ─────────────────────────────
 

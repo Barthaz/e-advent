@@ -4,7 +4,8 @@ import PageBackground from '../components/PageBackground';
 import ParchmentCard from '../components/ParchmentCard';
 import SEOHead from '../components/SEOHead';
 import StepScratchTasks from '../components/creator/StepScratchTasks';
-import { formatPrice, getProduct } from '../config/products';
+import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
+import { formatPrice, getProduct, isCalendarsOnSale } from '../config/products';
 import { useCart } from '../context/useCart';
 import scratchPresetsData from '../data/scratch-presets.json';
 import {
@@ -73,7 +74,8 @@ const JSON_LD = {
     url: 'https://e-advent.pl/stworz-kalendarz/zdrapka',
     priceCurrency: 'PLN',
     price: '69.00',
-    availability: 'https://schema.org/InStock',
+    availability: isCalendarsOnSale() ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
+    availabilityStarts: '2026-11-01',
   },
 };
 
@@ -143,7 +145,10 @@ export default function CreatorScratch() {
     return tasks.length ? `Własna przygoda (${tasks.length} zadań)` : 'Własna przygoda';
   }, [mode, selectedPreset, tasks.length]);
 
+  const calendarsOnSale = isCalendarsOnSale();
+
   const handleAddToCart = async (goToCart = false) => {
+    if (!calendarsOnSale) return;
     const validation = validateScratchTasksStep({
       presets: PRESETS,
       mode,
@@ -196,7 +201,7 @@ export default function CreatorScratch() {
     <>
       <SEOHead
         title="Kalendarz zdrapka A3 — złote okienka, 3 warianty | e-Advent"
-        description="Fizyczny kalendarz adwentowy A3 ze złotymi zdrapkami. Wybierz wariant i przygodę — gotową historię albo własne zadania. Cena 69 zł, dostawa InPost wyceniana przy zamówieniu."
+        description="Fizyczny kalendarz adwentowy A3 ze złotymi zdrapkami. Wybierz wariant i przygodę — gotową historię albo własne zadania. Cena 69 zł + dostawa."
         keywords="kalendarz adwentowy zdrapka, kalendarz zdrapka A3, adwentowy kalendarz fizyczny, e-advent"
         canonical="https://e-advent.pl/stworz-kalendarz/zdrapka"
         ogImage={`https://e-advent.pl${SCRATCH_GALLERY[0].src}`}
@@ -213,7 +218,7 @@ export default function CreatorScratch() {
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-              <div>
+              <div className="product-gallery-pin">
                 <button
                   type="button"
                   onClick={() => setLightboxOpen(true)}
@@ -268,12 +273,18 @@ export default function CreatorScratch() {
                   i odkrywasz zadanie — gotową przygodę albo własną historię, którą ułożysz tutaj.
                 </p>
 
+                {!calendarsOnSale && (
+                  <div className="mb-6">
+                    <CalendarWaitNotice tone="onDark" />
+                  </div>
+                )}
+
                 <div className="mb-6">
                   <p className="font-display text-4xl font-semibold text-christmas-gold-light">
                     {formatPrice(basePrice)}
                   </p>
                   <p className="text-white/60 text-sm mt-2">
-                    + dostawa InPost — wycena przy zamówieniu
+                    + dostawa
                   </p>
                 </div>
 
@@ -349,27 +360,31 @@ export default function CreatorScratch() {
                   </p>
                 )}
 
-                <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                  <button
-                    type="button"
-                    onClick={() => handleAddToCart(false)}
-                    className="btn-gold px-8 py-3.5 text-lg"
-                    disabled={isAdding}
-                  >
-                    <i className={`fas ${isAdding ? 'fa-spinner fa-spin' : 'fa-shopping-basket'}`} />
-                    {isAdding ? 'Dodawanie…' : addedFlash ? 'Dodano do koszyka!' : 'Dodaj do koszyka'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAddToCart(true)}
-                    className="btn-outline-gold px-8 py-3.5 text-lg"
-                    disabled={isAdding}
-                  >
-                    Dodaj i idź do koszyka
-                  </button>
-                </div>
+                {calendarsOnSale ? (
+                  <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => handleAddToCart(false)}
+                      className="btn-gold px-8 py-3.5 text-lg"
+                      disabled={isAdding}
+                    >
+                      <i className={`fas ${isAdding ? 'fa-spinner fa-spin' : 'fa-shopping-basket'}`} />
+                      {isAdding ? 'Dodawanie…' : addedFlash ? 'Dodano do koszyka!' : 'Dodaj do koszyka'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddToCart(true)}
+                      className="btn-outline-gold px-8 py-3.5 text-lg"
+                      disabled={isAdding}
+                    >
+                      Dodaj i idź do koszyka
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mb-4 text-white/55 text-sm">Zdrapkę będzie można dodać do koszyka od 1 listopada.</p>
+                )}
                 <p className="text-white/45 text-xs">
-                  Realizacja 3–5 dni roboczych · E-mail i adres podasz przy zamówieniu
+                  Realizacja 3–5 dni roboczych · Bezpieczna płatność
                 </p>
               </div>
             </div>

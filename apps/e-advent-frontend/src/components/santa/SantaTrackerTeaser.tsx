@@ -4,6 +4,8 @@ import { canTrackLive, isDecember24 } from '../../utils/santa/dateGate';
 import { trackSantaTrackerBannerClick } from '../../utils/santa/analytics';
 
 const BANNER_H = '2.5rem';
+/** Tymczasowo ukryty — włącz z powrotem przed 24 grudnia. */
+const BANNER_ENABLED = false;
 
 function setBannerOffset(on: boolean) {
   if (on) {
@@ -21,10 +23,10 @@ export default function SantaTrackerTeaser() {
     location.pathname === '/podglad' ||
     location.pathname === '/preview';
 
-  const [visible, setVisible] = useState(() => !hideOnPath);
+  const [visible, setVisible] = useState(() => BANNER_ENABLED && !hideOnPath);
 
   useLayoutEffect(() => {
-    const show = !hideOnPath;
+    const show = BANNER_ENABLED && !hideOnPath;
     setVisible(show);
     setBannerOffset(show);
     return () => setBannerOffset(false);
@@ -51,7 +53,7 @@ export default function SantaTrackerTeaser() {
             {' — pokaż dzieciom magię Wigilii na mapie. '}
           </>
         ) : (
-          <>Od 24 grudnia pokaż dzieciom magię Wigilii na mapie. </>
+          <>24 grudnia pokaż dzieciom magię Wigilii na mapie. </>
         )}
         <Link
           to="/sledz-mikolaja"

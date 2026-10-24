@@ -22,6 +22,7 @@ export interface OrderItem {
   calendarId?: string | null;
   metadata?: {
     childName?: string;
+    certificateNumber?: number;
   };
   /** Etykieta do wyświetlenia (np. CERTYFIKAT - Imię) */
   displayName?: string;

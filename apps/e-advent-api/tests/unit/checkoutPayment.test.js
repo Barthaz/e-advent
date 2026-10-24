@@ -131,6 +131,27 @@ describe('checkout identity and concurrency', () => {
     expect(store.orders.get(result.orderId).amount).toBe(31.1);
     expect(store.orders.get(result.orderId).shippingAmount).toBe(5);
   });
+  test('20% code discounts products and keeps shipping', async () => {
+    installDiscountStore(db.query, [discountRow({ code: 'MIKOLAJ20', percent: 20, reusable: 1 })]);
+    const result = await initializeCheckout({ ...request, amount: 28.2, promoCode: 'MIKOLAJ20' }, 'test');
+    expect(result.amount).toBe(28.2);
+    expect(store.orders.get(result.orderId).rabat).toBe('MIKOLAJ20');
+    expect(store.orders.get(result.orderId).shippingAmount).toBe(5);
+  });
+  test('calendar checkout is rejected while the November sale is closed', async () => {
+    const previous = process.env.EADVENT_CALENDARS_ON_SALE;
+    process.env.EADVENT_CALENDARS_ON_SALE = '0';
+    try {
+      await expect(initializeCheckout({
+        ...request,
+        amount: 9,
+        items: [{ calendarId: 'cal', editToken: 'test-edit-token' }],
+      }, 'test')).rejects.toMatchObject({ status: 400 });
+      expect(store.orders.size).toBe(0);
+    } finally {
+      process.env.EADVENT_CALENDARS_ON_SALE = previous;
+    }
+  });
   test('100% code fulfills without contacting Stripe', async () => {
     installDiscountStore(db.query, [discountRow({ code: 'FREE100', percent: 100, reusable: 1 })]);
     const result = await initializeCheckout({ ...request, amount: 0, promoCode: 'FREE100' }, 'test');

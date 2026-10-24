@@ -148,4 +148,39 @@ describe('cartStorage + order totals', () => {
     expect(hasLinkedCertificate(items, items[0].id)).toBe(true);
     expect(hasLinkedCertificate(items, 'unknown')).toBe(false);
   });
+
+  it('appendSantaLetterBundle adds several unlinked letters as one line', () => {
+    const { items, added } = appendSantaLetterBundle([], { letterQuantity: 3 });
+    expect(added).toHaveLength(1);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ sku: 'santa-letter', quantity: 3 });
+  });
+
+  it('appendSantaLetterBundle adds several letters and fewer named certificates in one go', () => {
+    const { items, added } = appendSantaLetterBundle([], {
+      letterQuantity: 3,
+      childNames: ['Kasia', 'Jan'],
+      letterLabel: 'List do Mikołaja',
+    });
+    const letters = items.filter((item) => item.sku === 'santa-letter');
+    const certs = items.filter((item) => item.sku === SANTA_CERTIFICATE_SKU);
+    expect(added).toHaveLength(5);
+    expect(letters.reduce((sum, item) => sum + item.quantity, 0)).toBe(3);
+    expect(certs).toHaveLength(2);
+    expect(certs.map((item) => item.childName).sort()).toEqual(['Jan', 'Kasia']);
+    expect(certs.every((cert) => letters.some((letter) => letter.id === cert.linkedLetterId))).toBe(true);
+  });
+
+  it('plain extra letters merge onto an existing unlinked letter line', () => {
+    const first = appendSantaLetterBundle([], { letterQuantity: 2 });
+    const second = appendSantaLetterBundle(first.items, {
+      letterQuantity: 3,
+      childNames: ['Ola'],
+    });
+    const letters = second.items.filter((item) => item.sku === 'santa-letter');
+    const unlinked = letters.filter((item) => !hasLinkedCertificate(second.items, item.id));
+    expect(letters.reduce((sum, item) => sum + item.quantity, 0)).toBe(5);
+    expect(unlinked).toHaveLength(1);
+    expect(unlinked[0].quantity).toBe(4);
+  });
 });

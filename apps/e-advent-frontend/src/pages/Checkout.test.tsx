@@ -7,6 +7,14 @@ import { saveShipping } from '../utils/creatorStorage';
 import Checkout from './Checkout';
 
 vi.mock('../api/api', () => ({ createPaymentIntent: vi.fn(), createCalendar: vi.fn(), validatePromoCode: vi.fn(), createFreeCalendar: vi.fn() }));
+vi.mock('../config/products', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../config/products')>();
+  return {
+    ...actual,
+    isLetterPromoActive: () => false,
+    isCalendarsOnSale: () => true,
+  };
+});
 vi.mock('../utils/analytics', () => ({ trackBeginCheckout: vi.fn(), saveGaPurchasePayload: vi.fn() }));
 vi.mock('@stripe/stripe-js', () => ({ loadStripe: vi.fn(() => Promise.resolve(null)) }));
 vi.mock('@stripe/react-stripe-js', () => ({
@@ -80,6 +88,7 @@ it('applies a 10% code to the charged amount', async () => {
   await waitFor(() => {
     const last = vi.mocked(createPaymentIntent).mock.calls.at(-1)?.[0];
     expect(last).toMatchObject({ promoCode: 'SAVE10', amount: 38.1 });
+    expect(screen.getByText('38.10 zł')).toBeTruthy();
   }, { timeout: 3000 });
 });
 

@@ -17,6 +17,7 @@ export default defineConfig({
       '@e-advent/assets/background.png': path.resolve(monorepoRoot, 'assets/background.png'),
       '@e-advent/assets/logo.png': path.resolve(monorepoRoot, 'assets/brand/eadvent-logo.png'),
       '@e-advent/assets/brand/eadvent-logo.png': path.resolve(monorepoRoot, 'assets/brand/eadvent-logo.png'),
+      '@e-advent/assets/brand/eadvent-logo-name.png': path.resolve(monorepoRoot, 'assets/brand/eadvent-logo-name.png'),
       '@e-advent/assets/backgrounds/christmas-ambient-portrait.webp': path.resolve(
         monorepoRoot,
         'assets/backgrounds/christmas-ambient-portrait.webp'

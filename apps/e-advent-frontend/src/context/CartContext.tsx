@@ -1,11 +1,15 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   FREE_SHIPPING_THRESHOLD,
   getProduct,
+  isCalendarSku,
+  isCalendarsOnSale,
   type OrderTotals,
 } from '../config/products';
 import {
   appendSantaLetterBundle,
+  CART_CHANGED_EVENT,
   cartItemCount,
   clearCartStorage,
   createCartItem,
@@ -18,6 +22,7 @@ import {
   SANTA_CERTIFICATE_SKU,
   type CartItem,
 } from '../utils/cartStorage';
+import { reconcilePendingCheckout } from '../utils/reconcileCheckout';
 import { trackAddToCart } from '../utils/analytics';
 
 import { CartContext, type AddItemInput, type AddSantaLetterBundleInput } from './useCart';
@@ -38,11 +43,36 @@ function trackAddedItems(added: CartItem[], quantityFallback = 1) {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const reconciledRef = useRef(false);
   const [items, setItems] = useState<CartItem[]>(() => sanitizeCartItems(loadCart()));
+
+  useEffect(() => {
+    const sync = () => setItems(sanitizeCartItems(loadCart()));
+    window.addEventListener(CART_CHANGED_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(CART_CHANGED_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (reconciledRef.current) return;
+    if (location.pathname === '/sukces' || location.pathname === '/success') return;
+    reconciledRef.current = true;
+    void reconcilePendingCheckout().then((result) => {
+      if (result === 'cleared') setItems([]);
+      if (result === 'restored') setItems(sanitizeCartItems(loadCart()));
+    });
+  }, [location.pathname]);
 
   const addItem = useCallback(
     (input: AddItemInput) => {
       if (input.sku === SANTA_CERTIFICATE_SKU) {
+        return createCartItem({ sku: input.sku });
+      }
+      if (isCalendarSku(input.sku) && !isCalendarsOnSale()) {
         return createCartItem({ sku: input.sku });
       }
 

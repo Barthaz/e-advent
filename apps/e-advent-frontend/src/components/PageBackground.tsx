@@ -35,7 +35,7 @@ export default function PageBackground({
 
   return (
     <section
-      className={`relative overflow-hidden text-white ${className}`}
+      className={`relative text-white ${className}`}
       style={{
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',

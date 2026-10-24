@@ -223,8 +223,15 @@ export function computeOrderTotals(items, options = {}) {
   };
 }
 
+/** Allowed checkout percents: 10/20 off products, 100 off the whole order including shipping. */
+export const DISCOUNT_PERCENTS = [10, 20, 100];
+
+export function isSupportedDiscountPercent(percent) {
+  return DISCOUNT_PERCENTS.includes(Number(percent));
+}
+
 /**
- * 10% off products (shipping unchanged). 100% makes the whole order 0 zł.
+ * 10% and 20% off products (shipping unchanged). 100% makes the whole order 0 zł.
  * Catalog `subtotal` stays the original product total so the UI can show the rebate.
  * @param {import('./index').OrderTotals} totals
  * @param {number} percent
@@ -232,7 +239,7 @@ export function computeOrderTotals(items, options = {}) {
  */
 export function applyPercentDiscount(totals, percent) {
   const rate = Number(percent);
-  if (!totals || (rate !== 10 && rate !== 100)) return null;
+  if (!totals || !isSupportedDiscountPercent(rate)) return null;
   const discount = roundPln(totals.subtotal * (rate / 100));
   const shipping = rate === 100 ? 0 : totals.shipping;
   const shippingNetto = rate === 100 ? 0 : totals.shippingNetto;
@@ -285,4 +292,29 @@ export function getOrderItemDisplayName(sku, metadata) {
     return `CERTYFIKAT - ${String(metadata.childName).trim()}`;
   }
   return product?.name || sku;
+}
+
+export function isCalendarProductType(type) {
+  return type === 'interactive' || type === 'scratch';
+}
+
+export function isCalendarSku(sku) {
+  const product = getProduct(sku);
+  return Boolean(product && isCalendarProductType(product.type));
+}
+
+/** Reusable October letter/certificate campaign code. */
+export const LETTER_PROMO_CODE = 'MIKOLAJ20';
+export const LETTER_PROMO_PERCENT = 20;
+/** Europe/Warsaw instant when calendars go on sale and the letter promo ends. */
+export const CALENDARS_ON_SALE_FROM = '2026-11-01T00:00:00+01:00';
+
+export function isCalendarsOnSale(now = new Date()) {
+  const ts = now instanceof Date ? now.getTime() : Date.parse(now);
+  return Number.isFinite(ts) && ts >= Date.parse(CALENDARS_ON_SALE_FROM);
+}
+
+export function isLetterPromoActive(now = new Date()) {
+  const ts = now instanceof Date ? now.getTime() : Date.parse(now);
+  return Number.isFinite(ts) && ts < Date.parse(CALENDARS_ON_SALE_FROM);
 }

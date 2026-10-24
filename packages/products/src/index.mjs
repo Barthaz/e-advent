@@ -16,4 +16,13 @@ export {
   SANTA_LETTER_SKU,
   isLetterAddonSku,
   getOrderItemDisplayName,
+  DISCOUNT_PERCENTS,
+  isSupportedDiscountPercent,
+  isCalendarProductType,
+  isCalendarSku,
+  LETTER_PROMO_CODE,
+  LETTER_PROMO_PERCENT,
+  CALENDARS_ON_SALE_FROM,
+  isCalendarsOnSale,
+  isLetterPromoActive,
 } from './catalog.js';

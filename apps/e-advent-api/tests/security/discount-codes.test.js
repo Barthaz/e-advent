@@ -50,16 +50,16 @@ describe('admin and public discount codes', () => {
     const created = await request(app)
       .post('/api/v1/admin/discount-codes')
       .set('Authorization', `Bearer ${token}`)
-      .send({ percent: 100, reusable: false, count: 2 });
+      .send({ percent: 20, reusable: true, count: 1 });
     expect(created.status).toBe(201);
-    expect(created.body.codes).toHaveLength(2);
-    expect(created.body.codes[0]).toMatchObject({ percent: 100, reusable: false, active: true });
+    expect(created.body.codes).toHaveLength(1);
+    expect(created.body.codes[0]).toMatchObject({ percent: 20, reusable: true, active: true });
 
     const list = await request(app)
       .get('/api/v1/admin/discount-codes')
       .set('Authorization', `Bearer ${token}`);
     expect(list.status).toBe(200);
-    expect(list.body.codes.length).toBeGreaterThanOrEqual(3);
+    expect(list.body.codes.length).toBeGreaterThanOrEqual(2);
   });
 
   test('admin can disable a code', async () => {

@@ -14,7 +14,7 @@
     "test": "jest --runInBand && npm run test:craft-pdf",
     "test:security": "jest --runInBand tests/security",
     "test:unit": "jest --runInBand tests/unit",
-    "test:craft-pdf": "node --test tests/pdf/craft-pdf.test.cjs",
+    "test:craft-pdf": "node --test tests/pdf/craft-pdf.test.cjs tests/pdf/certificate-pdf.test.cjs",
     "migrate": "node scripts/migrate.js",
     "migrate:seed-admin": "node scripts/migrate.js --seed-admin",
     "migrate:security": "node scripts/migrate-security.js",
@@ -28,11 +28,13 @@
     "migrate:special-windows": "node scripts/migrate-special-windows.js",
     "smoke:scratch-export": "node scripts/smoke-scratch-export.js",
     "migrate:inpost": "node scripts/migrate-inpost.js",
-    "migrate:discount-codes": "node scripts/migrate-discount-codes.js"
+    "migrate:discount-codes": "node scripts/migrate-discount-codes.js",
+    "seed:letter-promo": "node scripts/seed-letter-promo.js"
   },
   "nodemonConfig": {
     "ignore": [
       "assets/**",
+      "vendor/**",
       "tests/**"
     ]
   },

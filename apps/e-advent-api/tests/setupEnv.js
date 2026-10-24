@@ -5,5 +5,7 @@ process.env.JWT_EXPIRES_IN = '8h';
 process.env.STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy';
 process.env.STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test_dummy';
 process.env.FRONTEND_URL = 'https://e-advent.pl';
+// Keep existing calendar checkout tests open; dedicated tests force the November gate off.
+process.env.EADVENT_CALENDARS_ON_SALE = '1';
 // testingMode default false — X-04 expects this unless TESTING_MODE=true
 delete process.env.TESTING_MODE;

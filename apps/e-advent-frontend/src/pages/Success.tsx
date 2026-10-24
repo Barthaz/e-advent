@@ -12,8 +12,8 @@ import { OPENING_METHOD_LABELS } from '../components/creator/openingMethods';
 import type { OpeningMethod } from '../types/order';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 import { trackPurchase } from '../utils/analytics';
-import { CART_STORAGE_KEY } from '../utils/cartStorage';
-import { finishCheckout } from '../utils/checkoutSession';
+import { clearCartStorage } from '../utils/cartStorage';
+import { clearCartAfterPaidOrder, finishCheckout, notifyCartChanged } from '../utils/checkoutSession';
 import { markCalendarPurchased } from '../utils/creatorStorage';
 import { clearOrderSummary, loadOrderSummary, paymentItemsToOrderLines, type OrderLineItem } from '../utils/orderSummary';
 
@@ -103,10 +103,7 @@ export default function Success() {
             calendarTitle: 'Zamówienie e-Advent', tasks: [], dailyEmailReminders: false, dates: [] });
           trackPurchase({ transactionId: payment.id, value: payment.amount, shipping: payment.shippingAmount || 0,
             items: items.map(item => ({ sku: item.sku, name: item.name, price: item.price, quantity: item.quantity })) });
-          // A return from an older tab must never erase the customer's new cart.
-          const snapshot = sessionStorage.getItem(`e-advent-checkout-cart:${paymentIntent}`);
-          if (snapshot && snapshot === localStorage.getItem(CART_STORAGE_KEY)) localStorage.removeItem(CART_STORAGE_KEY);
-          finishCheckout(paymentIntent);
+          clearCartAfterPaidOrder(paymentIntent);
         } else if (searchParams.get('free') === 'true') {
           const id = searchParams.get('calendar_id');
           const summary = loadOrderSummary();
@@ -126,6 +123,8 @@ export default function Success() {
           }
           finishCheckout();
           clearOrderSummary();
+          clearCartStorage();
+          notifyCartChanged();
         } else {
           throw new Error('Missing payment ID');
         }
@@ -203,16 +202,7 @@ export default function Success() {
 
           <p className="text-base md:text-lg text-parchment-muted mb-8">
             {isPhysicalOrder ? (
-              <>
-                Twoje zamówienie
-                {calendarData?.calendarTitle ? (
-                  <>
-                    {' '}
-                    <span className="font-semibold text-christmas-red">{calendarData.calendarTitle}</span>
-                  </>
-                ) : null}
-                {' '}zostało przyjęte do realizacji.
-              </>
+              <>Twoje zamówienie zostało przyjęte do realizacji.</>
             ) : (
               <>
                 Twój kalendarz{' '}

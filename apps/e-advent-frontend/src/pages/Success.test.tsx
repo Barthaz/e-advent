@@ -28,6 +28,9 @@ it('shows the readable order number and authoritative shipping despite polluted 
     items: Array.from({ length: 5 }, () => ({ sku: 'scratch-a3', name: 'Obcy produkt', quantity: 1, price: 69 })) }));
   show();
   await screen.findByText(/000042/);
+  expect(screen.getByText(/Twoje zamówienie zostało przyjęte do realizacji/)).toBeTruthy();
+  expect(screen.queryByText(/zamówienie Zamówienie/)).toBeNull();
+  expect(screen.queryByText(/Zamówienie e-Advent/)).toBeNull();
   expect(screen.queryByText(/999999|Obcy produkt|Wrong 7/)).toBeNull();
   expect(screen.getByText(/Właściwa 1/)).toBeTruthy();
   expect(getCalendar).not.toHaveBeenCalled();
@@ -59,6 +62,16 @@ it('clears a cart only when it is the exact snapshot of the completed checkout',
   localStorage.setItem('e-advent-cart', cart);
   sessionStorage.setItem('e-advent-checkout-cart:pi_paid', cart);
   show(); await waitFor(() => expect(localStorage.getItem('e-advent-cart')).toBeNull());
+});
+it('clears a matching cart from the persisted BLIK checkout even without session snapshot', async () => {
+  const cart = '[{"id":"paid","sku":"santa-letter","quantity":1}]';
+  localStorage.setItem('e-advent-cart', cart);
+  localStorage.setItem('e-advent-pending-checkout', JSON.stringify({
+    paymentIntentId: 'pi_paid', orderId: 'canonical-order-uuid', clientSecret: 'secret', cartSnapshot: cart, createdAt: 1,
+  }));
+  show();
+  await waitFor(() => expect(localStorage.getItem('e-advent-cart')).toBeNull());
+  expect(localStorage.getItem('e-advent-pending-checkout')).toBeNull();
 });
 it('does not clear a physical cart when paying for a separate interactive calendar', async () => {
   localStorage.setItem('e-advent-cart', '[{"id":"unpaid-physical"}]');

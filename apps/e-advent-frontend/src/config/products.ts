@@ -9,11 +9,20 @@ import {
   getProductPrice,
   computeOrderTotals,
   applyPercentDiscount,
+  roundPln,
   getSkuForTypeAndFormat,
   isPhysicalProduct,
   getOrderItemDisplayName,
   SANTA_CERTIFICATE_SKU,
   SANTA_LETTER_SKU,
+  isSupportedDiscountPercent,
+  isCalendarProductType,
+  isCalendarSku,
+  LETTER_PROMO_CODE,
+  LETTER_PROMO_PERCENT,
+  CALENDARS_ON_SALE_FROM,
+  isCalendarsOnSale,
+  isLetterPromoActive,
 } from '@e-advent/products';
 import interactiveImage from '../assets/interactive.png';
 import letterImage from '../assets/list/list_1.webp';
@@ -27,11 +36,20 @@ export {
   getProductPrice,
   computeOrderTotals,
   applyPercentDiscount,
+  roundPln,
   getSkuForTypeAndFormat,
   isPhysicalProduct,
   getOrderItemDisplayName,
   SANTA_CERTIFICATE_SKU,
   SANTA_LETTER_SKU,
+  isSupportedDiscountPercent,
+  isCalendarProductType,
+  isCalendarSku,
+  LETTER_PROMO_CODE,
+  LETTER_PROMO_PERCENT,
+  CALENDARS_ON_SALE_FROM,
+  isCalendarsOnSale,
+  isLetterPromoActive,
 };
 export type { ProductSkuConfig, OrderTotals };
 
@@ -47,7 +65,15 @@ export function getCheckoutCtaLabel(price: string, isPhysical: boolean): string 
 }
 
 export function formatPrice(amount: number): string {
-  return `${amount} zł`;
+  const rounded = roundPln(amount);
+  if (!Number.isFinite(rounded)) return '0 zł';
+  const formatted = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+  return `${formatted} zł`;
+}
+
+/** Catalog unit price after the October letter/certificate percent. */
+export function letterPromoPrice(amount: number): number {
+  return roundPln(amount * (1 - LETTER_PROMO_PERCENT / 100));
 }
 
 export interface ProductFamily extends ProductFamilyBase {

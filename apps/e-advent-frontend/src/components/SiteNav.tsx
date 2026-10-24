@@ -1,12 +1,13 @@
 import { useEffect, useId, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/useCart';
+import navLogo from '@e-advent/assets/brand/eadvent-logo-name.png';
 
 const NAV_LINKS = [
   { to: '/', label: 'Strona główna', end: true },
   { to: '/kalendarze-adwentowe', label: 'Kalendarze' },
   { to: '/list-do-swietego-mikolaja', label: 'List do Mikołaja' },
-  { to: '/sledz-mikolaja', label: 'Śledź Mikołaja' },
+  { to: '/sledz-mikolaja', label: 'Śledź Świętego Mikołaja' },
 ] as const;
 
 export default function SiteNav() {
@@ -84,10 +85,17 @@ export default function SiteNav() {
           <div className="flex items-center justify-between gap-4 py-3">
             <Link
               to="/"
-              className="font-display text-xl md:text-2xl font-semibold text-christmas-gold-light tracking-wide shrink-0 hover:text-christmas-gold transition-colors"
+              className="shrink-0 inline-flex items-center hover:opacity-90 transition-opacity"
+              aria-label="e-Advent — strona główna"
               onClick={() => setMenuOpen(false)}
             >
-              e-Advent
+              <img
+                src={navLogo}
+                alt="e-Advent"
+                className="h-8 md:h-9 w-auto drop-shadow-sm"
+                width="180"
+                height="48"
+              />
             </Link>
 
             <ul className="hidden lg:flex items-center gap-1 lg:gap-2">

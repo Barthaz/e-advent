@@ -1,5 +1,7 @@
 node_modules/
 **/node_modules/
+!apps/e-advent-api/vendor/pdf-lib/node_modules/
+!apps/e-advent-api/vendor/pdf-lib/node_modules/**
 dist/
 build/
 .expo/

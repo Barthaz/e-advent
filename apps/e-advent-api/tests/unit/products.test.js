@@ -8,6 +8,10 @@ const {
   PRODUCTS,
   SHIPPING_COST,
   FREE_SHIPPING_THRESHOLD,
+  isCalendarSku,
+  isCalendarsOnSale,
+  isLetterPromoActive,
+  LETTER_PROMO_CODE,
 } = require('../../config/products');
 
 const SAMPLE_ADDRESS = {
@@ -191,6 +195,18 @@ describe('products catalog (unit)', () => {
     });
   });
 
+  test('20% discount reduces products and leaves shipping', () => {
+    const totals = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }]);
+    const discounted = applyPercentDiscount(totals, 20);
+    expect(discounted).toMatchObject({
+      subtotal: 29,
+      discount: 5.8,
+      discountPercent: 20,
+      shipping: 5,
+      total: 28.2,
+    });
+  });
+
   test('100% discount zeroes the whole order including shipping', () => {
     const totals = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }]);
     const discounted = applyPercentDiscount(totals, 100);
@@ -202,6 +218,17 @@ describe('products catalog (unit)', () => {
       total: 0,
       freeShipping: true,
     });
+  });
+
+  test('letter promo window ends when calendars go on sale', () => {
+    expect(LETTER_PROMO_CODE).toBe('MIKOLAJ20');
+    expect(isCalendarSku('scratch-a3')).toBe(true);
+    expect(isCalendarSku('interactive')).toBe(true);
+    expect(isCalendarSku('santa-letter')).toBe(false);
+    expect(isCalendarsOnSale(new Date('2026-10-31T22:59:59+01:00'))).toBe(false);
+    expect(isLetterPromoActive(new Date('2026-10-31T23:59:59+01:00'))).toBe(true);
+    expect(isCalendarsOnSale(new Date('2026-11-01T00:00:00+01:00'))).toBe(true);
+    expect(isLetterPromoActive(new Date('2026-11-01T00:00:00+01:00'))).toBe(false);
   });
 
   test('all catalog SKUs have positive basePrice', () => {

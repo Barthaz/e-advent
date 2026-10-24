@@ -15,6 +15,7 @@ module.exports = {
   /** @deprecated use eadventLogo */
   logo: path.join(brandRoot, 'eadvent-logo.png'),
   eadventLogo: path.join(brandRoot, 'eadvent-logo.png'),
+  eadventLogoName: path.join(brandRoot, 'eadvent-logo-name.png'),
   eadventMark: path.join(brandRoot, 'eadvent-mark.png'),
   christmasAmbient: {
     landscape: path.join(backgroundsRoot, 'christmas-ambient-landscape.webp'),

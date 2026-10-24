@@ -3,7 +3,8 @@ import PageBackground from '../components/PageBackground';
 import SEOHead from '../components/SEOHead';
 import ProductShowcase from '../components/products/ProductShowcase';
 import SocialShare from '../components/SocialShare';
-import { PRODUCT_FAMILIES, formatPrice } from '../config/products';
+import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
+import { isCalendarsOnSale, PRODUCT_FAMILIES, formatPrice } from '../config/products';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
 const CALENDAR_FAMILIES = PRODUCT_FAMILIES.filter(
@@ -26,6 +27,7 @@ const JSON_LD = {
 
 export default function CalendarsHub() {
   const [primary, secondary] = CALENDAR_FAMILIES;
+  const calendarsOnSale = isCalendarsOnSale();
 
   return (
     <>
@@ -53,6 +55,12 @@ export default function CalendarsHub() {
                 </Link>
               </div>
 
+              {!calendarsOnSale && (
+                <div className="mb-8 max-w-3xl mx-auto">
+                  <CalendarWaitNotice tone="onDark" />
+                </div>
+              )}
+
               <ProductShowcase
                 images={[
                   {
@@ -64,9 +72,11 @@ export default function CalendarsHub() {
                 title={primary.name}
                 description={primary.shortDescription}
                 priceLabel={`od ${formatPrice(primary.priceFrom)}`}
-                priceHint="Natychmiastowy dostęp po płatności · link na e-mail"
+                priceHint={calendarsOnSale ? 'Natychmiastowy dostęp po płatności · link na e-mail' : 'W sprzedaży od 1 listopada'}
                 features={primary.features}
-                cta={{ label: 'Stwórz kalendarz', to: primary.creatorRoute }}
+                cta={calendarsOnSale
+                  ? { label: 'Stwórz kalendarz', to: primary.creatorRoute }
+                  : { label: 'Zamów List do Mikołaja −20%', to: '/list-do-swietego-mikolaja' }}
                 tone="onDark"
                 headingLevel="h1"
               />
@@ -88,9 +98,11 @@ export default function CalendarsHub() {
                 title={secondary.name}
                 description={secondary.shortDescription}
                 priceLabel={`od ${formatPrice(secondary.priceFrom)}`}
-                priceHint="Wysyłka InPost · realizacja 3–5 dni roboczych"
+                priceHint={calendarsOnSale ? 'Wysyłka · realizacja 3–5 dni roboczych' : 'W sprzedaży od 1 listopada'}
                 features={secondary.features}
-                cta={{ label: 'Zobacz kalendarz', to: secondary.creatorRoute }}
+                cta={calendarsOnSale
+                  ? { label: 'Zobacz kalendarz', to: secondary.creatorRoute }
+                  : { label: 'Zamów List do Mikołaja −20%', to: '/list-do-swietego-mikolaja' }}
                 tone="onLight"
                 headingLevel="h2"
               />

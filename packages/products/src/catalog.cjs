@@ -213,9 +213,15 @@ function computeOrderTotals(items, options) {
   };
 }
 
+const DISCOUNT_PERCENTS = [10, 20, 100];
+
+function isSupportedDiscountPercent(percent) {
+  return DISCOUNT_PERCENTS.includes(Number(percent));
+}
+
 function applyPercentDiscount(totals, percent) {
   const rate = Number(percent);
-  if (!totals || (rate !== 10 && rate !== 100)) return null;
+  if (!totals || !isSupportedDiscountPercent(rate)) return null;
   const discount = roundPln(totals.subtotal * (rate / 100));
   const shipping = rate === 100 ? 0 : totals.shipping;
   const shippingNetto = rate === 100 ? 0 : totals.shippingNetto;
@@ -266,6 +272,31 @@ function getOrderItemDisplayName(sku, metadata) {
   return (product && product.name) || sku;
 }
 
+function isCalendarProductType(type) {
+  return type === 'interactive' || type === 'scratch';
+}
+
+function isCalendarSku(sku) {
+  const product = getProduct(sku);
+  return Boolean(product && isCalendarProductType(product.type));
+}
+
+const LETTER_PROMO_CODE = 'MIKOLAJ20';
+const LETTER_PROMO_PERCENT = 20;
+const CALENDARS_ON_SALE_FROM = '2026-11-01T00:00:00+01:00';
+
+function isCalendarsOnSale(now) {
+  const value = now == null ? new Date() : now;
+  const ts = value instanceof Date ? value.getTime() : Date.parse(value);
+  return Number.isFinite(ts) && ts >= Date.parse(CALENDARS_ON_SALE_FROM);
+}
+
+function isLetterPromoActive(now) {
+  const value = now == null ? new Date() : now;
+  const ts = value instanceof Date ? value.getTime() : Date.parse(value);
+  return Number.isFinite(ts) && ts < Date.parse(CALENDARS_ON_SALE_FROM);
+}
+
 module.exports = {
   SHIPPING_COST,
   FREE_SHIPPING_THRESHOLD,
@@ -284,4 +315,13 @@ module.exports = {
   SANTA_LETTER_SKU,
   isLetterAddonSku,
   getOrderItemDisplayName,
+  DISCOUNT_PERCENTS,
+  isSupportedDiscountPercent,
+  isCalendarProductType,
+  isCalendarSku,
+  LETTER_PROMO_CODE,
+  LETTER_PROMO_PERCENT,
+  CALENDARS_ON_SALE_FROM,
+  isCalendarsOnSale,
+  isLetterPromoActive,
 };

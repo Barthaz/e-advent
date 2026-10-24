@@ -1,4 +1,5 @@
 import InpostShipmentCard from '../components/InpostShipmentCard';
+import CertificateDownloadCard from '../components/CertificateDownloadCard';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGetOrderQuery, usePatchOrderMutation } from '../api/ordersApi';
@@ -334,6 +335,8 @@ export default function OrderDetailPage() {
               </div>
             </div>
           )}
+
+          <CertificateDownloadCard orderId={orderId} items={order.items ?? []} />
 
           {/* Dane klienta */}
           <div className="panel-card p-5">

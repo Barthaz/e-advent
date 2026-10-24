@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => {
         '@e-advent/assets/background.png': resolve(monorepoRoot, 'assets/background.png'),
         '@e-advent/assets/logo.png': resolve(monorepoRoot, 'assets/brand/eadvent-logo.png'),
         '@e-advent/assets/brand/eadvent-logo.png': resolve(monorepoRoot, 'assets/brand/eadvent-logo.png'),
+        '@e-advent/assets/brand/eadvent-logo-name.png': resolve(monorepoRoot, 'assets/brand/eadvent-logo-name.png'),
         '@e-advent/assets/brand/eadvent-mark.png': resolve(monorepoRoot, 'assets/brand/eadvent-mark.png'),
         '@e-advent/assets/backgrounds/christmas-ambient-portrait.webp': resolve(
           monorepoRoot,

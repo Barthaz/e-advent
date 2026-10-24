@@ -2,6 +2,7 @@ import { DEFAULT_VAT_RATE } from '@e-advent/products';
 import { computeOrderTotals, getOrderItemDisplayName, getProduct, type OrderTotals } from '../config/products';
 
 export const CART_STORAGE_KEY = 'e-advent-cart';
+export const CART_CHANGED_EVENT = 'e-advent-cart-changed';
 export const SANTA_CERTIFICATE_SKU = 'santa-certificate';
 export const SANTA_LETTER_SKU = 'santa-letter';
 
@@ -110,33 +111,48 @@ export function sanitizeCartItems(items: CartItem[]): CartItem[] {
   });
 }
 
-export function appendSantaLetterBundle(
+function collectCertificateNames(input: {
+  childName?: string;
+  childNames?: string[];
+}): string[] {
+  const fromList = Array.isArray(input.childNames) ? input.childNames : [];
+  const raw = fromList.length > 0 ? fromList : input.childName ? [input.childName] : [];
+  return raw
+    .map((name) => String(name ?? '').replace(/\s+/g, ' ').trim())
+    .filter((name) => name.length >= 2);
+}
+
+function addLinkedLetterAndCertificate(
   items: CartItem[],
-  input: { childName?: string; letterLabel?: string },
+  childName: string,
+  letterLabel?: string,
 ): { items: CartItem[]; added: CartItem[] } {
   const letterProduct = getProduct(SANTA_LETTER_SKU);
   const certificateProduct = getProduct(SANTA_CERTIFICATE_SKU);
-  const trimmedName = input.childName?.trim() ?? '';
-  const withCertificate = trimmedName.length >= 2;
+  const letter = createCartItem({
+    sku: SANTA_LETTER_SKU,
+    quantity: 1,
+    label: letterLabel ?? letterProduct?.name,
+    unitPrice: letterProduct?.basePrice,
+  });
+  const certificate = createCartItem({
+    sku: SANTA_CERTIFICATE_SKU,
+    quantity: 1,
+    childName,
+    linkedLetterId: letter.id,
+    label: `CERTYFIKAT - ${childName}`,
+    unitPrice: certificateProduct?.basePrice,
+  });
+  return { items: [...items, letter, certificate], added: [letter, certificate] };
+}
 
-  if (withCertificate) {
-    const letter = createCartItem({
-      sku: SANTA_LETTER_SKU,
-      quantity: 1,
-      label: input.letterLabel ?? letterProduct?.name,
-      unitPrice: letterProduct?.basePrice,
-    });
-    const certificate = createCartItem({
-      sku: SANTA_CERTIFICATE_SKU,
-      quantity: 1,
-      childName: trimmedName,
-      linkedLetterId: letter.id,
-      label: `CERTYFIKAT - ${trimmedName}`,
-      unitPrice: certificateProduct?.basePrice,
-    });
-    return { items: [...items, letter, certificate], added: [letter, certificate] };
-  }
-
+function addPlainLetters(
+  items: CartItem[],
+  quantity: number,
+  letterLabel?: string,
+): { items: CartItem[]; added: CartItem[] } {
+  const letterProduct = getProduct(SANTA_LETTER_SKU);
+  const qty = Math.max(1, Math.floor(quantity));
   const mergeTarget = items.find(
     (item) => item.sku === SANTA_LETTER_SKU && !hasLinkedCertificate(items, item.id),
   );
@@ -144,8 +160,8 @@ export function appendSantaLetterBundle(
   if (mergeTarget) {
     const updated: CartItem = {
       ...mergeTarget,
-      quantity: mergeTarget.quantity + 1,
-      label: input.letterLabel ?? mergeTarget.label ?? letterProduct?.name,
+      quantity: mergeTarget.quantity + qty,
+      label: letterLabel ?? mergeTarget.label ?? letterProduct?.name,
     };
     return {
       items: items.map((item) => (item.id === mergeTarget.id ? updated : item)),
@@ -155,11 +171,37 @@ export function appendSantaLetterBundle(
 
   const letter = createCartItem({
     sku: SANTA_LETTER_SKU,
-    quantity: 1,
-    label: input.letterLabel ?? letterProduct?.name,
+    quantity: qty,
+    label: letterLabel ?? letterProduct?.name,
     unitPrice: letterProduct?.basePrice,
   });
   return { items: [...items, letter], added: [letter] };
+}
+
+export function appendSantaLetterBundle(
+  items: CartItem[],
+  input: { childName?: string; childNames?: string[]; letterQuantity?: number; letterLabel?: string },
+): { items: CartItem[]; added: CartItem[] } {
+  const letterQuantity = Math.min(99, Math.max(1, Math.floor(Number(input.letterQuantity) || 1)));
+  const names = collectCertificateNames(input).slice(0, letterQuantity);
+
+  let current = items;
+  const added: CartItem[] = [];
+
+  for (const childName of names) {
+    const result = addLinkedLetterAndCertificate(current, childName, input.letterLabel);
+    current = result.items;
+    added.push(...result.added);
+  }
+
+  const remaining = letterQuantity - names.length;
+  if (remaining > 0) {
+    const result = addPlainLetters(current, remaining, input.letterLabel);
+    current = result.items;
+    added.push(...result.added);
+  }
+
+  return { items: current, added };
 }
 
 export function removeCartItem(items: CartItem[], id: string): CartItem[] {

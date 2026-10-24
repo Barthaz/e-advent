@@ -3,9 +3,14 @@ import { useCart } from '../context/useCart';
 import FestivePage from '../components/FestivePage';
 import ParchmentCard from '../components/ParchmentCard';
 import SEOHead from '../components/SEOHead';
+import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
+import LetterPromoNotice from '../components/campaign/LetterPromoNotice';
 import {
   formatPrice,
   getProduct,
+  isCalendarSku,
+  isCalendarsOnSale,
+  isLetterPromoActive,
 } from '../config/products';
 import { buildCartDisplayRows, getCartItemDisplayName } from '../utils/cartStorage';
 
@@ -13,6 +18,9 @@ export default function CartPage() {
   const { items, totals, updateQty, removeItem } = useCart();
   const displayRows = buildCartDisplayRows(items);
   const hasRetiredProduct = items.some((item) => getProduct(item.sku)?.discontinued);
+  const hasUnsaleableCalendar = !isCalendarsOnSale() && items.some((item) => isCalendarSku(item.sku));
+  const letterPromo = isLetterPromoActive() && items.some((item) => getProduct(item.sku)?.type === 'letter');
+  const checkoutBlocked = hasRetiredProduct || hasUnsaleableCalendar;
 
 
   return (
@@ -144,6 +152,16 @@ export default function CartPage() {
               </div>
 
 
+              {hasUnsaleableCalendar && (
+                <div className="mb-6">
+                  <CalendarWaitNotice />
+                </div>
+              )}
+              {letterPromo && !hasUnsaleableCalendar && (
+                <div className="mb-6">
+                  <LetterPromoNotice />
+                </div>
+              )}
               {hasRetiredProduct && (
                 <p role="alert" className="alert-error mb-6">
                   W koszyku jest wycofany wariant kalendarza. Usuń go i utwórz kalendarz w aktualnym formacie A3.
@@ -154,7 +172,7 @@ export default function CartPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                {!hasRetiredProduct && <Link to="/platnosc" className="btn-gold px-8 py-3.5 text-lg">
+                {!checkoutBlocked && <Link to="/platnosc" className="btn-gold px-8 py-3.5 text-lg">
                   <i className="fas fa-lock" />
                   Przejdź do zamówienia
                 </Link>}
