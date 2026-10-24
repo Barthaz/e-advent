@@ -24,8 +24,8 @@ const LAYOUT = {
   scriptName: { y: 458, size: 44, maxWidth: 500 },
   /** Second name, bold, in the gap above „znajduje się na Liście…”. */
   serifName: { y: 286, size: 15, maxWidth: 500 },
-  /** Serial: baseline just below the previous top of the 11pt caps (was y 18). */
-  serial: { y: 28, size: 11, maxWidth: 520 },
+  /** Serial: a hair below the previous raised baseline, still inside the gold frame. */
+  serial: { y: 26, size: 11, maxWidth: 520 },
 };
 
 function fail(message, status = 400, code = 'CERTIFICATE_ERROR') {
