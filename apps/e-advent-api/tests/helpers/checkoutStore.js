@@ -21,9 +21,17 @@ module.exports = function checkoutStore() {
   });
   db.withTransaction.mockImplementation(fn => fn());
   db.query.mockImplementation(async (sql, args) => {
-    if (sql.startsWith('SELECT order_id FROM checkout_sessions')) return [sessions.has(args[0]) ? [{ order_id: sessions.get(args[0]) }] : []];
-    if (sql.startsWith('INSERT INTO checkout_sessions')) sessions.set(args[0], args[1]);
+    if (sql.startsWith('SELECT order_id, payment_intent_id, fingerprint FROM checkout_sessions')) {
+      return [sessions.has(args[0]) ? [sessions.get(args[0])] : []];
+    }
+    if (sql.startsWith('INSERT INTO checkout_sessions')) {
+      sessions.set(args[0], { order_id: args[1], payment_intent_id: args[2], fingerprint: args[3] });
+    }
     if (sql.startsWith('UPDATE orders SET stripe_payment_intent_id')) orders.get(args[1]).stripePaymentIntentId = args[0];
+    if (sql.includes("UPDATE orders SET status = 'canceled'")) {
+      const order = orders.get(args[0]);
+      if (order && order.status !== 'succeeded') order.status = 'canceled';
+    }
     if (sql.includes('FROM orders WHERE rabat_code')) {
       return [[...orders.values()]
         .filter(order => (order.rabat || order.rabat_code) === args[0] && !['canceled', 'succeeded'].includes(order.status))
@@ -31,6 +39,7 @@ module.exports = function checkoutStore() {
     }
     return [[], []];
   });
+  Payment.createPayment.mockReset();
   Payment.createPayment.mockImplementation(async data => {
     const order = { ...data, id: randomUUID(), orderNumber: orders.size + 1, orderNumberDisplay: String(orders.size + 1).padStart(6, '0'),
       status: 'pending', createdAt: new Date().toISOString() };
@@ -58,6 +67,11 @@ module.exports = function checkoutStore() {
     return intent;
   });
   stripe.paymentIntents.retrieve.mockImplementation(async id => intents.get(id));
+  stripe.paymentIntents.update?.mockImplementation(async (id, params) => {
+    const intent = intents.get(id);
+    Object.assign(intent, params, { metadata: { ...intent.metadata, ...params.metadata } });
+    return intent;
+  });
   stripe.paymentIntents.cancel?.mockImplementation(async id => {
     const intent = intents.get(id);
     if (['succeeded', 'processing'].includes(intent.status)) throw new Error('Cannot cancel');

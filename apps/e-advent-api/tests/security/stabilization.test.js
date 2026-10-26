@@ -59,10 +59,17 @@ describe('audit regression protections', () => {
    const res=await request(app).post('/api/v1/calendars/createFree').send({calendarId:'cal',email:'attacker@example.com',promoCode:'rabat100',editToken:'test-edit-token'});
    expect(res.status).toBe(400); expect(sendEmail).not.toHaveBeenCalled();
  });
- test('checkout does not expose a secret when persistence fails', async () => {
-   stripe.paymentIntents.create.mockResolvedValue({id:'pi_new',client_secret:'secret',amount:900,currency:'pln'});
+ test('prepare checkout returns a secret without inserting an order', async () => {
    Payment.createPayment.mockRejectedValue(new Error('database down'));
    const res=await request(app).post('/api/v1/stripe/create-payment-intent').send({data:{checkoutToken:'a'.repeat(64),amount:9,customerEmail:'buyer@example.com',orderId:'order',productId:'cal',editToken:'test-edit-token'}});
+   expect(res.status).toBe(200);
+   expect(res.body.clientSecret).toBeTruthy();
+   expect(res.body.orderId).toBeNull();
+   expect(Payment.createPayment).not.toHaveBeenCalled();
+ });
+ test('pay click does not expose a secret when order persistence fails', async () => {
+   Payment.createPayment.mockRejectedValue(new Error('database down'));
+   const res=await request(app).post('/api/v1/stripe/create-payment-intent').send({data:{checkoutToken:'a'.repeat(64),amount:9,customerEmail:'buyer@example.com',orderId:'order',productId:'cal',editToken:'test-edit-token',acceptanceData:{termsAccepted:true,privacyAccepted:true,termsAcceptedAt:'2026-10-24T15:00:00.000Z',privacyAcceptedAt:'2026-10-24T15:00:00.000Z'}}});
    expect(res.status).toBe(503); expect(res.body.clientSecret).toBeUndefined();
  });
  test('webhook database failure asks Stripe to retry', async () => {

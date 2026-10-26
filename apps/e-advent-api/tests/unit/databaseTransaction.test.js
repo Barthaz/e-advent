@@ -5,7 +5,7 @@ const { withTransaction, withNamedLocks, query, closeConnection } = require('../
 let conn, pool;
 beforeEach(() => {
   conn = { beginTransaction: jest.fn(), commit: jest.fn(), rollback: jest.fn(), release: jest.fn(), execute: jest.fn().mockResolvedValue([[]]) };
-  pool = { getConnection: jest.fn().mockResolvedValue(conn), execute: jest.fn(), end: jest.fn() };
+  pool = { getConnection: jest.fn().mockResolvedValue(conn), execute: jest.fn(), end: jest.fn(), on: jest.fn() };
   mysql.createPool.mockReturnValue(pool);
 });
 afterEach(async () => { await closeConnection(); });

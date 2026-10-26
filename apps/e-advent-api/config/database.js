@@ -24,6 +24,11 @@ const createPool = () => {
     keepAliveInitialDelay: 0,
     timezone: '+00:00',
   });
+  if (typeof pool.on === 'function') {
+    pool.on('connection', (connection) => {
+      connection.query("SET time_zone = '+00:00'");
+    });
+  }
 
   console.log(
     `MySQL pool created [${testingMode ? 'TEST' : 'PROD'}] → ${cfg.user}@${cfg.host}:${cfg.port}/${cfg.database}`

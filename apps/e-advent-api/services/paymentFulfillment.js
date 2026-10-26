@@ -11,8 +11,8 @@ const { redeem } = require('./discountCodes');
 function markOrderPaid(conn, orderId, fulfillmentStatus) {
   return conn.execute(
     `UPDATE orders SET status = 'succeeded', fulfillment_status = ?,
-       terms_accepted_at = COALESCE(terms_accepted_at, NOW()),
-       privacy_policy_accepted_at = COALESCE(privacy_policy_accepted_at, NOW())
+       terms_accepted_at = COALESCE(terms_accepted_at, UTC_TIMESTAMP()),
+       privacy_policy_accepted_at = COALESCE(privacy_policy_accepted_at, UTC_TIMESTAMP())
      WHERE id = ?`,
     [fulfillmentStatus, orderId],
   );

@@ -29,7 +29,7 @@ beforeEach(() => {
   let count = 0;
   vi.mocked(createPaymentIntent).mockImplementation(async () => {
     count++;
-    return { clientSecret: `secret-${count}`, paymentIntentId: `pi_${count}`, orderId: `uuid-${count}`, orderNumber: String(count).padStart(6, '0') };
+    return { clientSecret: `secret-${count}`, paymentIntentId: `pi_${count}`, orderId: null, orderNumber: null };
   });
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
@@ -38,8 +38,8 @@ it('hides the previous Stripe form immediately and uses the new intent after an 
   render(<MemoryRouter><Checkout /></MemoryRouter>);
   fireEvent.click(screen.getByLabelText('Kurier InPost'));
   await waitFor(() => expect(screen.getByTestId('stripe-form').getAttribute('data-secret')).toBe('secret-1'), { timeout: 3000 });
-  expect(localStorage.getItem('orderId')).toBe('uuid-1');
-  expect(localStorage.getItem('orderNumber')).toBe('000001');
+  expect(localStorage.getItem('orderId')).toBeNull();
+  expect(localStorage.getItem('orderNumber')).toBeNull();
   fireEvent.change(screen.getByLabelText(/^Ulica/), { target: { value: 'Druga 2' } });
   expect(screen.queryByTestId('stripe-form')).toBeNull();
   await waitFor(() => expect(screen.getByTestId('stripe-form').getAttribute('data-secret')).toBe('secret-2'), { timeout: 3000 });

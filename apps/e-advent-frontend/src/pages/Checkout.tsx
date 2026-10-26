@@ -8,7 +8,7 @@ import FormField from '../components/FormField';
 import LoadingState from '../components/LoadingState';
 import { validateCalendarConfiguration, buildCalendarTasks } from '../utils/calendarGenerator';
 import { textToCatalogTaskId } from '../utils/catalogTaskIds';
-import { createPaymentIntent, createCalendar, type InternalCalendarData, validatePromoCode, createFreeCalendar } from '../api/api';
+import { createPaymentIntent, createCalendar, type InternalCalendarData, validatePromoCode, createFreeCalendar, type CreatePaymentIntentRequest } from '../api/api';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import PriceBreakdown from '../components/PriceBreakdown';
@@ -152,11 +152,10 @@ function toStripeBillingAddress(address: ShippingAddress | null): StripeBillingA
 
 // Komponent formularza płatności używający Stripe Elements
 function PaymentForm({ 
-  clientSecret, 
-  paymentIntentId, 
   onError,
   isFree,
   onCreateFreeCalendar,
+  onCommitCheckout,
   payAmount,
   billingAddress,
 }: { 
@@ -165,6 +164,7 @@ function PaymentForm({
   onError: (error: string) => void;
   isFree: boolean;
   onCreateFreeCalendar: () => Promise<void>;
+  onCommitCheckout: (acceptanceData: NonNullable<CreatePaymentIntentRequest['acceptanceData']>) => Promise<{ clientSecret: string; paymentIntentId: string }>;
   payAmount: number;
   billingAddress: StripeBillingAddress;
 }) {
@@ -231,8 +231,6 @@ function PaymentForm({
       console.warn('[Payment] Nie można zapisać danych o akceptacji:', error);
     }
 
-    const returnUrl = `${window.location.origin}/sukces?payment_intent=${paymentIntentId}`;
-    
     try {
       // WAŻNE: Najpierw wywołaj elements.submit() aby zwalidować formularz
       console.log('[Payment] Walidacja formularza płatności (elements.submit())...');
@@ -245,12 +243,14 @@ function PaymentForm({
         return;
       }
 
-      console.log('[Payment] Formularz zwalidowany pomyślnie, potwierdzanie płatności...');
-      
-      // Teraz wywołaj confirmPayment
+      console.log('[Payment] Formularz zwalidowany pomyślnie, zapis zamówienia...');
+      const committed = await onCommitCheckout(acceptanceData);
+      const returnUrl = `${window.location.origin}/sukces?payment_intent=${committed.paymentIntentId}`;
+
+      console.log('[Payment] Potwierdzanie płatności...');
       const { error } = await stripe.confirmPayment({
         elements,
-        clientSecret,
+        clientSecret: committed.clientSecret,
         confirmParams: {
           return_url: returnUrl,
           // PaymentElement hides the address (fields.billingDetails.address = 'never'), so Stripe requires it here.
@@ -404,6 +404,7 @@ export default function Checkout() {
   /** Blokada przed pętlą createCalendar + createPaymentIntent w useEffect */
   const paymentInitLockRef = useRef(false);
   const paymentInitKeyRef = useRef<string | null>(null);
+  const pendingIntentRequestRef = useRef<CreatePaymentIntentRequest | null>(null);
   const autoPromoRef = useRef(false);
 
   const [delivery, setDelivery] = useState<InpostChoice>({ type: 'parcel_inpost' });
@@ -698,7 +699,7 @@ export default function Checkout() {
           const orderId = getStableCheckoutOrderId(initKey);
           const items = checkoutItemsFromCart(cartItems);
           const primaryCalendarId = cartItems.find((i) => i.calendarId)?.calendarId;
-          const paymentIntent = await createPaymentIntent({
+          const paymentRequest: CreatePaymentIntentRequest = {
             amount: totalPrice,
             currency: 'pln',
             customerEmail: calendarData.email,
@@ -715,12 +716,14 @@ export default function Checkout() {
               cartCheckout: '1',
               clientOrderId: orderId,
             },
-          });
+          };
+          pendingIntentRequestRef.current = paymentRequest;
+          const paymentIntent = await createPaymentIntent(paymentRequest);
           if (!paymentIntent.clientSecret || !paymentIntent.paymentIntentId) {
             throw new Error('Nie otrzymano danych płatności.');
           }
           localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
-          localStorage.setItem('orderId', paymentIntent.orderId || '');
+          if (paymentIntent.orderId) localStorage.setItem('orderId', paymentIntent.orderId);
           if (paymentIntent.orderNumber) {
             localStorage.setItem('orderNumber', paymentIntent.orderNumber);
           }
@@ -899,7 +902,7 @@ export default function Checkout() {
 
         const paymentAmount = totalPrice;
 
-        const paymentIntentData = {
+        const paymentIntentData: CreatePaymentIntentRequest = {
           ...(isPhysical ? { shippingAddress: normalizeShippingAddress(shippingAddress), delivery: { ...delivery, quoteKey: shippingQuote.quote?.quoteKey } } : {}),
           amount: paymentAmount,
           currency: 'pln',
@@ -924,13 +927,14 @@ export default function Checkout() {
           throw new Error('orderId jest wymagany, ale nie został podany');
         }
 
+        pendingIntentRequestRef.current = paymentIntentData;
         const paymentIntent = await createPaymentIntent(paymentIntentData);
         if (!paymentIntent.clientSecret || !paymentIntent.paymentIntentId) {
           throw new Error('Nie otrzymano danych płatności.');
         }
 
         localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
-        localStorage.setItem('orderId', paymentIntent.orderId || '');
+        if (paymentIntent.orderId) localStorage.setItem('orderId', paymentIntent.orderId);
         if (paymentIntent.orderNumber) {
           localStorage.setItem('orderNumber', paymentIntent.orderNumber);
         }
@@ -1286,6 +1290,42 @@ export default function Checkout() {
     navigate(`/sukces?free=true&order_id=${encodeURIComponent(result.orderId)}`);
   };
 
+  const commitPaidCheckout = async (acceptanceData: NonNullable<CreatePaymentIntentRequest['acceptanceData']>) => {
+    const paymentRequest = pendingIntentRequestRef.current;
+    if (!paymentRequest) {
+      throw new Error('Odśwież stronę płatności — brak przygotowanej płatności.');
+    }
+    const paymentIntent = await createPaymentIntent({ ...paymentRequest, acceptanceData });
+    if (!paymentIntent.clientSecret || !paymentIntent.paymentIntentId) {
+      throw new Error('Nie otrzymano danych płatności.');
+    }
+    if (!paymentIntent.orderId) {
+      throw new Error('Nie udało się zapisać zamówienia. Spróbuj ponownie.');
+    }
+    localStorage.setItem('paymentIntentId', paymentIntent.paymentIntentId);
+    localStorage.setItem('orderId', paymentIntent.orderId);
+    if (paymentIntent.orderNumber) {
+      localStorage.setItem('orderNumber', paymentIntent.orderNumber);
+    }
+    if (calendarData) {
+      saveOrderSummary({
+        items: cartMode ? cartItemsToOrderLines(cartItems) : [{
+          sku,
+          name: getProduct(sku)?.name || sku,
+          quantity: 1,
+          price: totalPrice,
+        }],
+        shipping: isPhysical ? normalizeShippingAddress(shippingAddress) : null,
+        orderNumber: paymentIntent.orderNumber || undefined,
+        customerEmail: calendarData.email,
+      });
+    }
+    return {
+      clientSecret: paymentIntent.clientSecret,
+      paymentIntentId: paymentIntent.paymentIntentId,
+    };
+  };
+
   if (!calendarData) {
     return <LoadingState message="Ładowanie..." />;
   }
@@ -1582,6 +1622,7 @@ export default function Checkout() {
                     onError={setPaymentError}
                     isFree
                     onCreateFreeCalendar={completeFreeOrder}
+                    onCommitCheckout={commitPaidCheckout}
                     payAmount={0}
                     billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
                   />
@@ -1602,6 +1643,7 @@ export default function Checkout() {
                     onError={setPaymentError}
                     isFree={false}
                     onCreateFreeCalendar={completeFreeOrder}
+                    onCommitCheckout={commitPaidCheckout}
                     payAmount={totalPrice}
                     billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
                   />

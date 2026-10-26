@@ -206,11 +206,11 @@ async function refreshRow(order, row) {
   // Provider scans update local status as a fallback. The customer "wysłane"
   // mail is sent only from the panel dispatch action.
   if (shippedStatuses.has(remote.status)) {
-    await query("UPDATE orders SET fulfillment_status = 'shipped', shipped_at = COALESCE(shipped_at, NOW()) WHERE id = ? AND fulfillment_status IN ('pending', 'processing')", [order.id]);
+    await query("UPDATE orders SET fulfillment_status = 'shipped', shipped_at = COALESCE(shipped_at, UTC_TIMESTAMP()) WHERE id = ? AND fulfillment_status IN ('pending', 'processing')", [order.id]);
     if (!['delivered', 'cancelled', 'hold'].includes(order.fulfillmentStatus)) order.fulfillmentStatus = 'shipped';
   }
   if (remote.status === 'delivered') {
-    await query("UPDATE orders SET fulfillment_status = 'delivered', shipped_at = COALESCE(shipped_at, NOW()), delivered_at = COALESCE(delivered_at, NOW()) WHERE id = ?", [order.id]);
+    await query("UPDATE orders SET fulfillment_status = 'delivered', shipped_at = COALESCE(shipped_at, UTC_TIMESTAMP()), delivered_at = COALESCE(delivered_at, UTC_TIMESTAMP()) WHERE id = ?", [order.id]);
     order.fulfillmentStatus = 'delivered';
   }
   return row;
@@ -324,9 +324,9 @@ async function operate(id, action, input = {}) {
 async function notifyPrepared(id, { downloaded = false, trackingNumber, triggeredBy = 'admin' } = {}) {
   // Two simultaneous notifies (buy + download) share this lock.
   return withNamedLocks([`shipment-email:${id}`], async () => {
-    await query("UPDATE orders SET label_created_at = COALESCE(label_created_at, NOW()), fulfillment_status = IF(fulfillment_status = 'pending', 'processing', fulfillment_status) WHERE id = ?", [id]);
+    await query("UPDATE orders SET label_created_at = COALESCE(label_created_at, UTC_TIMESTAMP()), fulfillment_status = IF(fulfillment_status = 'pending', 'processing', fulfillment_status) WHERE id = ?", [id]);
     if (downloaded) {
-      await query('UPDATE order_inpost_shipments SET label_downloaded_at = COALESCE(label_downloaded_at, NOW()) WHERE order_id = ?', [id]);
+      await query('UPDATE order_inpost_shipments SET label_downloaded_at = COALESCE(label_downloaded_at, UTC_TIMESTAMP()) WHERE order_id = ?', [id]);
     }
     try {
       const order = await Payment.findPaymentById(id);
@@ -363,7 +363,7 @@ async function markDispatched(id) {
     const snapshot = await view(order, row);
     if (!snapshot.labelReady) throw inpost.fail('Najpierw wygeneruj etykietę.', 409);
     if (!snapshot.trackingNumber) throw inpost.fail('InPost nie zwrócił jeszcze numeru przesyłki. Odśwież status.', 409);
-    await query("UPDATE orders SET fulfillment_status = IF(fulfillment_status IN ('pending', 'processing'), 'shipped', fulfillment_status), shipped_at = COALESCE(shipped_at, NOW()) WHERE id = ?", [id]);
+    await query("UPDATE orders SET fulfillment_status = IF(fulfillment_status IN ('pending', 'processing'), 'shipped', fulfillment_status), shipped_at = COALESCE(shipped_at, UTC_TIMESTAMP()) WHERE id = ?", [id]);
     if (!['delivered', 'cancelled', 'hold'].includes(order.fulfillmentStatus)) order.fulfillmentStatus = 'shipped';
     return view(order, row);
   });

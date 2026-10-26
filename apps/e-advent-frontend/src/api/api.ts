@@ -384,7 +384,7 @@ export interface CreatePaymentIntentSuccessResponse {
   /** Stripe PaymentIntent status */
   paymentStatus?: string;
   productId?: string | null;
-  orderId?: string;
+  orderId?: string | null;
   /** Publiczny numer zamówienia, np. "000001" */
   orderNumber?: string | null;
   amount?: number;

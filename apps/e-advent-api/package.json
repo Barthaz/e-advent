@@ -29,6 +29,7 @@
     "smoke:scratch-export": "node scripts/smoke-scratch-export.js",
     "migrate:inpost": "node scripts/migrate-inpost.js",
     "migrate:discount-codes": "node scripts/migrate-discount-codes.js",
+    "migrate:order-timezone": "node scripts/migrate-order-timezone.js",
     "seed:letter-promo": "node scripts/seed-letter-promo.js"
   },
   "nodemonConfig": {
