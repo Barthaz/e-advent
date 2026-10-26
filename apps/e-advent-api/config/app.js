@@ -10,6 +10,12 @@ const testingMode = process.env.TESTING_MODE === 'true';
 const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
 const panelUrl = (process.env.PANEL_URL || 'http://localhost:5174').replace(/\/$/, '');
 
+const DEFAULT_PRODUCTION_ORIGINS = [
+  'https://e-advent.pl',
+  'https://panel.e-advent.pl',
+  'https://test.e-advent.pl',
+];
+
 function withWwwVariant(url) {
   try {
     const parsed = new URL(url);
@@ -32,12 +38,23 @@ function parseExtraOrigins(raw) {
     .filter(Boolean);
 }
 
+function expandOrigins(urls) {
+  const out = [];
+  for (const url of urls) {
+    if (!url) continue;
+    const trimmed = String(url).replace(/\/$/, '');
+    out.push(trimmed);
+    const www = withWwwVariant(trimmed);
+    if (www) out.push(www);
+  }
+  return out;
+}
+
 const corsAllowlist = Array.from(
-  new Set(
-    [frontendUrl, panelUrl, withWwwVariant(frontendUrl), ...parseExtraOrigins(process.env.CORS_ORIGINS)].filter(
-      Boolean,
-    ),
-  ),
+  new Set([
+    ...expandOrigins([frontendUrl, panelUrl, ...DEFAULT_PRODUCTION_ORIGINS]),
+    ...parseExtraOrigins(process.env.CORS_ORIGINS),
+  ]),
 );
 
 const emailLogoUrl =
