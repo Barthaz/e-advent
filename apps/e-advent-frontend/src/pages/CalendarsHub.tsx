@@ -33,7 +33,7 @@ export default function CalendarsHub() {
     <>
       <SEOHead
         title="Kalendarze adwentowe — interaktywny i zdrapka | e-Advent"
-        description="Stwórz personalizowany kalendarz adwentowy: interaktywny online od 9 zł lub fizyczna zdrapka A3 od 69 zł. Własne zadania, wysyłka InPost. Idealny prezent na święta!"
+        description="Stwórz personalizowany kalendarz adwentowy: interaktywny online od 9 zł lub kalendarz zdrapka od 69 zł. Własne zadania, wysyłka InPost. Idealny prezent na święta!"
         keywords="kalendarz adwentowy, kalendarze adwentowe, interaktywny kalendarz adwentowy, kalendarz adwentowy zdrapka, personalizowany kalendarz adwentowy, e-advent"
         canonical="https://e-advent.pl/kalendarze-adwentowe"
         jsonLd={JSON_LD}
@@ -124,15 +124,15 @@ export default function CalendarsHub() {
                 >
                   interaktywny kalendarz adwentowy online
                 </Link>{' '}
-                oraz fizyczna{' '}
+                oraz{' '}
                 <Link
                   to="/stworz-kalendarz/zdrapka"
                   className="text-christmas-green hover:text-christmas-gold underline font-medium transition-colors"
                 >
-                  zdrapka adwentowa
+                  kalendarz zdrapka
                 </Link>
-                . Interaktywny kalendarz personalizujesz imieniem, tytułem i zadaniami; fizyczna
-                zdrapka to gotowy plakat A3 — wybierasz wariant i przygodę, a dane do wysyłki podajesz
+                . Interaktywny kalendarz personalizujesz imieniem, tytułem i zadaniami; kalendarz
+                zdrapka to fizyczny prezent — wybierasz wariant i przygodę, a dane do wysyłki podajesz
                 przy zamówieniu.
               </p>
               <p className="text-parchment-muted leading-relaxed mb-4">
@@ -161,11 +161,11 @@ export default function CalendarsHub() {
               </p>
 
               <h3 className="font-display text-2xl md:text-3xl font-semibold text-parchment-text mt-8 mb-4">
-                Fizyczna zdrapka adwentowa
+                Kalendarz zdrapka
               </h3>
               <p className="text-parchment-muted leading-relaxed mb-4">
-                Preferujesz coś materialnego? Kalendarz zdrapka w formacie A3 to fizyczny
-                prezent ze złotymi okienkami — trzy warianty i gotowa przygoda albo własne zadania.
+                Preferujesz coś materialnego? Kalendarz zdrapka to fizyczny prezent ze złotymi
+                okienkami — trzy warianty i gotowa przygoda albo własne zadania.
                 Realizacja 3–5 dni roboczych, wysyłka InPost.
               </p>
 

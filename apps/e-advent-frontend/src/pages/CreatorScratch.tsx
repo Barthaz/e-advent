@@ -42,7 +42,7 @@ const PRESETS = scratchPresetsData as ScratchPreset[];
 const FAQ = [
   {
     q: 'Czym różni się zdrapka od kalendarza interaktywnego?',
-    a: 'Zdrapka to fizyczny kalendarz A3, który wysyłamy InPost. Interaktywny otwierasz online — tam podajesz imię, e-mail i tytuł, bo link trafia na skrzynkę.',
+    a: 'Kalendarz zdrapka to fizyczny prezent, który wysyłamy InPost. Interaktywny otwierasz online — tam podajesz imię, e-mail i tytuł, bo link trafia na skrzynkę.',
   },
   {
     q: 'Czy muszę podawać imię i e-mail na tej stronie?',
@@ -65,9 +65,9 @@ const FAQ = [
 const JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'Product',
-  name: 'Kalendarz zdrapka A3',
+  name: 'Kalendarz zdrapka',
   description:
-    'Fizyczny kalendarz adwentowy A3 ze złotymi zdrapkami. Trzy warianty, gotowa przygoda albo własne zadania. Wysyłka InPost.',
+    'Fizyczny kalendarz adwentowy ze złotymi zdrapkami. Trzy warianty, gotowa przygoda albo własne zadania. Wysyłka InPost.',
   image: SCRATCH_GALLERY.map((g) => `https://e-advent.pl${g.src}`),
   brand: { '@type': 'Brand', name: 'e-Advent' },
   offers: {
@@ -199,8 +199,8 @@ export default function CreatorScratch() {
   return (
     <>
       <SEOHead
-        title="Kalendarz zdrapka A3 — złote okienka, 3 warianty | e-Advent"
-        description="Fizyczny kalendarz adwentowy A3 ze złotymi zdrapkami. Wybierz wariant i przygodę — gotową historię albo własne zadania. Cena 69 zł + dostawa."
+        title="Kalendarz zdrapka — złote okienka, 3 warianty | e-Advent"
+        description="Fizyczny kalendarz adwentowy ze złotymi zdrapkami. Wybierz wariant i przygodę — gotową historię albo własne zadania. Cena 69 zł + dostawa."
         keywords="kalendarz adwentowy zdrapka, kalendarz zdrapka A3, adwentowy kalendarz fizyczny, e-advent"
         canonical="https://e-advent.pl/stworz-kalendarz/zdrapka"
         ogImage={`https://e-advent.pl${SCRATCH_GALLERY[0].src}`}
@@ -268,7 +268,7 @@ export default function CreatorScratch() {
                   Kalendarz zdrapka
                 </h1>
                 <p className="text-white/80 text-base md:text-lg leading-relaxed mb-6">
-                  Świąteczny kalendarz A3 ze złotymi okienkami. Każdego dnia zdrapujesz pole
+                  Świąteczny kalendarz zdrapka ze złotymi okienkami. Każdego dnia zdrapujesz pole
                   i odkrywasz zadanie — gotową przygodę albo własną historię, którą ułożysz tutaj.
                 </p>
 

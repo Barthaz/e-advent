@@ -7,8 +7,6 @@ import {
   formatPrice,
   getProduct,
   isLetterPromoActive,
-  LETTER_PROMO_CODE,
-  letterPromoPrice,
   SANTA_CERTIFICATE_SKU,
 } from '../config/products';
 import { useCart } from '../context/useCart';
@@ -88,13 +86,7 @@ export default function SantaLetterProduct() {
 
   const basePrice = product?.basePrice ?? 29;
   const letterPromo = isLetterPromoActive();
-  const displayLetterPrice = letterPromo ? letterPromoPrice(basePrice) : basePrice;
-  const displayCertPrice = letterPromo ? letterPromoPrice(CERTIFICATE_PRICE) : CERTIFICATE_PRICE;
-  const faq = buildFaq(
-    letterPromo
-      ? `+${formatPrice(displayCertPrice)} z kodem ${LETTER_PROMO_CODE} zamiast ${formatPrice(CERTIFICATE_PRICE)}`
-      : `+${formatPrice(CERTIFICATE_PRICE)}`,
-  );
+  const faq = buildFaq(`+${formatPrice(CERTIFICATE_PRICE)}`);
 
   useEffect(() => {
     trackViewItem({
@@ -227,24 +219,13 @@ export default function SantaLetterProduct() {
 
                 <div className="mb-6">
                   <p className="font-display text-4xl font-semibold text-christmas-gold-light">
-                    {letterPromo ? (
-                      <>
-                        <span className="mr-3 text-white/45 line-through decoration-white/40 text-2xl md:text-3xl">
-                          {formatPrice(basePrice)}
-                        </span>
-                        {formatPrice(displayLetterPrice)}
-                      </>
-                    ) : (
-                      formatPrice(basePrice)
-                    )}
+                    {formatPrice(basePrice)}
                   </p>
                   <p className="text-white/60 text-sm mt-2">
                     + dostawa
                   </p>
                   <p className="text-white/50 text-xs mt-1">
-                    {letterPromo
-                      ? `Cena za jeden zestaw z kodem ${LETTER_PROMO_CODE}, bez dostawy`
-                      : 'Cena za jeden zestaw, bez dostawy'}
+                    Cena za jeden zestaw, bez dostawy
                   </p>
                 </div>
 
@@ -270,10 +251,8 @@ export default function SantaLetterProduct() {
                     setCertNames(names);
                     setFormError(null);
                   }}
-                  letterPrice={displayLetterPrice}
-                  certificatePrice={displayCertPrice}
-                  letterCompareAt={letterPromo ? basePrice : undefined}
-                  certificateCompareAt={letterPromo ? CERTIFICATE_PRICE : undefined}
+                  letterPrice={basePrice}
+                  certificatePrice={CERTIFICATE_PRICE}
                   error={formError}
                 />
 

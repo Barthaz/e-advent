@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import FestivePage from '../FestivePage';
 import ParchmentCard from '../ParchmentCard';
+import SEOHead from '../SEOHead';
 import ProductCard from './ProductCard';
 import CalendarWaitNotice from '../campaign/CalendarWaitNotice';
 import { isCalendarsOnSale, PRODUCT_FAMILIES } from '../../config/products';
@@ -10,6 +11,7 @@ export default function ProductSelector() {
 
   return (
     <FestivePage className="py-4" maxWidth="full">
+      <SEOHead title="Wybierz kalendarz adwentowy lub list do Mikołaja | e-Advent" description="Porównaj kalendarz interaktywny, kalendarz zdrapka i zestaw listów do Świętego Mikołaja. Wybierz produkt i rozpocznij zamówienie." canonical="https://e-advent.pl/stworz-kalendarz" />
       {!calendarsOnSale && (
         <div className="max-w-3xl mx-auto mb-10">
           <CalendarWaitNotice tone="onDark" />

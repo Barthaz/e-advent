@@ -4,6 +4,10 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Redirect before existing-file/directory shortcuts (including the homepage).
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
   
   # Redirect www do non-www (301 Permanent Redirect)
 RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
@@ -25,16 +29,12 @@ RewriteRule ^(.*)$ https://e-advent.pl/$1 [R=301,L]
   RewriteRule ^ - [L]
   
   # NIE przekierowuj żądań do plików statycznych (zawsze)
-  RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|json)$ [NC]
+  RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|webp|avif|gif|ico|svg|woff|woff2|ttf|eot|json|xml|txt)$ [NC]
   RewriteRule ^ - [L]
   
   # NIE przekierowuj żądań do folderu assets (zawsze)
   RewriteCond %{REQUEST_URI} ^/assets/ [NC]
   RewriteRule ^ - [L]
-  
-  # Obsługa HTTPS (opcjonalnie - odkomentuj jeśli używasz HTTPS)
-  RewriteCond %{HTTPS} off
-  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   
   # Jeśli plik lub katalog NIE istnieje, przekieruj do index.html (dla SPA routing)
   RewriteCond %{REQUEST_FILENAME} !-f

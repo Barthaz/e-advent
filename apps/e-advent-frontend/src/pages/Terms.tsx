@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
+import SEOHead from '../components/SEOHead';
 
 export default function Terms() {
   return (
     <FestivePage>
+      <SEOHead title="Regulamin sklepu | e-Advent" description="Regulamin e-Advent: zasady zamówień, płatności, dostawy i reklamacji." canonical="https://e-advent.pl/regulamin" />
       <ContentCard padding="lg">
         <h1 className="heading-page mb-8">
           Regulamin świadczenia usług drogą elektroniczną
@@ -85,7 +87,7 @@ export default function Terms() {
               </p>
               <ul className="list-disc pl-6 space-y-2 mb-4">
                 <li>Kalendarz interaktywny — 9 zł (produkt cyfrowy, bez wysyłki)</li>
-                <li>Kalendarz zdrapka A3 — 69 zł</li>
+                <li>Kalendarz zdrapka — 69 zł</li>
                 <li>List do Świętego Mikołaja (zestaw) — 29 zł</li>
                 <li>Dostawa produktów fizycznych — Paczkomat lub kurier InPost; koszt jest wyświetlany przed płatnością i zależy od rodzaju przesyłki</li>
               </ul>

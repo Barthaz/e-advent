@@ -21,6 +21,8 @@ it('tells calendar visitors they can order letters at 20% off while they wait', 
     </MemoryRouter>,
   );
   expect(screen.getByText(/Zamówienia od 1 listopada/)).toBeTruthy();
+  expect(screen.getByText(/kalendarza zdrapka/)).toBeTruthy();
+  expect(screen.queryByText(/zdrapek/)).toBeNull();
   expect(screen.queryByText(/1 grudnia/)).toBeNull();
   expect(screen.getAllByText(LETTER_PROMO_CODE).length).toBeGreaterThan(0);
   expect(screen.getByRole('link', { name: /Zamów List do Mikołaja/ })).toBeTruthy();
@@ -33,7 +35,8 @@ it('shows only the letter promo on home and letter surfaces', () => {
     </MemoryRouter>,
   );
   expect(screen.getByText(/Listy i certyfikaty/)).toBeTruthy();
-  expect(screen.getByText(/certyfikat 7.20 zł zamiast 9 zł/)).toBeTruthy();
+  expect(screen.getByText(/zniżka 20%/)).toBeTruthy();
+  expect(screen.queryByText(/zamiast/)).toBeNull();
   expect(screen.queryByText(/1 grudnia/)).toBeNull();
   expect(screen.getAllByText(LETTER_PROMO_CODE).length).toBeGreaterThan(0);
 });

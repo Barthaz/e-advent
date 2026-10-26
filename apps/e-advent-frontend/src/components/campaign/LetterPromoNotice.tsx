@@ -1,11 +1,5 @@
 import { Link } from 'react-router-dom';
-import {
-  LETTER_PROMO_CODE,
-  LETTER_PROMO_PERCENT,
-  formatPrice,
-  getProduct,
-  letterPromoPrice,
-} from '../../config/products';
+import { LETTER_PROMO_CODE, LETTER_PROMO_PERCENT } from '../../config/products';
 import PromoCodeChip from './PromoCodeChip';
 
 interface LetterPromoNoticeProps {
@@ -19,10 +13,6 @@ export default function LetterPromoNotice({
   className = '',
   showCta = false,
 }: LetterPromoNoticeProps) {
-  const letterPrice = getProduct('santa-letter')?.basePrice ?? 29;
-  const certificatePrice = getProduct('santa-certificate')?.basePrice ?? 9;
-  const promoLetterPrice = letterPromoPrice(letterPrice);
-  const promoCertificatePrice = letterPromoPrice(certificatePrice);
   const isDark = tone === 'onDark';
   const titleClass = isDark
     ? 'font-display text-xl md:text-2xl font-semibold text-christmas-gold-light'
@@ -41,8 +31,6 @@ export default function LetterPromoNotice({
       <p className={`${textClass} mb-3`}>
         Na List do Świętego Mikołaja i Certyfikat Grzecznego Dziecka. W kasie wpisz kod{' '}
         <strong>{LETTER_PROMO_CODE}</strong> — zniżka {LETTER_PROMO_PERCENT}% na zamówienie.
-        Zestaw listu z kodem to {formatPrice(promoLetterPrice)} zamiast {formatPrice(letterPrice)},
-        certyfikat {formatPrice(promoCertificatePrice)} zamiast {formatPrice(certificatePrice)}.
       </p>
       <div className="flex flex-wrap items-center gap-3">
         <PromoCodeChip tone={tone} />

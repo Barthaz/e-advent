@@ -24,8 +24,8 @@ export default function CalendarWaitNotice({ tone = 'onLight', className = '' }:
       <p className="text-christmas-gold text-xs tracking-[0.18em] uppercase mb-2">Adwent lubi się zapowiadać</p>
       <p className={`${titleClass} mb-3`}>Zamówienia od 1 listopada</p>
       <p className={`${textClass} mb-3`}>
-        Zamówienia interaktywnych kalendarzy i zdrapek A3 przyjmiemy od 1 listopada — żeby grudzień zdążył
-        zapukać na czas.
+        Zamówienia kalendarzy interaktywnych i kalendarza zdrapka przyjmiemy od 1 listopada — żeby grudzień
+        zdążył zapukać na czas.
       </p>
       <p className={`${textClass} mb-4`}>
         A póki magia się rozgrzewa, Mikołaj zostawił wcześniejszy prezent: listy i certyfikaty z kodem{' '}

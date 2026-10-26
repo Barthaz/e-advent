@@ -167,7 +167,7 @@ export default function Landing() {
                 <span className="hero-action-content">
                   <span className="hero-action-eyebrow">24 dni wspólnej radości</span>
                   <span className="hero-action-title">Kalendarz adwentowy</span>
-                  <span className="hero-action-description">Twoje zadania i codzienne niespodzianki — online lub na zdrapce A3.</span>
+                  <span className="hero-action-description">Twoje zadania i codzienne niespodzianki — online lub na kalendarzu zdrapka.</span>
                   <span className="hero-action-footer"><span>Wybierz kalendarz <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od 9 zł</span></span>
                 </span>
               </Link>
@@ -381,9 +381,9 @@ export default function Landing() {
                   <ParchmentCard padding="md" className="h-full">
                     <div className="text-center">
                       <div className="icon-circle-lg">
-                        <i className={`fas ${feature.icon} text-parchment-text text-xl`} />
+                        <i className={`fas ${feature.icon} text-parchment-text text-xl leading-none`} />
                       </div>
-                      <h3 className="font-display text-xl font-semibold text-parchment-text mb-3">
+                      <h3 className="font-display text-xl font-semibold text-parchment-text mb-3 mt-0">
                         {feature.title}
                       </h3>
                       <p className="text-parchment-muted text-sm leading-relaxed">{feature.text}</p>
