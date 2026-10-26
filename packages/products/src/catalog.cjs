@@ -213,7 +213,7 @@ function computeOrderTotals(items, options) {
   };
 }
 
-const DISCOUNT_PERCENTS = [10, 20, 100];
+const DISCOUNT_PERCENTS = [10, 20, 95, 100];
 
 function isSupportedDiscountPercent(percent) {
   return DISCOUNT_PERCENTS.includes(Number(percent));
@@ -284,13 +284,20 @@ function paidItemPrices(items, discount, paidProductTotal) {
   return newSum === target ? priced : items;
 }
 
+function discountCoversShipping(rate) {
+  return rate === 95 || rate === 100;
+}
+
 function applyPercentDiscount(totals, percent) {
   const rate = Number(percent);
   if (!totals || !isSupportedDiscountPercent(rate)) return null;
   const discount = roundPln(totals.subtotal * (rate / 100));
-  const shipping = rate === 100 ? 0 : totals.shipping;
-  const shippingNetto = rate === 100 ? 0 : totals.shippingNetto;
-  const shippingVat = rate === 100 ? 0 : totals.shippingVat;
+  const shipping = discountCoversShipping(rate)
+    ? roundPln(totals.shipping * (1 - rate / 100))
+    : totals.shipping;
+  const shippingSplit = discountCoversShipping(rate)
+    ? splitGrossAmount(shipping, totals.vatRate)
+    : { netto: totals.shippingNetto, vat: totals.shippingVat };
   const discountedSubtotal = roundPln(totals.subtotal - discount);
   const subSplit = splitGrossAmount(discountedSubtotal, totals.vatRate);
   const lines = applyPercentDiscountToLines(totals.lines || [], rate, totals.vatRate) || totals.lines;
@@ -300,13 +307,13 @@ function applyPercentDiscount(totals, percent) {
     discountPercent: rate,
     discount: discount,
     shipping: shipping,
-    shippingNetto: shippingNetto,
-    shippingVat: shippingVat,
+    shippingNetto: shippingSplit.netto,
+    shippingVat: shippingSplit.vat,
     freeShipping: totals.freeShipping || rate === 100,
     subtotalNetto: subSplit.netto,
     subtotalVat: subSplit.vat,
-    amountNetto: roundPln(subSplit.netto + shippingNetto),
-    vatAmount: roundPln(subSplit.vat + shippingVat),
+    amountNetto: roundPln(subSplit.netto + shippingSplit.netto),
+    vatAmount: roundPln(subSplit.vat + shippingSplit.vat),
     total: roundPln(discountedSubtotal + shipping),
   };
 }

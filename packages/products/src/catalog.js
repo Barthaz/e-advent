@@ -223,8 +223,8 @@ export function computeOrderTotals(items, options = {}) {
   };
 }
 
-/** Allowed checkout percents: 10/20 off products, 100 off the whole order including shipping. */
-export const DISCOUNT_PERCENTS = [10, 20, 100];
+/** 10/20 off products; 95/100 off the whole order including shipping (95 leaves 5% to pay via Stripe). */
+export const DISCOUNT_PERCENTS = [10, 20, 95, 100];
 
 export function isSupportedDiscountPercent(percent) {
   return DISCOUNT_PERCENTS.includes(Number(percent));
@@ -303,8 +303,12 @@ export function paidItemPrices(items, discount, paidProductTotal) {
   return newSum === target ? priced : items;
 }
 
+function discountCoversShipping(rate) {
+  return rate === 95 || rate === 100;
+}
+
 /**
- * 10% and 20% off products (shipping unchanged). 100% makes the whole order 0 zł.
+ * 10% and 20% off products (shipping unchanged). 95% and 100% also scale shipping.
  * Catalog `subtotal` stays the original product total so the UI can show the rebate.
  * Line amounts are the prices actually paid.
  * @param {import('./index').OrderTotals} totals
@@ -315,9 +319,12 @@ export function applyPercentDiscount(totals, percent) {
   const rate = Number(percent);
   if (!totals || !isSupportedDiscountPercent(rate)) return null;
   const discount = roundPln(totals.subtotal * (rate / 100));
-  const shipping = rate === 100 ? 0 : totals.shipping;
-  const shippingNetto = rate === 100 ? 0 : totals.shippingNetto;
-  const shippingVat = rate === 100 ? 0 : totals.shippingVat;
+  const shipping = discountCoversShipping(rate)
+    ? roundPln(totals.shipping * (1 - rate / 100))
+    : totals.shipping;
+  const shippingSplit = discountCoversShipping(rate)
+    ? splitGrossAmount(shipping, totals.vatRate)
+    : { netto: totals.shippingNetto, vat: totals.shippingVat };
   const discountedSubtotal = roundPln(totals.subtotal - discount);
   const subSplit = splitGrossAmount(discountedSubtotal, totals.vatRate);
   const lines = applyPercentDiscountToLines(totals.lines || [], rate, totals.vatRate) || totals.lines;
@@ -327,13 +334,13 @@ export function applyPercentDiscount(totals, percent) {
     discountPercent: rate,
     discount,
     shipping,
-    shippingNetto,
-    shippingVat,
+    shippingNetto: shippingSplit.netto,
+    shippingVat: shippingSplit.vat,
     freeShipping: totals.freeShipping || rate === 100,
     subtotalNetto: subSplit.netto,
     subtotalVat: subSplit.vat,
-    amountNetto: roundPln(subSplit.netto + shippingNetto),
-    vatAmount: roundPln(subSplit.vat + shippingVat),
+    amountNetto: roundPln(subSplit.netto + shippingSplit.netto),
+    vatAmount: roundPln(subSplit.vat + shippingSplit.vat),
     total: roundPln(discountedSubtotal + shipping),
   };
 }

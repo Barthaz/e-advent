@@ -13,14 +13,16 @@ describe('discount codes', () => {
     db.query.mockResolvedValue([[], []]);
   });
 
-  test('validates reusable 10%, 20% and 100% codes', async () => {
+  test('validates reusable 10%, 20%, 95% and 100% codes', async () => {
     installDiscountStore(db.query, [
       discountRow({ code: 'SAVE10', percent: 10 }),
       discountRow({ id: 'disc-20', code: 'MIKOLAJ20', percent: 20 }),
+      discountRow({ id: 'disc-95', code: 'SMOKE95X', percent: 95 }),
       discountRow({ id: 'disc-100', code: 'FREE100', percent: 100 }),
     ]);
     await expect(validatePromoCode('save10')).resolves.toMatchObject({ valid: true, discount: 10 });
     await expect(validatePromoCode('mikolaj20')).resolves.toMatchObject({ valid: true, discount: 20 });
+    await expect(validatePromoCode('smoke95x')).resolves.toMatchObject({ valid: true, discount: 95 });
     await expect(validatePromoCode('free100')).resolves.toMatchObject({ valid: true, discount: 100 });
     await expect(validatePromoCode('nope12')).resolves.toMatchObject({ valid: false, discount: 0 });
   });

@@ -211,6 +211,20 @@ describe('products catalog (unit)', () => {
     expect(discounted.lines[0]).toMatchObject({ unitPrice: 23.2, lineBrutto: 23.2 });
   });
 
+  test('95% discount leaves 5% of products and shipping', () => {
+    const totals = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }]);
+    const discounted = applyPercentDiscount(totals, 95);
+    expect(discounted).toMatchObject({
+      subtotal: 29,
+      discount: 27.55,
+      discountPercent: 95,
+      shipping: 0.25,
+      total: 1.7,
+      freeShipping: false,
+    });
+    expect(discounted.lines[0]).toMatchObject({ unitPrice: 1.45, lineBrutto: 1.45 });
+  });
+
   test('100% discount zeroes the whole order including shipping', () => {
     const totals = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }]);
     const discounted = applyPercentDiscount(totals, 100);

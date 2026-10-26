@@ -1488,7 +1488,9 @@ export default function Checkout() {
                     <p className="mt-2 text-sm text-christmas-green font-semibold">
                       {promoCodeDiscount === 100
                         ? 'Kod zastosowany — zamówienie za 0 zł.'
-                        : `Kod zastosowany — zniżka ${promoCodeDiscount}% od produktów.`}
+                        : promoCodeDiscount === 95
+                          ? 'Kod zastosowany — zniżka 95% od wartości zamówienia.'
+                          : `Kod zastosowany — zniżka ${promoCodeDiscount}% od produktów.`}
                     </p>
                   )}
                 </div>

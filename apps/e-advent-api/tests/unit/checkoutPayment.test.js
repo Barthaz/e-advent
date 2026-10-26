@@ -163,6 +163,18 @@ describe('checkout identity and concurrency', () => {
       process.env.EADVENT_CALENDARS_ON_SALE = previous;
     }
   });
+  test('95% code charges 5% of products and shipping through Stripe', async () => {
+    installDiscountStore(db.query, [discountRow({ code: 'SMOKE95X', percent: 95, reusable: 1 })]);
+    const result = await initializeCheckout({ ...request, amount: 1.7, promoCode: 'SMOKE95X' }, 'test');
+    expect(result.amount).toBe(1.7);
+    expect(result.clientSecret).toBeTruthy();
+    expect(store.orders.get(result.orderId).rabat).toBe('SMOKE95X');
+    expect(store.orders.get(result.orderId).amount).toBe(1.7);
+    expect(store.orders.get(result.orderId).shippingAmount).toBe(0.25);
+    expect(stripe.paymentIntents.create).toHaveBeenCalled();
+    expect(fulfillFreeOrder).not.toHaveBeenCalled();
+  });
+
   test('100% code fulfills without contacting Stripe', async () => {
     installDiscountStore(db.query, [discountRow({ code: 'FREE100', percent: 100, reusable: 1 })]);
     const result = await initializeCheckout({ ...request, amount: 0, promoCode: 'FREE100' }, 'test');

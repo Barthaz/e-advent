@@ -39,6 +39,21 @@ describe('admin and public discount codes', () => {
     expect(ok.body).not.toHaveProperty('codes');
   });
 
+  test('public lookup accepts a stored 95% smoke-test code', async () => {
+    installDiscountStore(db.query, [discountRow({ code: 'SMOKE95X', percent: 95, reusable: 1 })]);
+    const ok = await request(app).get('/api/v1/promocodes/SMOKE95X');
+    expect(ok.status).toBe(200);
+    expect(ok.body).toMatchObject({ valid: true, discount: 95 });
+  });
+
+  test('admin cannot generate a 95% code from the panel', async () => {
+    const created = await request(app)
+      .post('/api/v1/admin/discount-codes')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ percent: 95, reusable: true, count: 1 });
+    expect(created.status).toBe(400);
+  });
+
   test('admin discount routes require a JWT', async () => {
     const list = await request(app).get('/api/v1/admin/discount-codes');
     const create = await request(app).post('/api/v1/admin/discount-codes').send({ percent: 10, reusable: false });

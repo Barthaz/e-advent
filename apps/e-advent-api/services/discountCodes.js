@@ -4,7 +4,7 @@ const { query, withTransaction } = require('../config/database');
 const { applyPercentDiscount, DISCOUNT_PERCENTS } = require('../config/products');
 
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const PERCENTS = new Set(DISCOUNT_PERCENTS);
+const PERCENTS = new Set(DISCOUNT_PERCENTS.filter((percent) => percent !== 95));
 
 function normalizeCode(code) {
   return String(code || '').trim().toUpperCase().replace(/\s+/g, '');
@@ -55,7 +55,9 @@ function publicValidate(row) {
     discount: percent,
     message: percent === 100
       ? 'Kod rabatowy jest prawidłowy. Zamówienie będzie za 0 zł.'
-      : `Kod rabatowy jest prawidłowy. Zniżka ${percent}% od produktów.`,
+      : percent === 95
+        ? 'Kod rabatowy jest prawidłowy. Zniżka 95% od wartości zamówienia.'
+        : `Kod rabatowy jest prawidłowy. Zniżka ${percent}% od produktów.`,
     code: rowToCode(row),
   };
 }

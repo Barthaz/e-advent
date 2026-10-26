@@ -92,6 +92,20 @@ it('applies a 10% code to the charged amount', async () => {
   }, { timeout: 3000 });
 });
 
+it('applies a 95% code to the whole order and still opens Stripe', async () => {
+  vi.mocked(validatePromoCode).mockResolvedValue({ success: true, valid: true, discount: 95, message: 'ok' });
+  render(<MemoryRouter><Checkout /></MemoryRouter>);
+  fireEvent.click(screen.getByLabelText('Kurier InPost'));
+  await waitFor(() => expect(screen.getByTestId('stripe-form')).not.toBeNull(), { timeout: 3000 });
+  fireEvent.change(screen.getByPlaceholderText('Wpisz kod rabatowy'), { target: { value: 'SMOKE95X' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Zastosuj' }));
+  await waitFor(() => {
+    const last = vi.mocked(createPaymentIntent).mock.calls.at(-1)?.[0];
+    expect(last).toMatchObject({ promoCode: 'SMOKE95X', amount: 2.05 });
+    expect(screen.getByText('2.05 zł')).toBeTruthy();
+  }, { timeout: 3000 });
+});
+
 it('keeps a 100% order off Stripe until the customer finishes checkout', async () => {
   vi.mocked(validatePromoCode).mockResolvedValue({ success: true, valid: true, discount: 100, message: 'ok' });
   render(<MemoryRouter><Checkout /></MemoryRouter>);
