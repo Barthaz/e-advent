@@ -17,9 +17,9 @@ export default function SEOHead({
   title = 'e-Advent — Niezapomniane chwile świąt | Kalendarze adwentowe',
   description = 'e-Advent pomaga przeżywać czas świąteczny w cieple: personalizowane kalendarze adwentowe, list do Mikołaja i magia oczekiwania. Każde święta mogą być niezapomniane.',
   keywords = 'kalendarz adwentowy, e-advent, e-dawent, interaktywny kalendarz adwentowy, personalizowany kalendarz adwentowy, kalendarz adwentowy online',
-  canonical = window.location.href,
+  canonical = new URL(window.location.pathname, 'https://e-advent.pl').href,
   ogImage = 'https://e-advent.pl/og-logo.png',
-  robots,
+  robots = 'index, follow, max-image-preview:large',
   jsonLd,
 }: SEOHeadProps) {
   useEffect(() => {
@@ -78,6 +78,12 @@ export default function SEOHead({
     updateOGTag('og:description', description);
     updateOGTag('og:url', canonical);
     updateOGTag('og:image', ogImage);
+    updateOGTag('og:image:secure_url', ogImage);
+    updateOGTag('og:image:alt', title);
+    // Product photos do not necessarily share the default logo's dimensions/type.
+    ['og:image:width', 'og:image:height', 'og:image:type'].forEach((property) => {
+      document.querySelector(`meta[property="${property}"]`)?.remove();
+    });
 
     // Update Twitter Card tags
     const updateTwitterTag = (name: string, content: string) => {
@@ -94,6 +100,7 @@ export default function SEOHead({
     updateTwitterTag('twitter:description', description);
     updateTwitterTag('twitter:url', canonical);
     updateTwitterTag('twitter:image', ogImage);
+    updateTwitterTag('twitter:image:alt', title);
 
     // JSON-LD
     document.querySelectorAll(`script[${JSON_LD_ATTR}]`).forEach((el) => el.remove());

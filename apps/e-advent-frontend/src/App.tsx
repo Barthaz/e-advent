@@ -45,9 +45,12 @@ function AppContent() {
     location.pathname.startsWith('/podglad-okienka');
   const hideChrome = isPreviewPage;
   const isWindowPreview = location.pathname.startsWith('/podglad-okienka');
-  const noIndexPaths = ['/platnosc', '/checkout', '/sukces', '/success', '/platnosc-blad', '/koszyk'];
+  const noIndexPaths = ['/platnosc', '/checkout', '/sukces', '/success', '/platnosc-blad', '/kalendarz', '/podglad', '/preview'];
   const isNoIndex =
-    noIndexPaths.some((p) => location.pathname === p) || isWindowPreview;
+    noIndexPaths.includes(location.pathname) ||
+    location.pathname.startsWith('/kalendarz/') ||
+    location.pathname.startsWith('/calendar/') ||
+    isWindowPreview;
 
   return (
     <div className={isWindowPreview ? '' : 'flex flex-col min-h-screen pt-[var(--santa-banner-h,0px)]'}>

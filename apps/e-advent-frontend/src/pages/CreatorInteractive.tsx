@@ -11,6 +11,7 @@ import { useCreatorWizard } from '../hooks/useCreatorWizard';
 import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
 import { formatPrice, getProduct, getCheckoutCtaLabel, isCalendarsOnSale } from '../config/products';
 import { trackViewItem } from '../utils/analytics';
+import SEOHead from '../components/SEOHead';
 
 const STEPS = ['basic', 'tasks', 'opening', 'summary'];
 const STEP_LABELS = ['Dane', 'Zadania', 'Otwieranie', 'Podsumowanie'];
@@ -48,6 +49,7 @@ export default function CreatorInteractive() {
 
   return (
     <FestivePage className="py-4">
+      <SEOHead title="Interaktywny kalendarz adwentowy online — kreator | e-Advent" description="Stwórz kalendarz adwentowy online z własnymi zadaniami. Personalizacja i prywatny link na e-mail po opłaceniu zamówienia." canonical="https://e-advent.pl/stworz-kalendarz/interaktywny" />
       <ParchmentCard padding="lg">
         {!calendarsOnSale && <CalendarWaitNotice className="mb-8" />}
         <WizardShell

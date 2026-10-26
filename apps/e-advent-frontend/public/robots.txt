@@ -1,10 +1,7 @@
 User-agent: *
 Allow: /
 
-Disallow: /platnosc
-Disallow: /platnosc-blad
-Disallow: /sukces
-Disallow: /podglad
-Disallow: /koszyk
+# Allow crawling so Google can read noindex on checkout, previews and private calendars.
+# robots.txt is not access control. Sensitive content must be protected by the API.
 
 Sitemap: https://e-advent.pl/sitemap.xml

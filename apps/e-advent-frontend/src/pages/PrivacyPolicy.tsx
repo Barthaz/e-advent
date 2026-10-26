@@ -1,9 +1,11 @@
 import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
+import SEOHead from '../components/SEOHead';
 
 export default function PrivacyPolicy() {
   return (
     <FestivePage>
+      <SEOHead title="Polityka prywatności | e-Advent" description="Informacje o przetwarzaniu danych osobowych i plikach cookie w sklepie e-Advent." canonical="https://e-advent.pl/polityka-prywatnosci" />
       <ContentCard padding="lg">
         <h1 className="heading-page mb-8">Polityka prywatności</h1>
 

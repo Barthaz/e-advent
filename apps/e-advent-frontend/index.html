@@ -41,7 +41,7 @@
   <meta name="author" content="e-Advent" />
   <meta name="robots" content="index, follow" />
   <meta name="revisit-after" content="7 days" />
-  <link rel="canonical" href="https://e-advent.pl/" />
+  <!-- Each route sets its own canonical. Do not canonicalize every SPA route to /. -->
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
@@ -75,75 +75,44 @@
 
   <!-- Schema.org structured data (JSON-LD) -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "e-Advent",
-    "url": "https://e-advent.pl/",
-    "description": "Interaktywny kalendarz adwentowy online - stwórz swój spersonalizowany kalendarz z własnymi zadaniami",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://e-advent.pl/favicon.png",
-      "width": 512,
-      "height": 512
-    },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://e-advent.pl/stworz-kalendarz",
-      "query-input": "required name=search_term_string"
-    }
-  }
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "e-Advent",
+  "url": "https://e-advent.pl/",
+  "description": "Interaktywny kalendarz adwentowy online - stwórz swój spersonalizowany kalendarz z własnymi zadaniami",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://e-advent.pl/favicon.png",
+    "width": 512,
+    "height": 512
+  },
+  "@id": "https://e-advent.pl/#website"
+}
   </script>
 
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "e-Advent — Kalendarze adwentowe",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "item": {
-          "@type": "Product",
-          "name": "Kalendarz interaktywny e-Advent",
-          "description": "Personalizowany interaktywny kalendarz adwentowy online",
-          "offers": { "@type": "Offer", "priceCurrency": "PLN", "price": "9.00" }
-        }
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "item": {
-          "@type": "Product",
-          "name": "Kalendarz zdrapka e-Advent",
-          "description": "Fizyczny personalizowany kalendarz adwentowy ze zdrapkami",
-          "offers": { "@type": "AggregateOffer", "priceCurrency": "PLN", "lowPrice": "69.00", "highPrice": "69.00" }
-        }
-      }
-    ]
-  }
-  </script>
+
 
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "e-Advent",
-    "url": "https://e-advent.pl/",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://e-advent.pl/favicon.png",
-      "width": 512,
-      "height": 512,
-      "contentUrl": "https://e-advent.pl/favicon.png"
-    },
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "email": "kontakt@e-advent.pl",
-      "contactType": "customer service"
-    }
-  }
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "e-Advent",
+  "url": "https://e-advent.pl/",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://e-advent.pl/favicon.png",
+    "width": 512,
+    "height": 512,
+    "contentUrl": "https://e-advent.pl/favicon.png"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "kontakt@e-advent.pl",
+    "contactType": "customer service"
+  },
+  "@id": "https://e-advent.pl/#organization"
+}
   </script>
 
   <!-- Icons - Favicon dla różnych przeglądarek i Google Search -->
@@ -166,83 +135,13 @@
 
 <body>
   <noscript>
-    <!-- Treść dla SEO i botów - widoczna tylko gdy JavaScript jest wyłączony -->
-    <div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-      <header>
-        <h1>e-Advent - Interaktywny Kalendarz Adwentowy Online | Personalizowany</h1>
-        <nav>
-          <ul style="list-style: none; padding: 0; display: flex; gap: 20px; flex-wrap: wrap;">
-            <li><a href="/" style="color: #0f5132; text-decoration: none; font-weight: bold;">Strona główna</a></li>
-            <li><a href="/stworz-kalendarz" style="color: #0f5132; text-decoration: none;">Stwórz kalendarz</a></li>
-            <li><a href="/polityka-prywatnosci" style="color: #0f5132; text-decoration: none;">Polityka prywatności</a>
-            </li>
-            <li><a href="/regulamin" style="color: #0f5132; text-decoration: none;">Regulamin</a></li>
-            <li><a href="/dostawa-i-zwroty" style="color: #0f5132; text-decoration: none;">Dostawa i zwroty</a></li>
-          </ul>
-        </nav>
-      </header>
-
-      <main>
-        <section>
-          <h2>Co to jest e-Advent?</h2>
-          <p>e-Advent to nowoczesny, interaktywny kalendarz adwentowy online, który rewolucjonizuje sposób, w jaki
-            obchodzimy adwent i przygotowujemy się do świąt Bożego Narodzenia. To wirtualny kalendarz adwentowy, który
-            możesz w pełni spersonalizować, dodając własne zadania i aktywności dla każdego dnia grudnia. Każdego dnia
-            otwórz jedno okienko i odkryj zadanie, które przygotowałeś lub które zostało wylosowane specjalnie dla
-            Ciebie.</p>
-
-          <h2>Dlaczego warto wybrać kalendarz adwentowy online?</h2>
-          <p>Nasz personalizowany kalendarz adwentowy to idealne rozwiązanie dla tych, którzy chcą stworzyć
-            niezapomniane wspomnienia podczas adwentu. Niezależnie od tego, czy szukasz kalendarza adwentowego dla dzieci, czy dla
-            dorosłych, e-Advent oferuje elastyczność i kreatywność, której potrzebujesz do stworzenia magicznego
-            doświadczenia świątecznego. W dzisiejszych czasach coraz więcej osób szuka nowoczesnych rozwiązań, które
-            łączą tradycję z technologią. Interaktywny kalendarz adwentowy e-Advent to połączenie klasycznej magii świąt
-            z wygodą i elastycznością świata cyfrowego.</p>
-
-          <h2>Jak działa spersonalizowany kalendarz adwentowy?</h2>
-          <p>Kalendarz bożonarodzeniowy e-Advent pozwala na dodanie własnych zadań adwentowych, które mogą obejmować
-            wszystko - od gotowania pierników i dekorowania domu, przez czytanie świątecznych opowieści, aż po wspólne
-            świąteczne aktywności. Możesz również określić czas realizacji zadań, co jest szczególnie przydatne dla zadań
-            wielodniowych. Proces tworzenia kalendarza adwentowego w e-Advent jest niezwykle prosty. Wystarczy wypełnić
-            krótki formularz, dodać własne zadania lub pozwolić systemowi wylosować je automatycznie, dokonać
-            bezpiecznej płatności i natychmiast otrzymać unikalny link do swojego kalendarza.</p>
-
-          <h2>Idealny prezent na święta Bożego Narodzenia</h2>
-          <p>Kalendarz adwentowy e-Advent to wyjątkowy prezent, który można podarować bliskim na święta. Zamiast
-            tradycyjnego kalendarza adwentowego do druku, możesz podarować doświadczenie, które będzie trwać przez cały
-            grudzień. To prezent, który tworzy się każdego dnia, budując oczekiwanie i radość przed świętami Bożego
-            Narodzenia. Nasz wirtualny kalendarz adwentowy to sposób na stworzenie magicznych wspomnień, które będą
-            trwać długo po zakończeniu świąt.</p>
-
-          <h3>Główne funkcje kalendarza adwentowego e-Advent</h3>
-          <ul>
-            <li>Pełna personalizacja zadań adwentowych</li>
-            <li>Interaktywne otwieranie okienek każdego dnia grudnia</li>
-            <li>Możliwość dodania własnych zadań lub losowania z gotowej bazy</li>
-            <li>Określanie czasu realizacji zadań wielodniowych</li>
-            <li>Natychmiastowy dostęp po zakupie</li>
-            <li>Bezpieczna płatność online</li>
-            <li>Dostęp z każdego urządzenia z internetem</li>
-          </ul>
-
-          <p>Dołącz do tysięcy zadowolonych użytkowników i stwórz swój własny interaktywny kalendarz adwentowy już dziś!
-            Stwórz swój kalendarz za jedyne 9 zł i ciesz się magicznymi chwilami przez cały grudzień.</p>
-
-          <p><a href="/stworz-kalendarz" style="color: #c41e3a; text-decoration: none; font-weight: bold;">Rozpocznij
-              tworzenie swojego kalendarza adwentowego →</a></p>
-        </section>
-      </main>
-
-      <footer style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #0f5132;">
-        <p style="text-align: center; color: #666;">
-          <a href="/polityka-prywatnosci" style="color: #0f5132; text-decoration: none;">Polityka prywatności</a> |
-          <a href="/regulamin" style="color: #0f5132; text-decoration: none;">Regulamin</a> |
-          <a href="/dostawa-i-zwroty" style="color: #0f5132; text-decoration: none;">Dostawa i zwroty</a> |
-          <a href="/" style="color: #0f5132; text-decoration: none;">Strona główna</a>
-        </p>
-        <p style="text-align: center; color: #666; font-size: 14px;">© 2024 e-Advent. Wszelkie prawa zastrzeżone.</p>
-      </footer>
-    </div>
+    <p>Włącz JavaScript, aby przeglądać ofertę i złożyć zamówienie w e-Advent.</p>
+    <nav aria-label="Oferta e-Advent">
+      <a href="/">Strona główna</a> ·
+      <a href="/kalendarze-adwentowe">Kalendarze adwentowe</a> ·
+      <a href="/list-do-swietego-mikolaja">List do Świętego Mikołaja</a> ·
+      <a href="/dostawa-i-zwroty">Dostawa i zwroty</a>
+    </nav>
   </noscript>
 
   <!-- Facebook Pixel Code - noscript fallback -->

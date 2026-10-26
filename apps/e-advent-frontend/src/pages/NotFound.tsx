@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
+import SEOHead from '../components/SEOHead';
 
 export default function NotFound() {
   return (
     <FestivePage centered showLogo maxWidth="md">
+      <SEOHead title="Nie znaleziono strony | e-Advent" description="Ta strona nie istnieje. Wróć do oferty e-Advent." robots="noindex, follow" />
       <div className="text-center max-w-2xl">
         <h1 className="text-8xl md:text-9xl font-bold text-christmas-gold-light drop-shadow-2xl font-calligraphy mb-4">
           404

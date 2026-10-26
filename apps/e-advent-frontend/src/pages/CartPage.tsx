@@ -51,6 +51,7 @@ export default function CartPage() {
         title="Koszyk | e-Advent"
         description="Twój koszyk e-Advent — kalendarze adwentowe i List do Świętego Mikołaja."
         canonical="https://e-advent.pl/koszyk"
+        robots="noindex, follow"
       />
 
       <FestivePage maxWidth="lg">
