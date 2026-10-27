@@ -12,7 +12,7 @@ export default function ExportGeneratingModal({ kind }: ExportGeneratingModalPro
       <div className="panel-card max-w-sm w-full p-6 text-center shadow-lg">
         <span className="spinner mx-auto mb-4" />
         <p className="text-sm font-medium text-gray-800">{label}</p>
-        <p className="text-xs text-gray-500 mt-2">To może potrwać kilkanaście sekund.</p>
+        <p className="text-xs text-gray-500 mt-2">Zwykle poniżej minuty — nie zamykaj tej karty.</p>
       </div>
     </div>
   );

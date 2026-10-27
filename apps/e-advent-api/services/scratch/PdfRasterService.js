@@ -89,7 +89,7 @@ async function pdfBufferToPng(pdfBuffer, options = {}) {
   }).promise;
   await pdf.destroy();
 
-  if (direct) return canvas.toBuffer('image/png', { compressionLevel: 1 });
+  if (direct) return canvas.toBuffer('image/png', { compressionLevel: 6 });
 
   let outCanvas = canvas;
   if (canvasW !== targetW || canvasH !== targetH) {
@@ -107,8 +107,8 @@ async function pdfBufferToPng(pdfBuffer, options = {}) {
   // Thin white frame: enlarge PNG, leave graphic untouched.
   outCanvas = withWhiteBorder(outCanvas, PNG_BORDER_PX);
 
-  // compressionLevel 0 = least compression / fastest / largest (best visual fidelity for print proofs)
-  return outCanvas.toBuffer('image/png', { compressionLevel: 1 });
+  // PNG compression is lossless; 6 keeps files small enough for Vercel without quality loss.
+  return outCanvas.toBuffer('image/png', { compressionLevel: 6 });
 }
 
 module.exports = {
