@@ -102,7 +102,7 @@ function registerScratchExportRoutes(router, authAdmin) {
       const pdfBuffer = await buildExportPdf(row, format);
 
       const filename = scratchExportFilename(row.id, format, 'pdf');
-      return sendAdminDownload(res, {
+      return await sendAdminDownload(res, {
         buffer: pdfBuffer,
         contentType: 'application/pdf',
         filename,
@@ -126,7 +126,7 @@ function registerScratchExportRoutes(router, authAdmin) {
       const pngBuffer = await pdfBufferToPng(pdfBuffer, { format, dpi });
 
       const filename = scratchExportFilename(row.id, format, 'png');
-      return sendAdminDownload(res, {
+      return await sendAdminDownload(res, {
         buffer: pngBuffer,
         contentType: 'image/png',
         filename,
