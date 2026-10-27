@@ -119,6 +119,7 @@ export default function GeneratorPage() {
       apiError(err, 'Nie udało się wygenerować certyfikatu.');
     } finally {
       setExporting(null);
+      void refetch();
     }
   };
 
@@ -139,6 +140,7 @@ export default function GeneratorPage() {
       apiError(err, 'Nie udało się wygenerować zdrapki.');
     } finally {
       setExporting(null);
+      void refetch();
     }
   };
 
@@ -253,11 +255,25 @@ export default function GeneratorPage() {
       header: '',
       render: (row) => (
         <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
-          <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => navigate(`/calendars/${row.id}`)}>
+          <button
+            type="button"
+            className="btn-secondary px-2 py-1 text-xs"
+            onClick={(event) => {
+              event.stopPropagation();
+              navigate(`/calendars/${row.id}`);
+            }}
+          >
             Podgląd
           </button>
           {kindOf(row) !== 'interactive' && (
-            <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => void handleListDownload(row)}>
+            <button
+              type="button"
+              className="btn-secondary px-2 py-1 text-xs"
+              onClick={(event) => {
+                event.stopPropagation();
+                void handleListDownload(row);
+              }}
+            >
               Pobierz
             </button>
           )}

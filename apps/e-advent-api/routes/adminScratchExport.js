@@ -4,6 +4,7 @@ const { query } = require('../config/database');
 const { formatOrderNumber } = require('../utils/orderNumber');
 
 const { pdfBufferToPng } = require('../services/scratch/PdfRasterService');
+const { sendAdminDownload } = require('../services/adminExportDownload');
 const {
   normalizeExportFormat,
   normalizeDpi,
@@ -101,10 +102,12 @@ function registerScratchExportRoutes(router, authAdmin) {
       const pdfBuffer = await buildExportPdf(row, format);
 
       const filename = scratchExportFilename(row.id, format, 'pdf');
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.setHeader('Content-Length', pdfBuffer.length);
-      return res.send(pdfBuffer);
+      return sendAdminDownload(res, {
+        buffer: pdfBuffer,
+        contentType: 'application/pdf',
+        filename,
+        folder: 'scratch-exports',
+      });
     } catch (error) {
       return sendExportError(res, error);
     }
@@ -123,10 +126,12 @@ function registerScratchExportRoutes(router, authAdmin) {
       const pngBuffer = await pdfBufferToPng(pdfBuffer, { format, dpi });
 
       const filename = scratchExportFilename(row.id, format, 'png');
-      res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.setHeader('Content-Length', pngBuffer.length);
-      return res.send(pngBuffer);
+      return sendAdminDownload(res, {
+        buffer: pngBuffer,
+        contentType: 'image/png',
+        filename,
+        folder: 'scratch-exports',
+      });
     } catch (error) {
       return sendExportError(res, error);
     }

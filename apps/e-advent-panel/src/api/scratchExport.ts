@@ -46,8 +46,20 @@ export async function downloadScratchExport(
     throw new Error(await readErrorMessage(res));
   }
 
-  const blob = await res.blob();
   const fallback = `kalendarz-${calendarId}.${kind}`;
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await res.json() as { downloadUrl?: string; filename?: string; message?: string };
+    if (!data.downloadUrl) {
+      throw new Error(data.message || 'Nie udało się przygotować pliku do pobrania.');
+    }
+    const fileRes = await fetch(data.downloadUrl);
+    if (!fileRes.ok) throw new Error('Nie udało się pobrać wygenerowanego pliku.');
+    triggerBlobDownload(await fileRes.blob(), data.filename || fallback);
+    return;
+  }
+
+  const blob = await res.blob();
   const filename = filenameFromDisposition(res.headers.get('Content-Disposition'), fallback);
   triggerBlobDownload(blob, filename);
 }

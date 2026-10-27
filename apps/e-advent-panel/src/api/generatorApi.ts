@@ -47,7 +47,6 @@ export const generatorApi = createApi({
     createCertificate: builder.mutation<CalendarDetail, { childName: string; variant: 'on' | 'ona' }>({
       query: (body) => ({ url: '/generator/certificates', method: 'POST', body }),
       transformResponse: (response: { calendar: RawCalendar }) => mapCalendarDetail(response.calendar),
-      invalidatesTags: ['Generator'],
     }),
 
     createScratch: builder.mutation<CalendarDetail, {
@@ -58,7 +57,6 @@ export const generatorApi = createApi({
     }>({
       query: (body) => ({ url: '/generator/scratch', method: 'POST', body }),
       transformResponse: (response: { calendar: RawCalendar }) => mapCalendarDetail(response.calendar),
-      invalidatesTags: ['Generator'],
     }),
 
     createInteractive: builder.mutation<{ calendar: CalendarDetail; accessCode: string }, {
