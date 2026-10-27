@@ -27,7 +27,9 @@ function sendInline(res, body, contentType, filename) {
 }
 
 async function parkExportOnBlob(body, { folder, safeName, contentType }) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN && process.env.VERCEL !== '1') return null;
+  // Only when a real Blob token exists. Vercel=1 without BLOB_READ_WRITE_TOKEN
+  // throws "No blob credentials found" on every oversized export.
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   try {
     const { put } = require('@vercel/blob');
     return await put(`${folder}/${Date.now()}-${safeName}`, body, {
@@ -71,7 +73,7 @@ async function sendAdminDownload(res, { buffer, contentType, filename, folder = 
     });
   }
 
-  if (contentType === 'image/png') {
+  if (contentType === 'image/png' || contentType === 'image/jpeg') {
     const jpeg = await pngBufferToFitJpeg(body, maxBytes);
     if (jpeg) {
       return sendInline(res, jpeg, 'image/jpeg', jpegFilename(safeName));

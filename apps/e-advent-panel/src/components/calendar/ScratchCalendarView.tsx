@@ -32,7 +32,7 @@ export default function ScratchCalendarView({
             <h2 className="heading-section">Design produkcyjny</h2>
             <p className="text-xs text-gray-500 mt-0.5">
               Format z zamówienia: <span className="font-semibold text-gray-700">{calendar.format || 'A3'}</span>
-              {' · '}eksport PNG @ 300 DPI
+              {' · '}eksport PNG @ 600 DPI
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

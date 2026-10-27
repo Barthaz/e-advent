@@ -62,10 +62,10 @@ describe('sendAdminDownload', () => {
     expect(res.send).not.toHaveBeenCalled();
   });
 
-  test('tries blob on Vercel even without BLOB_READ_WRITE_TOKEN', async () => {
+  test('does not call Blob on Vercel when BLOB_READ_WRITE_TOKEN is missing', async () => {
     delete process.env.BLOB_READ_WRITE_TOKEN;
     process.env.VERCEL = '1';
-    put.mockResolvedValue({ url: 'https://blob.example/oidc.png' });
+    pngBufferToFitJpeg.mockResolvedValue(Buffer.from('jpeg-bytes'));
     const res = mockRes();
     await sendAdminDownload(res, {
       buffer: Buffer.from('oversized-png'),
@@ -73,10 +73,8 @@ describe('sendAdminDownload', () => {
       filename: 'kalendarz.png',
       maxBytes: 4,
     });
-    expect(put).toHaveBeenCalled();
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      downloadUrl: 'https://blob.example/oidc.png',
-    }));
+    expect(put).not.toHaveBeenCalled();
+    expect(res.send).toHaveBeenCalledWith(Buffer.from('jpeg-bytes'));
   });
 
   test('falls back to a fitting JPEG when blob is unavailable', async () => {

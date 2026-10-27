@@ -120,7 +120,7 @@ function registerScratchExportRoutes(router, authAdmin) {
       if (!row) return;
 
       const format = normalizeExportFormat(req.query.format || row.format || 'A3');
-      const dpi = normalizeDpi(req.query.dpi || 300);
+      const dpi = normalizeDpi(req.query.dpi || 600);
 
       const pdfBuffer = await buildExportPdf(row, format);
       const pngBuffer = await pdfBufferToPng(pdfBuffer, { format, dpi });
