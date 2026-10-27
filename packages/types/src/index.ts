@@ -1,6 +1,6 @@
 export type ProductType = 'interactive' | 'scratch' | 'letter';
 export type CalendarFormat = 'A4' | 'A3';
-export type PaymentStatus = 'pending' | 'succeeded' | 'failed';
+export type PaymentStatus = 'pending' | 'succeeded' | 'failed' | 'canceled';
 export type FulfillmentStatus =
   | 'pending'
   | 'processing'

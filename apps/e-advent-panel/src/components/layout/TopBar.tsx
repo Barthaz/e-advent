@@ -12,9 +12,11 @@ function useBreadcrumbs(): Breadcrumb[] {
   const { pathname } = useLocation();
   const segments = pathname.split('/').filter(Boolean);
 
-  const crumbs: Breadcrumb[] = [{ label: 'Panel', to: '/orders' }];
+  const crumbs: Breadcrumb[] = [{ label: 'Panel', to: '/' }];
 
-  if (segments[0] === 'orders') {
+  if (segments.length === 0) {
+    crumbs.push({ label: 'Pulpit' });
+  } else if (segments[0] === 'orders') {
     crumbs.push({ label: 'Zamówienia', to: '/orders' });
     if (segments[1]) {
       crumbs.push({ label: 'Szczegóły zamówienia' });
@@ -32,6 +34,8 @@ function useBreadcrumbs(): Breadcrumb[] {
     crumbs.push({ label: 'Zadania' });
   } else if (segments[0] === 'rabaty') {
     crumbs.push({ label: 'Rabaty' });
+  } else if (segments[0] === 'generator') {
+    crumbs.push({ label: 'Generator' });
   }
 
   return crumbs;

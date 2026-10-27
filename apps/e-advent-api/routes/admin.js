@@ -20,6 +20,7 @@ const { registerScratchExportRoutes } = require('./adminScratchExport');
 const { registerGeneratorRoutes } = require('./adminGenerator');
 const { normalizeAdminTasks } = require('../services/calendarAdminTasks');
 const { withPaidItemList } = require('../services/orderPaidPrices');
+const { loadAdminDashboard } = require('../services/adminDashboard');
 
 // ── POST /admin/login ──────────────────────────────────────────────────────────
 
@@ -61,6 +62,18 @@ router.post('/login', loginLimiter, [
 router.post('/logout', authAdmin, (req, res) => {
     // Bezstanowy JWT – klient po prostu usuwa token po swojej stronie
     res.json({ success: true, message: 'Logged out' });
+});
+
+// ── GET /admin/dashboard — pulpit sezonu ───────────────────────────────────────
+
+router.get('/dashboard', authAdmin, async (req, res) => {
+    try {
+        const dashboard = await loadAdminDashboard(new Date());
+        res.json(dashboard);
+    } catch (error) {
+        console.error('Admin dashboard error:', error);
+        res.status(500).json({ error: 'Failed to load dashboard', message: error.message });
+    }
 });
 
 // ── GET /admin/orders — lista zamówień z filtrami ──────────────────────────────

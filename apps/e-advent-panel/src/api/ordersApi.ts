@@ -6,6 +6,7 @@ import type {
   OrderDetail,
   OrderFilters,
   PatchOrderRequest,
+  OrderListItem,
 } from '../types/order';
 import { mapOrdersResponse, mapOrderDetail, mapPatchedOrder } from '../utils/mappers';
 
@@ -23,6 +24,19 @@ export const ordersApi = createApi({
     },
   }),
   endpoints: (builder) => ({
+    getDashboard: builder.query<DashboardResponse, void>({
+      query: () => '/dashboard',
+      transformResponse: (raw: RawDashboard) => ({
+        season: raw.season,
+        summary: raw.summary,
+        today: mapOrdersResponse({ orders: raw.today ?? [], total: raw.today?.length ?? 0, page: 1, limit: raw.today?.length ?? 0 }).orders,
+        toFulfill: mapOrdersResponse({ orders: raw.toFulfill ?? [], total: raw.toFulfill?.length ?? 0, page: 1, limit: raw.toFulfill?.length ?? 0 }).orders,
+        toShip: mapOrdersResponse({ orders: raw.toShip ?? [], total: raw.toShip?.length ?? 0, page: 1, limit: raw.toShip?.length ?? 0 }).orders,
+        listLimit: raw.listLimit ?? 40,
+      }),
+      providesTags: ['OrderList'],
+    }),
+
     getOrders: builder.query<OrdersResponse, OrderFilters>({
       query: (filters) => {
         const params = new URLSearchParams();
@@ -70,7 +84,40 @@ export const ordersApi = createApi({
   }),
 });
 
+export interface DashboardSummary {
+  orders: number;
+  ordersTotal: number;
+  paidOrders: number;
+  paidAmount: number;
+  averagePaid: number;
+  canceledOrders: number;
+  pendingOrders: number;
+  toFulfill: number;
+  toShip: number;
+  todayOrders: number;
+  currency: string;
+}
+
+export interface DashboardResponse {
+  season: { year: number; label: string; from: string; to: string };
+  summary: DashboardSummary;
+  today: OrderListItem[];
+  toFulfill: OrderListItem[];
+  toShip: OrderListItem[];
+  listLimit: number;
+}
+
+type RawDashboard = {
+  season: DashboardResponse['season'];
+  summary: DashboardSummary;
+  today?: Parameters<typeof mapOrdersResponse>[0]['orders'];
+  toFulfill?: Parameters<typeof mapOrdersResponse>[0]['orders'];
+  toShip?: Parameters<typeof mapOrdersResponse>[0]['orders'];
+  listLimit?: number;
+};
+
 export const {
+  useGetDashboardQuery,
   useGetOrdersQuery,
   useGetOrderQuery,
   usePatchOrderMutation,

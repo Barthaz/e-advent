@@ -4,6 +4,7 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   pending: 'Oczekuje',
   succeeded: 'Opłacone',
   failed: 'Nieudane',
+  canceled: 'Anulowana',
 };
 
 export const FULFILLMENT_STATUS_LABELS: Record<FulfillmentStatus, string> = {
@@ -36,6 +37,7 @@ export const PAYMENT_STATUS_OPTIONS: Array<{ value: PaymentStatus | ''; label: s
   { value: 'pending', label: 'Oczekuje' },
   { value: 'succeeded', label: 'Opłacone' },
   { value: 'failed', label: 'Nieudane' },
+  { value: 'canceled', label: 'Anulowana' },
 ];
 
 export const FULFILLMENT_STATUS_OPTIONS: Array<{ value: FulfillmentStatus | ''; label: string }> = [

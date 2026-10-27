@@ -12,6 +12,7 @@ import EmailTemplatesPage from './pages/EmailTemplatesPage';
 import CatalogTasksPage from './pages/CatalogTasksPage';
 import DiscountCodesPage from './pages/DiscountCodesPage';
 import GeneratorPage from './pages/GeneratorPage';
+import HomePage from './pages/HomePage';
 
 export default function App() {
   return (
@@ -25,7 +26,7 @@ export default function App() {
               <AuthGuard>
                 <AppLayout>
                   <Routes>
-                    <Route index element={<Navigate to="/orders" replace />} />
+                    <Route index element={<HomePage />} />
                     <Route path="orders" element={<OrdersPage />} />
                     <Route path="orders/:id" element={<OrderDetailPage />} />
                     <Route path="calendars/:id" element={<CalendarDetailPage />} />
@@ -34,7 +35,7 @@ export default function App() {
                     <Route path="tasks" element={<CatalogTasksPage />} />
                     <Route path="rabaty" element={<DiscountCodesPage />} />
                     <Route path="generator" element={<GeneratorPage />} />
-                    <Route path="*" element={<Navigate to="/orders" replace />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </AppLayout>
               </AuthGuard>

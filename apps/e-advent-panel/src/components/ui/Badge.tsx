@@ -18,6 +18,7 @@ const VARIANT_ICON: Record<string, string> = {
   pending: 'fa-clock',
   succeeded: 'fa-check-circle',
   failed: 'fa-times-circle',
+  canceled: 'fa-circle-xmark',
   new: 'fa-star',
   processing: 'fa-gear',
   shipped: 'fa-truck',

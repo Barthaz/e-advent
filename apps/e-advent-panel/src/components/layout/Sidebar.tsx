@@ -13,6 +13,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { to: '/', icon: 'fa-house', label: 'Pulpit' },
   { to: '/orders', icon: 'fa-list-ul', label: 'Zamówienia' },
   { to: '/generator', icon: 'fa-wand-magic-sparkles', label: 'Generator' },
   { to: '/rabaty', icon: 'fa-percent', label: 'Rabaty' },
@@ -80,6 +81,7 @@ export default function Sidebar() {
             key={item.to}
             to={item.to}
             onClick={closeMobileNav}
+            end={item.to === '/'}
             className={({ isActive }) => `sidebar-nav-item ${isActive ? 'active' : ''}`}
           >
             <i className={`fa-solid ${item.icon}`} />
