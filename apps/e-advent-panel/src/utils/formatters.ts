@@ -1,4 +1,5 @@
 import type { PaymentStatus, FulfillmentStatus, DeliveryType, ProductType } from '../types/order';
+import type { CalendarProductType } from '../types/calendar';
 import {
   PAYMENT_STATUS_LABELS,
   FULFILLMENT_STATUS_LABELS,
@@ -82,8 +83,9 @@ export function getDeliveryBadgeVariant(
   return type;
 }
 
-export function getProductTypeLabel(type: ProductType): string {
-  return PRODUCT_TYPE_LABELS[type] ?? type;
+export function getProductTypeLabel(type: CalendarProductType | ProductType | string): string {
+  if (type === 'certificate') return 'Certyfikat';
+  return PRODUCT_TYPE_LABELS[type as ProductType] ?? type;
 }
 
 export function truncate(text: string | null | undefined, max = 40): string {

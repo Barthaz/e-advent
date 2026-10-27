@@ -101,12 +101,53 @@ const withNamedLocks = async (keys, fn) => {
   }
 };
 
+async function ensureCalendarOriginSchema(conn) {
+  const { database } = getMysqlConfig();
+  const [cols] = await conn.execute(
+    `SELECT COUNT(*) AS cnt
+     FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'calendars' AND COLUMN_NAME = 'origin'`,
+    [database],
+  );
+  if (!Number(cols[0]?.cnt)) {
+    try {
+      await conn.execute(
+        `ALTER TABLE calendars
+         ADD COLUMN origin VARCHAR(20) NOT NULL DEFAULT 'store'
+           COMMENT 'store = checkout / shop; generator = admin panel'
+           AFTER daily_content_email`,
+      );
+      console.log('Added calendars.origin');
+    } catch (err) {
+      if (err.code !== 'ER_DUP_FIELDNAME' && err.errno !== 1060) throw err;
+    }
+  }
+
+  const [indexes] = await conn.execute(
+    `SELECT COUNT(*) AS cnt
+     FROM information_schema.STATISTICS
+     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'calendars' AND INDEX_NAME = 'idx_cal_origin'`,
+    [database],
+  );
+  if (!Number(indexes[0]?.cnt)) {
+    try {
+      await conn.execute('CREATE INDEX idx_cal_origin ON calendars (origin)');
+      console.log('Added calendars.idx_cal_origin');
+    } catch (err) {
+      if (err.code !== 'ER_DUP_KEYNAME' && err.errno !== 1061) throw err;
+    }
+  }
+}
+
 const connectDB = async () => {
   const p = createPool();
-  // Testuj połączenie
   const conn = await p.getConnection();
-  await conn.ping();
-  conn.release();
+  try {
+    await conn.ping();
+    await ensureCalendarOriginSchema(conn);
+  } finally {
+    conn.release();
+  }
   console.log('MySQL connected successfully');
 };
 

@@ -6,6 +6,7 @@ import { calendarsApi } from '../api/calendarsApi';
 import { adminApi } from '../api/adminApi';
 import { emailsApi } from '../api/emailsApi';
 import { discountsApi } from '../api/discountsApi';
+import { generatorApi } from '../api/generatorApi';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     [calendarsApi.reducerPath]: calendarsApi.reducer,
     [emailsApi.reducerPath]: emailsApi.reducer,
     [discountsApi.reducerPath]: discountsApi.reducer,
+    [generatorApi.reducerPath]: generatorApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -23,7 +25,8 @@ export const store = configureStore({
       .concat(ordersApi.middleware)
       .concat(calendarsApi.middleware)
       .concat(emailsApi.middleware)
-      .concat(discountsApi.middleware),
+      .concat(discountsApi.middleware)
+      .concat(generatorApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

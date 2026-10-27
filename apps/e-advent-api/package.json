@@ -30,6 +30,7 @@
     "migrate:inpost": "node scripts/migrate-inpost.js",
     "migrate:discount-codes": "node scripts/migrate-discount-codes.js",
     "migrate:order-timezone": "node scripts/migrate-order-timezone.js",
+    "migrate:calendar-origin": "node scripts/migrate-calendar-origin.js",
     "seed:letter-promo": "node scripts/seed-letter-promo.js"
   },
   "nodemonConfig": {

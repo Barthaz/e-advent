@@ -14,6 +14,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { to: '/orders', icon: 'fa-list-ul', label: 'Zamówienia' },
+  { to: '/generator', icon: 'fa-wand-magic-sparkles', label: 'Generator' },
   { to: '/rabaty', icon: 'fa-percent', label: 'Rabaty' },
   { to: '/tasks', icon: 'fa-calendar-days', label: 'Zadania' },
   { to: '/emails', icon: 'fa-paper-plane', label: 'Wysyłki' },

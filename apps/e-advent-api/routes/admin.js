@@ -17,6 +17,8 @@ const {
 const { listEmailTemplates, getEmailTemplatePreview } = require('../services/emailTemplates');
 const { formatOrderNumber, parseOrderNumberSearch } = require('../utils/orderNumber');
 const { registerScratchExportRoutes } = require('./adminScratchExport');
+const { registerGeneratorRoutes } = require('./adminGenerator');
+const { normalizeAdminTasks } = require('../services/calendarAdminTasks');
 const { withPaidItemList } = require('../services/orderPaidPrices');
 
 // ── POST /admin/login ──────────────────────────────────────────────────────────
@@ -413,6 +415,7 @@ router.patch('/orders/:id', authAdmin, [
 });
 
 registerScratchExportRoutes(router, authAdmin);
+registerGeneratorRoutes(router, authAdmin);
 require('./adminInpost')(router, authAdmin);
 require('./adminDiscountCodes')(router, authAdmin);
 require('./adminCertificates')(router, authAdmin);
@@ -430,7 +433,7 @@ router.get('/calendars/:id', authAdmin, async (req, res) => {
 
         const row = rows[0];
         res.json({
-            calendar: calendarToAdminJson(row),
+            calendar: Calendar.calendarRowToAdminJson(row),
         });
     } catch (error) {
         console.error('Admin calendar detail error:', error);
@@ -493,19 +496,8 @@ router.patch('/calendars/:id', authAdmin, [
             if (!Array.isArray(req.body.tasks)) {
                 return res.status(400).json({ error: 'tasks must be an array' });
             }
-            // Normalizuj taski: day + task (tekst) + opcjonalne pola
-            const normalized = req.body.tasks.map((t, index) => {
-                const day = Number(t.day) || index + 1;
-                const text = String(t.task ?? t.title ?? t.content ?? '').trim();
-                const out = { day, task: text };
-                if (t.status) out.status = t.status;
-                if (t.duration != null) out.duration = t.duration;
-                if (t.latestDay != null) out.latestDay = t.latestDay;
-                if (t.lockedDay != null) out.lockedDay = t.lockedDay;
-                return out;
-            });
             sets.push('tasks = ?');
-            values.push(JSON.stringify(normalized));
+            values.push(JSON.stringify(normalizeAdminTasks(req.body.tasks)));
         }
 
         if (sets.length === 0) {
@@ -519,36 +511,13 @@ router.patch('/calendars/:id', authAdmin, [
         const row = updated[0];
         res.json({
             success: true,
-            calendar: calendarToAdminJson(row),
+            calendar: Calendar.calendarRowToAdminJson(row),
         });
     } catch (error) {
         console.error('Admin calendar patch error:', error);
         res.status(500).json({ error: 'Failed to update calendar', message: error.message });
     }
 });
-
-function calendarToAdminJson(row) {
-    return {
-        id:                row.id,
-        title:             row.title,
-        author:            row.author,
-        email:             row.email,
-        productType:       row.product_type,
-        sku:               row.sku,
-        format:            row.format,
-        designUrl:         row.design_url,
-        tasks:             typeof row.tasks === 'string' ? JSON.parse(row.tasks) : (row.tasks || []),
-        status:            row.status,
-        accessCode:        row.access_code,
-        isFree:            !!row.is_free,
-        fulfillmentStatus: row.fulfillment_status,
-        fulfillmentNotes:  row.fulfillment_notes,
-        openingMethod:     row.opening_method || null,
-        dailyContentEmail: row.daily_content_email || null,
-        createdAt:         row.created_at,
-        updatedAt:         row.updated_at,
-    };
-}
 
 function mailerErrorResponse(res, error) {
     const status = error.status || 500;

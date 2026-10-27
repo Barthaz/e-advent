@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => {
         allow: [monorepoRoot],
       },
       headers: {
-        'Content-Security-Policy': "frame-ancestors 'self' http://localhost:5174 http://127.0.0.1:5174",
+        'Content-Security-Policy': "frame-ancestors 'self' https://panel.e-advent.pl http://localhost:5174 http://127.0.0.1:5174",
       },
     },
     build: {

@@ -32,6 +32,7 @@ const VARIANT_ICON: Record<string, string> = {
   interactive: 'fa-mobile-screen',
   scratch: 'fa-screwdriver-wrench',
   letter: 'fa-envelope-open-text',
+  certificate: 'fa-certificate',
 };
 
 export default function Badge({ variant, label, icon }: BadgeProps) {

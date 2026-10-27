@@ -42,20 +42,21 @@ function normalizeVariant(raw) {
   return null;
 }
 
-function formatCertificateSerial(n) {
+function formatCertificateSerial(n, prefix = 'SN') {
   const num = Number(n);
   if (!Number.isInteger(num) || num < 1) {
     throw fail('Nieprawidłowy numer certyfikatu.', 500, 'BAD_SERIAL');
   }
-  return `SN-${CERTIFICATE_YEAR}-${String(num).padStart(6, '0')}`;
+  const tag = String(prefix || 'SN').toUpperCase();
+  return `${tag}-${CERTIFICATE_YEAR}-${String(num).padStart(6, '0')}`;
 }
 
-function formatCertificateLabel(n) {
-  return `CERTYFIKAT NR: ${formatCertificateSerial(n)}`;
+function formatCertificateLabel(n, prefix = 'SN') {
+  return `CERTYFIKAT NR: ${formatCertificateSerial(n, prefix)}`;
 }
 
-function certificateFilename({ variant, serialNumber }) {
-  return `certyfikat-${formatCertificateSerial(serialNumber)}-${variant}.pdf`;
+function certificateFilename({ variant, serialNumber, serialPrefix = 'SN' }) {
+  return `certyfikat-${formatCertificateSerial(serialNumber, serialPrefix)}-${variant}.pdf`;
 }
 
 function fitSize(font, text, desired, maxWidth) {
@@ -86,7 +87,7 @@ function loadTemplateBytes(variant) {
   return fs.readFileSync(templatePath);
 }
 
-async function buildCertificatePdf({ variant, childName, serialNumber }) {
+async function buildCertificatePdf({ variant, childName, serialNumber, serialPrefix = 'SN' }) {
   const normalized = normalizeVariant(variant);
   if (!normalized) {
     throw fail('Wybierz wariant męski (ON) albo damski (ONA).', 400, 'BAD_VARIANT');
@@ -107,7 +108,7 @@ async function buildCertificatePdf({ variant, childName, serialNumber }) {
   const page = pdfDoc.getPages()[0];
   drawCentered(page, scriptFont, name, { ...LAYOUT.scriptName, color: NAME_COLOR });
   drawCentered(page, serifBoldFont, name, { ...LAYOUT.serifName, color: NAME_COLOR });
-  drawCentered(page, serifFont, formatCertificateLabel(serialNumber), {
+  drawCentered(page, serifFont, formatCertificateLabel(serialNumber, serialPrefix), {
     ...LAYOUT.serial,
     color: SERIAL_COLOR,
   });

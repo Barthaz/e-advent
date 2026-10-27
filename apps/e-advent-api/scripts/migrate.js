@@ -33,13 +33,15 @@ CREATE TABLE IF NOT EXISTS calendars (
   fulfillment_notes  TEXT          NULL,
   opening_method     VARCHAR(20)   NULL COMMENT 'app | email | online',
   daily_content_email VARCHAR(255) NULL COMMENT 'Inbox for daily window content (email opening method)',
+  origin             VARCHAR(20)   NOT NULL DEFAULT 'store' COMMENT 'store = checkout / shop; generator = admin panel',
   created_at         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX idx_cal_email (email),
   INDEX idx_cal_status (status),
   INDEX idx_cal_created (created_at),
-  INDEX idx_cal_edit_token (edit_token)
+  INDEX idx_cal_edit_token (edit_token),
+  INDEX idx_cal_origin (origin)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS orders (

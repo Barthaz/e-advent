@@ -9,7 +9,7 @@ import type {
   ProductType,
   DeliveryType,
 } from '../types/order';
-import type { CalendarDetail, CalendarTaskDetail } from '../types/calendar';
+import type { CalendarDetail, CalendarProductType, CalendarTaskDetail } from '../types/calendar';
 import { getOrderItemDisplayName, paidItemPrices, roundPln } from '@e-advent/products';
 
 /** Surowy wiersz z GET /admin/orders (snake_case z MySQL) */
@@ -135,6 +135,7 @@ interface RawCalendarDetail {
   fulfillmentNotes?: string;
   openingMethod?: string | null;
   dailyContentEmail?: string | null;
+  origin?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -171,6 +172,22 @@ function resolveProductType(
   if (sku === 'santa-letter') return 'letter';
   if (sku === 'santa-certificate') return 'letter';
   return 'interactive';
+}
+
+/** Calendar rows may be product_type=certificate (generator). Order SKU santa-certificate stays letter. */
+export function resolveCalendarProductType(
+  productType: string | null | undefined,
+  sku?: string | null,
+): CalendarProductType {
+  if (productType === 'certificate') return 'certificate';
+  return resolveProductType(productType, sku);
+}
+
+function readCertificateNumber(rawTasks: unknown): number | null {
+  const first = Array.isArray(rawTasks) ? rawTasks[0] : rawTasks;
+  if (!first || typeof first !== 'object') return null;
+  const n = Number((first as { certificateNumber?: unknown }).certificateNumber);
+  return Number.isInteger(n) && n > 0 ? n : null;
 }
 
 function mapOrderItems(raw: unknown): OrderItem[] {
@@ -426,7 +443,8 @@ export function mapCalendarDetail(raw: RawCalendarDetail): CalendarDetail {
     title: raw.title ?? '',
     author: raw.author ?? '',
     customer_email: raw.email ?? null,
-    product_type: resolveProductType(raw.productType, raw.sku),
+    product_type: resolveCalendarProductType(raw.productType, raw.sku),
+    origin: raw.origin === 'generator' ? 'generator' : 'store',
     sku: raw.sku ?? null,
     format: raw.format ?? '',
     design_url: raw.designUrl ?? null,
@@ -436,6 +454,7 @@ export function mapCalendarDetail(raw: RawCalendarDetail): CalendarDetail {
     opening_method: raw.openingMethod ?? null,
     daily_content_email: raw.dailyContentEmail ?? null,
     tasks: normalizeTasks(raw.tasks),
+    certificate_number: readCertificateNumber(raw.tasks),
     created_at: raw.createdAt ?? '',
     updated_at: raw.updatedAt ?? '',
   };

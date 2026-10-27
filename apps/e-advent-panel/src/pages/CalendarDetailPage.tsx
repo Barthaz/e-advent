@@ -11,9 +11,12 @@ import InteractiveCalendarView, {
   InteractiveProgressSidebar,
 } from '../components/calendar/InteractiveCalendarView';
 import LetterCalendarView from '../components/calendar/LetterCalendarView';
+import CertificateCalendarView, { CertificateExtraMeta } from '../components/calendar/CertificateCalendarView';
 import ExportGeneratingModal from '../components/calendar/ExportGeneratingModal';
 import { useToast } from '../hooks/useToast';
 import { downloadScratchExport } from '../api/scratchExport';
+import { downloadGeneratorCertificatePdf } from '../api/generatorExport';
+import type { CertificateVariant } from '../api/certificateExport';
 import type { RootState } from '../store';
 import type { CalendarTaskDetail } from '../types/calendar';
 
@@ -27,7 +30,7 @@ export default function CalendarDetailPage() {
   const [patchCalendar, { isLoading: isSaving }] = usePatchCalendarMutation();
   const [sendDayEmail, { isLoading: isSendingDay }] = useSendCalendarDayEmailMutation();
   const [sendingDay, setSendingDay] = useState<number | null>(null);
-  const [exporting, setExporting] = useState<'pdf' | 'png' | null>(null);
+  const [exporting, setExporting] = useState<'pdf' | 'png' | CertificateVariant | null>(null);
 
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
@@ -143,6 +146,19 @@ export default function CalendarDetailPage() {
     }
   };
 
+  const handleCertificateExport = async (variant: CertificateVariant) => {
+    if (!id) return;
+    setExporting(variant);
+    try {
+      await downloadGeneratorCertificatePdf(() => store.getState(), id, variant);
+      toast.success(`Pobrano certyfikat ${variant.toUpperCase()}.`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Nie udało się wygenerować certyfikatu.');
+    } finally {
+      setExporting(null);
+    }
+  };
+
   if (isLoading) return <LoadingSpinner size="lg" label="Ładowanie kalendarza…" />;
   if (isError || !calendar) {
     return (
@@ -167,10 +183,19 @@ export default function CalendarDetailPage() {
       <ScratchCalendarView
         calendar={calendar}
         tasks={tasks}
-        exporting={exporting}
+        exporting={exporting === 'pdf' || exporting === 'png' ? exporting : null}
         onUpdateTask={updateTaskText}
         onExportPdf={() => handleExport('pdf')}
         onExportPng={() => handleExport('png')}
+      />
+    );
+  } else if (productType === 'certificate') {
+    extraMeta = <CertificateExtraMeta calendar={calendar} />;
+    main = (
+      <CertificateCalendarView
+        calendar={calendar}
+        exporting={exporting === 'on' || exporting === 'ona' ? exporting : null}
+        onDownload={handleCertificateExport}
       />
     );
   } else if (productType === 'letter') {
@@ -199,7 +224,7 @@ export default function CalendarDetailPage() {
 
   return (
     <>
-      {exporting && <ExportGeneratingModal kind={exporting} />}
+      {(exporting === 'pdf' || exporting === 'png') && <ExportGeneratingModal kind={exporting} />}
       <CalendarDetailShell
         calendar={calendar}
         title={title}

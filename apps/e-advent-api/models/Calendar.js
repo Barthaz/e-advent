@@ -44,6 +44,32 @@ function rowToCalendar(row) {
     isFree: !!row.is_free,
     fulfillmentStatus: row.fulfillment_status || 'pending',
     fulfillmentNotes: row.fulfillment_notes || null,
+    origin: row.origin === 'generator' ? 'generator' : 'store',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function calendarRowToAdminJson(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    title: row.title,
+    author: row.author,
+    email: row.email,
+    productType: row.product_type,
+    sku: row.sku,
+    format: row.format,
+    designUrl: row.design_url,
+    tasks: typeof row.tasks === 'string' ? JSON.parse(row.tasks) : (row.tasks || []),
+    status: row.status,
+    accessCode: row.access_code,
+    isFree: !!row.is_free,
+    fulfillmentStatus: row.fulfillment_status,
+    fulfillmentNotes: row.fulfillment_notes,
+    openingMethod: row.opening_method || null,
+    dailyContentEmail: row.daily_content_email || null,
+    origin: row.origin === 'generator' ? 'generator' : 'store',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -306,6 +332,44 @@ const findEmailOpeningCalendars = async () => {
   return rows.map(rowToCalendar);
 };
 
+function generatedTypeClause(type) {
+  if (type === 'certificate') return { sql: ' AND product_type = ?', vals: ['certificate'] };
+  if (type === 'scratch') return { sql: " AND (product_type = 'scratch' OR sku LIKE 'scratch%')", vals: [] };
+  if (type === 'interactive') return { sql: ' AND product_type = ?', vals: ['interactive'] };
+  return { sql: '', vals: [] };
+}
+
+const findGeneratedCalendars = async ({ type, limit = 50, skip = 0 } = {}) => {
+  const filter = generatedTypeClause(type);
+  const vals = [...filter.vals];
+  let sql = `SELECT * FROM calendars WHERE origin = 'generator'${filter.sql} ORDER BY created_at DESC`;
+  if (limit) {
+    sql += ' LIMIT ?';
+    vals.push(Number(limit));
+  }
+  if (skip) {
+    sql += ' OFFSET ?';
+    vals.push(Number(skip));
+  }
+  const [rows] = await query(sql, vals);
+  return rows;
+};
+
+const countGeneratedCalendars = async ({ type } = {}) => {
+  const filter = generatedTypeClause(type);
+  const [rows] = await query(
+    `SELECT COUNT(*) AS total FROM calendars WHERE origin = 'generator'${filter.sql}`,
+    filter.vals,
+  );
+  return Number(rows[0]?.total || 0);
+};
+
+const setCalendarOrigin = async (id, origin) => {
+  const value = origin === 'generator' ? 'generator' : 'store';
+  await query('UPDATE calendars SET origin = ? WHERE id = ?', [value, String(id)]);
+  return findCalendarById(id);
+};
+
 module.exports = {
   createCalendar,
   findCalendarById,
@@ -318,6 +382,10 @@ module.exports = {
   upsertCalendar,
   findCalendars,
   findEmailOpeningCalendars,
+  findGeneratedCalendars,
+  countGeneratedCalendars,
+  setCalendarOrigin,
+  calendarRowToAdminJson,
   openTask,
   generateEditToken,
 };

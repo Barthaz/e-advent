@@ -78,8 +78,11 @@ RewriteRule ^(.*)$ https://e-advent.pl/$1 [R=301,L]
 </IfModule>
 
 # Nagłówki bezpieczeństwa
+# Podgląd okienek w panelu (iframe z panel.e-advent.pl) wymaga CSP zamiast X-Frame-Options.
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"
-  Header set X-Frame-Options "SAMEORIGIN"
+  Header always unset X-Frame-Options
+  Header unset X-Frame-Options
+  Header always set Content-Security-Policy "frame-ancestors 'self' https://panel.e-advent.pl http://localhost:5174 http://127.0.0.1:5174"
   Header set X-XSS-Protection "1; mode=block"
 </IfModule>

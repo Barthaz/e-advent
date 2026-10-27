@@ -1,5 +1,8 @@
 import type { ProductType } from '@e-advent/types';
 
+export type CalendarProductType = ProductType | 'certificate';
+export type CalendarOrigin = 'store' | 'generator';
+
 export interface CalendarTaskDetail {
   day: number;
   /** Opcjonalny tytuł dnia (zdrapka) */
@@ -17,7 +20,8 @@ export interface CalendarDetail {
   title: string;
   author: string;
   customer_email: string | null;
-  product_type: ProductType;
+  product_type: CalendarProductType;
+  origin: CalendarOrigin;
   sku: string | null;
   format: string;
   design_url: string | null;
@@ -27,6 +31,7 @@ export interface CalendarDetail {
   opening_method: string | null;
   daily_content_email: string | null;
   tasks: CalendarTaskDetail[];
+  certificate_number: number | null;
   created_at: string;
   updated_at: string;
 }

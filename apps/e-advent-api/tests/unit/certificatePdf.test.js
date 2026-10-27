@@ -23,6 +23,14 @@ describe('certificate PDF helpers', () => {
     );
   });
 
+  test('formats GEN-2026 serials for the panel generator', () => {
+    expect(formatCertificateSerial(1, 'GEN')).toBe('GEN-2026-000001');
+    expect(formatCertificateLabel(7, 'GEN')).toBe('CERTYFIKAT NR: GEN-2026-000007');
+    expect(certificateFilename({ variant: 'on', serialNumber: 3, serialPrefix: 'GEN' })).toBe(
+      'certyfikat-GEN-2026-000003-on.pdf',
+    );
+  });
+
   test('rejects invalid serials', () => {
     expect(() => formatCertificateSerial(0)).toThrow('Nieprawidłowy numer');
     expect(() => formatCertificateSerial(1.5)).toThrow('Nieprawidłowy numer');
