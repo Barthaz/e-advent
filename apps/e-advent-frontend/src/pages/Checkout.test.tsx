@@ -92,6 +92,29 @@ it('applies a 10% code to the charged amount', async () => {
   }, { timeout: 3000 });
 });
 
+it('shows a readable message instead of "Failed to fetch" and keeps the full price', async () => {
+  vi.mocked(validatePromoCode).mockRejectedValue(new TypeError('Failed to fetch'));
+  render(<MemoryRouter><Checkout /></MemoryRouter>);
+  fireEvent.click(screen.getByLabelText('Kurier InPost'));
+  await waitFor(() => expect(screen.getByTestId('stripe-form')).not.toBeNull(), { timeout: 3000 });
+  fireEvent.change(screen.getByPlaceholderText('Wpisz kod rabatowy'), { target: { value: 'SAVE10' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Zastosuj' }));
+  await screen.findByText('Nie udało się sprawdzić kodu. Sprawdź internet i spróbuj ponownie.');
+  expect(screen.queryByText(/Failed to fetch/)).toBeNull();
+  expect(vi.mocked(createPaymentIntent).mock.calls.at(-1)?.[0].promoCode).toBeUndefined();
+});
+
+it('checks a promo code once when Enter and blur fire for the same tap', async () => {
+  vi.mocked(validatePromoCode).mockResolvedValue({ success: true, valid: true, discount: 10, message: 'ok' });
+  render(<MemoryRouter><Checkout /></MemoryRouter>);
+  const input = screen.getByPlaceholderText('Wpisz kod rabatowy');
+  fireEvent.change(input, { target: { value: 'SAVE10' } });
+  fireEvent.keyDown(input, { key: 'Enter' });
+  fireEvent.blur(input);
+  await screen.findByText('Kod zastosowany — zniżka 10% od produktów.');
+  expect(validatePromoCode).toHaveBeenCalledTimes(1);
+});
+
 it('applies a 95% code to the whole order and still opens Stripe', async () => {
   vi.mocked(validatePromoCode).mockResolvedValue({ success: true, valid: true, discount: 95, message: 'ok' });
   render(<MemoryRouter><Checkout /></MemoryRouter>);

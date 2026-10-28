@@ -85,4 +85,8 @@ RewriteRule ^(.*)$ https://e-advent.pl/$1 [R=301,L]
   Header unset X-Frame-Options
   Header always set Content-Security-Policy "frame-ancestors 'self' https://panel.e-advent.pl http://localhost:5174 http://127.0.0.1:5174"
   Header set X-XSS-Protection "1; mode=block"
+  # index.html points at hashed bundles; without this a browser can keep an old one for days.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
 </IfModule>

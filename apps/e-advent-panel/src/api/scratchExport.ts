@@ -4,7 +4,8 @@ import { fetchAdminExport, saveAdminExportResponse } from './exportDownload';
 
 /**
  * Download scratch calendar PDF/PNG via admin export endpoints.
- * PNG is requested at 600 DPI (print). Oversized rasters are JPEG-compressed by the API.
+ * PNG is requested at 600 DPI (print). Without Vercel Blob the API returns a 300 DPI JPEG
+ * that fits a single response instead.
  */
 export async function downloadScratchExport(
   getState: () => RootState,

@@ -10,7 +10,8 @@
 async function pngBufferToFitJpeg(pngBuffer, maxBytes) {
   const { loadImage, createCanvas } = require('@napi-rs/canvas');
   const img = await loadImage(pngBuffer);
-  let quality = 0.9;
+  // @napi-rs/canvas takes JPEG quality as a 0–100 number; an options object is ignored.
+  let quality = 90;
   let width = img.width;
   let height = img.height;
 
@@ -24,10 +25,10 @@ async function pngBufferToFitJpeg(pngBuffer, maxBytes) {
     ctx.imageSmoothingEnabled = true;
     if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, w, h);
-    const jpeg = canvas.toBuffer('image/jpeg', { quality });
+    const jpeg = canvas.toBuffer('image/jpeg', quality);
     if (jpeg.length <= maxBytes) return jpeg;
-    if (quality > 0.5) {
-      quality = Math.max(0.5, quality - 0.1);
+    if (quality > 50) {
+      quality = Math.max(50, quality - 10);
     } else {
       width = Math.round(width * 0.82);
       height = Math.round(height * 0.82);

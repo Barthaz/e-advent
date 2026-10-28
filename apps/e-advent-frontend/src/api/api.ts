@@ -637,6 +637,19 @@ export interface ValidatePromoCodeResponse {
   message?: string;
 }
 
+/** fetch() rejects with a TypeError ("Failed to fetch", Safari: "Load failed") when no response arrives. */
+export function isNetworkError(error: unknown): boolean {
+  if (error instanceof TypeError) return true;
+  return error instanceof Error
+    && /Failed to fetch|NetworkError|Load failed|Network request failed|ERR_/i.test(error.message);
+}
+
+export const PROMO_NETWORK_ERROR_MESSAGE =
+  'Nie udało się połączyć z serwerem, żeby sprawdzić kod. Sprawdź internet i spróbuj ponownie. '
+  + 'Jeśli to się powtarza, odśwież stronę albo wyłącz blokowanie reklam dla e-advent.pl.';
+
+const PROMO_RETRY_DELAY_MS = 700;
+
 export async function validatePromoCode(
   code: string
 ): Promise<ValidatePromoCodeResponse> {
@@ -647,18 +660,31 @@ export async function validatePromoCode(
     code,
   });
 
-  const requestOptions = {
+  // No Content-Type on a body-less GET: keeps it a simple CORS request without a preflight.
+  const requestOptions: RequestInit = {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
   };
 
   console.log('[API] Wysyłanie żądania HTTP...');
   const startTime = Date.now();
   
   try {
-    const response = await fetch(url, requestOptions);
+    let response: Response;
+    try {
+      response = await fetch(url, requestOptions);
+    } catch (error) {
+      if (!isNetworkError(error)) throw error;
+      console.warn('[API] validatePromoCode: błąd sieci, ponawiam raz', error);
+      await new Promise((resolve) => setTimeout(resolve, PROMO_RETRY_DELAY_MS));
+      try {
+        response = await fetch(url, requestOptions);
+      } catch (retryError) {
+        if (isNetworkError(retryError)) throw new Error(PROMO_NETWORK_ERROR_MESSAGE);
+        throw retryError;
+      }
+    }
     const requestDuration = Date.now() - startTime;
     
     console.log('[API] Otrzymano odpowiedź:', {
@@ -668,7 +694,16 @@ export async function validatePromoCode(
       duration: `${requestDuration}ms`,
     });
 
-    const responseData = await response.json();
+    let responseData: Partial<ValidatePromoCodeResponse>;
+    try {
+      responseData = await response.json();
+    } catch {
+      throw new Error(
+        response.ok
+          ? 'Serwer zwrócił nieoczekiwaną odpowiedź. Spróbuj ponownie za chwilę.'
+          : `Nie udało się sprawdzić kodu (błąd ${response.status}). Spróbuj ponownie za chwilę.`,
+      );
+    }
     console.log('[API] Parsowana odpowiedź:', {
       success: responseData.success,
       valid: responseData.valid,
@@ -677,7 +712,7 @@ export async function validatePromoCode(
     });
 
     if (!response.ok) {
-      const errorMessage = responseData.message || 'Failed to validate promo code';
+      const errorMessage = responseData.message || 'Nie udało się sprawdzić kodu. Spróbuj ponownie za chwilę.';
       console.error('[API] Błąd odpowiedzi API:', {
         status: response.status,
         errorMessage,

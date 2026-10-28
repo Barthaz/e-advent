@@ -121,6 +121,30 @@ function imageDimensions(buffer, format) {
   throw imageError();
 }
 
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const PNG_RENDER_CHUNKS = new Set(['tRNS', 'gAMA', 'cHRM', 'sRGB', 'iCCP', 'sBIT', 'pHYs', 'bKGD']);
+
+/**
+ * Drop metadata chunks from a PNG. @napi-rs/canvas cannot decode a PNG buffer that
+ * carries e.g. a C2PA `caBX` chunk ("Invalid SVG image"); file paths decode fine.
+ * @param {Buffer} buffer
+ * @returns {Buffer}
+ */
+function stripPngMetadata(buffer) {
+  if (buffer.length < 8 || !buffer.subarray(0, 8).equals(PNG_SIGNATURE)) return buffer;
+  const parts = [buffer.subarray(0, 8)];
+  let offset = 8;
+  while (offset + 12 <= buffer.length) {
+    const end = offset + 12 + buffer.readUInt32BE(offset);
+    if (end > buffer.length) return buffer;
+    const type = buffer.toString('latin1', offset + 4, offset + 8);
+    const critical = type[0] >= 'A' && type[0] <= 'Z';
+    if (critical || PNG_RENDER_CHUNKS.has(type)) parts.push(buffer.subarray(offset, end));
+    offset = end;
+  }
+  return parts.length > 1 ? Buffer.concat(parts) : buffer;
+}
+
 async function normalizePdfImage(buffer) {
   if (buffer.length > MAX_IMAGE_BYTES) throw imageError();
   const format = sniffImageFormat(buffer);
@@ -130,7 +154,7 @@ async function normalizePdfImage(buffer) {
   // promise for corrupt IDAT data. Only canonical, decoded images reach it.
   const { loadImage, createCanvas } = require('@napi-rs/canvas');
   try {
-    const image = await loadImage(buffer);
+    const image = await loadImage(format === 'png' ? stripPngMetadata(buffer) : buffer);
     const canvas = createCanvas(width, height);
     canvas.getContext('2d').drawImage(image, 0, 0, width, height);
     return { buffer: canvas.toBuffer(format === 'jpeg' ? 'image/jpeg' : 'image/png'), format };
@@ -139,4 +163,12 @@ async function normalizePdfImage(buffer) {
   }
 }
 
-module.exports = { readPdfImage, normalizePdfImage, fetchRemoteImage, validateRemoteUrl, isPublicAddress, MAX_IMAGE_BYTES };
+module.exports = {
+  readPdfImage,
+  normalizePdfImage,
+  fetchRemoteImage,
+  validateRemoteUrl,
+  isPublicAddress,
+  stripPngMetadata,
+  MAX_IMAGE_BYTES,
+};

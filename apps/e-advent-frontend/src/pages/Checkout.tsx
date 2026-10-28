@@ -406,6 +406,8 @@ export default function Checkout() {
   const paymentInitKeyRef = useRef<string | null>(null);
   const pendingIntentRequestRef = useRef<CreatePaymentIntentRequest | null>(null);
   const autoPromoRef = useRef(false);
+  const promoRequestRef = useRef<string | null>(null);
+  const appliedPromoRef = useRef<string | null>(null);
 
   const [delivery, setDelivery] = useState<InpostChoice>({ type: 'parcel_inpost' });
   const deliveryItems = cartItems.length ? cartItems.map(i => ({ sku: i.sku, quantity: i.quantity })) : [{ sku, quantity: 1 }];
@@ -1026,18 +1028,25 @@ export default function Checkout() {
   const applyPromoCode = async (code: string) => {
     const trimmed = code.trim();
     if (!trimmed) {
+      promoRequestRef.current = null;
       setPromoCodeError(null);
       setPromoCodeDiscount(null);
       return;
     }
+    // Enter, blur and the button can all fire for one tap on mobile.
+    if (promoRequestRef.current === trimmed) return;
+    if (appliedPromoRef.current === trimmed && promoCodeDiscount !== null) return;
+    promoRequestRef.current = trimmed;
 
     setIsCheckingPromoCode(true);
     setPromoCodeError(null);
 
     try {
       const response = await validatePromoCode(trimmed);
+      if (promoRequestRef.current !== trimmed) return;
       const discount = response.discount;
       if (response.success && response.valid && typeof discount === 'number' && isSupportedDiscountPercent(discount)) {
+        appliedPromoRef.current = trimmed;
         setPromoCodeDiscount(discount);
         setPromoCodeError(null);
         console.log('[PromoCode] Kod promocyjny zwalidowany:', {
@@ -1045,15 +1054,25 @@ export default function Checkout() {
           discount: response.discount,
         });
       } else {
+        appliedPromoRef.current = null;
         setPromoCodeDiscount(null);
         setPromoCodeError(response.message || 'Nieprawidłowy kod promocyjny');
       }
     } catch (error) {
+      if (promoRequestRef.current !== trimmed) return;
       console.error('[PromoCode] Błąd podczas sprawdzania kodu:', error);
+      appliedPromoRef.current = null;
       setPromoCodeDiscount(null);
-      setPromoCodeError(error instanceof Error ? error.message : 'Wystąpił błąd podczas sprawdzania kodu');
+      setPromoCodeError(
+        error instanceof Error && !(error instanceof TypeError)
+          ? error.message
+          : 'Nie udało się sprawdzić kodu. Sprawdź internet i spróbuj ponownie.',
+      );
     } finally {
-      setIsCheckingPromoCode(false);
+      if (promoRequestRef.current === trimmed) {
+        promoRequestRef.current = null;
+        setIsCheckingPromoCode(false);
+      }
     }
   };
 

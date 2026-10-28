@@ -3,12 +3,23 @@
 const { query } = require('../config/database');
 const { formatOrderNumber } = require('../utils/orderNumber');
 
-const { pdfBufferToPng } = require('../services/scratch/PdfRasterService');
-const { sendAdminDownload } = require('../services/adminExportDownload');
+const { pdfBufferToImage } = require('../services/scratch/PdfRasterService');
+const {
+  sendAdminDownload,
+  canParkOnBlob,
+  INLINE_MAX_BYTES,
+} = require('../services/adminExportDownload');
+const { runExclusive } = require('../services/exportQueue');
 const {
   normalizeExportFormat,
   normalizeDpi,
 } = require('../services/scratch/scratchWindowLayout');
+
+// Without Blob the file must fit one inline response (~3.5 MB). A 600 DPI A3 raster
+// squeezed to that size is no sharper than 300 DPI, but its JPEG encode alone needs
+// ~0.5 GB on top of the ~280 MB bitmap.
+const INLINE_EXPORT_DPI = 300;
+const FULL_EXPORT_DPI = 600;
 
 function parseTasks(raw) {
   if (!raw) return [];
@@ -63,7 +74,14 @@ async function findOrderNumberForCalendar(calendarId) {
   return rows.length ? formatOrderNumber(rows[0].order_number) : null;
 }
 
-async function buildExportPdf(row, format) {
+function rasterTooLargeError() {
+  const error = new Error('Wygenerowany plik jest za duży, żeby pobrać go bezpośrednio z API.');
+  error.status = 413;
+  error.code = 'EXPORT_TOO_LARGE';
+  return error;
+}
+
+async function buildExportPdf(row, format, imageDpi) {
   const { buildScratchPdfBuffer } = require('../services/scratch/ScratchPdfService');
   const orderNumber = await findOrderNumberForCalendar(row.id).catch((error) => {
     console.error('Scratch export order lookup error:', error.message);
@@ -74,6 +92,7 @@ async function buildExportPdf(row, format) {
     designUrl: row.design_url,
     tasks: parseTasks(row.tasks),
     orderNumber,
+    imageDpi,
   });
 }
 
@@ -99,7 +118,8 @@ function registerScratchExportRoutes(router, authAdmin) {
       if (!row) return;
 
       const format = normalizeExportFormat(req.query.format || row.format || 'A3');
-      const pdfBuffer = await buildExportPdf(row, format);
+      const imageDpi = canParkOnBlob() ? FULL_EXPORT_DPI : INLINE_EXPORT_DPI;
+      const pdfBuffer = await runExclusive(() => buildExportPdf(row, format, imageDpi));
 
       const filename = scratchExportFilename(row.id, format, 'pdf');
       return await sendAdminDownload(res, {
@@ -120,16 +140,27 @@ function registerScratchExportRoutes(router, authAdmin) {
       if (!row) return;
 
       const format = normalizeExportFormat(req.query.format || row.format || 'A3');
-      const dpi = normalizeDpi(req.query.dpi || 600);
+      const allowLargePng = canParkOnBlob();
+      const dpi = allowLargePng
+        ? normalizeDpi(req.query.dpi || FULL_EXPORT_DPI)
+        : INLINE_EXPORT_DPI;
 
-      const pdfBuffer = await buildExportPdf(row, format);
-      const pngBuffer = await pdfBufferToPng(pdfBuffer, { format, dpi });
+      const image = await runExclusive(async () => {
+        const pdfBuffer = await buildExportPdf(row, format, dpi);
+        return pdfBufferToImage(pdfBuffer, {
+          format,
+          dpi,
+          maxBytes: INLINE_MAX_BYTES,
+          allowLargePng,
+        });
+      });
+      if (!image) throw rasterTooLargeError();
 
-      const filename = scratchExportFilename(row.id, format, 'png');
+      const ext = image.contentType === 'image/png' ? 'png' : 'jpg';
       return await sendAdminDownload(res, {
-        buffer: pngBuffer,
-        contentType: 'image/png',
-        filename,
+        buffer: image.buffer,
+        contentType: image.contentType,
+        filename: scratchExportFilename(row.id, format, ext),
         folder: 'scratch-exports',
       });
     } catch (error) {

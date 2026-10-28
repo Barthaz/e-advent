@@ -71,5 +71,8 @@ export async function saveAdminExportResponse(res: Response, fallbackFilename: s
   }
 
   const blob = await res.blob();
-  triggerBlobDownload(blob, filenameFromDisposition(res.headers.get('Content-Disposition'), fallbackFilename));
+  const fallback = contentType.includes('image/jpeg')
+    ? fallbackFilename.replace(/\.png$/i, '.jpg')
+    : fallbackFilename;
+  triggerBlobDownload(blob, filenameFromDisposition(res.headers.get('Content-Disposition'), fallback));
 }

@@ -36,13 +36,13 @@ function withWhiteBorder(source, borderPx = PNG_BORDER_PX) {
 }
 
 /**
- * Convert first page of a PDF buffer to a PNG buffer at the requested paper size + DPI.
+ * Rasterize the first page of a PDF at the requested paper size + DPI, with a white frame.
  *
  * @param {Buffer} pdfBuffer
  * @param {{ format?: string, dpi?: number }} options
- * @returns {Promise<Buffer>}
+ * @returns {Promise<import('@napi-rs/canvas').Canvas>}
  */
-async function pdfBufferToPng(pdfBuffer, options = {}) {
+async function renderPdfToCanvas(pdfBuffer, options = {}) {
   const format = normalizeExportFormat(options.format);
   const dpi = normalizeDpi(options.dpi);
   const { width: targetW, height: targetH } = pageSizePixels(format, dpi);
@@ -89,7 +89,7 @@ async function pdfBufferToPng(pdfBuffer, options = {}) {
   }).promise;
   await pdf.destroy();
 
-  if (direct) return canvas.toBuffer('image/png', { compressionLevel: 6 });
+  if (direct) return canvas;
 
   let outCanvas = canvas;
   if (canvasW !== targetW || canvasH !== targetH) {
@@ -105,12 +105,73 @@ async function pdfBufferToPng(pdfBuffer, options = {}) {
   }
 
   // Thin white frame: enlarge PNG, leave graphic untouched.
-  outCanvas = withWhiteBorder(outCanvas, PNG_BORDER_PX);
+  return withWhiteBorder(outCanvas, PNG_BORDER_PX);
+}
 
-  // PNG compression is lossless; 6 keeps files small enough for Vercel without quality loss.
-  return outCanvas.toBuffer('image/png', { compressionLevel: 6 });
+const JPEG_QUALITIES = [92, 85, 78, 70];
+
+/**
+ * Encode a canvas as the best JPEG that fits in `maxBytes`, lowering quality first and
+ * then scaling down. Works on the rendered canvas directly: re-decoding a ~70 MP PNG
+ * needs two more ~280 MB bitmaps and ran Vercel instances out of memory.
+ *
+ * @param {import('@napi-rs/canvas').Canvas} canvas
+ * @param {number} maxBytes
+ * @returns {Promise<Buffer|null>}
+ */
+async function canvasToFitJpeg(canvas, maxBytes) {
+  let lastSize = 0;
+  for (const quality of JPEG_QUALITIES) {
+    const jpeg = await canvas.encode('jpeg', quality);
+    if (jpeg.length <= maxBytes) return jpeg;
+    lastSize = jpeg.length;
+  }
+  let scale = Math.min(0.9, Math.sqrt(maxBytes / lastSize) * 0.95);
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const w = Math.max(1, Math.round(canvas.width * scale));
+    const h = Math.max(1, Math.round(canvas.height * scale));
+    const small = createCanvas(w, h);
+    const ctx = small.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(canvas, 0, 0, w, h);
+    const jpeg = await small.encode('jpeg', JPEG_QUALITIES[JPEG_QUALITIES.length - 1]);
+    if (jpeg.length <= maxBytes) return jpeg;
+    scale *= 0.85;
+  }
+  return null;
+}
+
+/**
+ * Convert first page of a PDF buffer to a PNG buffer at the requested paper size + DPI.
+ *
+ * @param {Buffer} pdfBuffer
+ * @param {{ format?: string, dpi?: number }} options
+ * @returns {Promise<Buffer>}
+ */
+async function pdfBufferToPng(pdfBuffer, options = {}) {
+  const canvas = await renderPdfToCanvas(pdfBuffer, options);
+  return canvas.encode('png');
+}
+
+/**
+ * Rasterize to a lossless PNG when it may be large, otherwise to a JPEG that fits `maxBytes`.
+ *
+ * @param {Buffer} pdfBuffer
+ * @param {{ format?: string, dpi?: number, maxBytes: number, allowLargePng?: boolean }} options
+ * @returns {Promise<{ buffer: Buffer, contentType: 'image/png'|'image/jpeg' }|null>}
+ */
+async function pdfBufferToImage(pdfBuffer, { maxBytes, allowLargePng = false, ...options }) {
+  const canvas = await renderPdfToCanvas(pdfBuffer, options);
+  if (allowLargePng) {
+    return { buffer: await canvas.encode('png'), contentType: 'image/png' };
+  }
+  const jpeg = await canvasToFitJpeg(canvas, maxBytes);
+  return jpeg ? { buffer: jpeg, contentType: 'image/jpeg' } : null;
 }
 
 module.exports = {
+  canvasToFitJpeg,
+  pdfBufferToImage,
   pdfBufferToPng,
 };

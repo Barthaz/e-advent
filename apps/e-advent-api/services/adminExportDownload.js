@@ -26,10 +26,14 @@ function sendInline(res, body, contentType, filename) {
   return res.send(body);
 }
 
+// Only when a real Blob token exists. Vercel=1 without BLOB_READ_WRITE_TOKEN
+// throws "No blob credentials found" on every oversized export.
+function canParkOnBlob() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
 async function parkExportOnBlob(body, { folder, safeName, contentType }) {
-  // Only when a real Blob token exists. Vercel=1 without BLOB_READ_WRITE_TOKEN
-  // throws "No blob credentials found" on every oversized export.
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
+  if (!canParkOnBlob()) return null;
   try {
     const { put } = require('@vercel/blob');
     return await put(`${folder}/${Date.now()}-${safeName}`, body, {
@@ -83,4 +87,4 @@ async function sendAdminDownload(res, { buffer, contentType, filename, folder = 
   throw tooLargeError();
 }
 
-module.exports = { sendAdminDownload, INLINE_MAX_BYTES };
+module.exports = { sendAdminDownload, canParkOnBlob, INLINE_MAX_BYTES };

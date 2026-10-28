@@ -36,6 +36,9 @@ const corsAllowedHeaders = [
   'X-Access-Email',
 ];
 
+// Content-Disposition carries the export filename (e.g. .jpg instead of .png) to the panel.
+const corsExposedHeaders = ['X-Shipment-Email', 'X-Shipment-Email-Error', 'Content-Disposition'];
+
 // Konfiguracja CORS dla Socket.IO
 const socketCorsConfig = testingMode ? {
   origin: true,
@@ -57,7 +60,7 @@ if (testingMode) {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: corsAllowedHeaders,
-    exposedHeaders: ['X-Shipment-Email', 'X-Shipment-Email-Error'],
+    exposedHeaders: corsExposedHeaders,
   }));
   console.log('CORS w trybie testowym - zezwalanie na wszystkie originy (TESTING_MODE=true)');
 } else {
@@ -72,7 +75,7 @@ if (testingMode) {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: corsAllowedHeaders,
-    exposedHeaders: ['X-Shipment-Email', 'X-Shipment-Email-Error'],
+    exposedHeaders: corsExposedHeaders,
   }));
   console.log('CORS allowlist:', corsAllowlist.join(', '));
 }

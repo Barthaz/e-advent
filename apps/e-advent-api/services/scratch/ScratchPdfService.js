@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const React = require('react');
 const { loadReactPdf } = require('../reactPdf');
+const { stripPngMetadata } = require('../pdfImageSource');
 
 const {
   assertGraphicsPresent,
@@ -48,34 +49,57 @@ function fileImage(filePath) {
   return { data: fs.readFileSync(filePath), format: 'png' };
 }
 
-// Badge sources are ~25x more pixels than their printed size; react-pdf decodes every
-// RGBA image in JS, so oversized badges dominated export time. Downscale once per
-// instance to the 600 DPI print size (the highest raster export resolution).
+// Sources are often far larger than their printed size; react-pdf decodes every RGBA
+// image in JS and embeds it verbatim, so oversized graphics dominated export time,
+// memory and PDF size. Downscale once per instance to the print size at `dpi`.
 const MAX_EXPORT_DPI = 600;
-let badgeCache = null;
+const printSizedCache = new Map();
 
-async function loadDayBadges(badgeRect) {
-  const size = Math.ceil((Math.max(badgeRect.width, badgeRect.height) * MAX_EXPORT_DPI) / 72);
-  if (badgeCache?.size === size) return badgeCache.images;
+async function printSizedPng(cacheKey, source, rect, dpi) {
+  const key = `${cacheKey}@${dpi}`;
+  if (printSizedCache.has(key)) return printSizedCache.get(key);
   const { createCanvas, loadImage } = require('@napi-rs/canvas');
-  const images = new Map();
-  for (let day = 1; day <= MAX_DAYS; day += 1) {
-    const filePath = getDayBadgePath(day);
-    const img = await loadImage(filePath);
-    if (img.width <= size && img.height <= size) {
-      images.set(day, fileImage(filePath));
-      continue;
-    }
-    const scale = size / Math.max(img.width, img.height);
+  const data = stripPngMetadata(Buffer.isBuffer(source) ? source : fs.readFileSync(source));
+  const img = await loadImage(data);
+  const scale = Math.min(
+    1,
+    Math.max((rect.width * dpi) / 72 / img.width, (rect.height * dpi) / 72 / img.height),
+  );
+  let result = { data, format: 'png' };
+  if (scale < 0.98) {
     const canvas = createCanvas(Math.round(img.width * scale), Math.round(img.height * scale));
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    images.set(day, { data: canvas.toBuffer('image/png'), format: 'png' });
+    result = { data: await canvas.encode('png'), format: 'png' };
   }
-  badgeCache = { size, images };
+  printSizedCache.set(key, result);
+  return result;
+}
+
+async function loadDayBadges(badgeRect, dpi) {
+  const images = new Map();
+  for (let day = 1; day <= MAX_DAYS; day += 1) {
+    images.set(day, await printSizedPng(`day-${day}`, getDayBadgePath(day), badgeRect, dpi));
+  }
   return images;
+}
+
+/** PNG colour types 0 (grey) and 2 (RGB) carry no alpha channel. */
+function isOpaquePng(buffer) {
+  return buffer.length > 25 && (buffer[25] === 0 || buffer[25] === 2);
+}
+
+// The full-page background has no transparency; as JPEG it is ~5x smaller in the PDF.
+async function loadDesignImage(designUrl) {
+  const { buffer, format } = await resolveScratchDesignImage(designUrl);
+  if (format !== 'png' || !isOpaquePng(buffer)) return bufferImage(buffer, format);
+  const { createCanvas, loadImage } = require('@napi-rs/canvas');
+  const img = await loadImage(stripPngMetadata(buffer));
+  const canvas = createCanvas(img.width, img.height);
+  canvas.getContext('2d').drawImage(img, 0, 0);
+  return { data: await canvas.encode('jpeg', 92), format: 'jpg' };
 }
 
 let windowBoxCache = null;
@@ -171,7 +195,9 @@ function rectStyle(rect) {
  * Build scratch calendar PDF buffer.
  * Layers: design background → logo → headers → heart → window boxes → day badges → texts.
  *
- * @param {{ format?: string, designUrl: string, tasks: unknown[], orderNumber?: string|null }} input
+ * `imageDpi` caps embedded graphics at that print resolution (default 600, the PNG export DPI).
+ *
+ * @param {{ format?: string, designUrl: string, tasks: unknown[], orderNumber?: string|null, imageDpi?: number }} input
  * @returns {Promise<Buffer>}
  */
 async function buildScratchPdfBuffer(input) {
@@ -182,11 +208,21 @@ async function buildScratchPdfBuffer(input) {
   const format = normalizeExportFormat(input.format);
   const dims = pageSizePoints(format);
   const layout = computeScratchLayout(dims);
-  const { buffer: designBuffer, format: designFormat } = await resolveScratchDesignImage(input.designUrl);
+  const imageDpi = Math.min(MAX_EXPORT_DPI, Number(input.imageDpi) || MAX_EXPORT_DPI);
+  const designSrc = await loadDesignImage(input.designUrl);
   const texts = taskContentByDay(input.tasks);
-  const windowBoxSrc = await loadWindowBox();
+  const windowBoxSrc = await printSizedPng(
+    'windowBox',
+    (await loadWindowBox()).data,
+    layout.windows[0],
+    imageDpi,
+  );
+  const graphic = (name) => printSizedPng(name, getGraphicPath(name), layout[name], imageDpi);
+  const [logoSrc, powodySrc, odkrywajSrc, heartSrc] = await Promise.all(
+    ['logo', 'powody', 'odkrywaj', 'heart'].map(graphic),
+  );
   const orderNumber = input.orderNumber ? String(input.orderNumber).trim() : '';
-  const dayBadgeSrc = await loadDayBadges(layout.windows[0].badge);
+  const dayBadgeSrc = await loadDayBadges(layout.windows[0].badge, imageDpi);
 
   const styles = StyleSheet.create({
     page: {
@@ -289,31 +325,31 @@ async function buildScratchPdfBuffer(input) {
       },
       React.createElement(Image, {
         key: 'design',
-        src: bufferImage(designBuffer, designFormat),
+        src: designSrc,
         fixed: true,
         style: rectStyle(layout.design),
       }),
       React.createElement(Image, {
         key: 'logo',
-        src: fileImage(getGraphicPath('logo')),
+        src: logoSrc,
         fixed: true,
         style: rectStyle(layout.logo),
       }),
       React.createElement(Image, {
         key: 'powody',
-        src: fileImage(getGraphicPath('powody')),
+        src: powodySrc,
         fixed: true,
         style: rectStyle(layout.powody),
       }),
       React.createElement(Image, {
         key: 'odkrywaj',
-        src: fileImage(getGraphicPath('odkrywaj')),
+        src: odkrywajSrc,
         fixed: true,
         style: rectStyle(layout.odkrywaj),
       }),
       React.createElement(Image, {
         key: 'heart',
-        src: fileImage(getGraphicPath('heart')),
+        src: heartSrc,
         fixed: true,
         style: rectStyle(layout.heart),
       }),
