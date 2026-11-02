@@ -8,6 +8,7 @@ import {
   Switch,
   ScrollView,
   TextInput,
+  type TextInputInstance,
   ActivityIndicator,
   Linking,
 } from 'react-native';
@@ -26,13 +27,13 @@ interface SettingsScreenProps {
 
 export default function SettingsScreen(_props: SettingsScreenProps) {
   const { isMusicEnabled, toggleMusic } = useMusic();
-  const { isLoggedIn, email, isLoading, login, logout } = useProfile();
+  const { isLoggedIn, email, calendar, isLoading, login, logout } = useProfile();
   const [showLicenseModal, setShowLicenseModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [profileError, setProfileError] = useState('');
-  const codeInputRefs = useRef<(TextInput | null)[]>([]);
+  const codeInputRefs = useRef<(TextInputInstance | null)[]>([]);
 
   const version = appConfig.expo.version;
 
@@ -78,193 +79,161 @@ export default function SettingsScreen(_props: SettingsScreenProps) {
   return (
     <BasePergaminScreen
       title="Ustawienia"
-      subtitle="Skonfiguruj aplikację po swojemu"
+      subtitle="Profil z kalendarza i drobiazgi aplikacji"
       contentContainerStyle={styles.scrollContent}
     >
-
-          {/* Profil */}
           <View style={styles.sectionCard}>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Profil</Text>
-              {isLoggedIn ? (
-                <>
-                  <View style={styles.infoItem}>
-                    <View style={styles.infoLabelContainer}>
-                      <MaterialIcons name="person" size={18} color="#7c5633" style={styles.infoIcon} />
-                      <Text style={styles.infoLabel}>Zalogowano jako</Text>
-                    </View>
-                    <Text style={styles.infoValue}>{email}</Text>
-                    <Text style={styles.profileHint}>Połączono z kalendarzem adwentowym</Text>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.documentButton}
-                    onPress={() => logout()}
-                    activeOpacity={0.7}
-                  >
-                    <LinearGradient
-                      colors={['#7c5633', '#5f4326']}
-                      style={styles.documentButtonGradient}
-                    >
-                      <MaterialIcons name="logout" size={24} color="#ead5b3" style={styles.documentButtonIcon} />
-                      <Text style={styles.documentButtonText}>Wyloguj</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.profileHint}>
-                    Zaloguj się emailem i kodem dostępu z zamówionego kalendarza.
-                  </Text>
-                  <TextInput
-                    style={styles.profileInput}
-                    value={loginEmail}
-                    onChangeText={setLoginEmail}
-                    placeholder="email@przyklad.pl"
-                    placeholderTextColor="#7a5d3d"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    editable={!isLoading}
-                  />
-                  <View style={styles.codeRow}>
-                    {code.map((digit, index) => (
-                      <TextInput
-                        key={index}
-                        ref={(ref) => {
-                          codeInputRefs.current[index] = ref;
-                        }}
-                        style={styles.codeBox}
-                        value={digit}
-                        onChangeText={(v) => handleCodeChange(index, v)}
-                        autoCapitalize="characters"
-                        maxLength={1}
-                        editable={!isLoading}
-                      />
-                    ))}
-                  </View>
-                  {!!profileError && <Text style={styles.profileError}>{profileError}</Text>}
-                  <TouchableOpacity
-                    style={styles.documentButton}
-                    onPress={handleLogin}
-                    disabled={isLoading}
-                    activeOpacity={0.7}
-                  >
-                    <LinearGradient
-                      colors={['#7c5633', '#5f4326']}
-                      style={styles.documentButtonGradient}
-                    >
-                      {isLoading ? (
-                        <ActivityIndicator color="#ead5b3" />
-                      ) : (
-                        <>
-                          <MaterialIcons name="login" size={24} color="#ead5b3" style={styles.documentButtonIcon} />
-                          <Text style={styles.documentButtonText}>Zaloguj</Text>
-                        </>
-                      )}
-                    </LinearGradient>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => Linking.openURL(ORDER_CALENDAR_URL)}
-                    style={styles.orderLink}
-                  >
-                    <Text style={styles.orderLinkText}>Nie masz konta? Zamów kalendarz</Text>
-                  </TouchableOpacity>
-                </>
-              )}
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIcon}>
+                <MaterialIcons name="calendar-month" size={18} color="#ead5b3" />
+              </View>
+              <Text style={styles.sectionTitle}>Profil kalendarza</Text>
             </View>
+            {isLoggedIn ? (
+              <>
+                <View style={styles.profileHero}>
+                  <Text style={styles.profileKicker}>Wczytany kalendarz</Text>
+                  <Text style={styles.profileName}>{calendar?.title || 'Kalendarz adwentowy'}</Text>
+                  <Text style={styles.profileEmail}>{email}</Text>
+                </View>
+                <Text style={styles.profileHint}>
+                  To jest Twój profil w aplikacji — powstaje z wczytanego kalendarza i zostaje na tym urządzeniu.
+                </Text>
+                <TouchableOpacity
+                  style={styles.outlineButton}
+                  onPress={() => logout()}
+                  activeOpacity={0.75}
+                >
+                  <MaterialIcons name="link-off" size={20} color="#5f4326" />
+                  <Text style={styles.outlineButtonText}>Odłącz kalendarz</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.profileHint}>
+                  Wczytaj kalendarz emailem i kodem dostępu. Na tej podstawie powstanie Twój profil.
+                </Text>
+                <Text style={styles.fieldLabel}>Adres email</Text>
+                <TextInput
+                  style={styles.profileInput}
+                  value={loginEmail}
+                  onChangeText={setLoginEmail}
+                  placeholder="email@przyklad.pl"
+                  placeholderTextColor="#7a5d3d"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!isLoading}
+                />
+                <Text style={styles.fieldLabel}>Kod dostępu</Text>
+                <View style={styles.codeRow}>
+                  {code.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      ref={(ref) => {
+                        codeInputRefs.current[index] = ref;
+                      }}
+                      style={styles.codeBox}
+                      value={digit}
+                      onChangeText={(v) => handleCodeChange(index, v)}
+                      autoCapitalize="characters"
+                      maxLength={1}
+                      editable={!isLoading}
+                    />
+                  ))}
+                </View>
+                {!!profileError && <Text style={styles.profileError}>{profileError}</Text>}
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['#f6dd9e', '#d3ab68']}
+                    style={styles.primaryButtonGradient}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color="#1c140f" />
+                    ) : (
+                      <Text style={styles.primaryButtonText}>Wczytaj kalendarz</Text>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(ORDER_CALENDAR_URL)}
+                  style={styles.orderLink}
+                >
+                  <Text style={styles.orderLinkText}>Nie masz kalendarza? Zamów na stronie</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
 
-          {/* Sekcja ustawień */}
           <View style={styles.sectionCard}>
-          <View style={styles.section}>
-            {/* Przełącznik muzyki */}
             <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <MaterialIcons 
-                  name={isMusicEnabled ? "volume-up" : "volume-off"} 
-                  size={24} 
-                  color="#7c5633" 
-                  style={styles.settingIcon}
+              <View style={styles.iconBadge}>
+                <MaterialIcons
+                  name={isMusicEnabled ? 'volume-up' : 'volume-off'}
+                  size={20}
+                  color="#5f4326"
                 />
-                <View style={styles.settingTextContainer}>
-                  <Text style={styles.settingTitle}>Muzyka w tle</Text>
-                  <Text style={styles.settingDescription}>
-                    Włącz lub wyłącz świąteczną muzykę
-                  </Text>
-                </View>
+              </View>
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingTitle}>Muzyka w tle</Text>
+                <Text style={styles.settingDescription}>Świąteczna melodia podczas korzystania z aplikacji</Text>
               </View>
               <Switch
                 value={isMusicEnabled}
                 onValueChange={toggleMusic}
-                trackColor={{ false: '#767577', true: '#f4d03f' }}
-                thumbColor={isMusicEnabled ? '#0f5132' : '#f4f4f4'}
-                ios_backgroundColor="#767577"
+                trackColor={{ false: '#c4b29a', true: '#d3ab68' }}
+                thumbColor={isMusicEnabled ? '#123b32' : '#f3e8d2'}
+                ios_backgroundColor="#c4b29a"
               />
             </View>
           </View>
-          </View>
 
-          {/* Sekcja informacji */}
           <View style={styles.sectionCard}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Informacje</Text>
-            
-            {/* Wersja */}
-            <View style={styles.infoItem}>
-              <View style={styles.infoLabelContainer}>
-                <MaterialIcons name="info" size={18} color="#7c5633" style={styles.infoIcon} />
-                <Text style={styles.infoLabel}>Wersja aplikacji</Text>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIcon}>
+                <MaterialIcons name="auto-awesome" size={18} color="#ead5b3" />
               </View>
+              <Text style={styles.sectionTitle}>Informacje</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Wersja</Text>
               <Text style={styles.infoValue}>{version}</Text>
             </View>
-
-            {/* Autor aplikacji */}
-            <View style={styles.infoItem}>
-              <View style={styles.infoLabelContainer}>
-                <MaterialIcons name="person" size={18} color="#7c5633" style={styles.infoIcon} />
-                <Text style={styles.infoLabel}>Twórca</Text>
-              </View>
-              <Text style={styles.infoValue}>
-                inTaz Bartosz Kuligowski
-              </Text>
+            <View style={styles.infoDivider} />
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Twórca</Text>
+              <Text style={styles.infoValue}>inTaz Bartosz Kuligowski</Text>
             </View>
           </View>
-          </View>
 
-          {/* Sekcja dokumentów */}
           <View style={styles.sectionCard}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Dokumenty</Text>
-            
-            {/* Licencja */}
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIcon}>
+                <MaterialIcons name="menu-book" size={18} color="#ead5b3" />
+              </View>
+              <Text style={styles.sectionTitle}>Dokumenty</Text>
+            </View>
             <TouchableOpacity
-              style={styles.documentButton}
+              style={styles.docRow}
               onPress={() => setShowLicenseModal(true)}
               activeOpacity={0.7}
             >
-              <LinearGradient
-                colors={['#7c5633', '#5f4326']}
-                style={styles.documentButtonGradient}
-              >
-                <MaterialIcons name="description" size={24} color="#ead5b3" style={styles.documentButtonIcon} />
-                <Text style={styles.documentButtonText}>Licencja</Text>
-              </LinearGradient>
+              <Text style={styles.docLabel}>Licencja</Text>
+              <MaterialIcons name="chevron-right" size={22} color="#7c5633" />
             </TouchableOpacity>
-
-            {/* Prawa użytkownika */}
+            <View style={styles.infoDivider} />
             <TouchableOpacity
-              style={styles.documentButton}
+              style={styles.docRow}
               onPress={() => setShowTermsModal(true)}
               activeOpacity={0.7}
             >
-              <LinearGradient
-                colors={['#7c5633', '#5f4326']}
-                style={styles.documentButtonGradient}
-              >
-                <MaterialIcons name="article" size={24} color="#ead5b3" style={styles.documentButtonIcon} />
-                <Text style={styles.documentButtonText}>Prawa użytkownika</Text>
-              </LinearGradient>
+              <Text style={styles.docLabel}>Prawa użytkownika</Text>
+              <MaterialIcons name="chevron-right" size={22} color="#7c5633" />
             </TouchableOpacity>
-          </View>
           </View>
         {/* Modal licencji */}
         <Modal
@@ -433,59 +402,139 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   sectionCard: {
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 16,
-    backgroundColor: 'rgba(234, 213, 179, 0.9)',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+    backgroundColor: 'rgba(243, 232, 210, 0.94)',
     borderWidth: 1,
-    borderColor: 'rgba(130, 97, 58, 0.35)',
+    borderColor: 'rgba(130, 97, 58, 0.32)',
+    borderLeftWidth: 3,
+    borderLeftColor: '#c4a265',
   },
-  section: {
-    marginBottom: 0,
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  sectionIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#5f4326',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
   },
   sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#4f3720',
+  },
+  profileHero: {
+    backgroundColor: 'rgba(255, 255, 255, 0.42)',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(196, 162, 101, 0.45)',
+  },
+  profileKicker: {
+    fontSize: 12,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: '#7c5633',
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  profileName: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#5f4326',
-    marginBottom: 16,
+    fontWeight: '700',
+    color: '#3d2a16',
+    marginBottom: 4,
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: '#6e5131',
   },
   profileHint: {
     fontSize: 14,
     color: '#6e5131',
-    marginBottom: 12,
+    marginBottom: 14,
     lineHeight: 20,
   },
-  profileInput: {
-    backgroundColor: 'rgba(255,255,255,0.55)',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: '700',
     color: '#5f4326',
-    marginBottom: 10,
+    marginBottom: 6,
+  },
+  profileInput: {
+    backgroundColor: 'rgba(255,255,255,0.62)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(130, 97, 58, 0.28)',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    color: '#3d2a16',
+    marginBottom: 12,
+    fontSize: 16,
   },
   codeRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: 6,
     marginBottom: 12,
   },
   codeBox: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.55)',
-    borderRadius: 8,
-    paddingVertical: 10,
+    backgroundColor: 'rgba(255,255,255,0.62)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(130, 97, 58, 0.28)',
+    paddingVertical: 12,
     textAlign: 'center',
-    color: '#5f4326',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#3d2a16',
+    fontSize: 18,
+    fontWeight: '700',
   },
   profileError: {
     color: '#7a1f1f',
     marginBottom: 10,
     fontSize: 13,
   },
+  primaryButton: {
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  primaryButtonGradient: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  primaryButtonText: {
+    color: '#1c140f',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  outlineButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(95, 67, 38, 0.45)',
+    backgroundColor: 'rgba(255,255,255,0.35)',
+    paddingVertical: 12,
+  },
+  outlineButtonText: {
+    color: '#5f4326',
+    fontSize: 15,
+    fontWeight: '700',
+  },
   orderLink: {
-    marginTop: 8,
+    marginTop: 12,
     alignItems: 'center',
   },
   orderLinkText: {
@@ -496,47 +545,42 @@ const styles = StyleSheet.create({
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
   },
-  settingLeft: {
-    flexDirection: 'row',
+  iconBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(211, 171, 104, 0.45)',
     alignItems: 'center',
-    flex: 1,
-    marginRight: 16,
-  },
-  settingIcon: {
+    justifyContent: 'center',
     marginRight: 12,
   },
   settingTextContainer: {
     flex: 1,
+    marginRight: 12,
   },
   settingTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#4f3720',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   settingDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6e5131',
+    lineHeight: 18,
   },
-  infoItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  infoLabelContainer: {
+  infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 4,
   },
-  infoIcon: {
-    marginRight: 8,
+  infoDivider: {
+    height: 1,
+    backgroundColor: 'rgba(130, 97, 58, 0.18)',
+    marginVertical: 10,
   },
   infoLabel: {
     fontSize: 14,
@@ -544,33 +588,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   infoValue: {
-    fontSize: 16,
-    color: '#4f3720',
-    lineHeight: 24,
+    flex: 1,
+    fontSize: 14,
+    color: '#3d2a16',
+    fontWeight: '700',
+    textAlign: 'right',
   },
-  documentButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  documentButtonGradient: {
+  docRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+    paddingVertical: 4,
   },
-  documentButtonIcon: {
-    marginRight: 12,
-  },
-  documentButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#ffffff',
+  docLabel: {
+    fontSize: 16,
+    color: '#3d2a16',
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,

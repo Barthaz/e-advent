@@ -45,9 +45,11 @@ export default function HomeFeatureCards({
   onPressItem,
   tasksSubtitle,
 }: HomeFeatureCardsProps) {
+  const visibleItems = featureItems.filter((item) => item.key !== 'shared');
+
   return (
     <View style={styles.row}>
-      {featureItems.map((item) => (
+      {visibleItems.map((item) => (
         <TouchableOpacity
           key={item.title}
           style={styles.cardTouchable}
@@ -76,11 +78,11 @@ const styles = StyleSheet.create({
   row: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 8,
     marginTop: 10,
   },
   cardTouchable: {
-    width: '23.5%',
+    flex: 1,
   },
   card: {
     width: '100%',

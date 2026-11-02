@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
 import CalendarWindow from './CalendarWindow';
 import { calendarTheme } from './calendarTheme';
 
@@ -27,7 +27,7 @@ export default function CalendarGrid({
   disabled = false,
   onWindowPress,
 }: CalendarGridProps) {
-  const windowRefs = useRef<Record<number, View | null>>({});
+  const windowRefs = useRef<Record<number, ViewInstance | null>>({});
 
   const measureAndPress = useCallback(
     (day: number) => {

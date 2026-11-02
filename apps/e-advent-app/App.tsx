@@ -32,8 +32,8 @@ const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
 
 // Import obrazków
-const logo = require('./assets/eadvent-logo.png');
-const appLogo = require('./assets/eadvent-mark.png');
+const logo = require('./assets/logo.png');
+const appLogo = require('./assets/app_logo.png');
 const backgroundImage = require('@e-advent/assets/background.png');
 const windowClose = require('./assets/windows/close.png');
 const windowOpen = require('./assets/windows/open.png');
@@ -151,23 +151,37 @@ function MainTabsNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#d4af37',
-        tabBarInactiveTintColor: '#b08d57',
+        tabBarActiveTintColor: '#f6dd9e',
+        tabBarInactiveTintColor: '#cbb892',
         tabBarStyle: {
-          backgroundColor: '#090909',
-          borderTopColor: '#c0c0c0',
-          borderTopWidth: 1,
-          height: 72,
-          paddingBottom: 8,
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+          height: 78,
+          paddingBottom: 10,
           paddingTop: 8,
+          elevation: 18,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: 0.35,
+          shadowRadius: 10,
         },
+        tabBarBackground: () => (
+          <LinearGradient
+            colors={['#1a5246', '#0b1f1c']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          >
+            <View style={styles.tabGoldLine} />
+          </LinearGradient>
+        ),
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontFamily: 'serif',
-          fontWeight: '400',
-          letterSpacing: 0.3,
+          fontSize: 11,
+          fontWeight: '600',
+          letterSpacing: 0.2,
+          marginTop: 2,
         },
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused }) => {
           let iconName: React.ComponentProps<typeof MaterialCommunityIcons>['name'] = 'home-outline';
 
           if (route.name === 'Home') {
@@ -180,7 +194,15 @@ function MainTabsNavigator() {
             iconName = focused ? 'cog' : 'cog-outline';
           }
 
-          return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
+          return (
+            <View style={[styles.tabIconWrap, focused && styles.tabIconWrapActive]}>
+              <MaterialCommunityIcons
+                name={iconName}
+                size={22}
+                color={focused ? '#1c140f' : '#ead5b3'}
+              />
+            </View>
+          );
         },
       })}
     >
@@ -363,6 +385,26 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  tabGoldLine: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: '#d3ab68',
+  },
+  tabIconWrap: {
+    width: 46,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabIconWrapActive: {
+    backgroundColor: '#f6dd9e',
+    borderWidth: 1,
+    borderColor: '#d3ab68',
+  },
   loadingContainer: {
     flex: 1,
     backgroundColor: '#050505',

@@ -102,7 +102,7 @@ function addExitAppPackageToMainApplication() {
     }
 
     // Dodaj ExitAppPackage() do listy pakietów
-    const packagesRegex = /getPackages\(\):\s*List<ReactPackage>\s*=\s*PackageList\(this\)\.packages\.apply\s*\{([^}]*)\}/s;
+    const packagesRegex = /PackageList\(this\)\.packages\.apply\s*\{([^}]*)\}/s;
     const match = content.match(packagesRegex);
     
     if (match) {
@@ -143,7 +143,7 @@ function main() {
     // Krok 2: Uruchom expo prebuild
     console.log('🔨 Uruchamianie npx expo prebuild --platform android...');
     try {
-        execSync('npx expo prebuild --platform android', {
+        execSync('node ./node_modules/expo/bin/cli prebuild --platform android', {
             stdio: 'inherit',
             cwd: path.join(__dirname, '..')
         });

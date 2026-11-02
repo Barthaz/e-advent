@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  type ViewInstance,
 } from 'react-native';
 import { calendarTheme } from './calendarTheme';
 
@@ -23,7 +24,7 @@ export interface CalendarWindowProps {
   onPress: () => void;
 }
 
-const CalendarWindow = forwardRef<View, CalendarWindowProps>(function CalendarWindow(
+const CalendarWindow = forwardRef<ViewInstance, CalendarWindowProps>(function CalendarWindow(
   { day, isOpened, canOpen, isOpening = false, disabled = false, onPress },
   ref
 ) {
@@ -107,12 +108,10 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 5,
     includeFontPadding: false,
-    transform: [{ translateY: 22 }],
   },
   numberOpened: {
     transform: [
       { perspective: 350 },
-      { translateY: 22 },
       { translateX: -9 },
       { rotateY: '44deg' },
     ],

@@ -1,26 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
 import BasePergaminScreen from '../components/BasePergaminScreen';
-import { useProfile } from '../contexts/ProfileContext';
-import {
-  createSharedTask,
-  deleteSharedTask,
-  getCollaboration,
-  getSharedTasks,
-  updateSharedTask,
-  type SharedTask,
-} from '../api/api';
 
 const STORAGE_KEY = '@e_advent_my_tasks';
 
@@ -30,26 +17,12 @@ type LocalTask = {
   done: boolean;
 };
 
-type DisplayTask = {
-  id: string;
-  text: string;
-  done: boolean;
-  shared: boolean;
-  authorEmail?: string;
-};
-
 export default function MyTasksScreen() {
-  const { isLoggedIn, credentials } = useProfile();
-  const [privateTasks, setPrivateTasks] = useState<LocalTask[]>([]);
-  const [sharedTasks, setSharedTasks] = useState<SharedTask[]>([]);
-  const [hasActiveCollab, setHasActiveCollab] = useState(false);
+  const [tasks, setTasks] = useState<LocalTask[]>([]);
   const [newTaskText, setNewTaskText] = useState('');
-  const [shareMode, setShareMode] = useState<'private' | 'shared'>('private');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  const persistPrivate = async (next: LocalTask[]) => {
-    setPrivateTasks(next);
+  const persist = async (next: LocalTask[]) => {
+    setTasks(next);
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch (err) {
@@ -57,132 +30,41 @@ export default function MyTasksScreen() {
     }
   };
 
-  const loadPrivate = async () => {
-    try {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      if (raw) setPrivateTasks(JSON.parse(raw));
-    } catch (err) {
-      console.error('Error loading tasks:', err);
-    }
-  };
-
-  const loadShared = useCallback(async () => {
-    if (!credentials || !isLoggedIn) {
-      setSharedTasks([]);
-      setHasActiveCollab(false);
-      return;
-    }
-    setLoading(true);
-    setError('');
-    try {
-      const collab = await getCollaboration(credentials);
-      const canShare = !!collab.collaboration && collab.me?.status === 'active';
-      setHasActiveCollab(canShare);
-
-      if (canShare) {
-        const tasks = await getSharedTasks(credentials);
-        setSharedTasks(tasks);
-      } else {
-        setSharedTasks([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw) setTasks(JSON.parse(raw));
+      } catch (err) {
+        console.error('Error loading tasks:', err);
       }
-    } catch (err: any) {
-      setSharedTasks([]);
-      setHasActiveCollab(false);
-      setError(err?.message || 'Nie udało się pobrać wspólnych zadań');
-    } finally {
-      setLoading(false);
-    }
-  }, [credentials, isLoggedIn]);
-
-  useEffect(() => {
-    loadPrivate();
+    };
+    load();
   }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadShared();
-    }, [loadShared])
-  );
-
-  useEffect(() => {
-    if (shareMode === 'shared' && !hasActiveCollab) {
-      setShareMode('private');
-    }
-  }, [hasActiveCollab, shareMode]);
-
-  const displayTasks: DisplayTask[] = useMemo(() => {
-    const local: DisplayTask[] = privateTasks.map((t) => ({
-      id: t.id,
-      text: t.text,
-      done: t.done,
-      shared: false,
-    }));
-    const shared: DisplayTask[] = sharedTasks.map((t) => ({
-      id: t.id,
-      text: t.text,
-      done: t.done,
-      shared: true,
-      authorEmail: t.authorEmail,
-    }));
-    return [...shared, ...local];
-  }, [privateTasks, sharedTasks]);
 
   const handleAddTask = async () => {
     const text = newTaskText.trim();
     if (!text) return;
-
-    if (shareMode === 'shared') {
-      if (!credentials || !hasActiveCollab) return;
-      try {
-        const task = await createSharedTask(credentials, text);
-        setSharedTasks((prev) => [task, ...prev]);
-        setNewTaskText('');
-      } catch (err: any) {
-        setError(err?.message || 'Nie udało się dodać zadania');
-      }
-      return;
-    }
-
-    const next = [{ id: String(Date.now()), text, done: false }, ...privateTasks];
+    const next = [{ id: String(Date.now()), text, done: false }, ...tasks];
     setNewTaskText('');
-    await persistPrivate(next);
+    await persist(next);
   };
 
-  const handleToggleTask = async (task: DisplayTask) => {
-    if (task.shared) {
-      if (!credentials) return;
-      try {
-        const updated = await updateSharedTask(credentials, task.id, { done: !task.done });
-        setSharedTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-      } catch (err: any) {
-        setError(err?.message || 'Nie udało się zaktualizować');
-      }
-      return;
-    }
-    const next = privateTasks.map((t) =>
-      t.id === task.id ? { ...t, done: !t.done } : t
+  const handleToggleTask = async (task: LocalTask) => {
+    const next = tasks.map((item) =>
+      item.id === task.id ? { ...item, done: !item.done } : item
     );
-    await persistPrivate(next);
+    await persist(next);
   };
 
-  const handleDeleteTask = async (task: DisplayTask) => {
-    if (task.shared) {
-      if (!credentials) return;
-      try {
-        await deleteSharedTask(credentials, task.id);
-        setSharedTasks((prev) => prev.filter((t) => t.id !== task.id));
-      } catch (err: any) {
-        setError(err?.message || 'Nie udało się usunąć');
-      }
-      return;
-    }
-    await persistPrivate(privateTasks.filter((t) => t.id !== task.id));
+  const handleDeleteTask = async (task: LocalTask) => {
+    await persist(tasks.filter((item) => item.id !== task.id));
   };
 
   return (
     <BasePergaminScreen
       title="Moje zadania"
-      subtitle="Prywatne na urządzeniu oraz wspólne z współpracy"
+      subtitle="Lista rzeczy do zrobienia w tym sezonie"
       contentContainerStyle={styles.content}
     >
       <LinearGradient
@@ -198,80 +80,30 @@ export default function MyTasksScreen() {
           placeholderTextColor="#7a5d3d"
           style={styles.input}
         />
-        <View style={styles.shareRow}>
-          <TouchableOpacity
-            style={[styles.shareChip, shareMode === 'private' && styles.shareChipActive]}
-            onPress={() => setShareMode('private')}
-          >
-            <MaterialIcons name="lock" size={14} color={shareMode === 'private' ? '#fff' : '#5f4326'} />
-            <Text style={[styles.shareChipText, shareMode === 'private' && styles.shareChipTextActive]}>
-              Prywatne
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.shareChip,
-              shareMode === 'shared' && styles.shareChipActive,
-              !hasActiveCollab && styles.shareChipDisabled,
-            ]}
-            onPress={() => hasActiveCollab && setShareMode('shared')}
-            disabled={!hasActiveCollab}
-          >
-            <MaterialIcons
-              name="group"
-              size={14}
-              color={shareMode === 'shared' ? '#fff' : '#5f4326'}
-            />
-            <Text style={[styles.shareChipText, shareMode === 'shared' && styles.shareChipTextActive]}>
-              Udostępnione
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {!hasActiveCollab && (
-          <Text style={styles.hint}>
-            Udostępnianie wymaga aktywnej współpracy (zakładka Współpraca).
-          </Text>
-        )}
         <TouchableOpacity style={styles.addButton} onPress={handleAddTask}>
           <Text style={styles.addButtonText}>Dodaj</Text>
         </TouchableOpacity>
       </LinearGradient>
 
-      {loading && <ActivityIndicator color="#ead5b3" style={{ marginBottom: 12 }} />}
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
-
-      {displayTasks.map((task) => (
+      {tasks.map((task) => (
         <LinearGradient
-          key={`${task.shared ? 's' : 'p'}-${task.id}`}
+          key={task.id}
           colors={['#ead5b3', '#d6b182', '#b98f5f']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={[styles.taskCard, task.shared && styles.taskCardShared]}
+          style={styles.taskCard}
         >
           <TouchableOpacity onPress={() => handleToggleTask(task)} style={styles.checkbox}>
             <Text style={styles.checkboxMark}>{task.done ? '✓' : ''}</Text>
           </TouchableOpacity>
-          <View style={styles.taskBody}>
-            <View style={styles.badgeRow}>
-              <MaterialIcons
-                name={task.shared ? 'group' : 'lock'}
-                size={12}
-                color="#6e5131"
-              />
-              <Text style={styles.badgeText}>
-                {task.shared ? 'Wspólne' : 'Prywatne'}
-                {task.shared && task.authorEmail ? ` · ${task.authorEmail}` : ''}
-              </Text>
-            </View>
-            <Text style={[styles.taskText, task.done && styles.taskTextDone]}>{task.text}</Text>
-          </View>
+          <Text style={[styles.taskText, task.done && styles.taskTextDone]}>{task.text}</Text>
           <TouchableOpacity onPress={() => handleDeleteTask(task)}>
             <Text style={styles.deleteText}>Usuń</Text>
           </TouchableOpacity>
         </LinearGradient>
       ))}
 
-      {displayTasks.length === 0 && !loading && (
+      {tasks.length === 0 && (
         <Text style={styles.emptyText}>Brak zadań. Dodaj pierwsze zadanie.</Text>
       )}
     </BasePergaminScreen>
@@ -295,38 +127,6 @@ const styles = StyleSheet.create({
     color: '#5f4326',
     marginBottom: 10,
   },
-  shareRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
-  },
-  shareChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.45)',
-  },
-  shareChipActive: {
-    backgroundColor: '#7c5633',
-  },
-  shareChipDisabled: {
-    opacity: 0.45,
-  },
-  shareChipText: {
-    color: '#5f4326',
-    fontSize: 12,
-  },
-  shareChipTextActive: {
-    color: '#fff',
-  },
-  hint: {
-    fontSize: 12,
-    color: '#6e5131',
-    marginBottom: 8,
-  },
   addButton: {
     alignSelf: 'flex-end',
     backgroundColor: '#7c5633',
@@ -346,10 +146,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  taskCardShared: {
-    borderWidth: 1.5,
-    borderColor: '#5a7a4a',
-  },
   checkbox: {
     width: 24,
     height: 24,
@@ -365,20 +161,8 @@ const styles = StyleSheet.create({
     color: '#5f4326',
     fontSize: 13,
   },
-  taskBody: {
-    flex: 1,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 2,
-  },
-  badgeText: {
-    fontSize: 11,
-    color: '#6e5131',
-  },
   taskText: {
+    flex: 1,
     color: '#4f3720',
     fontSize: 15,
   },
@@ -395,11 +179,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 18,
     fontSize: 14,
-  },
-  errorText: {
-    color: '#f3c1c1',
-    textAlign: 'center',
-    marginBottom: 10,
-    fontSize: 13,
   },
 });

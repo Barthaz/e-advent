@@ -4,6 +4,7 @@ import {
   Text,
   View,
   TextInput,
+  type TextInputInstance,
   TouchableOpacity,
   ActivityIndicator,
   Image,
@@ -26,7 +27,7 @@ import WindowOpenAnimation, {
 import { calendarTheme } from '../components/calendar/calendarTheme';
 import SpecialWindowShell from '../special-windows/SpecialWindowShell';
 
-const logo = require('../assets/eadvent-logo.png');
+const logo = require('../assets/logo.png');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { STORAGE_KEYS } = require('../utils/accessSession');
@@ -81,7 +82,7 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
   const [errorMessage, setErrorMessage] = useState('');
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoMessage, setInfoMessage] = useState('');
-  const codeInputRefs = useRef<(TextInput | null)[]>([]);
+  const codeInputRefs = useRef<(TextInputInstance | null)[]>([]);
 
   const [animMode, setAnimMode] = useState<OpenAnimMode | null>(null);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -347,7 +348,7 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
             )}
             {!isLoggedIn && (
               <Text style={styles.subtitle}>
-                Połącz się z profilem — podaj email i kod dostępu do kalendarza
+                Podaj email i kod dostępu, żeby wczytać swój kalendarz
               </Text>
             )}
           </View>
@@ -411,13 +412,13 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
                   {isProfileLoading ? (
                     <ActivityIndicator color={calendarTheme.pine} />
                   ) : (
-                    <Text style={styles.loadButtonText}>Połącz profil</Text>
+                    <Text style={styles.loadButtonText}>Wczytaj kalendarz</Text>
                   )}
                 </LinearGradient>
               </TouchableOpacity>
 
               <View style={styles.purchaseContainer}>
-                <Text style={styles.purchaseText}>Nie masz konta?</Text>
+                <Text style={styles.purchaseText}>Nie masz kalendarza?</Text>
                 <TouchableOpacity
                   onPress={() => Linking.openURL(ORDER_CALENDAR_URL)}
                   style={styles.purchaseButton}
@@ -457,7 +458,7 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
                 activeOpacity={0.8}
                 disabled={isAnimating}
               >
-                <Text style={styles.unlinkButtonText}>Wyloguj / odepnij profil</Text>
+                <Text style={styles.unlinkButtonText}>Odłącz kalendarz</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -489,9 +490,9 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Wyloguj profil</Text>
+              <Text style={styles.modalTitle}>Odłączyć kalendarz?</Text>
               <Text style={styles.modalTask}>
-                Czy na pewno chcesz się wylogować? Będziesz musiał ponownie wpisać email i kod
+                Kalendarz zniknie z tego urządzenia. Żeby wrócić, wczytaj go ponownie emailem i kodem
                 dostępu.
               </Text>
               <View style={styles.modalButtonsContainer}>
@@ -502,7 +503,7 @@ export default function OpenCalendarScreen(_props: OpenCalendarScreenProps) {
                   <Text style={styles.modalCancelButtonText}>Anuluj</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalConfirmButton} onPress={confirmUnlinkCalendar}>
-                  <Text style={styles.modalConfirmButtonText}>Wyloguj</Text>
+                  <Text style={styles.modalConfirmButtonText}>Odłącz</Text>
                 </TouchableOpacity>
               </View>
             </View>
