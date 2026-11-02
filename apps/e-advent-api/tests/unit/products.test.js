@@ -269,15 +269,15 @@ describe('products catalog (unit)', () => {
     expect(paid[1]).toMatchObject({ unitPrice: 7.2, lineBrutto: 7.2 });
   });
 
-  test('letter promo window ends when calendars go on sale', () => {
+  test('october letter promo is retired and calendars stay on sale', () => {
     expect(LETTER_PROMO_CODE).toBe('MIKOLAJ20');
     expect(isCalendarSku('scratch-a3')).toBe(true);
     expect(isCalendarSku('interactive')).toBe(true);
     expect(isCalendarSku('santa-letter')).toBe(false);
-    expect(isCalendarsOnSale(new Date('2026-10-31T22:59:59+01:00'))).toBe(false);
-    expect(isLetterPromoActive(new Date('2026-10-31T23:59:59+01:00'))).toBe(true);
-    expect(isCalendarsOnSale(new Date('2026-11-01T00:00:00+01:00'))).toBe(true);
-    expect(isLetterPromoActive(new Date('2026-11-01T00:00:00+01:00'))).toBe(false);
+    expect(isCalendarsOnSale(new Date('2026-10-15T12:00:00+01:00'))).toBe(true);
+    expect(isCalendarsOnSale(new Date('2026-11-02T12:00:00+01:00'))).toBe(true);
+    expect(isLetterPromoActive(new Date('2026-10-31T23:59:59+01:00'))).toBe(false);
+    expect(isLetterPromoActive(new Date('2026-11-02T12:00:00+01:00'))).toBe(false);
   });
 
   test('all catalog SKUs have positive basePrice', () => {

@@ -359,16 +359,12 @@ const LETTER_PROMO_CODE = 'MIKOLAJ20';
 const LETTER_PROMO_PERCENT = 20;
 const CALENDARS_ON_SALE_FROM = '2026-11-01T00:00:00+01:00';
 
-function isCalendarsOnSale(now) {
-  const value = now == null ? new Date() : now;
-  const ts = value instanceof Date ? value.getTime() : Date.parse(value);
-  return Number.isFinite(ts) && ts >= Date.parse(CALENDARS_ON_SALE_FROM);
+function isCalendarsOnSale(_now) {
+  return true;
 }
 
-function isLetterPromoActive(now) {
-  const value = now == null ? new Date() : now;
-  const ts = value instanceof Date ? value.getTime() : Date.parse(value);
-  return Number.isFinite(ts) && ts < Date.parse(CALENDARS_ON_SALE_FROM);
+function isLetterPromoActive(_now) {
+  return false;
 }
 
 module.exports = {

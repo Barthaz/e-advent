@@ -7,7 +7,7 @@ const {
   isLetterAddonSku,
   SANTA_LETTER_SKU,
 } = require('../config/products');
-const { findByCode, isAvailable, applyToTotals } = require('./discountCodes');
+const { findByCode, applyToTotals, validatePromoCode } = require('./discountCodes');
 const { assertCalendarsPurchasable } = require('./seasonSale');
 
 function parseShippingAddress(raw) {
@@ -320,12 +320,13 @@ async function resolveCheckoutItems(requestData) {
 
   let discount = null;
   if (requestData.promoCode) {
-    const row = await findByCode(requestData.promoCode);
-    if (!isAvailable(row)) {
+    const preview = await validatePromoCode(requestData.promoCode);
+    const row = preview.valid ? await findByCode(requestData.promoCode) : null;
+    if (!preview.valid || !row) {
       return {
         errors: [{
           type: 'field',
-          msg: 'Kod rabatowy jest nieprawidłowy albo został już wykorzystany.',
+          msg: preview.message || 'Kod rabatowy jest nieprawidłowy albo został już wykorzystany.',
           path: 'promoCode',
           location: 'body',
         }],

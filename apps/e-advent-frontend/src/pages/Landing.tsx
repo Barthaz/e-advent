@@ -6,8 +6,7 @@ import DemoCalendar from '../components/DemoCalendar';
 import SocialShare from '../components/SocialShare';
 import SEOHead from '../components/SEOHead';
 import ProductCard from '../components/products/ProductCard';
-import LetterPromoNotice from '../components/campaign/LetterPromoNotice';
-import { isLetterPromoActive, PRODUCT_FAMILIES } from '../config/products';
+import { PRODUCT_FAMILIES } from '../config/products';
 import { formatCountdown, getDaysUntilChristmas } from '../utils/countdown';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
@@ -146,20 +145,14 @@ export default function Landing() {
               List do Świętego Mikołaja, kalendarze adwentowe i magia oczekiwania — żeby grudzień przeżywać w cieple i miłej atmosferze.
             </p>
 
-            {isLetterPromoActive() && (
-              <div className={`max-w-2xl mx-auto mb-8 text-left ${heroClass('delay-550')}`}>
-                <LetterPromoNotice tone="onDark" showCta />
-              </div>
-            )}
-
             <div className={`hero-actions ${heroClass('delay-600')}`}>
               <Link to="/list-do-swietego-mikolaja" className="hero-action hero-action--letter">
                 <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-envelope-open-text" /></span>
                 <span className="hero-action-content">
-                  <span className="hero-action-eyebrow">{isLetterPromoActive() ? 'Do końca października −20%' : 'Mały list, wielkie marzenia'}</span>
+                  <span className="hero-action-eyebrow">Mały list, wielkie marzenia</span>
                   <span className="hero-action-title">List do Mikołaja</span>
                   <span className="hero-action-description">Zestaw z kopertą i naklejkami na najważniejsze świąteczne życzenia.</span>
-                  <span className="hero-action-footer"><span>Zobacz zestaw <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">{isLetterPromoActive() ? '−20%' : 'od 29 zł'}</span></span>
+                  <span className="hero-action-footer"><span>Zobacz zestaw <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od 29 zł</span></span>
                 </span>
               </Link>
               <Link to="/kalendarze-adwentowe" className="hero-action hero-action--calendar">

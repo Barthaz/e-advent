@@ -3,14 +3,9 @@ import { useCart } from '../context/useCart';
 import FestivePage from '../components/FestivePage';
 import ParchmentCard from '../components/ParchmentCard';
 import SEOHead from '../components/SEOHead';
-import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
-import LetterPromoNotice from '../components/campaign/LetterPromoNotice';
 import {
   formatPrice,
   getProduct,
-  isCalendarSku,
-  isCalendarsOnSale,
-  isLetterPromoActive,
 } from '../config/products';
 import {
   buildCartDisplayRows,
@@ -30,9 +25,7 @@ export default function CartPage() {
   } = useCart();
   const displayRows = buildCartDisplayRows(items);
   const hasRetiredProduct = items.some((item) => getProduct(item.sku)?.discontinued);
-  const hasUnsaleableCalendar = !isCalendarsOnSale() && items.some((item) => isCalendarSku(item.sku));
-  const letterPromo = isLetterPromoActive() && items.some((item) => getProduct(item.sku)?.type === 'letter');
-  const checkoutBlocked = hasRetiredProduct || hasUnsaleableCalendar;
+  const checkoutBlocked = hasRetiredProduct;
 
   const confirmLetterDrop = (nextQty: number) => {
     const dropped = certificatesRemovedByLetterDrop(items, nextQty);
@@ -240,16 +233,6 @@ export default function CartPage() {
               </div>
 
 
-              {hasUnsaleableCalendar && (
-                <div className="mb-6">
-                  <CalendarWaitNotice />
-                </div>
-              )}
-              {letterPromo && !hasUnsaleableCalendar && (
-                <div className="mb-6">
-                  <LetterPromoNotice />
-                </div>
-              )}
               {hasRetiredProduct && (
                 <p role="alert" className="alert-error mb-6">
                   W koszyku jest wycofany wariant kalendarza. Usuń go i utwórz kalendarz w aktualnym formacie A3.

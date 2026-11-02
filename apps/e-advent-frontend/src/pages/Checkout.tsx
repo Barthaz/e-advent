@@ -12,8 +12,7 @@ import { createPaymentIntent, createCalendar, type InternalCalendarData, validat
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import PriceBreakdown from '../components/PriceBreakdown';
-import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
-import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals, applyPercentDiscount, isSupportedDiscountPercent, isCalendarsOnSale, isCalendarSku, isLetterPromoActive, LETTER_PROMO_CODE } from '../config/products';
+import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals, applyPercentDiscount, isSupportedDiscountPercent, isCalendarsOnSale, isCalendarSku } from '../config/products';
 import ShippingForm from '../components/checkout/ShippingForm';
 import { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../utils/shippingAddress';
 import type { ProductType, ShippingAddress } from '../types/order';
@@ -405,7 +404,6 @@ export default function Checkout() {
   const paymentInitLockRef = useRef(false);
   const paymentInitKeyRef = useRef<string | null>(null);
   const pendingIntentRequestRef = useRef<CreatePaymentIntentRequest | null>(null);
-  const autoPromoRef = useRef(false);
   const promoRequestRef = useRef<string | null>(null);
   const appliedPromoRef = useRef<string | null>(null);
 
@@ -439,7 +437,6 @@ export default function Checkout() {
   const emailReady = isValidCheckoutEmail(calendarData?.email);
   const checkoutSkus = cartItems.length ? cartItems : [{ sku }];
   const calendarSaleBlocked = !isCalendarsOnSale() && checkoutSkus.some((item) => isCalendarSku(item.sku));
-  const letterOnlyCheckout = checkoutSkus.every((item) => getProduct(item.sku)?.type === 'letter');
 
   useEffect(() => {
     const cookieConsent = localStorage.getItem('cookieConsent');
@@ -1080,14 +1077,6 @@ export default function Checkout() {
     await applyPromoCode(promoCode);
   };
 
-  useEffect(() => {
-    if (autoPromoRef.current || !calendarData || calendarSaleBlocked) return;
-    if (!isLetterPromoActive() || !letterOnlyCheckout) return;
-    autoPromoRef.current = true;
-    setPromoCode(LETTER_PROMO_CODE);
-    void applyPromoCode(LETTER_PROMO_CODE);
-  }, [calendarData, calendarSaleBlocked, letterOnlyCheckout]);
-
   // Funkcja do tworzenia darmowego kalendarza
   const handleCreateFreeCalendar = async () => {
     if (!calendarData) {
@@ -1367,8 +1356,8 @@ export default function Checkout() {
         <div className="gold-divider mb-8" />
 
         {calendarSaleBlocked && (
-          <div className="mb-8">
-            <CalendarWaitNotice />
+          <div className="alert-error mb-8">
+            <p>Kalendarze adwentowe nie są teraz dostępne w sprzedaży.</p>
           </div>
         )}
 

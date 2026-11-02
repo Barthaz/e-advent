@@ -7,11 +7,11 @@ import LetterPromoNotice from './LetterPromoNotice';
 
 afterEach(cleanup);
 
-it('opens calendar sales on 1 November and ends the letter promo at the same moment', () => {
-  expect(isCalendarsOnSale(new Date('2026-10-31T22:59:59+01:00'))).toBe(false);
-  expect(isLetterPromoActive(new Date('2026-10-31T23:59:59+01:00'))).toBe(true);
-  expect(isCalendarsOnSale(new Date('2026-11-01T00:00:00+01:00'))).toBe(true);
-  expect(isLetterPromoActive(new Date('2026-11-01T00:00:00+01:00'))).toBe(false);
+it('keeps calendars on sale and leaves the October letter promo off', () => {
+  expect(isCalendarsOnSale(new Date('2026-10-31T22:59:59+01:00'))).toBe(true);
+  expect(isLetterPromoActive(new Date('2026-10-31T23:59:59+01:00'))).toBe(false);
+  expect(isCalendarsOnSale(new Date('2026-11-02T12:00:00+01:00'))).toBe(true);
+  expect(isLetterPromoActive(new Date('2026-11-02T12:00:00+01:00'))).toBe(false);
 });
 
 it('tells calendar visitors they can order letters at 20% off while they wait', () => {

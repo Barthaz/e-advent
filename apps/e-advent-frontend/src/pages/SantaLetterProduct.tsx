@@ -6,13 +6,11 @@ import SEOHead from '../components/SEOHead';
 import {
   formatPrice,
   getProduct,
-  isLetterPromoActive,
   SANTA_CERTIFICATE_SKU,
 } from '../config/products';
 import { useCart } from '../context/useCart';
 import { trackViewItem } from '../utils/analytics';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
-import LetterPromoNotice from '../components/campaign/LetterPromoNotice';
 import LetterPackComposer, { MAX_LETTER_QTY } from '../components/letter/LetterPackComposer';
 import AddedToCartModal from '../components/AddedToCartModal';
 import letter1 from '../assets/list/list_1.webp';
@@ -85,7 +83,6 @@ export default function SantaLetterProduct() {
   const [formError, setFormError] = useState<string | null>(null);
 
   const basePrice = product?.basePrice ?? 29;
-  const letterPromo = isLetterPromoActive();
   const faq = buildFaq(`+${formatPrice(CERTIFICATE_PRICE)}`);
 
   useEffect(() => {
@@ -210,12 +207,6 @@ export default function SantaLetterProduct() {
                   Gotowy zestaw do wysyłki: dwie wersje listu, opisana koperta i naklejki świąteczne.
                   Magiczny rytuał, który dzieci zapamiętają na lata.
                 </p>
-
-                {letterPromo && (
-                  <div className="mb-6">
-                    <LetterPromoNotice tone="onDark" />
-                  </div>
-                )}
 
                 <div className="mb-6">
                   <p className="font-display text-4xl font-semibold text-christmas-gold-light">

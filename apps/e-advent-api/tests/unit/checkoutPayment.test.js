@@ -217,16 +217,21 @@ describe('checkout identity and concurrency', () => {
     });
   });
   test('20% code discounts products and keeps shipping', async () => {
-    installDiscountStore(db.query, [discountRow({ code: 'MIKOLAJ20', percent: 20, reusable: 1 })]);
-    const result = await initializeCheckout(pay({ ...request, amount: 28.2, promoCode: 'MIKOLAJ20' }), 'test');
+    installDiscountStore(db.query, [discountRow({ code: 'SAVE20', percent: 20, reusable: 1 })]);
+    const result = await initializeCheckout(pay({ ...request, amount: 28.2, promoCode: 'SAVE20' }), 'test');
     expect(result.amount).toBe(28.2);
-    expect(store.orders.get(result.orderId).rabat).toBe('MIKOLAJ20');
+    expect(store.orders.get(result.orderId).rabat).toBe('SAVE20');
     expect(store.orders.get(result.orderId).shippingAmount).toBe(5);
     expect(store.orders.get(result.orderId).items[0]).toMatchObject({
       sku: 'santa-letter',
       unitPrice: 23.2,
       lineBrutto: 23.2,
     });
+  });
+  test('retired October code no longer discounts checkout', async () => {
+    installDiscountStore(db.query, [discountRow({ code: 'MIKOLAJ20', percent: 20, reusable: 1 })]);
+    await expect(initializeCheckout(pay({ ...request, amount: 28.2, promoCode: 'MIKOLAJ20' }), 'test')).rejects.toThrow(/zakończyła się/);
+    expect(store.orders.size).toBe(0);
   });
   test('calendar checkout is rejected while the November sale is closed', async () => {
     const previous = process.env.EADVENT_CALENDARS_ON_SALE;

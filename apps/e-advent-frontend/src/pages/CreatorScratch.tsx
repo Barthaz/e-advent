@@ -4,8 +4,7 @@ import PageBackground from '../components/PageBackground';
 import ParchmentCard from '../components/ParchmentCard';
 import SEOHead from '../components/SEOHead';
 import StepScratchTasks from '../components/creator/StepScratchTasks';
-import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
-import { formatPrice, getProduct, isCalendarsOnSale } from '../config/products';
+import { formatPrice, getProduct } from '../config/products';
 import { useCart } from '../context/useCart';
 import scratchPresetsData from '../data/scratch-presets.json';
 import {
@@ -75,8 +74,7 @@ const JSON_LD = {
     url: 'https://e-advent.pl/stworz-kalendarz/zdrapka',
     priceCurrency: 'PLN',
     price: '69.00',
-    availability: isCalendarsOnSale() ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
-    availabilityStarts: '2026-11-01',
+    availability: 'https://schema.org/InStock',
   },
 };
 
@@ -146,10 +144,7 @@ export default function CreatorScratch() {
     return tasks.length ? `Własna przygoda (${tasks.length} zadań)` : 'Własna przygoda';
   }, [mode, selectedPreset, tasks.length]);
 
-  const calendarsOnSale = isCalendarsOnSale();
-
   const handleAddToCart = async () => {
-    if (!calendarsOnSale) return;
     const validation = validateScratchTasksStep({
       presets: PRESETS,
       mode,
@@ -272,12 +267,6 @@ export default function CreatorScratch() {
                   i odkrywasz zadanie — gotową przygodę albo własną historię, którą ułożysz tutaj.
                 </p>
 
-                {!calendarsOnSale && (
-                  <div className="mb-6">
-                    <CalendarWaitNotice tone="onDark" />
-                  </div>
-                )}
-
                 <div className="mb-6">
                   <p className="font-display text-4xl font-semibold text-christmas-gold-light">
                     {formatPrice(basePrice)}
@@ -359,21 +348,17 @@ export default function CreatorScratch() {
                   </p>
                 )}
 
-                {calendarsOnSale ? (
-                  <div className="mb-4">
-                    <button
-                      type="button"
-                      onClick={() => void handleAddToCart()}
-                      className="btn-gold px-8 py-3.5 text-lg"
-                      disabled={isAdding}
-                    >
-                      <i className={`fas ${isAdding ? 'fa-spinner fa-spin' : 'fa-shopping-basket'}`} />
-                      {isAdding ? 'Dodawanie…' : 'Dodaj do koszyka'}
-                    </button>
-                  </div>
-                ) : (
-                  <p className="mb-4 text-white/55 text-sm">Zdrapkę będzie można dodać do koszyka od 1 listopada.</p>
-                )}
+                <div className="mb-4">
+                  <button
+                    type="button"
+                    onClick={() => void handleAddToCart()}
+                    className="btn-gold px-8 py-3.5 text-lg"
+                    disabled={isAdding}
+                  >
+                    <i className={`fas ${isAdding ? 'fa-spinner fa-spin' : 'fa-shopping-basket'}`} />
+                    {isAdding ? 'Dodawanie…' : 'Dodaj do koszyka'}
+                  </button>
+                </div>
                 <p className="text-white/45 text-xs">
                   Realizacja 3–5 dni roboczych · Bezpieczna płatność
                 </p>

@@ -386,18 +386,16 @@ export function isCalendarSku(sku) {
   return Boolean(product && isCalendarProductType(product.type));
 }
 
-/** Reusable October letter/certificate campaign code. */
+/** October 2026 letter campaign. Ended; kept so old orders and the retired code stay recognizable. */
 export const LETTER_PROMO_CODE = 'MIKOLAJ20';
 export const LETTER_PROMO_PERCENT = 20;
-/** Europe/Warsaw instant when calendars go on sale and the letter promo ends. */
+/** Historical Warsaw instant when calendars were scheduled to go on sale. */
 export const CALENDARS_ON_SALE_FROM = '2026-11-01T00:00:00+01:00';
 
-export function isCalendarsOnSale(now = new Date()) {
-  const ts = now instanceof Date ? now.getTime() : Date.parse(now);
-  return Number.isFinite(ts) && ts >= Date.parse(CALENDARS_ON_SALE_FROM);
+export function isCalendarsOnSale(_now = new Date()) {
+  return true;
 }
 
-export function isLetterPromoActive(now = new Date()) {
-  const ts = now instanceof Date ? now.getTime() : Date.parse(now);
-  return Number.isFinite(ts) && ts < Date.parse(CALENDARS_ON_SALE_FROM);
+export function isLetterPromoActive(_now = new Date()) {
+  return false;
 }

@@ -8,8 +8,7 @@ import StepTasks from '../components/creator/StepTasks';
 import StepOpeningMethod from '../components/creator/StepOpeningMethod';
 import StepSummary from '../components/creator/StepSummary';
 import { useCreatorWizard } from '../hooks/useCreatorWizard';
-import CalendarWaitNotice from '../components/campaign/CalendarWaitNotice';
-import { formatPrice, getProduct, getCheckoutCtaLabel, isCalendarsOnSale } from '../config/products';
+import { formatPrice, getProduct, getCheckoutCtaLabel } from '../config/products';
 import { trackViewItem } from '../utils/analytics';
 import SEOHead from '../components/SEOHead';
 
@@ -30,10 +29,7 @@ export default function CreatorInteractive() {
     });
   }, [product?.name, product?.basePrice]);
 
-  const calendarsOnSale = isCalendarsOnSale();
-
   const handleCheckout = () => {
-    if (!calendarsOnSale) return;
     if (
       !wizard.validateBasicStep()
       || !wizard.validateTasksStep()
@@ -51,7 +47,6 @@ export default function CreatorInteractive() {
     <FestivePage className="py-4">
       <SEOHead title="Interaktywny kalendarz adwentowy online — kreator | e-Advent" description="Stwórz kalendarz adwentowy online z własnymi zadaniami. Personalizacja i prywatny link na e-mail po opłaceniu zamówienia." canonical="https://e-advent.pl/stworz-kalendarz/interaktywny" />
       <ParchmentCard padding="lg">
-        {!calendarsOnSale && <CalendarWaitNotice className="mb-8" />}
         <WizardShell
           title="Kalendarz interaktywny"
           steps={STEPS}
@@ -116,15 +111,11 @@ export default function CreatorInteractive() {
               <button onClick={wizard.goNext} className="btn-green-full flex-1">
                 Dalej<i className="fas fa-arrow-right ml-2" />
               </button>
-            ) : calendarsOnSale ? (
+            ) : (
               <button onClick={handleCheckout} className="btn-green-full flex-1">
                 <i className="fas fa-credit-card mr-2" />
                 {getCheckoutCtaLabel(formatPrice(product?.basePrice ?? 9), false)}
               </button>
-            ) : (
-              <p className="flex-1 text-sm text-parchment-muted self-center">
-                Zamówienia kalendarzy przyjmiemy od 1 listopada.
-              </p>
             )}
           </div>
         </WizardShell>

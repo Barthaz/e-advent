@@ -1,6 +1,6 @@
 'use strict';
 
-const { isCalendarsOnSale, isCalendarSku, LETTER_PROMO_CODE } = require('../config/products');
+const { isCalendarsOnSale, isCalendarSku } = require('../config/products');
 
 function calendarsCurrentlyOnSale(now) {
   if (process.env.EADVENT_CALENDARS_ON_SALE === '1') return true;
@@ -9,7 +9,7 @@ function calendarsCurrentlyOnSale(now) {
 }
 
 function calendarSaleClosedMessage() {
-  return `Zamówienia kalendarzy przyjmiemy od 1 listopada. Tymczasem listy do Mikołaja są 20% taniej z kodem ${LETTER_PROMO_CODE}.`;
+  return 'Kalendarze adwentowe nie są teraz dostępne w sprzedaży.';
 }
 
 function assertCalendarsPurchasable(items) {

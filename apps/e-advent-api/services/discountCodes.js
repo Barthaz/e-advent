@@ -1,7 +1,7 @@
 'use strict';
 const { randomBytes, randomUUID } = require('node:crypto');
 const { query, withTransaction } = require('../config/database');
-const { applyPercentDiscount, DISCOUNT_PERCENTS } = require('../config/products');
+const { applyPercentDiscount, DISCOUNT_PERCENTS, LETTER_PROMO_CODE, isLetterPromoActive } = require('../config/products');
 
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const PERCENTS = new Set(DISCOUNT_PERCENTS.filter((percent) => percent !== 95));
@@ -62,7 +62,18 @@ function publicValidate(row) {
   };
 }
 
+function isRetiredCampaignCode(code) {
+  return normalizeCode(code) === LETTER_PROMO_CODE && !isLetterPromoActive();
+}
+
+const RETIRED_CAMPAIGN = {
+  valid: false,
+  discount: 0,
+  message: 'Promocja MIKOLAJ20 zakończyła się 31 października.',
+};
+
 async function validatePromoCode(code) {
+  if (isRetiredCampaignCode(code)) return RETIRED_CAMPAIGN;
   return publicValidate(await findByCode(code));
 }
 
@@ -77,7 +88,10 @@ function applyToTotals(totals, row) {
 }
 
 async function redeem(code, { orderId, email } = {}) {
-  const normalized = normalizeCode(code);
+    const normalized = normalizeCode(code);
+  if (isRetiredCampaignCode(normalized)) {
+    throw Object.assign(new Error(RETIRED_CAMPAIGN.message), { status: 409 });
+  }
   return withTransaction(async () => {
     if (orderId) {
       const [existing] = await query('SELECT id FROM discount_redemptions WHERE order_id = ? LIMIT 1', [orderId]);
