@@ -4,6 +4,7 @@ const { query } = require('../config/database');
 const { formatOrderNumber } = require('../utils/orderNumber');
 
 const { pdfBufferToImage } = require('../services/scratch/PdfRasterService');
+const { scratchBorderColor } = require('../services/scratch/scratchAssets');
 const {
   sendAdminDownload,
   canParkOnBlob,
@@ -150,6 +151,7 @@ function registerScratchExportRoutes(router, authAdmin) {
         return pdfBufferToImage(pdfBuffer, {
           format,
           dpi,
+          borderColor: scratchBorderColor(row.design_url),
           maxBytes: INLINE_MAX_BYTES,
           allowLargePng,
         });

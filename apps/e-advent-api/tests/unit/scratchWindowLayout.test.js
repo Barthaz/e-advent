@@ -17,6 +17,7 @@ const {
 } = require('../../services/scratch/scratchWindowLayout');
 const {
   matchPresetName,
+  scratchBorderColor,
   assertGraphicsPresent,
   getGraphicPath,
   getDayBadgePath,
@@ -152,6 +153,15 @@ describe('scratchAssets', () => {
     expect(matchPresetName('https://shop.example/designs/scratch/red.png')).toBe('red');
     expect(matchPresetName('/designs/scratch/blue.png?x=1')).toBe('blue');
     expect(matchPresetName('https://blob.example/custom.png')).toBeNull();
+  });
+
+  test.each([
+    ['/designs/scratch/red.png', '#3c0101'],
+    ['https://shop.example/designs/scratch/green.png', '#011400'],
+    ['/designs/scratch/blue.png?x=1', '#00030a'],
+    ['https://blob.example/custom.png', '#ffffff'],
+  ])('selects the trim colour for %s', (url, expected) => {
+    expect(scratchBorderColor(url)).toBe(expected);
   });
 
   test('graphics and day badges are present on disk', () => {

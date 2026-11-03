@@ -11,6 +11,7 @@ const {
   getGraphicPath,
   getDayBadgePath,
   resolveScratchDesignImage,
+  scratchBorderColor,
 } = require('./scratchAssets');
 const {
   computeScratchLayout,
@@ -226,7 +227,7 @@ async function buildScratchPdfBuffer(input) {
 
   const styles = StyleSheet.create({
     page: {
-      backgroundColor: '#ffffff',
+      backgroundColor: scratchBorderColor(input.designUrl),
     },
     taskText: {
       fontFamily: 'Source Serif 4',

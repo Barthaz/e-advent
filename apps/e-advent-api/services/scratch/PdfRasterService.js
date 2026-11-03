@@ -4,7 +4,7 @@ const { createCanvas } = require('@napi-rs/canvas');
 const { pageSizePixels, normalizeExportFormat, normalizeDpi } = require('./scratchWindowLayout');
 
 /**
- * White frame around the rasterized page (extra paper outside the graphic, trimmed when
+ * Frame around the rasterized page (extra paper outside the graphic, trimmed when
  * printing): 18 px at 300 DPI, kept the same printed width at every DPI.
  */
 const PNG_BORDER_MM = (18 / 300) * 25.4;
@@ -27,31 +27,33 @@ async function loadPdfJs() {
 }
 
 /**
- * Expand canvas by a thin white border on each side (does not crop the graphic).
+ * Expand canvas by a thin border on each side (does not crop the graphic).
  * @param {import('@napi-rs/canvas').Canvas} source
  * @param {number} borderPx
+ * @param {string} borderColor
  */
-function withWhiteBorder(source, borderPx) {
+function withBorder(source, borderPx, borderColor) {
   const w = source.width + borderPx * 2;
   const h = source.height + borderPx * 2;
   const framed = createCanvas(w, h);
   const ctx = framed.getContext('2d');
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = borderColor;
   ctx.fillRect(0, 0, w, h);
   ctx.drawImage(source, borderPx, borderPx);
   return framed;
 }
 
 /**
- * Rasterize the first page of a PDF at the requested paper size + DPI, with a white frame.
+ * Rasterize the first page of a PDF at the requested paper size + DPI, with a frame.
  *
  * @param {Buffer} pdfBuffer
- * @param {{ format?: string, dpi?: number }} options
+ * @param {{ format?: string, dpi?: number, borderColor?: string }} options
  * @returns {Promise<import('@napi-rs/canvas').Canvas>}
  */
 async function renderPdfToCanvas(pdfBuffer, options = {}) {
   const format = normalizeExportFormat(options.format);
   const dpi = normalizeDpi(options.dpi);
+  const borderColor = options.borderColor || '#ffffff';
   const { width: targetW, height: targetH } = pageSizePixels(format, dpi);
 
   const pdfjs = await loadPdfJs();
@@ -87,7 +89,7 @@ async function renderPdfToCanvas(pdfBuffer, options = {}) {
   if ('imageSmoothingQuality' in ctx) {
     ctx.imageSmoothingQuality = 'high';
   }
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = borderColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   await page.render({
@@ -97,7 +99,15 @@ async function renderPdfToCanvas(pdfBuffer, options = {}) {
   }).promise;
   await pdf.destroy();
 
-  if (direct) return canvas;
+  if (direct) {
+    // PDF.js may clear the entire canvas to white, including the area outside the page.
+    ctx.fillStyle = borderColor;
+    ctx.fillRect(0, 0, canvas.width, border);
+    ctx.fillRect(0, canvas.height - border, canvas.width, border);
+    ctx.fillRect(0, border, border, canvas.height - 2 * border);
+    ctx.fillRect(canvas.width - border, border, border, canvas.height - 2 * border);
+    return canvas;
+  }
 
   let outCanvas = canvas;
   if (canvasW !== targetW || canvasH !== targetH) {
@@ -112,8 +122,8 @@ async function renderPdfToCanvas(pdfBuffer, options = {}) {
     octx.drawImage(canvas, 0, 0, targetW, targetH);
   }
 
-  // Thin white frame: enlarge PNG, leave graphic untouched.
-  return withWhiteBorder(outCanvas, borderPx);
+  // Thin frame: enlarge PNG, leave graphic untouched.
+  return withBorder(outCanvas, borderPx, borderColor);
 }
 
 const JPEG_QUALITIES = [92, 85, 78, 70];
@@ -154,7 +164,7 @@ async function canvasToFitJpeg(canvas, maxBytes) {
  * Convert first page of a PDF buffer to a PNG buffer at the requested paper size + DPI.
  *
  * @param {Buffer} pdfBuffer
- * @param {{ format?: string, dpi?: number }} options
+ * @param {{ format?: string, dpi?: number, borderColor?: string }} options
  * @returns {Promise<Buffer>}
  */
 async function pdfBufferToPng(pdfBuffer, options = {}) {

@@ -11,6 +11,13 @@ const DAYS_DIR = path.join(GRAPHICS_DIR, 'days');
 
 const PRESET_NAMES = new Set(['green', 'red', 'blue']);
 
+// Median edge colours of the bundled designs, used for the printable trim area.
+const PRESET_BORDER_COLORS = {
+  red: '#3c0101',
+  green: '#011400',
+  blue: '#00030a',
+};
+
 const GRAPHIC_FILES = {
   logo: 'logo.png',
   powody: '24_powody.png',
@@ -88,6 +95,10 @@ function matchPresetName(designUrl) {
   return null;
 }
 
+function scratchBorderColor(designUrl) {
+  return PRESET_BORDER_COLORS[matchPresetName(designUrl)] || '#ffffff';
+}
+
 function readLocalPreset(name) {
   const filePath = path.join(PRESETS_DIR, `${name}.png`);
   if (!fs.existsSync(filePath)) {
@@ -159,5 +170,6 @@ module.exports = {
   getDayBadgePath,
   assertGraphicsPresent,
   matchPresetName,
+  scratchBorderColor,
   resolveScratchDesignImage,
 };
