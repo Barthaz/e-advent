@@ -6,33 +6,33 @@
     "tasks": [
       {
         "day": 1,
-        "title": "Startujemy!",
-        "description": "Wymyślcie nazwę dla Waszej świątecznej drużyny."
+        "title": "Nasza tajna baza",
+        "description": "Wymyślcie nazwę drużyny i zbudujcie jej bazę z tego, co macie pod ręką."
       },
       {
         "day": 2,
-        "title": "Polowanie!",
-        "description": "Kto pierwszy znajdzie w domu 5 czerwonych rzeczy?"
+        "title": "Czerwona misja",
+        "description": "Macie 2 minuty, by znaleźć 5 czerwonych rzeczy. Każda musi pochodzić z innego pokoju."
       },
       {
         "day": 3,
-        "title": "Dziękujemy",
-        "description": "Każdy mówi jedną rzecz, za którą dziś jest wdzięczny."
+        "title": "Tajemniczy przedmiot",
+        "description": "Schowajcie przedmiot do worka. Czy reszta zgadnie dotykiem, co jest w środku?"
       },
       {
         "day": 4,
-        "title": "Świąteczny koncert",
-        "description": "Wybierzcie świąteczną piosenkę i zaśpiewajcie ją razem."
+        "title": "Świąteczne kalambury",
+        "description": "Pokazujcie bez słów świąteczne hasła. Kto pierwszy odgadnie trzy?"
       },
       {
         "day": 5,
-        "title": "Jutro Mikołajki!",
-        "description": "Przygotujcie razem coś dla Świętego Mikołaja."
+        "title": "Ślad dla Mikołaja",
+        "description": "Przygotujcie dziś wieczorem mały poczęstunek i wiadomość dla Mikołaja."
       },
       {
         "day": 6,
-        "title": "Mikołajki!",
-        "description": "Każdy robi dziś komuś małą niespodziankę."
+        "title": "Mikołajkowy trop",
+        "description": "Schowajcie małą niespodziankę i poprowadźcie do niej domowników trzema wskazówkami."
       },
       {
         "day": 7,
@@ -46,53 +46,53 @@
       },
       {
         "day": 9,
-        "title": "Wieczór kakao",
-        "description": "Przygotujcie kakao i wybierzcie swoje najlepsze świąteczne dodatki."
+        "title": "Kawiarnia pod reniferem",
+        "description": "Otwórzcie domową kawiarnię. Każdy wymyśla nazwę dla swojego zimowego napoju."
       },
       {
         "day": 10,
-        "title": "Jedno życzenie",
-        "description": "Każdy wymyśla jedno świąteczne życzenie dla całej rodziny."
+        "title": "Zamiana ról",
+        "description": "Przez 10 minut dzieci wymyślają zasady zabawy, a dorośli muszą ich słuchać!"
       },
       {
         "day": 11,
-        "title": "Ho! Ho! Ho!",
-        "description": "Kto najlepiej potrafi udawać Świętego Mikołaja?"
+        "title": "Fabryka wynalazków",
+        "description": "Z trzech domowych przedmiotów wymyślcie wynalazek dla Mikołaja. Do czego służy?"
       },
       {
         "day": 12,
-        "title": "Miła wiadomość",
-        "description": "Zróbcie komuś kartkę albo zostawcie miłą wiadomość."
+        "title": "Tajna przesyłka",
+        "description": "Przygotujcie małą wiadomość dla kogoś i podrzućcie ją tak, by nie dać się zauważyć."
       },
       {
         "day": 13,
-        "title": "Czas na pierniki!",
-        "description": "Upieczcie lub udekorujcie razem coś świątecznego."
+        "title": "Piernikowe potwory",
+        "description": "Udekorujcie ciastka tak, by każde przedstawiało innego świątecznego stworka."
       },
       {
         "day": 14,
-        "title": "Kino rodzinne",
-        "description": "Wybierzcie razem świąteczny film i przygotujcie przekąski."
+        "title": "Kino z niespodzianką",
+        "description": "Wylosujcie film z trzech propozycji i urządźcie seans w niezwykłym miejscu w domu."
       },
       {
         "day": 15,
-        "title": "Tajna misja",
-        "description": "Zrób dziś coś dobrego dla kogoś i nikomu o tym nie mów."
+        "title": "Rodzinna zagadka",
+        "description": "Jedna osoba układa zagadkę o czymś w domu. Reszta szuka odpowiedzi."
       },
       {
         "day": 16,
-        "title": "Nasza ozdoba",
-        "description": "Zróbcie jedną ozdobę, która trafi na Waszą choinkę."
+        "title": "Ozdoba z historią",
+        "description": "Zróbcie ozdobę i wymyślcie, jaką magiczną moc będzie miała na choince."
       },
       {
         "day": 17,
-        "title": "Pamiętacie?",
-        "description": "Każdy opowiada swoje najzabawniejsze świąteczne wspomnienie."
+        "title": "Wyprawa z latarką",
+        "description": "Zgaście światło i odkryjcie dom na nowo, oświetlając drogę latarką."
       },
       {
         "day": 18,
-        "title": "3 minuty tańca!",
-        "description": "Włączcie świąteczną piosenkę i tańczcie. Bez wymówek!"
+        "title": "Bitwa na śnieżki",
+        "description": "Zróbcie papierowe śnieżki i sprawdźcie, kto trafi do celu z największej odległości."
       },
       {
         "day": 19,
@@ -101,28 +101,28 @@
       },
       {
         "day": 20,
-        "title": "Wieczór rodzinny",
-        "description": "Każdy wybiera przekąskę. Resztę wieczoru spędźcie razem."
+        "title": "Kolacja na opak",
+        "description": "Zjedzcie posiłek w nietypowym miejscu albo zamieńcie się miejscami przy stole."
       },
       {
         "day": 21,
-        "title": "Rodzinny turniej",
-        "description": "Zagrajcie razem w grę. Zwycięzca wybiera dzisiejszy deser!"
+        "title": "Wielki turniej",
+        "description": "Wymyślcie trzy krótkie konkurencje. Zwycięzca nadaje tytuły całej drużynie."
       },
       {
         "day": 22,
-        "title": "Lubię w Tobie...",
-        "description": "Każdy mówi jednej osobie coś, co najbardziej w niej lubi."
+        "title": "Sekretna kapsuła",
+        "description": "Schowajcie do koperty drobiazg i wiadomość od każdego. Otwórzcie za rok."
       },
       {
         "day": 23,
-        "title": "Jutro Wigilia!",
-        "description": "Przygotujcie razem jedną rzecz na świąteczny stół."
+        "title": "Wigilijny detal",
+        "description": "Przygotujcie razem jedną niespodziankę na jutrzejszy stół."
       },
       {
         "day": 24,
-        "title": "Nasz finał!",
-        "description": "Przytulcie się i wybierzcie najlepszy moment tego Adwentu."
+        "title": "Zdjęcie na finał",
+        "description": "Odtwórzcie pozę ze zdjęcia z 7 grudnia. Porównajcie oba zdjęcia!"
       }
     ]
   },
@@ -134,122 +134,122 @@
       {
         "day": 1,
         "title": "REKRUTACJA!",
-        "description": "Wymyśl swoje imię Pomocnika Mikołaja. Misja się zaczyna!"
+        "description": "Wymyśl imię Pomocnika i zrób odznakę. Zakładaj ją przed każdą misją!"
       },
       {
         "day": 2,
-        "title": "Test spostrzegawczości",
-        "description": "Znajdź 5 czerwonych rzeczy. Masz tylko 2 minuty!"
+        "title": "Tajny kod",
+        "description": "Wymyśl trzy tajne znaki i naucz ich wybranego domownika. Możecie się teraz porozumiewać bez słów!"
       },
       {
         "day": 3,
-        "title": "Tajna dobroć",
-        "description": "Pomóż dziś komuś, zanim zdąży Cię o to poprosić."
+        "title": "Przesyłka specjalna",
+        "description": "Przenieś drobiazg przez pokój za pomocą dwóch łyżek. Nie może spaść!"
       },
       {
         "day": 4,
-        "title": "Trening renifera",
-        "description": "Przejdź przez pokój z poduszką na głowie. Nie może spaść!"
+        "title": "Śledztwo w Bazie",
+        "description": "Poproś kogoś, by zmienił trzy rzeczy w pokoju. Czy odkryjesz wszystkie zmiany?"
       },
       {
         "day": 5,
-        "title": "Przygotowania!",
-        "description": "Ustal, co zostawicie jutro dla Świętego Mikołaja."
+        "title": "List do Mikołaja",
+        "description": "Napisz lub narysuj wiadomość dla Mikołaja. Zostaw ją dziś wieczorem w widocznym miejscu."
       },
       {
         "day": 6,
         "title": "MIKOŁAJKI!",
-        "description": "Sprawdź, czy Mikołaj pamiętał o swoim nowym Pomocniku!"
+        "description": "Znajdź w domu miejsce, do którego Mikołaj mógł zajrzeć. Czy zostawił tam jakiś ślad?"
       },
       {
         "day": 7,
-        "title": "Świąteczny detektyw",
-        "description": "Znajdź w domu coś zielonego, złotego i czerwonego."
+        "title": "Mapa tajnej bazy",
+        "description": "Narysuj mapę pokoju i zaznacz na niej najlepszą kryjówkę dla elfa."
       },
       {
         "day": 8,
-        "title": "Wiadomość do Bazy",
-        "description": "Narysuj rzecz, która najbardziej kojarzy Ci się ze Świętami."
+        "title": "Szyfr Pomocnika",
+        "description": "Napisz wiadomość za pomocą obrazków. Sprawdź, czy ktoś zdoła ją odczytać."
       },
       {
         "day": 9,
-        "title": "Alarm! Zaginęła skarpeta",
-        "description": "Kto pierwszy znajdzie w domu świąteczną skarpetę?"
+        "title": "Zaginiony pakunek",
+        "description": "Poproś domownika o ukrycie drobiazgu. Odnajdź go dzięki trzem wskazówkom."
       },
       {
         "day": 10,
-        "title": "Test Pomocnika",
-        "description": "Powiedz 3 rzeczy, za które jesteś dziś wdzięczny."
+        "title": "Trening renifera",
+        "description": "Przejdź przez pokój z poduszką na głowie. Po drodze omiń trzy przeszkody!"
       },
       {
         "day": 11,
-        "title": "Kod muzyczny",
-        "description": "Rozpoznaj świąteczną piosenkę po pierwszych 10 sekundach."
+        "title": "Warsztat wynalazcy",
+        "description": "Zbuduj z domowych przedmiotów pojazd dla elfa. Pokaż, jak działa."
       },
       {
         "day": 12,
         "title": "Operacja: Niespodzianka",
-        "description": "Przygotuj komuś małą niespodziankę. Wszystko w tajemnicy!"
+        "description": "Przygotuj komuś miłą wiadomość i podrzuć ją tak, by nie dać się zauważyć."
       },
       {
         "day": 13,
         "title": "Paliwo dla elfów",
-        "description": "Przygotujcie coś pysznego. Elfy podobno uwielbiają pierniki!"
+        "description": "Przygotujcie coś pysznego. Wymyśl dla tego przysmaku tajną nazwę elfów."
       },
       {
         "day": 14,
         "title": "Egzamin renifera",
-        "description": "Przygotujcie domowy tor przeszkód i pokonaj go na czas!"
+        "description": "Zbudujcie domowy tor przeszkód i sprawdź, jak szybko potrafisz go pokonać!"
       },
       {
         "day": 15,
-        "title": "Misja: Dobro",
-        "description": "Powiedz dziś 3 osobom coś naprawdę miłego."
+        "title": "Podejrzane dźwięki",
+        "description": "Zamknij oczy. Domownik wydaje trzy dźwięki przedmiotami. Czy rozpoznasz wszystkie?"
       },
       {
         "day": 16,
         "title": "Warsztat elfów",
-        "description": "Wykonaj własną świąteczną ozdobę i zawieś ją w domu."
+        "description": "Zrób ozdobę, która będzie znakiem rozpoznawczym Pomocników Mikołaja."
       },
       {
         "day": 17,
-        "title": "Poszukiwania!",
-        "description": "Ktoś chowa bombkę. Masz 5 minut, żeby ją odnaleźć!"
+        "title": "Nocny zwiad",
+        "description": "Zgaście światło. Z latarką odnajdź trzy przedmioty wskazane przez domownika."
       },
       {
         "day": 18,
-        "title": "Test śmiechu",
-        "description": "Rozśmiesz kogoś bez dotykania go. Masz tylko minutę!"
+        "title": "Próba pamięci",
+        "description": "Przyjrzyj się pięciu przedmiotom. Zamknij oczy — który z nich zniknął?"
       },
       {
         "day": 19,
-        "title": "Trening Mikołaja",
-        "description": "Przećwicz swoje najlepsze HO! HO! HO! Niech usłyszy je cały dom."
+        "title": "Ratunek dla prezentu",
+        "description": "Zbuduj z papieru osłonę dla małego przedmiotu. Czy przetrwa podróż przez pokój?"
       },
       {
         "day": 20,
         "title": "Świąteczny zwiad",
-        "description": "Znajdźcie najpiękniej udekorowany świątecznie dom w okolicy."
+        "description": "Podczas spaceru wypatrz trzy różne ślady zbliżających się Świąt."
       },
       {
         "day": 21,
-        "title": "Ściśle tajne!",
-        "description": "Zrób dobry uczynek. Nie zdradzaj nikomu, co zrobiłeś."
+        "title": "Agent dobrej roboty",
+        "description": "Pomóż komuś po cichu. Twoja misja: nie dać się przyłapać!"
       },
       {
         "day": 22,
-        "title": "Kontrola zabawek",
-        "description": "Wybierz jedną rzecz, którą możesz przekazać komuś innemu."
+        "title": "Elfi przegląd",
+        "description": "Wybierz jedną zabawkę i wymyśl, jak mogłaby pomagać Mikołajowi w Wigilię."
       },
       {
         "day": 23,
         "title": "ALARM W BAZIE!",
-        "description": "Jutro Wigilia! Pomóż dorosłym w jednym świątecznym przygotowaniu."
+        "description": "Jutro Wigilia! Wybierz jedno przygotowanie i pomóż je dziś wykonać."
       },
       {
         "day": 24,
-        "title": "MISJA WYKONANA!",
-        "description": "Gratulacje! Oficjalnie zostajesz Pomocnikiem Świętego Mikołaja!"
+        "title": "WIELKI FINAŁ!",
+        "description": "Ukryj niespodziankę dla domowników i zostaw im zaszyfrowaną wskazówkę. Misja wykonana!"
       }
     ]
   },
@@ -260,123 +260,123 @@
     "tasks": [
       {
         "day": 1,
-        "title": "Zaczynamy!",
-        "description": "Każde mówi jedną rzecz, którą najbardziej lubi w drugiej osobie."
+        "title": "Nasz grudzień",
+        "description": "Zaplanujcie jedną małą rzecz, którą chcecie przeżyć razem przed Świętami."
       },
       {
         "day": 2,
-        "title": "Mały gest",
-        "description": "Zrób dziś drugiej osobie jej ulubiony napój. Bez pytania."
+        "title": "Napój z dedykacją",
+        "description": "Przygotuj drugiej osobie ulubiony napój i podaj go z krótką wiadomością."
       },
       {
         "day": 3,
-        "title": "Ale byliśmy młodzi!",
-        "description": "Znajdźcie najstarsze wspólne zdjęcie, jakie macie w telefonie."
+        "title": "Początek naszej historii",
+        "description": "Znajdźcie stare wspólne zdjęcie. Co pamiętacie z chwili, w której powstało?"
       },
       {
         "day": 4,
-        "title": "Nasza playlista",
-        "description": "Każde wybiera piosenkę, która przypomina mu o drugiej osobie."
+        "title": "Piosenka dla Ciebie",
+        "description": "Wybierzcie po jednej piosence dla drugiej osoby i posłuchajcie ich razem."
       },
       {
         "day": 5,
-        "title": "Tylko dla Ciebie",
-        "description": "Napiszcie sobie krótką wiadomość. Przeczytajcie je wieczorem."
+        "title": "List na wieczór",
+        "description": "Napiszcie do siebie po kilka czułych słów. Otwórzcie wiadomości wieczorem."
       },
       {
         "day": 6,
-        "title": "Mikołajki!",
-        "description": "Drobna niespodzianka dla drugiej osoby. Limit: 10 zł!"
+        "title": "Mikołajkowy sekret",
+        "description": "Przygotuj drugiej osobie drobną niespodziankę. Może być zupełnie za darmo."
       },
       {
         "day": 7,
-        "title": "Pamiętasz to?",
-        "description": "Opowiedzcie swoje najzabawniejsze wspomnienie z Waszego związku."
+        "title": "Nasza pierwsza randka",
+        "description": "Przypomnijcie sobie pierwszą randkę. Co każde z Was zapamiętało inaczej?"
       },
       {
         "day": 8,
-        "title": "Offline",
-        "description": "30 minut bez telefonów. Tylko Wy i żadnego scrollowania."
+        "title": "Tylko my",
+        "description": "Odłóżcie telefony na pół godziny. Spędźcie ten czas tak, jak lubicie najbardziej."
       },
       {
         "day": 9,
-        "title": "Wieczór filmowy",
-        "description": "Jedno wybiera film, drugie wybiera dzisiejsze przekąski."
+        "title": "Domowe kino we dwoje",
+        "description": "Wybierzcie film, przygotujcie przekąski i urządźcie seans pod wspólnym kocem."
       },
       {
         "day": 10,
-        "title": "Dzięki!",
-        "description": "Podziękuj partnerowi za coś, o czym dawno nie rozmawialiście."
+        "title": "Ukryta wiadomość",
+        "description": "Zostaw drugiej osobie czułą wiadomość tam, gdzie najmniej się jej spodziewa."
       },
       {
         "day": 11,
-        "title": "Jak dobrze mnie znasz?",
-        "description": "Zadajcie sobie po 3 pytania. Za każdą złą odpowiedź — punkt karny!"
+        "title": "Randka w ciemno",
+        "description": "Jedno z Was planuje krótki wspólny wieczór. Drugie poznaje plan dopiero na miejscu."
       },
       {
         "day": 12,
-        "title": "Coś dobrego",
-        "description": "Przygotujcie lub zamówcie coś, czego dawno razem nie jedliście."
+        "title": "Smak wspomnień",
+        "description": "Przygotujcie coś, co kojarzy Wam się ze wspólnym wyjazdem albo randką."
       },
       {
         "day": 13,
         "title": "Powtórka!",
-        "description": "Wybierzcie stare wspólne zdjęcie i spróbujcie je dziś odtworzyć."
+        "description": "Odtwórzcie zdjęcie wybrane 3 grudnia. Zadbajcie o pozy i szczegóły!"
       },
       {
         "day": 14,
-        "title": "Idziemy!",
-        "description": "Wybierzcie się razem na spacer. Telefony zostają w kieszeni."
+        "title": "Spacer po światłach",
+        "description": "Idźcie na wieczorny spacer i znajdźcie Wasze ulubione świąteczne światła."
       },
       {
         "day": 15,
-        "title": "Teleport!",
-        "description": "Możecie jutro polecieć gdziekolwiek. Dokąd lecicie i dlaczego?"
+        "title": "Gdybyśmy zniknęli...",
+        "description": "Wybierzcie miejsce, do którego ucieklibyście razem choćby jutro. Zaplanujcie pierwszy dzień."
       },
       {
         "day": 16,
-        "title": "Bez zapowiedzi",
-        "description": "Zrób dziś dla partnera coś miłego. Niczego wcześniej nie zdradzaj."
+        "title": "Czuły gest",
+        "description": "Zrób dziś coś, co sprawi drugiej osobie przyjemność. Nie zapowiadaj tego."
       },
       {
         "day": 17,
-        "title": "Zatańczymy?",
-        "description": "Włączcie jedną piosenkę i zatańczcie razem. Tak, naprawdę."
+        "title": "Chwila bliskości",
+        "description": "Zapalcie lampki lub świeczkę. Przytulcie się i zostańcie tak przez chwilę."
       },
       {
         "day": 18,
-        "title": "Nie śmiej się!",
-        "description": "Macie po minucie, żeby rozśmieszyć drugą osobę. Bez dotykania!"
+        "title": "Flirt od nowa",
+        "description": "Wyślij drugiej osobie wiadomość, jakbyście dopiero zaczynali się spotykać."
       },
       {
         "day": 19,
         "title": "Nasza tradycja",
-        "description": "Wymyślcie jedną rzecz, która stanie się Waszą świąteczną tradycją."
+        "description": "Wymyślcie mały świąteczny rytuał, który będzie należał tylko do Was."
       },
       {
         "day": 20,
-        "title": "Tylko pół godziny",
-        "description": "Przygotujcie coś dobrego i poświęćcie sobie dziś 30 minut."
+        "title": "Wieczór na zmianę",
+        "description": "Każde z Was wybiera jedną przyjemność na wspólny wieczór. Zróbcie obie."
       },
       {
         "day": 21,
-        "title": "Za rok...",
-        "description": "Powiedzcie, czego najbardziej nie możecie się doczekać w przyszłym roku."
+        "title": "Koperta na przyszłość",
+        "description": "Zapiszcie po jednym marzeniu dla Was na przyszły rok. Schowajcie je do koperty."
       },
       {
         "day": 22,
-        "title": "Prezent bez ceny",
-        "description": "Wymyśl prezent dla drugiej osoby, którego nie można kupić."
+        "title": "Nasz sekretny znak",
+        "description": "Wymyślcie gest, który znaczy: „Cieszę się, że jesteś”. Użyjcie go dziś choć raz."
       },
       {
         "day": 23,
-        "title": "Jedno życzenie",
-        "description": "Powiedz partnerowi jedno życzenie na Wasz kolejny wspólny rok."
+        "title": "Przedświąteczna randka",
+        "description": "Znajdźcie dziś chwilę tylko dla siebie. Nawet jeśli miałaby trwać 15 minut."
       },
       {
         "day": 24,
         "title": "Nasz finał",
-        "description": "Wybierzcie najlepszy wspólny moment mijającego roku."
+        "description": "Obejrzyjcie wspólne zdjęcia z tego roku i wybierzcie chwilę, do której chcecie wrócić."
       }
     ]
   }
