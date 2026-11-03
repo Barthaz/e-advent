@@ -5,9 +5,9 @@ const { pageSizePixels, normalizeExportFormat, normalizeDpi } = require('./scrat
 
 /**
  * White frame around the rasterized page (extra paper outside the graphic, trimmed when
- * printing): 20 px at 300 DPI, kept the same printed width at every DPI.
+ * printing): 18 px at 300 DPI, kept the same printed width at every DPI.
  */
-const PNG_BORDER_MM = (20 / 300) * 25.4;
+const PNG_BORDER_MM = (18 / 300) * 25.4;
 
 function borderPixels(dpi) {
   return Math.round((PNG_BORDER_MM / 25.4) * dpi);
