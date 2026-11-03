@@ -3,8 +3,15 @@
 const { createCanvas } = require('@napi-rs/canvas');
 const { pageSizePixels, normalizeExportFormat, normalizeDpi } = require('./scratchWindowLayout');
 
-/** White frame around the rasterized page (extra pixels outside the graphic). */
-const PNG_BORDER_PX = 22;
+/**
+ * White frame around the rasterized page (extra paper outside the graphic, trimmed off
+ * when printing). Physical width so it prints the same at 300 and 600 DPI.
+ */
+const PNG_BORDER_MM = 1.68;
+
+function borderPixels(dpi) {
+  return Math.round((PNG_BORDER_MM / 25.4) * dpi);
+}
 
 /**
  * Load pdfjs legacy build (CommonJS-friendly) for Node.
@@ -24,7 +31,7 @@ async function loadPdfJs() {
  * @param {import('@napi-rs/canvas').Canvas} source
  * @param {number} borderPx
  */
-function withWhiteBorder(source, borderPx = PNG_BORDER_PX) {
+function withWhiteBorder(source, borderPx) {
   const w = source.width + borderPx * 2;
   const h = source.height + borderPx * 2;
   const framed = createCanvas(w, h);
@@ -72,7 +79,8 @@ async function renderPdfToCanvas(pdfBuffer, options = {}) {
   // Usual case: page renders at exact target size, so draw it straight into the
   // bordered canvas instead of copying a ~70 MP bitmap (time + ~280 MB memory).
   const direct = canvasW === targetW && canvasH === targetH;
-  const border = direct ? PNG_BORDER_PX : 0;
+  const borderPx = borderPixels(dpi);
+  const border = direct ? borderPx : 0;
   const canvas = createCanvas(canvasW + border * 2, canvasH + border * 2);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = true;
@@ -105,7 +113,7 @@ async function renderPdfToCanvas(pdfBuffer, options = {}) {
   }
 
   // Thin white frame: enlarge PNG, leave graphic untouched.
-  return withWhiteBorder(outCanvas, PNG_BORDER_PX);
+  return withWhiteBorder(outCanvas, borderPx);
 }
 
 const JPEG_QUALITIES = [92, 85, 78, 70];
