@@ -3,15 +3,8 @@
 const { createCanvas } = require('@napi-rs/canvas');
 const { pageSizePixels, normalizeExportFormat, normalizeDpi } = require('./scratchWindowLayout');
 
-/**
- * White frame around the rasterized page (extra paper outside the graphic, trimmed off
- * when printing). Physical width so it prints the same at 300 and 600 DPI.
- */
-const PNG_BORDER_MM = 1.68;
-
-function borderPixels(dpi) {
-  return Math.round((PNG_BORDER_MM / 25.4) * dpi);
-}
+/** White frame around the rasterized page (extra pixels outside the graphic, trimmed when printing). */
+const PNG_BORDER_PX = 20;
 
 /**
  * Load pdfjs legacy build (CommonJS-friendly) for Node.
@@ -79,7 +72,7 @@ async function renderPdfToCanvas(pdfBuffer, options = {}) {
   // Usual case: page renders at exact target size, so draw it straight into the
   // bordered canvas instead of copying a ~70 MP bitmap (time + ~280 MB memory).
   const direct = canvasW === targetW && canvasH === targetH;
-  const borderPx = borderPixels(dpi);
+  const borderPx = PNG_BORDER_PX;
   const border = direct ? borderPx : 0;
   const canvas = createCanvas(canvasW + border * 2, canvasH + border * 2);
   const ctx = canvas.getContext('2d');
