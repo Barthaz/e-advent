@@ -7,6 +7,7 @@ import {
   useCreateCertificateMutation,
   useCreateInteractiveMutation,
   useCreateScratchMutation,
+  useDeleteGeneratedMutation,
   useGetGeneratedQuery,
   type GeneratorKind,
 } from '../api/generatorApi';
@@ -66,11 +67,13 @@ export default function GeneratorPage() {
   const [tab, setTab] = useState<TabId>('certificate');
   const [listType, setListType] = useState<GeneratorKind | ''>('');
   const [exporting, setExporting] = useState<'pdf' | 'png' | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<CalendarDetail | null>(null);
 
   const { data, isLoading, isError, refetch } = useGetGeneratedQuery({ type: listType, limit: 50 });
   const [createCertificate, { isLoading: creatingCert }] = useCreateCertificateMutation();
   const [createScratch, { isLoading: creatingScratch }] = useCreateScratchMutation();
   const [createInteractive, { isLoading: creatingInteractive }] = useCreateInteractiveMutation();
+  const [deleteGenerated, { isLoading: deleting }] = useDeleteGeneratedMutation();
 
   const [childName, setChildName] = useState('');
   const [certVariant, setCertVariant] = useState<'on' | 'ona'>('ona');
@@ -192,6 +195,17 @@ export default function GeneratorPage() {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    try {
+      await deleteGenerated(pendingDelete.id).unwrap();
+      toast.success('Usunięto element z generatora.');
+      setPendingDelete(null);
+    } catch (err) {
+      apiError(err, 'Nie udało się usunąć elementu.');
+    }
+  };
+
   const handleListDownload = async (row: CalendarDetail) => {
     const kind = kindOf(row);
     if (kind === 'certificate') {
@@ -277,6 +291,16 @@ export default function GeneratorPage() {
               Pobierz
             </button>
           )}
+          <button
+            type="button"
+            className="btn-red px-2 py-1 text-xs"
+            onClick={(event) => {
+              event.stopPropagation();
+              setPendingDelete(row);
+            }}
+          >
+            Usuń
+          </button>
           {row.access_code && (
             <button
               type="button"
@@ -294,6 +318,38 @@ export default function GeneratorPage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       {exporting && <ExportGeneratingModal kind={exporting} />}
+      {pendingDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true">
+          <div className="panel-card w-full max-w-md p-5 space-y-4">
+            <h2 className="heading-section">Usunąć element?</h2>
+            <p className="text-sm text-gray-700">
+              Czy na pewno chcesz usunąć
+              {' '}
+              <span className="font-medium text-gray-900">„{pendingDelete.title || 'bez nazwy'}”</span>
+              {' '}
+              ({getProductTypeLabel(pendingDelete.product_type)})? Tej operacji nie można cofnąć.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                className="btn-secondary px-3 py-2 text-sm"
+                disabled={deleting}
+                onClick={() => setPendingDelete(null)}
+              >
+                Anuluj
+              </button>
+              <button
+                type="button"
+                className="btn-red px-3 py-2 text-sm"
+                disabled={deleting}
+                onClick={() => void handleConfirmDelete()}
+              >
+                {deleting ? 'Usuwanie…' : 'Usuń'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div>
         <h1 className="heading-page">Generator</h1>
         <p className="text-sm text-gray-500 mt-1">

@@ -28,6 +28,7 @@ module.exports = {
   findGeneratedCalendars: jest.fn(),
   countGeneratedCalendars: jest.fn(),
   setCalendarOrigin: jest.fn(),
+  deleteGeneratedCalendar: jest.fn(),
   calendarRowToAdminJson: jest.fn((row) => {
     if (!row) return null;
     return {

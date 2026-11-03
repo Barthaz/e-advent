@@ -370,6 +370,53 @@ const setCalendarOrigin = async (id, origin) => {
   return findCalendarById(id);
 };
 
+function generatorDeleteError(message, status, code) {
+  const error = new Error(message);
+  error.status = status;
+  error.code = code;
+  return error;
+}
+
+const deleteGeneratedCalendar = async (id) => {
+  const calendarId = String(id);
+  const [rows] = await query(
+    'SELECT id, origin, title, product_type FROM calendars WHERE id = ?',
+    [calendarId],
+  );
+  const row = rows[0];
+  if (!row) {
+    throw generatorDeleteError('Nie znaleziono wygenerowanego elementu.', 404, 'NOT_FOUND');
+  }
+  if (row.origin !== 'generator') {
+    throw generatorDeleteError(
+      'Można usuwać tylko elementy utworzone w generatorze.',
+      400,
+      'NOT_GENERATOR',
+    );
+  }
+
+  const [links] = await query(
+    `SELECT (
+       (SELECT COUNT(*) FROM orders WHERE calendar_id = ?)
+       + (SELECT COUNT(*) FROM order_items WHERE calendar_id = ?)
+     ) AS linked`,
+    [calendarId, calendarId],
+  );
+  if (Number(links[0]?.linked || 0) > 0) {
+    throw generatorDeleteError(
+      'Ten kalendarz jest powiązany z zamówieniem i nie może zostać usunięty.',
+      409,
+      'LINKED_TO_ORDER',
+    );
+  }
+
+  await query('DELETE FROM special_window_progress WHERE calendar_id = ?', [calendarId]);
+  await query('DELETE FROM date_gate_entries WHERE calendar_id = ?', [calendarId]);
+  await query('DELETE FROM email_sends WHERE calendar_id = ?', [calendarId]);
+  await query('DELETE FROM calendars WHERE id = ? AND origin = ?', [calendarId, 'generator']);
+  return { id: calendarId, title: row.title, productType: row.product_type };
+};
+
 module.exports = {
   createCalendar,
   findCalendarById,
@@ -385,6 +432,7 @@ module.exports = {
   findGeneratedCalendars,
   countGeneratedCalendars,
   setCalendarOrigin,
+  deleteGeneratedCalendar,
   calendarRowToAdminJson,
   openTask,
   generateEditToken,

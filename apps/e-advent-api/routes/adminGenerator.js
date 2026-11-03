@@ -255,6 +255,18 @@ function registerGeneratorRoutes(router, authAdmin) {
     }
   });
 
+  router.delete('/generator/:id', authAdmin, [
+    param('id').isUUID().withMessage('Nieprawidłowy identyfikator elementu.'),
+  ], async (req, res) => {
+    if (validationFailed(req, res)) return;
+    try {
+      const removed = await Calendar.deleteGeneratedCalendar(req.params.id);
+      res.json({ success: true, id: removed.id });
+    } catch (error) {
+      return sendExportError(res, error);
+    }
+  });
+
   router.post('/generator/interactive', authAdmin, [
     body('email').isEmail().withMessage('Podaj poprawny adres e-mail.').normalizeEmail(),
     body('openingMethod').isIn(['app', 'email', 'online']).withMessage('Wybierz sposób otwierania: app, email albo online.'),

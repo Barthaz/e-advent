@@ -228,4 +228,28 @@ describe('admin generator', () => {
     expect(sendEmail).not.toHaveBeenCalled();
     expect(res.body.accessCode).toBeTruthy();
   });
+
+  test('deletes one generated calendar and does not touch orders', async () => {
+    Calendar.deleteGeneratedCalendar.mockResolvedValue({ id: CERT_ID, title: 'Kasia', productType: 'certificate' });
+    const res = await request(app)
+      .delete(`/api/v1/admin/generator/${CERT_ID}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ success: true, id: CERT_ID });
+    expect(Calendar.deleteGeneratedCalendar).toHaveBeenCalledWith(CERT_ID);
+    const sql = db.query.mock.calls.map((call) => String(call[0])).join('\n');
+    expect(sql).not.toMatch(/INSERT INTO orders|INTO order_items/);
+  });
+
+  test('refuses to delete a missing generator item', async () => {
+    const error = new Error('Nie znaleziono wygenerowanego elementu.');
+    error.status = 404;
+    error.code = 'NOT_FOUND';
+    Calendar.deleteGeneratedCalendar.mockRejectedValue(error);
+    const res = await request(app)
+      .delete(`/api/v1/admin/generator/${CERT_ID}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('NOT_FOUND');
+  });
 });

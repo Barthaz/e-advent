@@ -59,6 +59,11 @@ export const generatorApi = createApi({
       transformResponse: (response: { calendar: RawCalendar }) => mapCalendarDetail(response.calendar),
     }),
 
+    deleteGenerated: builder.mutation<{ success: boolean; id: string }, string>({
+      query: (id) => ({ url: `/generator/${id}`, method: 'DELETE' }),
+      invalidatesTags: ['Generator'],
+    }),
+
     createInteractive: builder.mutation<{ calendar: CalendarDetail; accessCode: string }, {
       title?: string;
       email: string;
@@ -81,4 +86,5 @@ export const {
   useCreateCertificateMutation,
   useCreateScratchMutation,
   useCreateInteractiveMutation,
+  useDeleteGeneratedMutation,
 } = generatorApi;
