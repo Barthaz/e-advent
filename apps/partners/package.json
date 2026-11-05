@@ -1,0 +1,14 @@
+{
+  "name": "e-advent-partners",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dedykowany kalendarz ŚOA: PHP + HTML, CSS i vanilla JS",
+  "scripts": {
+    "dev": "node scripts/php.mjs -S 127.0.0.1:5180 -t public scripts/router.php",
+    "setup:demo": "node scripts/php.mjs scripts/setup-demo.php",
+    "test": "node scripts/php.mjs tests/run.php && node --test tests/progress.test.mjs tests/preferences.test.mjs",
+    "test:http": "node --test tests/http.test.mjs",
+    "check": "node scripts/check.mjs",
+    "build": "node scripts/package.mjs"
+  }
+}

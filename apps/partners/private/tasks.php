@@ -1,0 +1,28 @@
+<?php
+// SAMPLE CONTENT ONLY. Replace all 24 entries with texts approved by ŚOA.
+return [
+    1 => ['title' => 'Chwila dla siebie', 'body' => 'Rozejrzyj się i wybierz spokojne miejsce. Usiądź wygodnie na chwilę. Niczego nie musisz teraz robić ani osiągać.', 'minutes' => '2 minuty'],
+    2 => ['title' => 'Mały zachwyt', 'body' => 'Znajdź wokół siebie jeden drobiazg, który przyciąga Twój wzrok. Przyjrzyj się jego kolorom, kształtowi i fakturze.', 'minutes' => '3 minuty'],
+    3 => ['title' => 'Ciepło w dłoniach', 'body' => 'Przygotuj ulubiony ciepły napój. Przez kilka chwil skup uwagę na cieple kubka i zapachu napoju.', 'minutes' => '5 minut'],
+    4 => ['title' => 'Za oknem', 'body' => 'Popatrz przez okno. Zauważ trzy szczegóły, których zwykle nie dostrzegasz. Daj sobie czas na zwyczajne patrzenie.', 'minutes' => '3 minuty'],
+    5 => ['title' => 'Drobna życzliwość', 'body' => 'Pomyśl o małym geście, który możesz dziś zrobić dla siebie. Wybierz coś prostego i znajdź na to chwilę.', 'minutes' => '5 minut'],
+    6 => ['title' => 'Prezent z czasu', 'body' => 'Podaruj sobie kilka minut bez listy obowiązków. Możesz po prostu usiąść i pobyć w ciszy.', 'minutes' => '5 minut'],
+    7 => ['title' => 'Dźwięki wokół', 'body' => 'Zatrzymaj się na chwilę i posłuchaj otoczenia. Zauważ dźwięk najbliższy i ten, który dochodzi z daleka.', 'minutes' => '2 minuty'],
+    8 => ['title' => 'Miłe wspomnienie', 'body' => 'Przypomnij sobie drobny przyjemny moment z ostatnich dni. Co sprawiło, że chcesz go zachować?', 'minutes' => '3 minuty'],
+    9 => ['title' => 'Twój spokojny rytm', 'body' => 'Wykonaj jedną zwyczajną czynność trochę wolniej. Zauważ kolejne ruchy i to, co masz pod ręką.', 'minutes' => '3 minuty'],
+    10 => ['title' => 'Mniej na dziś', 'body' => 'Przyjrzyj się swoim planom. Czy jest jedna rzecz, którą możesz odłożyć, uprościć albo zrobić z czyjąś pomocą?', 'minutes' => '5 minut'],
+    11 => ['title' => 'Kolory zimy', 'body' => 'Podczas spaceru lub patrząc przez okno poszukaj trzech zimowych kolorów. Wybierz ten, który dziś najbardziej Ci się podoba.', 'minutes' => '5 minut'],
+    12 => ['title' => 'Własny kąt', 'body' => 'Zrób odrobinę miejsca dla siebie. Ułóż poduszkę, zapal lampkę lub odłóż jeden przedmiot, który Ci przeszkadza.', 'minutes' => '5 minut'],
+    13 => ['title' => 'Dobra wiadomość', 'body' => 'Jeśli masz ochotę, wyślij komuś kilka życzliwych słów. Możesz też zapisać taką wiadomość dla siebie.', 'minutes' => '3 minuty'],
+    14 => ['title' => 'Ulubiony dźwięk', 'body' => 'Włącz utwór, który lubisz. Przez chwilę słuchaj tylko muzyki, bez robienia innych rzeczy.', 'minutes' => '5 minut'],
+    15 => ['title' => 'To, co pomaga', 'body' => 'Przypomnij sobie małą rzecz, która ostatnio ułatwiła Ci dzień. Zapisz ją, jeśli chcesz do niej wrócić.', 'minutes' => '3 minuty'],
+    16 => ['title' => 'Smak chwili', 'body' => 'Wybierz mały kawałek ulubionej przekąski. Zauważ jej zapach, smak i fakturę, jedząc bez pośpiechu.', 'minutes' => '3 minuty'],
+    17 => ['title' => 'Pauza od ekranu', 'body' => 'Odłóż ekran na kilka minut. Zdecyduj, czy wolisz popatrzeć za okno, poruszać się czy odpocząć.', 'minutes' => '5 minut'],
+    18 => ['title' => 'Mały krok', 'body' => 'Wybierz jedną sprawę, którą chcesz dziś zrobić. Jaki byłby jej najmniejszy, możliwy do wykonania pierwszy krok?', 'minutes' => '5 minut'],
+    19 => ['title' => 'W dobrym towarzystwie', 'body' => 'Pomyśl, z kim lubisz spędzać spokojne chwile. Jeśli chcesz, zaproponuj tej osobie krótką rozmowę lub spacer.', 'minutes' => '5 minut'],
+    20 => ['title' => 'Światło wieczoru', 'body' => 'Zauważ, jak światło zmienia znajome miejsce. Spójrz na cienie, odbicia i kolory wokół siebie.', 'minutes' => '3 minuty'],
+    21 => ['title' => 'Wystarczająco dobrze', 'body' => 'Wybierz jedną rzecz, którą dziś możesz zrobić po prostu wystarczająco dobrze. Nie musi być idealna.', 'minutes' => '2 minuty'],
+    22 => ['title' => 'Twoja mała tradycja', 'body' => 'Pomyśl o prostym zwyczaju, który sprawia Ci przyjemność. Znajdź dziś dla niego miejsce.', 'minutes' => '5 minut'],
+    23 => ['title' => 'Miejsce na odpoczynek', 'body' => 'Wśród przygotowań zaplanuj krótką przerwę. Wybierz samodzielnie, jak chcesz ją spędzić.', 'minutes' => '5 minut'],
+    24 => ['title' => 'Zabierz tę chwilę ze sobą', 'body' => 'Wróć do jednego okienka, które było Ci szczególnie bliskie. Możesz zachować jego pomysł na kolejne dni.', 'minutes' => '5 minut'],
+];
