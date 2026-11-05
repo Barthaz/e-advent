@@ -26,6 +26,10 @@ import SantaTracker from './pages/SantaTracker';
 import CartPage from './pages/CartPage';
 import SantaLetterProduct from './pages/SantaLetterProduct';
 import CalendarsHub from './pages/CalendarsHub';
+import VoiceMessageProduct from './pages/santa-message/VoiceMessageProduct';
+import VoiceMessageCreator from './pages/santa-message/VoiceMessageCreator';
+import VoiceMessagePersonalize from './pages/santa-message/VoiceMessagePersonalize';
+import SantaPlayerPage from './pages/santa-message/SantaPlayerPage';
 import { trackPageView } from './utils/analytics';
 import SEOHead from './components/SEOHead';
 
@@ -43,13 +47,16 @@ function AppContent() {
     location.pathname === '/preview' ||
     location.pathname === '/podglad' ||
     location.pathname.startsWith('/podglad-okienka');
-  const hideChrome = isPreviewPage;
+  const isSantaPlayer = location.pathname.startsWith('/od-mikolaja/');
+  const hideChrome = isPreviewPage || isSantaPlayer;
   const isWindowPreview = location.pathname.startsWith('/podglad-okienka');
-  const noIndexPaths = ['/platnosc', '/checkout', '/sukces', '/success', '/platnosc-blad', '/kalendarz', '/podglad', '/preview'];
+  const noIndexPaths = ['/platnosc', '/checkout', '/sukces', '/success', '/platnosc-blad', '/kalendarz', '/podglad', '/preview', '/wiadomosc-od-mikolaja/kreator'];
   const isNoIndex =
     noIndexPaths.includes(location.pathname) ||
     location.pathname.startsWith('/kalendarz/') ||
     location.pathname.startsWith('/calendar/') ||
+    location.pathname.startsWith('/wiadomosc-od-mikolaja/personalizacja/') ||
+    isSantaPlayer ||
     isWindowPreview;
 
   return (
@@ -64,6 +71,10 @@ function AppContent() {
           <Route path="/" element={<Landing />} />
           <Route path="/kalendarze-adwentowe" element={<CalendarsHub />} />
           <Route path="/list-do-swietego-mikolaja" element={<SantaLetterProduct />} />
+          <Route path="/wiadomosc-od-mikolaja" element={<VoiceMessageProduct />} />
+          <Route path="/wiadomosc-od-mikolaja/kreator" element={<VoiceMessageCreator />} />
+          <Route path="/wiadomosc-od-mikolaja/personalizacja/:token" element={<VoiceMessagePersonalize />} />
+          <Route path="/od-mikolaja/:token" element={<SantaPlayerPage />} />
           <Route path="/koszyk" element={<CartPage />} />
           <Route path="/stworz-kalendarz" element={<ProductSelector />} />
           <Route path="/stworz-kalendarz/interaktywny" element={<CreatorInteractive />} />
@@ -94,7 +105,7 @@ function AppContent() {
         </Routes>
       </main>
       {!hideChrome && <Footer />}
-      {!hideChrome && <CookieBanner />}
+      {(!hideChrome || isSantaPlayer) && <CookieBanner />}
     </div>
   );
 }

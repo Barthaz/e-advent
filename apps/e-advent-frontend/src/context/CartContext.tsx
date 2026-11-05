@@ -9,6 +9,9 @@ import {
 } from '../config/products';
 import {
   appendSantaLetterBundle,
+  appendVoiceMessage,
+  convertVoiceToAddon as toAddon,
+  normalizeVoiceItems,
   CART_CHANGED_EVENT,
   cartItemCount,
   clearCartStorage,
@@ -23,14 +26,18 @@ import {
   saveCart,
   SANTA_CERTIFICATE_SKU,
   setLetterPackQuantity,
+  VOICE_MESSAGE_ADDON_SKU,
+  VOICE_MESSAGE_SKU,
   type CartItem,
 } from '../utils/cartStorage';
 import { reconcilePendingCheckout } from '../utils/reconcileCheckout';
 import { trackAddToCart } from '../utils/analytics';
 
-import { CartContext, type AddItemInput, type AddSantaLetterBundleInput } from './useCart';
+import { CartContext, type AddItemInput, type AddSantaLetterBundleInput, type AddVoiceMessageInput } from './useCart';
 
 const EMPTY_TOTALS: OrderTotals = getCartTotals([])!;
+const VOICE_CONVERTED_NOTICE =
+  'W koszyku nie ma już listu, więc wiadomość od Mikołaja ma teraz cenę samodzielną (19,90 zł). Nic nie zostało usunięte.';
 
 
 function trackAddedItems(added: CartItem[], quantityFallback = 1) {
@@ -49,6 +56,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const reconciledRef = useRef(false);
   const [items, setItems] = useState<CartItem[]>(() => sanitizeCartItems(loadCart()));
+  const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
+  const convertedRef = useRef(0);
+
+  /** Every mutation goes through here so add-on → standalone conversions are announced, never silent. */
+  const commit = useCallback((prev: CartItem[], next: CartItem[]) => {
+    const normalized = normalizeVoiceItems(next).items;
+    const addonIds = new Set(prev.filter((item) => item.sku === VOICE_MESSAGE_ADDON_SKU).map((item) => item.id));
+    const converted = normalized.filter((item) => addonIds.has(item.id) && item.sku === VOICE_MESSAGE_SKU).length;
+    if (converted > 0) convertedRef.current = converted;
+    saveCart(normalized);
+    return normalized;
+  }, []);
+
+  useEffect(() => {
+    if (convertedRef.current > 0) {
+      convertedRef.current = 0;
+      setVoiceNotice(VOICE_CONVERTED_NOTICE);
+    }
+  }, [items]);
 
   useEffect(() => {
     const sync = () => setItems(sanitizeCartItems(loadCart()));
@@ -149,45 +175,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => {
       const result = appendSantaLetterBundle(prev, input);
       added = result.added;
-      saveCart(result.items);
-      return result.items;
+      if (!input.withVoiceMessage) return commit(prev, result.items);
+      const voice = appendVoiceMessage(result.items, { mode: 'letter_addon' });
+      added = [...result.added, voice.added];
+      return commit(prev, voice.items);
     });
 
     trackAddedItems(added);
     return added;
-  }, []);
+  }, [commit]);
+
+  const addVoiceMessage = useCallback((input: AddVoiceMessageInput) => {
+    let added: CartItem = createCartItem({ sku: VOICE_MESSAGE_SKU });
+    let isNew = true;
+    setItems((prev) => {
+      const result = appendVoiceMessage(prev, input);
+      isNew = !prev.some((item) => item.id === result.added.id);
+      added = result.added;
+      return commit(prev, result.items);
+    });
+    if (isNew) trackAddedItems([added]);
+    return added;
+  }, [commit]);
+
+  const convertVoiceToAddon = useCallback((id: string) => {
+    setItems((prev) => commit(prev, toAddon(prev, id)));
+  }, [commit]);
+
+  const dismissVoiceNotice = useCallback(() => setVoiceNotice(null), []);
 
   const removeItem = useCallback((id: string) => {
-    setItems((prev) => {
-      const next = removeCartItem(prev, id);
-      saveCart(next);
-      return next;
-    });
-  }, []);
+    setItems((prev) => commit(prev, removeCartItem(prev, id)));
+  }, [commit]);
 
   const removeCertificateItem = useCallback((id: string) => {
-    setItems((prev) => {
-      const next = dropCertificate(prev, id);
-      saveCart(next);
-      return next;
-    });
-  }, []);
+    setItems((prev) => commit(prev, dropCertificate(prev, id)));
+  }, [commit]);
 
   const setLetterQuantity = useCallback((quantity: number) => {
-    setItems((prev) => {
-      const next = setLetterPackQuantity(prev, quantity);
-      saveCart(next);
-      return next;
-    });
-  }, []);
+    setItems((prev) => commit(prev, setLetterPackQuantity(prev, quantity)));
+  }, [commit]);
 
   const removeLetters = useCallback(() => {
-    setItems((prev) => {
-      const next = dropLetterPack(prev);
-      saveCart(next);
-      return next;
-    });
-  }, []);
+    setItems((prev) => commit(prev, dropLetterPack(prev)));
+  }, [commit]);
 
   const updateQty = useCallback((id: string, quantity: number) => {
     setItems((prev) => {
@@ -201,13 +232,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ? removeCartItem(prev, id)
           : prev.map((item) => (item.id === id ? { ...item, quantity: qty } : item));
 
-      saveCart(next);
-      return next;
+      return commit(prev, next);
     });
-  }, []);
+  }, [commit]);
 
   const clear = useCallback(() => {
     setItems([]);
+    setVoiceNotice(null);
     clearCartStorage();
   }, []);
 
@@ -228,8 +259,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeLetterPack: removeLetters,
       updateQty,
       clear,
+      addVoiceMessage,
+      convertVoiceToAddon,
+      voiceNotice,
+      dismissVoiceNotice,
     }),
-    [items, itemCount, totals, addItem, addSantaLetterBundle, removeItem, removeCertificateItem, setLetterQuantity, removeLetters, updateQty, clear],
+    [items, itemCount, totals, addItem, addSantaLetterBundle, removeItem, removeCertificateItem, setLetterQuantity, removeLetters, updateQty, clear, addVoiceMessage, convertVoiceToAddon, voiceNotice, dismissVoiceNotice],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

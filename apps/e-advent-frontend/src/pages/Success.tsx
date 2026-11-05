@@ -12,7 +12,7 @@ import { OPENING_METHOD_LABELS } from '../components/creator/openingMethods';
 import type { OpeningMethod } from '../types/order';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 import { trackPurchase } from '../utils/analytics';
-import { clearCartStorage } from '../utils/cartStorage';
+import { clearCartStorage, isVoiceSku } from '../utils/cartStorage';
 import { clearCartAfterPaidOrder, finishCheckout, notifyCartChanged } from '../utils/checkoutSession';
 import { markCalendarPurchased } from '../utils/creatorStorage';
 import { clearOrderSummary, loadOrderSummary, paymentItemsToOrderLines, type OrderLineItem } from '../utils/orderSummary';
@@ -49,6 +49,7 @@ export default function Success() {
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(true);
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [isPhysicalOrder, setIsPhysicalOrder] = useState(false);
+  const [hasVoice, setHasVoice] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   const [verificationMessage, setVerificationMessage] = useState('');
   const [emailSent, setEmailSent] = useState(false);
@@ -72,6 +73,7 @@ export default function Success() {
         let ids: string[] = [];
         let interactiveIds: string[] = [];
         let physical = false;
+        let voice = false;
         if (paymentIntent) {
           let response = await getPaymentByIntentId(paymentIntent);
           for (let attempt = 0; attempt < 8 && response.payment.status !== 'succeeded' &&
@@ -97,6 +99,7 @@ export default function Success() {
           setEmailSent(response.emailStatus === 'sent');
           setPhysicalDetails({ shipping: payment.shippingAddress || undefined, deliveryType: payment.deliveryType, point: payment.parcelLocker });
           physical = payment.items.some(item => isPhysicalProduct(item.sku));
+          voice = payment.items.some(item => isVoiceSku(item.sku));
           ids = payment.items.flatMap(item => item.calendarId ? [item.calendarId] : []);
           interactiveIds = payment.items.flatMap(item => item.calendarId && !isPhysicalProduct(item.sku) ? [item.calendarId] : []);
           setCalendarData({ name: payment.customerName || '', email: payment.customerEmail || '',
@@ -116,6 +119,7 @@ export default function Success() {
             setOrderItems(summary.items);
             setOrderNumber(summary.orderNumber || '');
             physical = summary.items.some(item => isPhysicalProduct(item.sku));
+            voice = summary.items.some(item => isVoiceSku(item.sku));
             setPhysicalDetails({ shipping: summary.shipping || undefined });
             ids = [];
           } else {
@@ -133,6 +137,7 @@ export default function Success() {
         setCalendarLinks(links);
         setCalendarLink(links[0] || '');
         setIsPhysicalOrder(physical);
+        setHasVoice(voice);
         if (!physical && interactiveIds.length) {
           const { calendar } = await getCalendar(interactiveIds[0]);
           if (canceled) return;
@@ -171,7 +176,9 @@ export default function Success() {
     return <LoadingState message="Weryfikowanie płatności..." />;
   }
 
-  if (!calendarData && !isPhysicalOrder) {
+  const isSummaryOrder = isPhysicalOrder || (hasVoice && calendarLinks.length === 0);
+
+  if (!calendarData && !isSummaryOrder) {
     return <LoadingState message="Ładowanie..." />;
   }
 
@@ -197,11 +204,11 @@ export default function Success() {
           </div>
 
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-parchment-text mb-3">
-            {isPhysicalOrder ? 'Dziękujemy za zamówienie!' : 'Dziękujemy za zakup!'}
+            {isSummaryOrder ? 'Dziękujemy za zamówienie!' : 'Dziękujemy za zakup!'}
           </h1>
 
           <p className="text-base md:text-lg text-parchment-muted mb-8">
-            {isPhysicalOrder ? (
+            {isSummaryOrder ? (
               <>Twoje zamówienie zostało przyjęte do realizacji.</>
             ) : (
               <>
@@ -212,7 +219,22 @@ export default function Success() {
             )}
           </p>
 
-          {isPhysicalOrder ? (
+          {hasVoice && (
+            <div className="success-panel text-left mb-6">
+              <h2 className="success-panel-title">
+                <i className="fas fa-microphone-alt" />
+                Wiadomość od Świętego Mikołaja
+              </h2>
+              <p className="text-sm text-parchment-muted">
+                {emailSent ? 'Wysłaliśmy' : 'Wyślemy'} na{' '}
+                <strong className="text-parchment-text">{calendarData?.email || 'adres z zamówienia'}</strong>{' '}
+                link do sprawdzenia tekstu (albo uzupełnienia personalizacji). Po Twojej akceptacji Mikołaj nagra
+                wiadomość — link do odsłuchu i MP3 przyjdzie zwykle w ciągu 24 godzin. Sprawdź też folder SPAM.
+              </p>
+            </div>
+          )}
+
+          {isSummaryOrder ? (
             <div className="success-panel text-left mb-8">
               <div className="mb-3">
                 <p className="mb-2">
@@ -275,7 +297,7 @@ export default function Success() {
                 </div>
               )}
               <p className="text-sm text-parchment-muted mt-4">
-                Przygotujemy Twoje zamówienie w ciągu {PHYSICAL_FULFILLMENT_TIME} i wyślemy je zgodnie z wybraną metodą dostawy.
+                {isPhysicalOrder && <>Przygotujemy Twoje zamówienie w ciągu {PHYSICAL_FULFILLMENT_TIME} i wyślemy je zgodnie z wybraną metodą dostawy.</>}
                 {calendarData?.email
                   ? <> {emailSent ? 'Potwierdzenie wysłaliśmy na' : 'Potwierdzenie wyślemy na'} {calendarData.email}.</>
                   : null}
@@ -405,7 +427,7 @@ export default function Success() {
             </>
           )}
 
-          {calendarLinks.length > 0 && (isPhysicalOrder || calendarLinks.length > 1) && (
+          {calendarLinks.length > 0 && (isSummaryOrder || calendarLinks.length > 1) && (
             <div className="success-panel mb-6">
               <h2 className="success-panel-title">Twoje kalendarze</h2>
               {calendarLinks.map((link, index) => <Link className="block underline my-2" key={link}
@@ -413,7 +435,7 @@ export default function Success() {
             </div>
           )}
 
-          {isPhysicalOrder && (
+          {isSummaryOrder && (
             <Link
               to="/"
               className="btn-green inline-flex py-3 px-8 text-base"

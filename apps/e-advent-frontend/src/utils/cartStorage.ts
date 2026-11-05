@@ -21,6 +21,16 @@ export interface CartItem {
   childName?: string;
   /** Certyfikat powiązany z konkretną pozycją listu w koszyku */
   linkedLetterId?: string;
+  /** Wersja robocza z kreatora wiadomości od Mikołaja (klucz dowodzi autorstwa przy checkout) */
+  voiceDraftId?: string;
+  voiceDraftKey?: string;
+}
+
+export const VOICE_MESSAGE_SKU = 'voice-message';
+export const VOICE_MESSAGE_ADDON_SKU = 'voice-message-addon';
+
+export function isVoiceSku(sku: string): boolean {
+  return sku === VOICE_MESSAGE_SKU || sku === VOICE_MESSAGE_ADDON_SKU;
 }
 
 function createId(): string {
@@ -93,6 +103,8 @@ export function createCartItem(
     ...(input.format ? { format: input.format } : {}),
     ...(input.childName ? { childName: input.childName } : {}),
     ...(input.linkedLetterId ? { linkedLetterId: input.linkedLetterId } : {}),
+    ...(input.voiceDraftId ? { voiceDraftId: input.voiceDraftId } : {}),
+    ...(input.voiceDraftKey ? { voiceDraftKey: input.voiceDraftKey } : {}),
   };
 }
 
@@ -102,13 +114,85 @@ export function hasLinkedCertificate(items: CartItem[], letterId: string): boole
   );
 }
 
-/** Usuwa certyfikaty-sieroty i pozycje bez powiązanego listu. */
+/** Usuwa certyfikaty-sieroty i pozycje bez powiązanego listu; nadmiarowe dodatki audio stają się samodzielne. */
 export function sanitizeCartItems(items: CartItem[]): CartItem[] {
   const ids = new Set(items.map((item) => item.id));
-  return items.filter((item) => {
+  const kept = items.filter((item) => {
     if (item.sku !== SANTA_CERTIFICATE_SKU) return true;
     return Boolean(item.linkedLetterId && ids.has(item.linkedLetterId));
   });
+  return normalizeVoiceItems(kept).items;
+}
+
+/* ---------- Wiadomość od Świętego Mikołaja ---------- */
+
+function voiceLabel(sku: string): string {
+  return getProduct(sku)?.name ?? 'Wiadomość od Świętego Mikołaja';
+}
+
+function asVoiceSku(item: CartItem, sku: string): CartItem {
+  return { ...item, sku, quantity: 1, label: voiceLabel(sku), unitPrice: getProduct(sku)?.basePrice };
+}
+
+export function voiceAddonCount(items: CartItem[]): number {
+  return items.filter((item) => item.sku === VOICE_MESSAGE_ADDON_SKU).reduce((sum, item) => sum + item.quantity, 0);
+}
+
+export function voiceItems(items: CartItem[]): CartItem[] {
+  return items.filter((item) => isVoiceSku(item.sku));
+}
+
+/** Wolne „miejsca” na cenę dodatku: jeden dodatek na każdy list w koszyku. */
+export function voiceAddonSlots(items: CartItem[]): number {
+  return Math.max(0, letterPackQuantity(items) - voiceAddonCount(items));
+}
+
+/**
+ * Dodatek bez listu przechodzi na cenę samodzielną (19,90 zł) zamiast znikać z koszyka.
+ * Każda wiadomość to osobna linia z ilością 1 (jedna personalizacja = jedno nagranie).
+ */
+export function normalizeVoiceItems(items: CartItem[]): { items: CartItem[]; converted: number } {
+  let allowed = letterPackQuantity(items);
+  let converted = 0;
+  const next = items.map((item) => {
+    if (!isVoiceSku(item.sku)) return item;
+    const single = item.quantity === 1 ? item : { ...item, quantity: 1 };
+    if (item.sku !== VOICE_MESSAGE_ADDON_SKU) return single;
+    if (allowed > 0) {
+      allowed -= 1;
+      return single;
+    }
+    converted += 1;
+    return asVoiceSku(single, VOICE_MESSAGE_SKU);
+  });
+  return { items: next, converted };
+}
+
+export function appendVoiceMessage(
+  items: CartItem[],
+  input: { mode: 'standalone' | 'letter_addon'; voiceDraftId?: string; voiceDraftKey?: string },
+): { items: CartItem[]; added: CartItem } {
+  const existing = input.voiceDraftId ? items.find((item) => item.voiceDraftId === input.voiceDraftId) : undefined;
+  const sku = input.mode === 'letter_addon' && voiceAddonSlots(items) > 0 ? VOICE_MESSAGE_ADDON_SKU : VOICE_MESSAGE_SKU;
+  if (existing) {
+    const updated = { ...existing, voiceDraftKey: input.voiceDraftKey ?? existing.voiceDraftKey };
+    return { items: items.map((item) => (item.id === existing.id ? updated : item)), added: updated };
+  }
+  const added = createCartItem({
+    sku,
+    quantity: 1,
+    label: voiceLabel(sku),
+    unitPrice: getProduct(sku)?.basePrice,
+    voiceDraftId: input.voiceDraftId,
+    voiceDraftKey: input.voiceDraftKey,
+  });
+  return { items: [...items, added], added };
+}
+
+/** Samodzielna wiadomość → cena dodatku, gdy w koszyku jest wolny list (po potwierdzeniu klienta). */
+export function convertVoiceToAddon(items: CartItem[], id: string): CartItem[] {
+  if (voiceAddonSlots(items) < 1) return items;
+  return items.map((item) => (item.id === id && item.sku === VOICE_MESSAGE_SKU ? asVoiceSku(item, VOICE_MESSAGE_ADDON_SKU) : item));
 }
 
 function collectCertificateNames(input: {
@@ -263,9 +347,9 @@ export function removeOneLetter(items: CartItem[]): CartItem[] {
 }
 
 export function removeLetterPack(items: CartItem[]): CartItem[] {
-  return items.filter(
+  return normalizeVoiceItems(items.filter(
     (item) => item.sku !== SANTA_LETTER_SKU && item.sku !== SANTA_CERTIFICATE_SKU,
-  );
+  )).items;
 }
 
 export function certificatesRemovedByLetterDrop(items: CartItem[], nextQuantity: number): CartItem[] {
@@ -340,7 +424,7 @@ export function buildCartDisplayRows(items: CartItem[]): CartDisplayRow[] {
       kind: 'item',
       item,
       removable: true,
-      lockQuantity: Boolean(item.calendarId),
+      lockQuantity: Boolean(item.calendarId) || isVoiceSku(item.sku),
     });
   }
 
@@ -350,20 +434,25 @@ export function buildCartDisplayRows(items: CartItem[]): CartDisplayRow[] {
 export function cartItemCheckoutKey(item: CartItem): string {
   const child = item.childName ? `:child:${item.childName}` : '';
   const link = item.linkedLetterId ? `:link:${item.linkedLetterId}` : '';
-  return `${item.sku}:${item.quantity}:${item.calendarId || ''}${child}${link}`;
+  const draft = item.voiceDraftId ? `:voice:${item.voiceDraftId}` : '';
+  return `${item.sku}:${item.quantity}:${item.calendarId || ''}${child}${link}${draft}`;
 }
 
 export function cartItemToCheckoutItem(item: CartItem): {
   sku: string;
   quantity: number;
   calendarId?: string;
-  metadata?: { childName: string };
+  metadata?: { childName?: string; voiceDraftId?: string; voiceDraftKey?: string };
 } {
+  const voiceDraft = item.voiceDraftId && item.voiceDraftKey
+    ? { voiceDraftId: item.voiceDraftId, voiceDraftKey: item.voiceDraftKey }
+    : null;
   return {
     sku: item.sku,
     quantity: item.quantity,
     ...(item.calendarId ? { calendarId: item.calendarId } : {}),
     ...(item.childName ? { metadata: { childName: item.childName } } : {}),
+    ...(voiceDraft ? { metadata: voiceDraft } : {}),
   };
 }
 

@@ -16,6 +16,10 @@ export interface ProductSkuConfig {
   creatorRoute: string;
   /** Dostępny wyłącznie jako dodatek do listu do Mikołaja */
   letterAddonOnly?: boolean;
+  /** Produkt cyfrowy: bez wysyłki, nie wlicza się do progu darmowej dostawy */
+  digital?: boolean;
+  /** Wiadomość głosowa: samodzielna albo w cenie zestawu z listem */
+  voiceMode?: 'standalone' | 'letter_addon';
 }
 
 export interface ProductFamilyBase {
@@ -112,6 +116,9 @@ export function getSkuForTypeAndFormat(
 export const SANTA_CERTIFICATE_SKU: string;
 export const SANTA_LETTER_SKU: string;
 export function isLetterAddonSku(sku: string): boolean;
+export const VOICE_MESSAGE_SKU: string;
+export const VOICE_MESSAGE_ADDON_SKU: string;
+export function isVoiceMessageSku(sku: string): boolean;
 export function getOrderItemDisplayName(
   sku: string,
   metadata?: { childName?: string } | null,

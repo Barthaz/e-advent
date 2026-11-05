@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import { useVoiceConfig } from '../santa-message/useVoiceConfig';
 
 export default function Footer() {
+  const { config: voiceConfig } = useVoiceConfig();
   return (
     <footer className="footer-bar text-white mt-auto relative">
       <div className="container mx-auto px-4 py-10 md:py-12">
@@ -35,6 +37,13 @@ export default function Footer() {
                   List do Świętego Mikołaja
                 </Link>
               </li>
+              {voiceConfig?.enabled && (
+                <li>
+                  <Link to="/wiadomosc-od-mikolaja" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
+                    Wiadomość od Świętego Mikołaja
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link to="/kalendarze-adwentowe" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
                   Kalendarze adwentowe

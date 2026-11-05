@@ -1883,3 +1883,143 @@ html.embed-window-preview #root {
   );
   border-bottom: 1px solid rgba(212, 175, 55, 0.35);
 }
+
+/* ---------- Wiadomość od Świętego Mikołaja ---------- */
+.hero-action--voice {
+  color: #fff4de;
+  background: linear-gradient(135deg, #8a1b2c, #4f0d18);
+}
+.hero-action--voice .hero-action-icon { color: #f3d787; background: #d4af371a; }
+.hero-action--voice .hero-action-footer { color: #f3d787; }
+.hero-action-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: #f4d03f;
+  color: #4f0d18;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+}
+.hero-action--voice { position: relative; }
+.hero-action--voice > .hero-action-badge { position: absolute; top: 0.75rem; right: 0.75rem; margin: 0; }
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-actions--three > .hero-action--voice { grid-column: 1 / -1; }
+}
+@media (min-width: 1024px) {
+  .hero-actions--three { max-width: 72rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.santa-stage {
+  position: relative;
+  min-height: calc(100dvh - var(--santa-banner-h, 0px));
+  background: #13281d;
+  color: #fff;
+  overflow: hidden;
+}
+.santa-stage-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: url('/assets/santa.png') left 30% / cover no-repeat;
+}
+.santa-stage-photo::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 45%;
+  background: linear-gradient(to bottom, transparent, #13281d);
+}
+.santa-stage-panel { position: relative; z-index: 2; padding: 0 1.25rem 2.5rem; }
+@media (min-width: 900px) {
+  .santa-stage { background: url('/assets/santa.png') 0% 35% / cover no-repeat; }
+  .santa-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 74% 45%, #0b1d1499 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .santa-stage { display: flex; align-items: center; padding: 2rem 0; }
+  .santa-stage-photo { display: none; }
+  .santa-stage-panel {
+    margin-left: 54%;
+    width: min(40%, 34rem);
+    padding: 0;
+  }
+}
+.santa-glass {
+  background: linear-gradient(160deg, #0f2a1ccc, #0a1f15e6);
+  border: 1px solid #d4af3755;
+  border-radius: 1.5rem;
+  box-shadow: 0 24px 60px #0008, inset 0 1px 0 #fff1;
+  backdrop-filter: blur(6px);
+}
+.santa-play-button {
+  color: #0f5132;
+  background: radial-gradient(circle at 35% 30%, #fbe6a0 0%, #f4d03f 35%, #c99a2e 100%);
+  box-shadow: 0 0 0 6px #d4af3726, 0 10px 30px #0007;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.santa-play-button:hover { transform: translate(-50%, -50%) scale(1.04); box-shadow: 0 0 0 10px #d4af3733, 0 14px 36px #0008; }
+.santa-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px solid #f4d03f66;
+  border-radius: 999px;
+  color: #f8e6a8;
+  font-size: 0.9rem;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.santa-chip:hover { background: #f4d03f1a; border-color: #f4d03f; }
+.santa-chip:focus-visible { outline: 3px solid #f4d03f; outline-offset: 3px; }
+.santa-seek { accent-color: #f4d03f; height: 1.5rem; cursor: pointer; }
+
+.santa-envelope {
+  position: relative;
+  width: min(100%, 20rem);
+  aspect-ratio: 3 / 2;
+  margin: 0 auto;
+  border-radius: 0.75rem;
+  background: linear-gradient(160deg, #f7ebd3, #e3c99a);
+  box-shadow: 0 18px 40px #0009;
+}
+.santa-envelope::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 62%;
+  background: linear-gradient(160deg, #efdcb7, #d9bb87);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-radius: 0.75rem 0.75rem 0 0;
+  transform-origin: top;
+  transition: transform 600ms ease;
+}
+.santa-envelope-seal {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 3.5rem;
+  height: 3.5rem;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fbe6a0;
+  background: radial-gradient(circle at 35% 30%, #c0293e, #7c1020);
+  box-shadow: 0 4px 10px #0006;
+}
+.santa-envelope--opening::before { transform: rotateX(180deg); }
+@keyframes santa-envelope-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.santa-envelope--idle { animation: santa-envelope-float 3.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .santa-envelope--idle { animation: none; }
+  .santa-envelope::before, .santa-play-button { transition: none; }
+  .santa-play-button:hover { transform: translate(-50%, -50%); }
+}

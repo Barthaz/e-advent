@@ -165,9 +165,10 @@ function resolveProductType(
   productType: string | null | undefined,
   sku?: string | null,
 ): ProductType {
-  if (productType === 'scratch' || productType === 'interactive' || productType === 'letter') {
+  if (productType === 'scratch' || productType === 'interactive' || productType === 'letter' || productType === 'voice') {
     return productType;
   }
+  if (sku === 'voice-message' || sku === 'voice-message-addon') return 'voice';
   if (sku && String(sku).startsWith('scratch')) return 'scratch';
   if (sku === 'santa-letter') return 'letter';
   if (sku === 'santa-certificate') return 'letter';

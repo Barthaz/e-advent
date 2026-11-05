@@ -8,6 +8,7 @@ const VALID_TYPES = new Set([
   'shipment_prepared',
   'daily_window',
   'collaboration_invite',
+  'santa_message',
 ]);
 
 const VALID_STATUSES = new Set(['sent', 'failed']);

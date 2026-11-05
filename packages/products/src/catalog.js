@@ -101,7 +101,44 @@ export const PRODUCTS = {
     letterAddonOnly: true,
     creatorRoute: '/list-do-swietego-mikolaja',
   },
+  'voice-message': {
+    sku: 'voice-message',
+    type: 'voice',
+    slug: 'wiadomosc-od-mikolaja',
+    name: 'Wiadomość od Świętego Mikołaja',
+    description: 'Osobista wiadomość głosowa od Świętego Mikołaja — link do odsłuchu i MP3 na e-mail.',
+    basePrice: 19.9,
+    shippingCost: 0,
+    format: null,
+    requiresShipping: false,
+    requiresDesign: false,
+    digital: true,
+    voiceMode: 'standalone',
+    creatorRoute: '/wiadomosc-od-mikolaja/kreator',
+  },
+  'voice-message-addon': {
+    sku: 'voice-message-addon',
+    type: 'voice',
+    slug: 'wiadomosc-od-mikolaja',
+    name: 'Wiadomość od Świętego Mikołaja — dodatek do listu',
+    description: 'Osobista wiadomość głosowa od Świętego Mikołaja w cenie zestawu z listem.',
+    basePrice: 14.9,
+    shippingCost: 0,
+    format: null,
+    requiresShipping: false,
+    requiresDesign: false,
+    digital: true,
+    voiceMode: 'letter_addon',
+    creatorRoute: '/list-do-swietego-mikolaja',
+  },
 };
+
+export const VOICE_MESSAGE_SKU = 'voice-message';
+export const VOICE_MESSAGE_ADDON_SKU = 'voice-message-addon';
+
+export function isVoiceMessageSku(sku) {
+  return sku === VOICE_MESSAGE_SKU || sku === VOICE_MESSAGE_ADDON_SKU;
+}
 
 export const PRODUCT_FAMILIES = [
   {
@@ -161,6 +198,7 @@ export function computeOrderTotals(items, options = {}) {
 
   const vatRate = options.vatRate != null ? Number(options.vatRate) : DEFAULT_VAT_RATE;
   let subtotal = 0;
+  let freeShippingBase = 0;
   let hasPhysical = false;
   const lines = [];
 
@@ -172,6 +210,8 @@ export function computeOrderTotals(items, options = {}) {
     const unitSplit = splitGrossAmount(product.basePrice, vatRate);
     const lineSplit = splitGrossAmount(lineBrutto, vatRate);
     subtotal = roundPln(subtotal + lineBrutto);
+    // Digital voice messages do not count toward the free physical shipping threshold.
+    if (!product.digital) freeShippingBase = roundPln(freeShippingBase + lineBrutto);
     if (product.requiresShipping) hasPhysical = true;
     lines.push({
       sku: product.sku,
@@ -188,7 +228,7 @@ export function computeOrderTotals(items, options = {}) {
   let shipping = 0;
   let freeShipping = false;
   if (hasPhysical) {
-    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+    if (freeShippingBase >= FREE_SHIPPING_THRESHOLD) {
       shipping = 0;
       freeShipping = true;
     } else if (options?.shippingAmount != null) {

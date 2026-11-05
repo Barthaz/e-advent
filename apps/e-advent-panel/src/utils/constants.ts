@@ -30,6 +30,7 @@ export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   interactive: 'Interaktywny',
   scratch: 'Zdrapkowy',
   letter: 'List do Mikołaja',
+  voice: 'Wiadomość od Mikołaja',
 };
 
 export const PAYMENT_STATUS_OPTIONS: Array<{ value: PaymentStatus | ''; label: string }> = [
@@ -63,6 +64,7 @@ export const PRODUCT_TYPE_OPTIONS: Array<{ value: ProductType | ''; label: strin
   { value: 'interactive', label: 'Interaktywny' },
   { value: 'scratch', label: 'Zdrapkowy' },
   { value: 'letter', label: 'List do Mikołaja' },
+  { value: 'voice', label: 'Wiadomość od Mikołaja' },
 ];
 
 export const OPENING_METHOD_LABELS: Record<string, string> = {
@@ -78,6 +80,31 @@ export const EMAIL_TYPE_LABELS: Record<string, string> = {
   shipping: 'Wysyłka paczki',
   daily_window: 'Okienko dnia',
   collaboration_invite: 'Zaproszenie do współpracy',
+  santa_message: 'Wiadomość od Mikołaja',
+};
+
+export const SANTA_STATUS_LABELS: Record<string, string> = {
+  AWAITING_PERSONALIZATION: 'Czeka na personalizację',
+  SCRIPT_READY: 'Tekst do akceptacji',
+  TTS_QUEUED: 'W kolejce do nagrania',
+  TTS_PROCESSING: 'Nagrywanie',
+  AUDIO_READY: 'Nagranie do sprawdzenia',
+  DELIVERED: 'Wysłana',
+  NEEDS_ATTENTION: 'Wymaga uwagi',
+  CANCELLED: 'Anulowana',
+  EXPIRED: 'Wygasła',
+};
+
+export const SANTA_STATUS_BADGE: Record<string, string> = {
+  AWAITING_PERSONALIZATION: 'pending',
+  SCRIPT_READY: 'new',
+  TTS_QUEUED: 'processing',
+  TTS_PROCESSING: 'processing',
+  AUDIO_READY: 'hold',
+  DELIVERED: 'succeeded',
+  NEEDS_ATTENTION: 'failed',
+  CANCELLED: 'cancelled',
+  EXPIRED: 'canceled',
 };
 
 export const DEFAULT_PAGE_LIMIT = 20;

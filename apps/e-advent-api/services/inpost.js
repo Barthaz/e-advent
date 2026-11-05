@@ -85,7 +85,7 @@ function quote(items, type) {
   let merchandise = 0;
   for (const item of items) {
     const product = getProduct(item.sku);
-    if (product) merchandise += product.basePrice * item.quantity;
+    if (product && !product.digital) merchandise += product.basePrice * item.quantity;
   }
   const tariff = Math.round(p.prices[type] * 100) / 100;
   const price = roundPln(merchandise) >= FREE_SHIPPING_THRESHOLD ? 0 : tariff;

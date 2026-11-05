@@ -5,8 +5,11 @@ const {
   computeOrderTotals,
   isPhysicalProduct,
   isLetterAddonSku,
+  isVoiceMessageSku,
   SANTA_LETTER_SKU,
+  VOICE_MESSAGE_ADDON_SKU,
 } = require('../config/products');
+const { resolveVoiceLine, checkVoiceRules } = require('./santaMessages/checkout');
 const { findByCode, applyToTotals, validatePromoCode } = require('./discountCodes');
 const { assertCalendarsPurchasable } = require('./seasonSale');
 
@@ -226,6 +229,13 @@ async function resolveCheckoutItems(requestData) {
       continue;
     }
 
+    if (isVoiceMessageSku(product.sku)) {
+      const voice = await resolveVoiceLine(product, raw, quantity, i);
+      if (voice.error) errors.push(voice.error);
+      else resolved.push(voice.item);
+      continue;
+    }
+
     resolved.push({
       sku: product.sku,
       productType: product.type,
@@ -281,6 +291,9 @@ async function resolveCheckoutItems(requestData) {
       }],
     };
   }
+
+  const voiceError = checkVoiceRules(resolved, letterCount, VOICE_MESSAGE_ADDON_SKU);
+  if (voiceError) return { errors: [voiceError] };
 
   let totals = computeOrderTotals(resolved.map((r) => ({ sku: r.sku, quantity: r.quantity })));
   if (!totals) {

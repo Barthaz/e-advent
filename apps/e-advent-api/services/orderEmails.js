@@ -815,6 +815,8 @@ function dailyWindowSubject(day, calendarTitle) {
 module.exports = {
   escapeHtml,
   emailShell,
+  ctaButton,
+  sectionLabel,
   getTaskText,
   deliveryLabel,
   dailyWindowSubject,

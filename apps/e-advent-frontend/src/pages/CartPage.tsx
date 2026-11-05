@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/useCart';
 import FestivePage from '../components/FestivePage';
@@ -11,7 +12,15 @@ import {
   buildCartDisplayRows,
   certificatesRemovedByLetterDrop,
   getCartItemDisplayName,
+  isVoiceSku,
+  VOICE_MESSAGE_ADDON_SKU,
+  voiceAddonSlots,
+  voiceItems,
 } from '../utils/cartStorage';
+import { trackSantaEvent } from '../utils/analytics';
+import { useVoiceConfig } from '../santa-message/useVoiceConfig';
+
+const UPSELL_KEY = 'e-advent-voice-upsell-dismissed';
 
 export default function CartPage() {
   const {
@@ -22,8 +31,20 @@ export default function CartPage() {
     removeCertificate,
     setLetterQuantity,
     removeLetterPack,
+    addVoiceMessage,
+    convertVoiceToAddon,
+    voiceNotice,
+    dismissVoiceNotice,
   } = useCart();
+  const { config: voiceConfig } = useVoiceConfig();
+  const [upsellDismissed, setUpsellDismissed] = useState(() => sessionStorage.getItem(UPSELL_KEY) === '1');
   const displayRows = buildCartDisplayRows(items);
+  const addonSlots = voiceAddonSlots(items);
+  const showUpsell = Boolean(voiceConfig?.letterAddonEnabled) && !upsellDismissed && addonSlots > 0 && voiceItems(items).length === 0;
+  const dismissUpsell = () => {
+    sessionStorage.setItem(UPSELL_KEY, '1');
+    setUpsellDismissed(true);
+  };
   const hasRetiredProduct = items.some((item) => getProduct(item.sku)?.discontinued);
   const checkoutBlocked = hasRetiredProduct;
 
@@ -68,6 +89,15 @@ export default function CartPage() {
             </div>
           ) : (
             <>
+              {voiceNotice && (
+                <div role="status" className="mb-6 flex items-start gap-3 rounded-xl border border-christmas-gold/50 bg-christmas-gold/10 px-4 py-3 text-sm text-parchment-text">
+                  <i className="fas fa-info-circle text-christmas-gold mt-0.5" aria-hidden />
+                  <p className="flex-1">{voiceNotice}</p>
+                  <button type="button" onClick={dismissVoiceNotice} className="text-parchment-muted hover:text-parchment-text" aria-label="Zamknij komunikat">
+                    <i className="fas fa-times" />
+                  </button>
+                </div>
+              )}
               <ul className="space-y-4 mb-8">
                 {displayRows.map((row) => {
                   if (row.kind === 'letter-group') {
@@ -161,6 +191,58 @@ export default function CartPage() {
                   const name = getCartItemDisplayName(item);
                   const unit = item.unitPrice ?? product?.basePrice ?? 0;
                   const isPersonalized = Boolean(item.calendarId);
+                  const isVoice = isVoiceSku(item.sku);
+
+                  if (isVoice) {
+                    const isAddon = item.sku === VOICE_MESSAGE_ADDON_SKU;
+                    const canConvert = !isAddon && addonSlots > 0 && voiceConfig?.letterAddonEnabled;
+                    return (
+                      <li key={item.id} className="py-4 border-b border-parchment-dark/20 last:border-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-display font-semibold text-parchment-text text-xl">
+                              <i className="fas fa-microphone-alt text-christmas-gold/80 text-base mr-2" aria-hidden />
+                              {name}
+                            </p>
+                            <p className="text-parchment-muted text-sm">
+                              {isAddon ? 'dodatek do listu' : 'produkt cyfrowy'} ·{' '}
+                              {item.voiceDraftId ? 'tekst przygotowany' : 'personalizacja po zakupie (link w e-mailu)'}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {item.voiceDraftId && (
+                              <Link
+                                to={`/wiadomosc-od-mikolaja/kreator?edytuj=${encodeURIComponent(item.id)}`}
+                                className="text-sm text-christmas-green hover:text-christmas-gold underline underline-offset-2"
+                              >
+                                Edytuj
+                              </Link>
+                            )}
+                            <p className="font-semibold text-christmas-green min-w-[4.5rem] text-right">
+                              {formatPrice(unit)}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => removeItem(item.id)}
+                              className="text-parchment-muted hover:text-christmas-red transition-colors p-2"
+                              aria-label={`Usuń ${name}`}
+                            >
+                              <i className="fas fa-trash-alt" />
+                            </button>
+                          </div>
+                        </div>
+                        {canConvert && (
+                          <button
+                            type="button"
+                            onClick={() => convertVoiceToAddon(item.id)}
+                            className="mt-2 text-sm text-christmas-green hover:text-christmas-gold underline underline-offset-2"
+                          >
+                            Masz list w koszyku — dołącz wiadomość do listu za {formatPrice(voiceConfig?.prices.letterAddon ?? 14.9)}
+                          </button>
+                        )}
+                      </li>
+                    );
+                  }
 
                   return (
                     <li
@@ -215,6 +297,44 @@ export default function CartPage() {
                 })}
               </ul>
 
+              {showUpsell && (
+                <div className="mb-8 rounded-2xl border border-christmas-gold/50 bg-[#fffaf0] p-5">
+                  <div className="flex items-start gap-3">
+                    <i className="fas fa-microphone-alt text-christmas-gold text-xl mt-1" aria-hidden />
+                    <div className="flex-1">
+                      <p className="font-display text-lg font-semibold text-parchment-text">
+                        Dodaj do listu wiadomość głosową od Mikołaja — {formatPrice(voiceConfig?.prices.letterAddon ?? 14.9)}
+                      </p>
+                      <p className="text-parchment-muted text-sm mt-1">
+                        Mikołaj zwróci się do dziecka po imieniu i wspomni jego sukcesy. Link do nagrania przyjdzie na e-mail.
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Link
+                          to="/wiadomosc-od-mikolaja/kreator?tryb=list"
+                          onClick={() => trackSantaEvent('santa_product_cta_click', { cta_location: 'cart_upsell', purchase_mode: 'letter_addon' })}
+                          className="btn-gold px-4 py-2 text-sm"
+                        >
+                          Stwórz wiadomość
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            trackSantaEvent('santa_addon_toggle', { checked: true, cta_location: 'cart_upsell' });
+                            addVoiceMessage({ mode: 'letter_addon' });
+                          }}
+                          className="btn-outline-parchment px-4 py-2 text-sm"
+                        >
+                          Dodaj — uzupełnię po zakupie
+                        </button>
+                        <button type="button" onClick={dismissUpsell} className="px-3 py-2 text-sm text-parchment-muted hover:text-parchment-text">
+                          Nie, dziękuję
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2 text-sm mb-6">
                 <div className="flex justify-between text-parchment-text">
                   <span>Produkty</span>
@@ -239,7 +359,9 @@ export default function CartPage() {
                 </p>
               )}
               <p className="text-parchment-muted text-sm mb-6 text-center">
-                W kolejnym kroku podasz adres dostawy i opłacisz całe zamówienie naraz.
+                {totals.hasPhysical
+                  ? 'W kolejnym kroku podasz adres dostawy i opłacisz całe zamówienie naraz.'
+                  : 'W kolejnym kroku podasz adres e-mail i opłacisz zamówienie.'}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">

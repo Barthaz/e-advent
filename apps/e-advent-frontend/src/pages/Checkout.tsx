@@ -17,7 +17,7 @@ import ShippingForm from '../components/checkout/ShippingForm';
 import { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../utils/shippingAddress';
 import type { ProductType, ShippingAddress } from '../types/order';
 import { getActiveProduct, getStorageKeys, loadShipping, saveShipping, loadCheckoutCalendarData, resolveCheckoutProduct, getReusablePendingCalendarId, getPendingCalendarSession, setPendingCalendarSession, getPurchasedCalendarIds, markCalendarPurchased, PENDING_EDIT_TOKEN_KEY, PURCHASED_CALENDAR_IDS_KEY } from '../utils/creatorStorage';
-import { CART_STORAGE_KEY, loadCart, getCartTotals, checkoutItemsFromCart, getCartItemDisplayName, buildCartDisplayRows, clearCartStorage, type CartItem } from '../utils/cartStorage';
+import { CART_STORAGE_KEY, loadCart, getCartTotals, checkoutItemsFromCart, getCartItemDisplayName, buildCartDisplayRows, clearCartStorage, isVoiceSku, type CartItem } from '../utils/cartStorage';
 import { trackBeginCheckout, saveGaPurchasePayload } from '../utils/analytics';
 import { saveOrderSummary, cartItemsToOrderLines } from '../utils/orderSummary';
 import { getCheckoutToken, notifyCartChanged } from '../utils/checkoutSession';
@@ -427,6 +427,7 @@ export default function Checkout() {
   const discountAmount = pricedTotals?.discount ?? 0;
   const isPhysical = pricedTotals?.hasPhysical ?? isPhysicalProduct(sku);
   const isFree = promoCodeDiscount === 100;
+  const isVoiceOnly = cartMode && cartItems.length > 0 && cartItems.every((i) => isVoiceSku(i.sku));
 
   /** Synchronous address check — never fire create-payment-intent with empty shipping */
   const shippingAddressComplete = useMemo(() => {
@@ -1387,7 +1388,9 @@ export default function Checkout() {
                     <p className="text-parchment-muted text-sm mt-1">
                       {isPhysical
                         ? 'Potwierdzenie zamówienia wyślemy na e-mail. Paczkomat, kuriera i dane odbiorcy podasz poniżej.'
-                        : 'Na ten adres wyślemy potwierdzenie zakupu i link do kalendarza.'}
+                        : isVoiceOnly
+                          ? 'Na ten adres wyślemy potwierdzenie zakupu i link do wiadomości od Świętego Mikołaja.'
+                          : 'Na ten adres wyślemy potwierdzenie zakupu i link do kalendarza.'}
                     </p>
                   </div>
                 </div>
@@ -1596,7 +1599,9 @@ export default function Checkout() {
               <p className="text-parchment-muted text-sm mb-6">
                 {isPhysical
                   ? 'Po złożeniu zamówienia otrzymasz potwierdzenie na e-mail. Przygotujemy przesyłkę i wyślemy ją InPost.'
-                  : 'Po złożeniu zamówienia otrzymasz unikalny link do swojego kalendarza na podany adres e-mail.'}
+                  : isVoiceOnly
+                    ? 'Po opłaceniu zamówienia wyślemy na podany adres e-mail link do zatwierdzenia wiadomości, a potem link do nagrania.'
+                    : 'Po złożeniu zamówienia otrzymasz unikalny link do swojego kalendarza na podany adres e-mail.'}
               </p>
 
               {paymentError && (
@@ -1624,6 +1629,7 @@ export default function Checkout() {
               )}
 
               {isFree && emailReady && (!isPhysical || shippingAddressComplete) ? (
+                <Elements stripe={null}>
                   <PaymentForm
                     clientSecret=""
                     paymentIntentId=""
@@ -1634,6 +1640,7 @@ export default function Checkout() {
                     payAmount={0}
                     billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
                   />
+                </Elements>
               ) : clientSecret && paymentIntentId && activePaymentKey === checkoutFingerprint && emailReady && (!isPhysical || shippingAddressComplete) ? (
                 <Elements
                   key={clientSecret}

@@ -19,6 +19,7 @@ const sharedTasksRoutes = require('./routes/sharedTasks');
 const giftIdeasRoutes = require('./routes/giftIdeas');
 const specialPreview = require('./routes/specialPreview');
 const cronRoutes = require('./routes/cron');
+const santaMessageRoutes = require('./routes/santaMessages');
 const socketHandler = require('./socket/socketHandler');
 const path = require('path');
 
@@ -34,6 +35,7 @@ const corsAllowedHeaders = [
   'X-Payment-Client-Secret',
   'X-Access-Code',
   'X-Access-Email',
+  'X-Santa-Draft-Key',
 ];
 
 // Content-Disposition carries the export filename (e.g. .jpg instead of .png) to the panel.
@@ -105,7 +107,9 @@ app.use((req, res, next) => {
 // Request logging middleware
 app.use((req, res, next) => {
     const started = Date.now();
-    res.on('finish', () => console.log(req.method, req.path, res.statusCode, Date.now() - started + 'ms'));
+    // Santa activation/play tokens are bearer secrets and must not reach the logs.
+    const loggedPath = req.path.replace(/(\/santa-messages\/(?:activate|play))\/[^/]+/, '$1/[token]');
+    res.on('finish', () => console.log(req.method, loggedPath, res.statusCode, Date.now() - started + 'ms'));
     next();
 });
 
@@ -153,6 +157,7 @@ app.use('/api/v1/shared-tasks', sharedTasksRoutes);
 app.use('/api/v1/gift-ideas', giftIdeasRoutes);
 app.use('/api/v1/special', specialPreview.router);
 app.use('/api/v1/cron', cronRoutes);
+app.use('/api/v1/santa-messages', santaMessageRoutes);
 
 // Android minimum version endpoint
 app.get('/api/v1/android/min-version', (req, res) => {
@@ -177,6 +182,7 @@ app.use('/api/collaboration', collaborationRoutes);
 app.use('/api/shared-tasks', sharedTasksRoutes);
 app.use('/api/gift-ideas', giftIdeasRoutes);
 app.use('/api/special', specialPreview.router);
+app.use('/api/santa-messages', santaMessageRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/assets', express.static(path.join(__dirname, '../../assets')));
 app.use('/health', healthRoutes); // Alternatywna Ĺ›cieĹĽka dla healthcheck

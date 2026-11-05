@@ -134,6 +134,8 @@ router.get('/orders', authAdmin, [
               OR ((o.product_type IS NULL OR o.product_type = '') AND IFNULL(o.sku, '') LIKE 'santa%')
               OR o.id IN (SELECT order_id FROM order_items WHERE product_type = 'letter' OR sku LIKE 'santa%')
             )`);
+        } else if (product_type === 'voice') {
+            conditions.push(`o.id IN (SELECT order_id FROM order_items WHERE sku IN ('voice-message', 'voice-message-addon'))`);
         } else if (product_type) {
             conditions.push('o.product_type = ?');
             vals.push(product_type);
@@ -432,6 +434,7 @@ registerGeneratorRoutes(router, authAdmin);
 require('./adminInpost')(router, authAdmin);
 require('./adminDiscountCodes')(router, authAdmin);
 require('./adminCertificates')(router, authAdmin);
+require('./adminSantaMessages')(router, authAdmin);
 
 // ── GET /admin/calendars/:id — podgląd kalendarza ─────────────────────────────
 

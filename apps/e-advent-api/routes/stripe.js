@@ -6,6 +6,7 @@ const { fulfillPaidIntent, redeemOrderDiscount } = require('../services/paymentF
 const { body, validationResult } = require('express-validator');
 const { initializeCheckout } = require('../services/checkoutPayment');
 const { deliverOrderEmails } = require('../services/orderEmailJobs');
+const santaMessages = require('../services/santaMessages/fulfillment');
 const { ensureShipment } = require('../services/inpostFulfillment');
 const { timingSafeEqual } = require('node:crypto');
 const { query } = require('../config/database');
@@ -86,6 +87,7 @@ router.post('/create-payment-intent', async (req, res) => {
         if (result.free) {
             await ensureShipment(result.orderId).catch(error => console.error('InPost auto-create error:', error.message));
             await deliverOrderEmails(result.orderId);
+            await santaMessages.onOrderPaid(result.orderId, 'system');
         }
         res.json(result);
     } catch (error) {
@@ -146,6 +148,10 @@ router.get('/payment/:paymentIntentId', async (req, res) => {
             || paymentIntent.metadata?.checkoutFingerprint !== payment.metadata.checkoutFingerprint)) {
             throw new Error('Payment order identity mismatch');
         }
+        // Fallback when the webhook was handled elsewhere (e.g. another deployment on the same database).
+        if (payment.status === 'succeeded' && santaMessages.orderHasVoiceItems(payment.items)) {
+            await santaMessages.onOrderPaid(payment.id, 'system');
+        }
         const [jobs] = await query('SELECT status FROM order_email_jobs WHERE order_id = ?', [payment.id]);
         const { metadata, clientIP, fulfillmentNotes, ...publicPayment } = payment;
         res.json({
@@ -186,6 +192,7 @@ router.post('/webhook', async (req, res) => {
             await redeemOrderDiscount(result.orderId, result.rabatCode, result.email);
             await ensureShipment(result.orderId).catch(error => console.error('InPost auto-create error:', error.message));
             await deliverOrderEmails(result.orderId);
+            await santaMessages.onOrderPaid(result.orderId, 'webhook');
         } else if (['payment_intent.payment_failed', 'payment_intent.canceled'].includes(event.type)) {
             // A delayed failed event must not reserve a second payment or undo
             // a later successful retry of this same PaymentIntent.

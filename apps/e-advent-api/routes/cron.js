@@ -5,6 +5,7 @@ const { sendTodaysDailyWindows } = require('../services/orderMailer');
 const { retryOrderEmails } = require('../services/orderEmailJobs');
 const { syncActiveShipments, createMissingShipments } = require('../services/inpostFulfillment');
 const { cleanupExportBlobs } = require('../services/blobExportCleanup');
+const { runSantaCron } = require('../services/santaMessages/fulfillment');
 
 async function handleOrderEmails(req, res) {
   try { res.json({ success: true, ...await retryOrderEmails() }); }
@@ -35,8 +36,12 @@ async function handleDailyWindows(req, res) {
       console.error('Cron export blob cleanup error:', error.message);
       return { error: error.message };
     });
+    const santaMessages = await runSantaCron().catch((error) => {
+      console.error('Cron santa messages error:', error.message);
+      return { error: error.message };
+    });
     const result = await sendTodaysDailyWindows({ force: false, triggeredBy: 'cron' });
-    res.json({ success: true, ...result, exportCleanup });
+    res.json({ success: true, ...result, exportCleanup, santaMessages });
   } catch (error) {
     console.error('Cron daily windows error:', error);
     res.status(500).json({ error: 'Failed to send daily windows', message: error.message });
@@ -52,6 +57,16 @@ async function handleExportCleanup(req, res) {
 }
 router.get('/export-cleanup', authCron, handleExportCleanup);
 router.post('/export-cleanup', authCron, handleExportCleanup);
+
+async function handleSantaMessages(req, res) {
+  try { res.json({ success: true, ...await runSantaCron() }); }
+  catch (error) {
+    console.error('Cron santa messages error:', error.message);
+    res.status(500).json({ error: 'Santa messages cron failed' });
+  }
+}
+router.get('/santa-messages', authCron, handleSantaMessages);
+router.post('/santa-messages', authCron, handleSantaMessages);
 
 router.get('/daily-windows', authCron, handleDailyWindows);
 router.post('/daily-windows', authCron, handleDailyWindows);

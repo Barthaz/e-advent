@@ -43,6 +43,7 @@ function resolveItemCategory(item: AnalyticsItem): string | undefined {
   if (item.category) return item.category;
   if (item.sku === 'santa-certificate') return 'certificate';
   const product = getProduct(item.sku);
+  if (product?.type === 'voice') return 'santa_message';
   return product?.type;
 }
 
@@ -50,14 +51,65 @@ function toGaItems(items: AnalyticsItem[]) {
   return items.map((item) => {
     const quantity = item.quantity ?? 1;
     const category = resolveItemCategory(item);
+    const variant = getProduct(item.sku)?.voiceMode;
     return {
       item_id: item.sku,
       item_name: item.name,
       price: item.price,
       quantity,
       ...(category ? { item_category: category } : {}),
+      ...(variant ? { item_variant: variant } : {}),
     };
   });
+}
+
+/** Paths whose last segment is a bearer token (never sent to analytics). */
+const PRIVATE_PATHS: Array<[RegExp, string]> = [
+  [/^\/od-mikolaja\/(?!przyklad(?:[/?#]|$))[^/?#]+/, '/od-mikolaja/[private]'],
+  [/^\/wiadomosc-od-mikolaja\/personalizacja\/[^/?#]+/, '/wiadomosc-od-mikolaja/personalizacja/[private]'],
+];
+
+export function sanitizePagePath(path: string): string {
+  for (const [pattern, replacement] of PRIVATE_PATHS) {
+    if (pattern.test(path)) return replacement;
+  }
+  return path;
+}
+
+export function isPrivatePagePath(path: string): boolean {
+  return sanitizePagePath(path) !== path;
+}
+
+export type SantaEventName =
+  | 'santa_product_cta_click'
+  | 'santa_addon_toggle'
+  | 'santa_creator_start'
+  | 'santa_creator_step_complete'
+  | 'santa_creator_validation_error'
+  | 'santa_creator_submit'
+  | 'santa_script_approved'
+  | 'santa_player_open'
+  | 'santa_audio_play'
+  | 'santa_audio_progress'
+  | 'santa_audio_download'
+  | 'santa_player_error';
+
+/** Only low-cardinality, non-personal parameters may be attached to custom events. */
+export interface SantaEventParams {
+  purchase_mode?: 'standalone' | 'letter_addon';
+  cta_location?: string;
+  checked?: boolean;
+  step?: 1 | 2 | 3;
+  field_name?: string;
+  error_type?: string;
+  progress_percent?: 25 | 50 | 75 | 100;
+  source?: 'email' | 'direct' | 'demo';
+  audio_duration_bucket?: string;
+}
+
+export function trackSantaEvent(name: SantaEventName, params: SantaEventParams = {}) {
+  const clean = Object.fromEntries(Object.entries(params).filter(([, value]) => value !== undefined && value !== ''));
+  gtagSafe('event', name, clean);
 }
 
 function purchaseDedupKey(transactionId: string): string {
@@ -97,18 +149,28 @@ export function clearGaPurchasePayload(): void {
   }
 }
 
+let privateLocationSet = false;
+
 export function trackPageView(path: string, title?: string) {
   if (typeof window === 'undefined') return;
-  const pagePath = path.startsWith('/') ? path : `/${path}`;
+  const rawPath = path.startsWith('/') ? path : `/${path}`;
+  const pagePath = sanitizePagePath(rawPath);
   const pageLocation = `${window.location.origin}${pagePath}`;
+  const isPrivate = pagePath !== rawPath;
 
+  // Later events (play, progress…) inherit page_location; keep the token out of all of them.
+  if ((isPrivate || privateLocationSet) && window.gtag) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window.gtag as any)('set', { page_location: pageLocation, page_path: pagePath, ...(isPrivate ? { page_referrer: '' } : {}) });
+    privateLocationSet = isPrivate;
+  }
   gtagSafe('event', 'page_view', {
     page_title: title ?? document.title,
     page_location: pageLocation,
     page_path: pagePath,
     send_to: getGaMeasurementId(),
   });
-  fbqSafe('track', 'PageView');
+  if (!isPrivate) fbqSafe('track', 'PageView');
 }
 
 export function trackViewItem(item: AnalyticsItem) {

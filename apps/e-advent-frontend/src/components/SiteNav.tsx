@@ -1,18 +1,25 @@
 import { useEffect, useId, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/useCart';
+import { useVoiceConfig } from '../santa-message/useVoiceConfig';
 import navLogo from '@e-advent/assets/brand/eadvent-logo-name.png';
 
-const NAV_LINKS = [
+type NavLink = { to: string; label: string; end?: boolean; wideOnly?: boolean };
+
+const NAV_LINKS: NavLink[] = [
   { to: '/', label: 'Strona główna', end: true },
   { to: '/kalendarze-adwentowe', label: 'Kalendarze' },
   { to: '/list-do-swietego-mikolaja', label: 'List do Mikołaja' },
   { to: '/sledz-mikolaja', label: 'Śledź Świętego Mikołaja' },
-] as const;
+];
+
+const VOICE_LINK: NavLink = { to: '/wiadomosc-od-mikolaja', label: 'Wiadomość od Mikołaja', wideOnly: true };
 
 export default function SiteNav() {
   const location = useLocation();
   const { itemCount } = useCart();
+  const { config: voiceConfig } = useVoiceConfig();
+  const links = voiceConfig?.enabled ? [...NAV_LINKS.slice(0, 3), VOICE_LINK, ...NAV_LINKS.slice(3)] : NAV_LINKS;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
 
@@ -99,11 +106,11 @@ export default function SiteNav() {
             </Link>
 
             <ul className="hidden lg:flex items-center gap-1 lg:gap-2">
-              {NAV_LINKS.map((link) => (
-                <li key={link.to}>
+              {links.map((link) => (
+                <li key={link.to} className={link.wideOnly ? 'hidden xl:block' : undefined}>
                   <Link
                     to={link.to}
-                    className={linkClass(link.to, 'end' in link && link.end, true)}
+                    className={`whitespace-nowrap ${linkClass(link.to, link.end, true)}`}
                   >
                     {link.label}
                   </Link>
@@ -134,11 +141,11 @@ export default function SiteNav() {
           }`}
         >
           <ul className="container mx-auto px-4 pb-4 flex flex-col gap-1 border-t border-christmas-gold/15 pt-2 bg-christmas-green/95">
-            {NAV_LINKS.map((link) => (
+            {links.map((link) => (
               <li key={link.to}>
                 <Link
                   to={link.to}
-                  className={`block ${linkClass(link.to, 'end' in link && link.end)}`}
+                  className={`block ${linkClass(link.to, link.end)}`}
                   onClick={() => setMenuOpen(false)}
                 >
                   {link.label}

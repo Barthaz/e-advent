@@ -1,4 +1,4 @@
-export type ProductType = 'interactive' | 'scratch' | 'letter';
+export type ProductType = 'interactive' | 'scratch' | 'letter' | 'voice';
 export type CalendarFormat = 'A4' | 'A3';
 export type PaymentStatus = 'pending' | 'succeeded' | 'failed' | 'canceled';
 export type FulfillmentStatus =

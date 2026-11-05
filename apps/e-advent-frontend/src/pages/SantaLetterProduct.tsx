@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageBackground from '../components/PageBackground';
 import ParchmentCard from '../components/ParchmentCard';
 import SEOHead from '../components/SEOHead';
@@ -9,7 +9,8 @@ import {
   SANTA_CERTIFICATE_SKU,
 } from '../config/products';
 import { useCart } from '../context/useCart';
-import { trackViewItem } from '../utils/analytics';
+import { trackSantaEvent, trackViewItem } from '../utils/analytics';
+import { useVoiceConfig } from '../santa-message/useVoiceConfig';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 import LetterPackComposer, { MAX_LETTER_QTY } from '../components/letter/LetterPackComposer';
 import AddedToCartModal from '../components/AddedToCartModal';
@@ -81,6 +82,9 @@ export default function SantaLetterProduct() {
   const [letterQty, setLetterQty] = useState(1);
   const [certNames, setCertNames] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const { config: voiceConfig } = useVoiceConfig();
+  const [withVoice, setWithVoice] = useState(() => searchParams.get('wiadomosc') === '1');
 
   const basePrice = product?.basePrice ?? 29;
   const faq = buildFaq(`+${formatPrice(CERTIFICATE_PRICE)}`);
@@ -123,7 +127,9 @@ export default function SantaLetterProduct() {
       letterLabel: product?.name,
       letterQuantity: Math.min(MAX_LETTER_QTY, Math.max(1, letterQty)),
       childNames: trimmedNames,
+      withVoiceMessage: Boolean(voiceConfig?.letterAddonEnabled && withVoice),
     });
+    setWithVoice(false);
 
     setCartAdded(true);
   };
@@ -246,6 +252,30 @@ export default function SantaLetterProduct() {
                   certificatePrice={CERTIFICATE_PRICE}
                   error={formError}
                 />
+
+                {voiceConfig?.letterAddonEnabled && (
+                  <label className="mb-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-christmas-gold/40 bg-black/25 p-4 hover:border-christmas-gold/70 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={withVoice}
+                      onChange={(e) => {
+                        setWithVoice(e.target.checked);
+                        trackSantaEvent('santa_addon_toggle', { checked: e.target.checked, cta_location: 'letter_product' });
+                      }}
+                      className="mt-1 h-5 w-5 accent-[#d4af37] shrink-0"
+                    />
+                    <span className="text-sm text-white/85 leading-relaxed">
+                      <span className="block font-semibold text-christmas-gold-light">
+                        <i className="fas fa-microphone-alt mr-1.5" aria-hidden="true" />
+                        Dodaj wiadomość głosową od Mikołaja — {formatPrice(voiceConfig.prices.letterAddon)}
+                        <span className="ml-2 text-xs font-normal text-white/50 line-through">{formatPrice(voiceConfig.prices.standalone)}</span>
+                      </span>
+                      Mikołaj zwróci się do dziecka po imieniu i wspomni jego sukcesy. Szczegóły uzupełnisz po zakupie —
+                      link do nagrania przyjdzie na e-mail.{' '}
+                      <Link to="/wiadomosc-od-mikolaja" className="underline underline-offset-2 hover:text-white">Posłuchaj przykładu</Link>
+                    </span>
+                  </label>
+                )}
 
                 <div className="mb-4">
                   <button type="button" onClick={handleAddToCart} className="btn-gold px-8 py-3.5 text-lg">

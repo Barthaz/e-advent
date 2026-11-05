@@ -19,6 +19,14 @@ export interface AddSantaLetterBundleInput {
   childName?: string;
   childNames?: string[];
   letterQuantity?: number;
+  /** Dodaje w tej samej operacji wiadomość od Mikołaja w cenie dodatku */
+  withVoiceMessage?: boolean;
+}
+
+export interface AddVoiceMessageInput {
+  mode: 'standalone' | 'letter_addon';
+  voiceDraftId?: string;
+  voiceDraftKey?: string;
 }
 
 export interface CartContextValue {
@@ -34,6 +42,11 @@ export interface CartContextValue {
   removeLetterPack: () => void;
   updateQty: (id: string, quantity: number) => void;
   clear: () => void;
+  addVoiceMessage: (input: AddVoiceMessageInput) => CartItem;
+  convertVoiceToAddon: (id: string) => void;
+  /** Informacja o przeliczeniu dodatku na cenę samodzielną po usunięciu listu */
+  voiceNotice: string | null;
+  dismissVoiceNotice: () => void;
 }
 
 export const CartContext = createContext<CartContextValue | undefined>(undefined);

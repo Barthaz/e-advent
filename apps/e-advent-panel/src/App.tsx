@@ -13,6 +13,7 @@ import CatalogTasksPage from './pages/CatalogTasksPage';
 import DiscountCodesPage from './pages/DiscountCodesPage';
 import GeneratorPage from './pages/GeneratorPage';
 import HomePage from './pages/HomePage';
+import SantaMessagesPage from './pages/SantaMessagesPage';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
                     <Route path="tasks" element={<CatalogTasksPage />} />
                     <Route path="rabaty" element={<DiscountCodesPage />} />
                     <Route path="generator" element={<GeneratorPage />} />
+                    <Route path="santa-messages" element={<SantaMessagesPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </AppLayout>

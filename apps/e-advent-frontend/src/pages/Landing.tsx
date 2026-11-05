@@ -6,7 +6,9 @@ import DemoCalendar from '../components/DemoCalendar';
 import SocialShare from '../components/SocialShare';
 import SEOHead from '../components/SEOHead';
 import ProductCard from '../components/products/ProductCard';
-import { PRODUCT_FAMILIES } from '../config/products';
+import { formatPrice, PRODUCT_FAMILIES } from '../config/products';
+import { trackSantaEvent } from '../utils/analytics';
+import { useVoiceConfig } from '../santa-message/useVoiceConfig';
 import { formatCountdown, getDaysUntilChristmas } from '../utils/countdown';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
 
@@ -15,6 +17,8 @@ export default function Landing() {
   const [daysUntilChristmas, setDaysUntilChristmas] = useState(getDaysUntilChristmas());
   const [heroVisible, setHeroVisible] = useState(false);
   const scrollElementsRef = useRef<(HTMLElement | null)[]>([]);
+  const { config: voiceConfig } = useVoiceConfig();
+  const showVoice = Boolean(voiceConfig?.standaloneEnabled || voiceConfig?.letterAddonEnabled);
 
   useEffect(() => {
     const timer = setTimeout(() => setHeroVisible(true), 100);
@@ -145,7 +149,7 @@ export default function Landing() {
               List do Świętego Mikołaja, kalendarze adwentowe i magia oczekiwania — żeby grudzień przeżywać w cieple i miłej atmosferze.
             </p>
 
-            <div className={`hero-actions ${heroClass('delay-600')}`}>
+            <div className={`hero-actions ${showVoice ? 'hero-actions--three' : ''} ${heroClass('delay-600')}`}>
               <Link to="/list-do-swietego-mikolaja" className="hero-action hero-action--letter">
                 <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-envelope-open-text" /></span>
                 <span className="hero-action-content">
@@ -164,6 +168,22 @@ export default function Landing() {
                   <span className="hero-action-footer"><span>Wybierz kalendarz <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od 9 zł</span></span>
                 </span>
               </Link>
+              {showVoice && (
+                <Link
+                  to="/wiadomosc-od-mikolaja"
+                  className="hero-action hero-action--voice"
+                  onClick={() => trackSantaEvent('santa_product_cta_click', { cta_location: 'landing_hero' })}
+                >
+                  <span className="hero-action-badge">NOWE</span>
+                  <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-microphone-alt" /></span>
+                  <span className="hero-action-content">
+                    <span className="hero-action-eyebrow">Głos prosto z Laponii</span>
+                    <span className="hero-action-title">Wiadomość od Mikołaja</span>
+                    <span className="hero-action-description">Mikołaj mówi do dziecka po imieniu i docenia jego tegoroczne sukcesy.</span>
+                    <span className="hero-action-footer"><span>Posłuchaj <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od {formatPrice(voiceConfig?.prices.letterAddon ?? 14.9)}</span></span>
+                  </span>
+                </Link>
+              )}
             </div>
 
             <div className={`hero-returning ${heroClass('delay-700')}`}>

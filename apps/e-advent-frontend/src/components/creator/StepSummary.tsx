@@ -34,6 +34,10 @@ const PRODUCT_META: Record<ProductType, { icon: string; tagline: string; note?: 
     tagline: 'Gotowy zestaw listu do Świętego Mikołaja — listy, koperta i naklejki',
     note: PHYSICAL_FULFILLMENT_NOTE,
   },
+  voice: {
+    icon: 'fa-microphone-alt',
+    tagline: 'Wiadomość głosowa od Świętego Mikołaja — link do odsłuchu i MP3 na e-mail',
+  },
 }
 
 export default function StepSummary({

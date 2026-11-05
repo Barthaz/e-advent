@@ -2,18 +2,35 @@
 <html lang="pl">
 
 <head>
+  <!-- Private Santa message links carry a bearer token in the path: mask it before any tracker runs. -->
+  <script>
+    (function () {
+      var p = location.pathname;
+      var masked = /^\/od-mikolaja\/(?!przyklad(?:[/?#]|$))[^/?#]+/.test(p) ? '/od-mikolaja/[private]'
+        : /^\/wiadomosc-od-mikolaja\/personalizacja\/[^/?#]+/.test(p) ? '/wiadomosc-od-mikolaja/personalizacja/[private]' : null;
+      window.__eadventPrivatePath = masked;
+      if (masked) {
+        var meta = document.createElement('meta');
+        meta.name = 'referrer';
+        meta.content = 'no-referrer';
+        document.head.appendChild(meta);
+      }
+    })();
+  </script>
   <!-- Google tag (gtag.js) — ID injected by vite (VITE_GA_MEASUREMENT_ID / test|prod fallback) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=__GA_MEASUREMENT_ID__"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-    gtag('config', '__GA_MEASUREMENT_ID__');
+    gtag('config', '__GA_MEASUREMENT_ID__', window.__eadventPrivatePath
+      ? { page_location: location.origin + window.__eadventPrivatePath, page_path: window.__eadventPrivatePath, page_referrer: '' }
+      : {});
   </script>
 
-  <!-- Facebook Pixel Code -->
+  <!-- Facebook Pixel Code (not loaded on private Santa message links) -->
   <script>
-    !function (f, b, e, v, n, t, s) {
+    if (!window.__eadventPrivatePath) !function (f, b, e, v, n, t, s) {
       if (f.fbq) return; n = f.fbq = function () {
         n.callMethod ?
           n.callMethod.apply(n, arguments) : n.queue.push(arguments)
@@ -24,8 +41,10 @@
       s.parentNode.insertBefore(t, s)
     }(window, document, 'script',
       'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '825968096852589');
-    fbq('track', 'PageView');
+    if (window.fbq) {
+      fbq('init', '825968096852589');
+      fbq('track', 'PageView');
+    }
   </script>
   <!-- End Facebook Pixel Code -->
 
