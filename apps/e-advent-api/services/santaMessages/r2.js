@@ -10,14 +10,36 @@ function storageInfo() {
   return { provider, r2Configured: configured, maxAudioBytes: MAX_AUDIO_BYTES };
 }
 
+function wrapR2Error(error) {
+  if (error?.status && error.code) return error;
+  const name = String(error?.Code || error?.name || error?.code || '');
+  const status = Number(error?.$metadata?.httpStatusCode);
+  if (error?.message === 'Invalid R2 account ID') {
+    return Object.assign(new Error('R2_ACCOUNT_ID musi mieć dokładnie 32 znaki szesnastkowe (Account ID z Cloudflare).'), { status: 400, code: 'R2_INVALID_ACCOUNT' });
+  }
+  if (error?.message === 'Invalid R2 jurisdiction') {
+    return Object.assign(new Error('R2_JURISDICTION może być puste albo eu / fedramp.'), { status: 400, code: 'R2_INVALID_JURISDICTION' });
+  }
+  if (name === 'InvalidAccessKeyId' || name === 'SignatureDoesNotMatch' || name === 'AccessDenied' || status === 403) {
+    return Object.assign(new Error('Odrzucone dane dostępu do R2. Sprawdź R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY i uprawnienia tokenu do bucketu.'), { status: 400, code: 'R2_ACCESS_DENIED' });
+  }
+  if (name === 'NoSuchBucket' || name === 'PermanentRedirect') {
+    return Object.assign(new Error('Nie znaleziono bucketu R2. Sprawdź R2_BUCKET_NAME i R2_JURISDICTION (eu, gdy endpoint ma .eu.r2...).'), { status: 400, code: 'R2_BUCKET_NOT_FOUND' });
+  }
+  if (name === 'ENOTFOUND' || name === 'ECONNREFUSED' || name === 'TimeoutError' || name === 'AbortError') {
+    return Object.assign(new Error('Nie udało się połączyć z R2. Sprawdź R2_ACCOUNT_ID i R2_JURISDICTION.'), { status: 400, code: 'R2_UNREACHABLE' });
+  }
+  return error;
+}
+
 function client() {
   if (!storageInfo().r2Configured) {
     throw Object.assign(new Error('Uzupełnij konfigurację prywatnego magazynu R2 w środowisku API.'), { code: 'R2_NOT_CONFIGURED', status: 400 });
   }
   const account = process.env.R2_ACCOUNT_ID.trim();
-  if (!/^[a-f0-9]{32}$/i.test(account)) throw new Error('Invalid R2 account ID');
+  if (!/^[a-f0-9]{32}$/i.test(account)) throw wrapR2Error(new Error('Invalid R2 account ID'));
   const jurisdiction = process.env.R2_JURISDICTION?.trim() || '';
-  if (!['', 'eu', 'fedramp'].includes(jurisdiction)) throw new Error('Invalid R2 jurisdiction');
+  if (!['', 'eu', 'fedramp'].includes(jurisdiction)) throw wrapR2Error(new Error('Invalid R2 jurisdiction'));
   return new S3Client({
     region: 'auto',
     endpoint: `https://${account}${jurisdiction ? `.${jurisdiction}` : ''}.r2.cloudflarestorage.com`,
@@ -42,6 +64,8 @@ async function send(command) {
   const connection = client();
   try {
     return await connection.send(command, { abortSignal: AbortSignal.timeout(30_000) });
+  } catch (error) {
+    throw wrapR2Error(error);
   } finally {
     connection.destroy();
   }
@@ -65,8 +89,8 @@ async function readR2Audio(objectKey) {
     }
     return Buffer.concat(chunks);
   } catch (error) {
-    if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) return null;
-    throw error;
+    if (error.name === 'NoSuchKey' || error.code === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) return null;
+    throw wrapR2Error(error);
   } finally {
     body?.destroy?.();
     connection.destroy();

@@ -45,7 +45,7 @@ test('returns null for missing objects, propagates permission failures', async (
   send.mockRejectedValueOnce(Object.assign(new Error(), { name: 'NoSuchKey' }));
   expect(await r2.readR2Audio('missing.mp3')).toBeNull();
   send.mockRejectedValueOnce(Object.assign(new Error(), { name: 'AccessDenied' }));
-  await expect(r2.readR2Audio('private.mp3')).rejects.toMatchObject({ name: 'AccessDenied' });
+  await expect(r2.readR2Audio('private.mp3')).rejects.toMatchObject({ code: 'R2_ACCESS_DENIED', status: 400 });
 });
 test('writes a unique private managed copy and never requests public ACL', async () => {
   send.mockResolvedValue({});
@@ -53,6 +53,11 @@ test('writes a unique private managed copy and never requests public ACL', async
   expect(key).toMatch(/^r2:santa-messages\/id\/.+\.mp3$/);
   expect(send.mock.calls[0][0].input).toMatchObject({ Bucket: 'private-audio', CacheControl: 'private, no-store', ContentType: 'audio/mpeg' });
   expect(send.mock.calls[0][0].input.ACL).toBeUndefined();
+});
+test('maps a malformed account ID before opening a connection', async () => {
+  process.env.R2_ACCOUNT_ID = 'not-an-account-id';
+  await expect(r2.readR2Audio('gotowe/a.mp3')).rejects.toMatchObject({ code: 'R2_INVALID_ACCOUNT', status: 400 });
+  expect(send).not.toHaveBeenCalled();
 });
 test('missing credentials and production local storage fail closed', async () => {
   delete process.env.R2_SECRET_ACCESS_KEY;
