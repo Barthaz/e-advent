@@ -148,7 +148,7 @@ export function voiceAddonSlots(items: CartItem[]): number {
 }
 
 /**
- * Dodatek bez listu przechodzi na cenę samodzielną (24 zł) zamiast znikać z koszyka.
+ * Dodatek bez listu przechodzi na cenę samodzielną zamiast znikać z koszyka.
  * Każda wiadomość to osobna linia z ilością 1 (jedna personalizacja = jedno nagranie).
  */
 export function normalizeVoiceItems(items: CartItem[]): { items: CartItem[]; converted: number } {

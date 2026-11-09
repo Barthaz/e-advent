@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useLocation } from 'react-router-dom';
 import {
   FREE_SHIPPING_THRESHOLD,
+  formatPrice,
   getProduct,
   isCalendarSku,
   isCalendarsOnSale,
@@ -38,7 +39,7 @@ import { CartContext, type AddItemInput, type AddSantaLetterBundleInput, type Ad
 
 const EMPTY_TOTALS: OrderTotals = getCartTotals([])!;
 const VOICE_CONVERTED_NOTICE =
-  'W koszyku nie ma już listu, więc wiadomość od Mikołaja ma teraz cenę samodzielną (24 zł). Nic nie zostało usunięte.';
+  `W koszyku nie ma już listu, więc wiadomość od Mikołaja ma teraz cenę samodzielną (${formatPrice(getProduct(VOICE_MESSAGE_SKU)!.basePrice)}). Nic nie zostało usunięte.`;
 
 
 function trackAddedItems(added: CartItem[], quantityFallback = 1) {

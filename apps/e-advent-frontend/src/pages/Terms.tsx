@@ -2,6 +2,11 @@ import { Link } from 'react-router-dom';
 import FestivePage from '../components/FestivePage';
 import ContentCard from '../components/ContentCard';
 import SEOHead from '../components/SEOHead';
+import { formatPrice, getProduct } from '../config/products';
+
+function price(...skus: string[]) {
+  return formatPrice(skus.reduce((sum, sku) => sum + getProduct(sku)!.basePrice, 0));
+}
 
 export default function Terms() {
   return (
@@ -80,12 +85,12 @@ export default function Terms() {
                 Ceny produktów (brutto, zawierają podatek VAT 23%):
               </p>
               <ul className="list-disc pl-6 space-y-2 mb-4">
-                <li>Kalendarz online — 9 zł (produkt cyfrowy, bez wysyłki)</li>
-                <li>Kalendarz zdrapka — 69 zł</li>
-                <li>List do Świętego Mikołaja (zestaw) — 29 zł</li>
-                <li>Certyfikat Grzecznego Dziecka z imieniem — 9 zł, opcjonalnie do listu (również w pakiecie z nagraniem)</li>
-                <li>Wiadomość głosowa od Świętego Mikołaja — 24 zł samodzielnie albo 19 zł jako dodatek do listu w tym samym zamówieniu, maksymalnie jedna wiadomość w cenie dodatku na każdy list</li>
-                <li>List + wiadomość — 48 zł; z jednym certyfikatem — 57 zł, przed doliczeniem dostawy i ewentualnego rabatu. Nagranie i certyfikat są osobnymi, opcjonalnymi pozycjami zamówienia.</li>
+                <li>Kalendarz online — {price('interactive')} (produkt cyfrowy, bez wysyłki)</li>
+                <li>Kalendarz zdrapka — {price('scratch-a3')}</li>
+                <li>List do Świętego Mikołaja (zestaw) — {price('santa-letter')}</li>
+                <li>Certyfikat Grzecznego Dziecka z imieniem — {price('santa-certificate')}, opcjonalnie do listu (również w pakiecie z nagraniem)</li>
+                <li>Wiadomość głosowa od Świętego Mikołaja — {price('voice-message')} samodzielnie albo {price('voice-message-addon')} jako dodatek do listu w tym samym zamówieniu, maksymalnie jedna wiadomość w cenie dodatku na każdy list</li>
+                <li>List + wiadomość — {price('santa-letter', 'voice-message-addon')}; z jednym certyfikatem — {price('santa-letter', 'voice-message-addon', 'santa-certificate')}, przed doliczeniem dostawy i ewentualnego rabatu. Nagranie i certyfikat są osobnymi, opcjonalnymi pozycjami zamówienia.</li>
                 <li>Dostawa produktów fizycznych — Paczkomat lub kurier InPost; koszt jest wyświetlany przed płatnością i zależy od rodzaju przesyłki</li>
               </ul>
               <p className="mb-4">
