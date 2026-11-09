@@ -46,6 +46,18 @@ test('returns null for missing objects, propagates permission failures', async (
   expect(await r2.readR2Audio('missing.mp3')).toBeNull();
   send.mockRejectedValueOnce(Object.assign(new Error(), { name: 'AccessDenied' }));
   await expect(r2.readR2Audio('private.mp3')).rejects.toMatchObject({ code: 'R2_ACCESS_DENIED', status: 400 });
+  send.mockRejectedValueOnce(Object.assign(new Error(), { name: 'InvalidAccessKeyId' }));
+  await expect(r2.readR2Audio('private.mp3')).rejects.toMatchObject({ code: 'R2_INVALID_ACCESS_KEY', status: 400 });
+  send.mockRejectedValueOnce(Object.assign(new Error(), { name: 'SignatureDoesNotMatch' }));
+  await expect(r2.readR2Audio('private.mp3')).rejects.toMatchObject({ code: 'R2_BAD_SECRET', status: 400 });
+});
+test('strips wrapping quotes copied from Vercel or dotenv', async () => {
+  process.env.R2_ACCOUNT_ID = `"${'b'.repeat(32)}"`;
+  process.env.R2_BUCKET_NAME = "'private-audio'";
+  send.mockResolvedValue({});
+  await r2.writeR2Audio('santa-messages/id/a.mp3', Buffer.from('mp3'));
+  expect(sdk.S3Client.mock.calls[0][0].endpoint).toBe(`https://${'b'.repeat(32)}.r2.cloudflarestorage.com`);
+  expect(send.mock.calls[0][0].input.Bucket).toBe('private-audio');
 });
 test('writes a unique private managed copy and never requests public ACL', async () => {
   send.mockResolvedValue({});

@@ -30,7 +30,10 @@ function respond(res, result) {
 }
 
 function fail(res, scope, error) {
-  if (error.status === 400) return res.status(400).json({ error: error.code || 'BAD_REQUEST', message: error.message });
+  if (error.status === 400) {
+    if (String(error.code || '').startsWith('R2_')) console.error(`[santa admin] ${scope} failed:`, error.code, error.message);
+    return res.status(400).json({ error: error.code || 'BAD_REQUEST', message: error.message });
+  }
   console.error(`[santa admin] ${scope} failed:`, error.code || error.message);
   return res.status(500).json({ error: 'SANTA_ADMIN_ERROR', message: 'Operacja nie powiodła się.' });
 }
