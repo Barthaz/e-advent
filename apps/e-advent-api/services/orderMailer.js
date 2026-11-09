@@ -1,6 +1,6 @@
 const { sendEmail } = require('../config/email');
 const { frontendUrl } = require('../config/app');
-const { isPhysicalProduct } = require('../config/products');
+const { isPhysicalProduct, isVoiceMessageSku } = require('../config/products');
 const Calendar = require('../models/Calendar');
 const Payment = require('../models/Payment');
 const EmailSend = require('../models/EmailSend');
@@ -165,7 +165,7 @@ async function sendPaidOrderEmails(order, triggeredBy = 'webhook') {
 
   const results = [];
 
-  if (hasPhysical) {
+  if (hasPhysical || items.some((item) => isVoiceMessageSku(item.sku))) {
     const subject = '🎄 Potwierdzenie zamówienia e-Advent';
     const payload = {
       orderId: customerFacingOrderNumber(order) || '—',
@@ -175,7 +175,8 @@ async function sendPaidOrderEmails(order, triggeredBy = 'webhook') {
       deliveryType: order.deliveryType,
       amount: order.amount,
       shippingAmount: order.shippingAmount,
-      hasPhysical: true,
+      hasPhysical,
+      digitalConsent: order.metadata?.digitalContentConsent,
     };
     results.push(await dispatchAndLog({
       type: 'order_confirmation',

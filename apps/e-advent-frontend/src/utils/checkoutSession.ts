@@ -1,5 +1,6 @@
 import { CART_CHANGED_EVENT, CART_STORAGE_KEY, clearCartStorage } from './cartStorage';
 import { clearOrderSummary } from './orderSummary';
+import { clearCheckoutDetails } from './checkoutDetails';
 
 const SESSION_KEY = 'e-advent-checkout-token';
 export const PENDING_CHECKOUT_KEY = 'e-advent-pending-checkout';
@@ -77,6 +78,7 @@ function clearLocalCheckoutKeys(paymentIntentId?: string): void {
 }
 
 export function finishCheckout(paymentIntentId?: string): void {
+  clearCheckoutDetails();
   const owner = paymentIntentId ? sessionStorage.getItem(`e-advent-checkout-owner:${paymentIntentId}`) : null;
   if (!paymentIntentId || owner === sessionStorage.getItem(SESSION_KEY)) {
     sessionStorage.removeItem(SESSION_KEY);

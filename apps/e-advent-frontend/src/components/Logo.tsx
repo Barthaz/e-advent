@@ -19,8 +19,8 @@ export default function Logo({ className = '' }: { className?: string }) {
       >
         <img
           src={logo}
-          alt="e-Advent - Interaktywny Kalendarz Adwentowy Online"
-          className="h-20 md:h-24 w-auto drop-shadow-lg"
+          alt="e-Advent - Kalendarz Adwentowy Online"
+          className="h-16 md:h-20 w-auto drop-shadow-xl"
           width="200"
           height="80"
           loading="eager"

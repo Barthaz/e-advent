@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "dev:api": "npm run dev -w e-advent-api",
+    "dev:santa": "node tools/dev-santa.cjs",
     "dev:frontend": "npm run dev -w e-advent-frontend",
     "dev:panel": "npm run dev -w e-advent-panel",
     "dev:app": "npm run start -w e-advent-app",

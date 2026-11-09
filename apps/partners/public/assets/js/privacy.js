@@ -14,13 +14,15 @@ const customize = document.querySelector('#privacy-customize');
 export function getChoices() { return choice || { history: false, analytics: false }; }
 export function onChoicesChange(callback) { window.addEventListener('soa:privacy', () => callback(getChoices())); }
 function syncInputs() {
-  historyInput.checked = getChoices().history;
+  // A suggested form value is not consent: getChoices() stays off until save().
+  historyInput.checked = choice?.history ?? true;
   analyticsInput.checked = analyticsAvailable && getChoices().analytics;
 }
 function showOptions(show) {
   options.hidden = !show;
+  document.querySelector('#privacy-accept').hidden = show;
   customize.setAttribute('aria-expanded', String(show));
-  customize.textContent = show ? 'Zwiń ustawienia' : 'Dostosuj ustawienia';
+  customize.textContent = show ? 'Wróć do wyboru' : 'Dostosuj ustawienia';
 }
 function announce(message) {
   document.querySelector('#privacy-feedback').textContent = message;
@@ -52,7 +54,7 @@ document.querySelectorAll('[data-privacy-open]').forEach(button => {
 window.addEventListener('storage', event => {
   if (event.key !== PREFERENCES_KEY && event.key !== null) return;
   choice = readPreferences(storage, version);
-  syncInputs();
+  syncInputs(); showOptions(false);
   panel.hidden = choice !== null;
   window.dispatchEvent(new CustomEvent('soa:privacy'));
 });

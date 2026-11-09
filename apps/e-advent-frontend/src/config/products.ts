@@ -95,7 +95,7 @@ export const PRODUCT_FAMILIES: ProductFamily[] = BASE_PRODUCT_FAMILIES.map((fami
     return {
       ...family,
       imageSrc: interactiveImage,
-      imageAlt: 'Kalendarz adwentowy interaktywny',
+      imageAlt: 'Kalendarz adwentowy online',
       eyebrow: 'Online',
     };
   }

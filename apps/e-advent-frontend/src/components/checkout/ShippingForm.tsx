@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import FormField from '../FormField';
 import type { ShippingAddress } from '../../types/order';
 
@@ -12,6 +13,8 @@ import { normalizeShippingAddress, composeShippingFullName } from '../../utils/s
 
 export default function ShippingForm({ address, onChange, deliveryType, errors = {} }: ShippingFormProps) {
   const safe = normalizeShippingAddress(address);
+  const [touched, setTouched] = useState<Set<string>>(() => new Set());
+  const fieldIds: Record<string, string> = { 'shipping-given-name': 'firstName', 'shipping-family-name': 'lastName', 'shipping-postal-code': 'postalCode', 'shipping-city': 'city', 'shipping-street-address': 'street', 'shipping-building': 'buildingNumber', 'shipping-tel': 'phone' };
 
   const update = (field: keyof ShippingAddress, value: string) => {
     const next = { ...safe, [field]: value };
@@ -20,7 +23,7 @@ export default function ShippingForm({ address, onChange, deliveryType, errors =
   };
 
   return (
-    <section className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6">
+    <section className="order-panel" onBlur={event => { const field = fieldIds[event.target.id]; if (field) setTouched(previous => new Set(previous).add(field)); }}>
       <h2 className="heading-section mb-1">
         Dane odbiorcy
       </h2>
@@ -42,7 +45,7 @@ export default function ShippingForm({ address, onChange, deliveryType, errors =
             placeholder="Jan"
             required
           />
-          {errors.firstName && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.firstName}</p>}
+          {touched.has('firstName') && errors.firstName && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.firstName}</p>}
         </div>
         <div>
           <FormField
@@ -55,7 +58,7 @@ export default function ShippingForm({ address, onChange, deliveryType, errors =
             placeholder="Kowalski"
             required
           />
-          {errors.lastName && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.lastName}</p>}
+          {touched.has('lastName') && errors.lastName && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.lastName}</p>}
         </div>
       </div>
 
@@ -72,7 +75,7 @@ export default function ShippingForm({ address, onChange, deliveryType, errors =
             placeholder="00-000"
             required
           />
-          {errors.postalCode && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.postalCode}</p>}
+          {touched.has('postalCode') && errors.postalCode && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.postalCode}</p>}
         </div>
         <div>
           <FormField
@@ -85,7 +88,7 @@ export default function ShippingForm({ address, onChange, deliveryType, errors =
             placeholder="Warszawa"
             required
           />
-          {errors.city && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.city}</p>}
+          {touched.has('city') && errors.city && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.city}</p>}
         </div>
       </div>
 
@@ -96,14 +99,14 @@ export default function ShippingForm({ address, onChange, deliveryType, errors =
         autoComplete="street-address"
         value={safe.street}
         onChange={(v) => update('street', v)}
-        placeholder="ul. Przykładowa 12/3"
+        placeholder={deliveryType ? "np. Świąteczna" : "ul. Przykładowa 12/3"}
         required
       />
-      {errors.street && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.street}</p>}
+      {touched.has('street') && errors.street && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.street}</p>}
 
       {deliveryType === 'courier_inpost' && <div className="grid grid-cols-2 gap-4">
         <div><FormField label="Numer budynku" id="shipping-building" name="shipping-building" value={safe.buildingNumber || ''} onChange={v => update('buildingNumber', v)} required />
-        {errors.buildingNumber && <p className="text-red-600 text-sm">{errors.buildingNumber}</p>}</div>
+        {touched.has('buildingNumber') && errors.buildingNumber && <p className="text-red-600 text-sm">{errors.buildingNumber}</p>}</div>
         <FormField label="Numer mieszkania (opcjonalnie)" id="shipping-apartment" name="shipping-apartment" value={safe.apartmentNumber || ''} onChange={v => update('apartmentNumber', v)} />
       </div>}
       </>}
@@ -118,7 +121,7 @@ export default function ShippingForm({ address, onChange, deliveryType, errors =
         placeholder="+48 123 456 789"
         required
       />
-      {errors.phone && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.phone}</p>}
+      {touched.has('phone') && errors.phone && <p className="text-red-600 text-sm -mt-2 mb-3">{errors.phone}</p>}
     </section>
   );
 }

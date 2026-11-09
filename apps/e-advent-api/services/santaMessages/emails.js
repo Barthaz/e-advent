@@ -39,7 +39,7 @@ function buildSantaEmail(type, { url, orderNumber }) {
           ${linkLine(url)}
           ${sectionLabel('Dobrze wiedzieć')}
           <p style="${MUTED}">Na stronie odsłuchu znajdziesz też przycisk do pobrania pliku MP3. Link jest prywatny — udostępniaj go tylko osobom, którym ufasz. Nagranie jest dostępne przez 12 miesięcy.</p>
-          <p style="${MUTED}">To nagranie przygotowane automatycznie na podstawie Twojej personalizacji, a nie rozmowa na żywo.</p>`,
+          <p style="${MUTED}">To nagranie przygotowane z wykorzystaniem syntezy mowy na podstawie Twojej personalizacji, a nie rozmowa na żywo.</p>`,
       }),
       text: [
         'Święty Mikołaj nagrał wyjątkową wiadomość!',
@@ -104,8 +104,13 @@ async function writeDevOutbox(to, mail) {
 }
 
 /** Sends through the shared mailer; locally SANTA_DEV_MAIL_OUTBOX writes HTML files instead. */
-async function deliverSantaEmail({ type, to, url, orderNumber }) {
+async function deliverSantaEmail({ type, to, url, orderNumber, consent }) {
   const mail = { type, url, ...buildSantaEmail(type, { url, orderNumber }) };
+  if (consent?.text && consent?.acceptedAt) {
+    const receipt = `Potwierdzenie zgody złożonej przy zamówieniu ${orderNumber || ''} (${consent.acceptedAt}, wersja ${consent.version}): ${consent.text}`;
+    mail.html = mail.html.replace('</body>', `<p style="${MUTED}padding:20px;">${escapeHtml(receipt)}</p></body>`);
+    mail.text += `\n\n${receipt}`;
+  }
   if (santaConfig().devMailOutbox) {
     await writeDevOutbox(to, mail);
     return { subject: mail.subject, dev: true };

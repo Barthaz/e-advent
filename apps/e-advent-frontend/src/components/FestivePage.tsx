@@ -40,14 +40,14 @@ export default function FestivePage({
       variant={variant}
       showSnow={showSnow}
       overlayOpacity={overlayOpacity}
-      className={`min-h-screen py-6 md:py-10 ${className}`}
+      className={`min-h-screen py-8 md:py-12 ${className}`}
     >
       <div
         className={`container mx-auto px-4 ${maxWidthClasses[maxWidth]} ${containerClassName} ${
           centered ? 'min-h-[calc(100vh-3rem)] flex flex-col items-center justify-center' : ''
         }`}
       >
-        {showLogo && <Logo className="mb-6 md:mb-8" />}
+        {showLogo && <Logo className="mb-6" />}
         {children}
       </div>
     </PageBackground>

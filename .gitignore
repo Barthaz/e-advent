@@ -5,6 +5,12 @@ node_modules/
 dist/
 build/
 .expo/
+.expo-export-android/
+
+# Local dumps and one-off audits — not part of the app
+scratch_data.json
+docs/SEO-AUDIT-*.md
+docs/seo-http-audit-*.json
 **/android/.gradle/
 **/android/app/build/
 **/.env

@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import modalBackground from '../assets/adventTaskModal.png';
+import modalBackground from '../assets/home/christmas-room.webp';
+import './calendar-experience.css';
 
 interface ModalProps {
   isOpen: boolean;
@@ -14,24 +15,40 @@ interface ModalProps {
 }
 
 export default function Modal({ isOpen, onClose, title, children, usePortal = true, viewportLock = false }: ModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  const titleId = useId();
   // Zamykanie modala po naciśnięciu Escape
   useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        closeRef.current();
+      }
+      if (e.key === 'Tab') {
+        const controls = dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]');
+        if (!controls?.length) return;
+        const first = controls[0], last = controls[controls.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     };
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
+      dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
     }
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = overflow;
+      if (previous?.isConnected) previous.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -45,33 +62,38 @@ export default function Modal({ isOpen, onClose, title, children, usePortal = tr
       onClick={onClose}
     >
       <div 
-        className="relative rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden animate-slide-down"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="advent-modal"
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="advent-modal-photo"
           style={{ backgroundImage: `url(${modalBackground})` }}
           aria-hidden
         />
-        <div className="absolute inset-0 bg-black/35" aria-hidden />
         
         {/* Zawartość modala */}
-        <div className="relative z-10 h-full flex flex-col">
+        <div className="relative z-10 flex flex-col">
           {/* Przycisk zamykania */}
           <button
             onClick={onClose}
-            className="absolute cursor-pointer top-6 right-6 text-white hover:text-gray-200 text-3xl font-bold rounded-full w-10 h-10 flex items-center justify-center transition-all z-20"
+            aria-label="Zamknij okienko"
+            className="advent-modal-close"
           >
             ×
           </button>
           
           {/* Dzień X na środku w 3/5 wysokości */}
-          <div className="flex-1 flex items-center justify-center" style={{ height: '60%' }}>
-            <h2 className="text-6xl md:text-8xl font-bold text-christmas-gold-light drop-shadow-2xl font-calligraphy">{title}</h2>
+          <div className="advent-modal-heading">
+            <p className="calendar-eyebrow">Chwila, która należy do Was</p>
+            <h2 id={titleId}>{title}</h2>
           </div>
           
           {/* Tytuł i opis na dole w 2/5 wysokości */}
-          <div className="flex-shrink-0 px-6 pb-6 overflow-y-auto" style={{ maxHeight: '42%', minHeight: '32%' }}>
+          <div className="advent-modal-content">
             <div className="h-full flex flex-col justify-center items-center">
               {children}
             </div>

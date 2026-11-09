@@ -69,13 +69,13 @@ function decryptJson(payload) {
   return JSON.parse(Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]).toString('utf8'));
 }
 
-function audioSignature(messageId, expiresAt, download) {
-  return createHmac('sha256', tokenSecret()).update(`audio:${messageId}:${expiresAt}:${download ? 1 : 0}`).digest('base64url');
+function audioSignature(messageId, expiresAt, download, version = 1) {
+  return createHmac('sha256', tokenSecret()).update(`audio:${messageId}:${expiresAt}:${download ? 1 : 0}:${version}`).digest('base64url');
 }
 
-function verifyAudioSignature(messageId, expiresAt, download, signature) {
+function verifyAudioSignature(messageId, expiresAt, download, signature, version = 1) {
   if (typeof signature !== 'string') return false;
-  const expected = Buffer.from(audioSignature(messageId, expiresAt, download));
+  const expected = Buffer.from(audioSignature(messageId, expiresAt, download, version));
   const actual = Buffer.from(signature);
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }

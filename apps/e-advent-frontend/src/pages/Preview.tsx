@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CalendarGrid from '../components/CalendarGrid';
 import Modal from '../components/Modal';
-import FestivePage from '../components/FestivePage';
-import ContentCard from '../components/ContentCard';
+import CalendarScene from '../components/CalendarScene';
 import LoadingState from '../components/LoadingState';
 import { buildCalendarTasks } from '../utils/calendarGenerator';
 import { textToCatalogTaskId } from '../utils/catalogTaskIds';
@@ -275,10 +274,10 @@ export default function Preview() {
 
   if (!calendarData) {
     return (
-      <div className="min-h-screen flex items-center justify-center section-cream">
+      <div className="min-h-screen flex items-center justify-center bg-[#f3eadc]">
         <div className="text-center">
-          <p className="text-2xl text-parchment-muted mb-4">Nie można załadować podglądu</p>
-          <button onClick={() => navigate('/stworz-kalendarz')} className="link-green">
+          <p className="text-2xl text-christmas-green mb-4">Nie można załadować podglądu</p>
+          <button onClick={() => navigate('/stworz-kalendarz')} className="text-christmas-green underline">
             Wróć do tworzenia kalendarza
           </button>
         </div>
@@ -287,8 +286,7 @@ export default function Preview() {
   }
 
   return (
-    <FestivePage maxWidth="xl">
-      <ContentCard variant="gold" padding="md">
+    <CalendarScene title="Zajrzyj do Waszego kalendarza" description="To podgląd przed zakupem. Możesz sprawdzić wszystkie okienka i wrócić do kreatora.">
           <div className="notice-preview">
             <p>
               <i className="fas fa-eye mr-2" />
@@ -331,8 +329,7 @@ export default function Preview() {
             })()}
           </div>
         </Modal>
-      </ContentCard>
-    </FestivePage>
+    </CalendarScene>
   );
 }
 

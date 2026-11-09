@@ -1,0 +1,143 @@
+/* The roof and the interactive facade resize together. */
+.winter-section {
+  isolation: isolate;
+  background: #f5f1e8;
+  padding: 0 clamp(12px, 4vw, 64px) 36px;
+}
+.winter-section::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto;
+  height: clamp(450px, 38vw, 680px);
+  background: linear-gradient(to top, #f5f1e8, transparent 16%), url('../background/winter-evening.webp') center top / cover no-repeat, #18354a;
+}
+.public-page .site-header { background: #102c39; border-bottom: 1px solid #d4b57d; }
+.public-page .header-inner { padding-block: 10px; }
+.public-page .brand { font-size: clamp(16px, 2vw, 20px); }
+.public-page .brand small { font: 13px/1.35 'Segoe UI', sans-serif; color: #e0e9e8; }
+.public-page .hero { padding: clamp(24px, 3vw, 45px) 0 16px; }
+.season-label {
+  color: #ffe1aa; font: 650 clamp(10px, 1.3vw, 12px)/1.4 'Segoe UI', sans-serif;
+  text-transform: uppercase; letter-spacing: .17em;
+}
+.season-label span { margin-inline: .55em; }
+.hero h1 { margin-top: 9px; color: #fff6e6; font-size: clamp(38px, 5vw, 72px); font-weight: 400; text-shadow: 0 2px 14px #132a37; }
+.hero h1 em { color: #f4d193; font-weight: inherit; }
+.hero-description { color: #fff8ed; line-height: 1.5; text-shadow: 0 1px 6px #142d40; }
+.calendar-wrap { width: 100%; max-width: 980px; margin-bottom: 30px; }
+.chalet-roof { display: block; position: relative; z-index: 1; width: 100%; height: auto; pointer-events: none; }
+.chalet-wall {
+  position: relative;
+  width: 95%; margin: -2.8% auto 0; padding: 3.5% clamp(9px, 2.1vw, 27px) clamp(12px, 2vw, 22px);
+  border: solid #69432c; border-width: 0 clamp(4px, .6vw, 9px) 8px; border-radius: 0 0 8px 8px;
+  background: url('../decor/woodgrain.svg') center top / 330px 100px repeat,
+    linear-gradient(90deg,#6b472b, #ab7950 9%, #bc8b5c 46%, #ab7950 89%, #70472c);
+  box-shadow: inset 0 0 0 2px #cea477, 0 8px 0 -3px #4b3428, 0 18px 22px -14px #45301c88;
+}
+.calendar-toolbar {
+  position: relative; flex-flow: row wrap; align-items: center; justify-content: space-between; gap: 8px 20px;
+  margin-bottom: 15px; padding: 8px clamp(22px, 3vw, 38px); color: #452e20;
+  border: 2px solid #70472a; border-radius: 9px 5px 9px 5px;
+  background: linear-gradient(90deg,#f3d4a9ec,#fff0d5f5 45%,#f0d1a6e8), url('../decor/woodgrain.svg') center / 290px 88px, #bd9667;
+  box-shadow: inset 0 0 0 1px #fff3d5, inset 0 0 0 4px #cba071, 0 3px 3px #40250d70;
+}
+.calendar-toolbar::before,.calendar-toolbar::after {
+  content: ''; position: absolute; top: 50%; width: 5px; height: 5px; border-radius: 50%;
+  background: #67492c; box-shadow: inset 0 1px 1px #e6c384, 0 1px #ffedbe; transform: translateY(-50%);
+}
+.calendar-toolbar::before { left: 9px; } .calendar-toolbar::after { right: 9px; }
+.calendar-availability { gap: 10px; font: 600 clamp(15px,1.6vw,19px)/1.35 Georgia,serif; }
+.calendar-availability img { width: 35px; height: 41px; flex: 0 0 35px; }
+.calendar-progress { flex: 0 1 218px; border: 0; padding: 0; }
+.progress-heading { margin-bottom: 4px; }
+.progress-heading label, #progress-label { color: #563d2a; font-size: 12px; }
+#progress-count { color: #4d3221; font-size: 20px; }
+.window-meter { position: relative; }
+.window-meter::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 calc(100% / 24 - 1px), #f8dfb386 calc(100% / 24 - 1px) calc(100% / 24));
+}
+#calendar-progress { height: 8px; background: #76573c; color: #ffd070; }
+#calendar-progress::-webkit-progress-bar { background: #76573c; }
+#calendar-progress::-webkit-progress-value { background: linear-gradient(#ffe5a4,#efac44); }
+#calendar-progress::-moz-progress-bar { background: linear-gradient(#ffe5a4,#efac44); }
+.calendar-grid {
+  grid-template-columns: repeat(5,minmax(0,1fr)); align-items: center;
+  gap: clamp(8px, 1.15vw, 16px); padding: 0; background: none; border-radius: 0; box-shadow: none;
+}
+.calendar-tile {
+  width: 100%; padding: 4% 5% 15%;
+  filter: drop-shadow(0 3px 2px #45322380);
+}
+.calendar-tile:focus-visible { outline: 3px solid #fff; box-shadow: 0 0 0 6px #283f55; }
+.tile-date { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.tile-logo { width: clamp(15px, 1.55vw, 22px); height: auto; mix-blend-mode: multiply; opacity: .78; }
+.tile-number { font-size: clamp(25px, 2.9vw, 39px); font-weight: 500; line-height: 1.05; }
+.calendar-tile.opened { padding: 8% 7% 7% 23%; }
+.opened .tile-date { flex-flow: row; gap: 5px; margin-bottom: 4px; }
+.opened .tile-number { margin: 0; font-size: 15px; }
+.opened .tile-logo { width: 14px; }
+.tile-title { line-height: 1.17; }
+.final-tile { grid-column: span 2; width: 88%; justify-self: center; aspect-ratio: 2.05; }
+.final-tile:not(.opened) { padding: 3% 4% 10%; }
+.final-tile:not(.opened) .tile-number { font-size: clamp(36px, 4.6vw, 64px); color: #88264d; }
+.eve-label { text-transform: uppercase; letter-spacing: .16em; color: #7a294a; font-size: clamp(9px, 1vw, 13px); font-weight: 600; line-height: 1.2; }
+.opened .eve-label { display: none; }
+.calendar-wrap:has(.calendar-grid[hidden]) .chalet-roof { display: none; }
+.chalet-wall:has(.calendar-grid[hidden]) { margin-top: 14px; padding: 0; background: none; box-shadow: none; border: 0; }
+.calendar-note { margin: 17px auto; font-size: 13px; color: #514b42; }
+.info-grid { max-width: 980px; }
+.info-grid .paper-panel { background: #fffcf5; border-color: #dcd0ba; }
+.info-grid h2 { color: #21443f; }
+@media (min-width: 561px) and (max-width: 820px) {
+  .calendar-grid { grid-template-columns: repeat(12,minmax(0, 1fr)); }
+  .calendar-tile { grid-column: span 4; }
+  .calendar-tile[data-day="22"], .calendar-tile[data-day="23"] { grid-column: span 3; }
+  .final-tile { grid-column: span 6; width: 95%; aspect-ratio: 1.7; }
+}
+@media (max-width: 600px) {
+  .hero-description { max-width: 32em; margin-inline: auto; }
+  .winter-section::before { background-position: center, 32% top; }
+  .public-page .brand { gap: 8px; }
+  .public-page .brand-mark { width: 40px; height: 34px; }
+  .calendar-toolbar { gap: 2px; padding: 8px 20px 13px; }
+  .calendar-progress { flex: 1 1 100%; }
+}
+@media (max-width: 560px) {
+  .calendar-grid { grid-template-columns: repeat(12,minmax(0,1fr)); gap: 9px 0; }
+  .calendar-tile { grid-column: span 6; width: 94%; justify-self: center; }
+  .calendar-tile[data-day="23"] { grid-column: span 5; }
+  .final-tile { grid-column: span 7; width: 98%; aspect-ratio: 1.45; }
+  .chalet-wall { width: 96%; padding-inline: 5px; }
+  .calendar-toolbar { margin: 3px 4px 10px; }
+  .opened .tile-title { font-size: clamp(11px, 2.7vw, 13px); }
+}
+
+/* A paper reading card set against the same December landscape as the house. */
+.guide-scene { padding: clamp(22px,4vw,58px) 14px; background: url('../background/winter-evening.webp') center top / auto clamp(230px,32vw,480px) repeat-x, #f3efe5; }
+.guide-sheet { width: min(100%, 810px); margin: auto; overflow: hidden; border-radius: 18px; background: #fffcf5; border: 1px solid #dac9a8; box-shadow: 0 13px 42px #29231b1c; }
+.guide-heading, .guide-copy { padding-inline: clamp(20px,5vw,72px); }
+.guide-heading { padding-block: 22px 27px; background: linear-gradient(125deg,#fff9eb,#f6e9cc); border-bottom: 1px solid #e4d5b5; }
+.guide-heading img { display: block; margin-top: 14px; object-fit: contain; object-position: left; }
+.guide-back { display: inline-block; color: #405949; font-size: 14px; }
+.guide-heading .eyebrow { margin: 9px 0 6px; }
+.guide-heading h1 { font: 500 clamp(32px,4.8vw,54px)/1.12 Georgia,serif; color: #22443c; }
+.guide-heading h1 + p { max-width: 58ch; margin-top: 13px; color: #514c40; line-height: 1.6; }
+.guide-copy { padding-block: 2px 30px; color: #323c39; overflow-wrap: anywhere; }
+.guide-copy section { padding-block: 24px; }
+.guide-copy section + section { border-top: 1px solid #e5dcca; }
+.guide-copy h2 { margin-bottom: 10px; font-size: clamp(22px,3vw,29px); color: #254b42; }
+.guide-copy :is(ul,dl) { margin: 0; }
+.guide-copy ul { padding-left: 1.3em; }
+.guide-copy li + li { margin-top: 5px; }
+.guide-copy address { font-style: normal; }
+.guide-copy dt { font-weight: 650; margin-top: 12px; }
+.guide-copy dd { margin: 3px 0 0; }
+.guide-copy kbd, .guide-copy code { background: #efeadd; color: #334c43; border-radius: 4px; padding: 1px 4px; font-size: .87em; }
+.guide-copy .button { margin-top: 14px; }
+.guide-copy .guide-contact { background: #edf1e9; border-radius: 10px; padding: 20px; border: 1px solid #d6dece; }
+.guide-contact ul { margin-block: 10px; }
+@media (max-width: 360px) {
+  .calendar-availability { font-size: 14px; gap: 6px; }
+  .calendar-availability img { width: 25px; height: 32px; flex-basis: 25px; }
+}

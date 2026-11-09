@@ -102,8 +102,13 @@ async function markDraftOrdered(id, orderId) {
 
 async function purgeExpiredDrafts() {
   const [result] = await query(
-    `DELETE FROM santa_message_drafts WHERE status = 'draft' AND expires_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY) LIMIT 500`,
+    `DELETE FROM santa_message_drafts WHERE status = 'draft' AND expires_at < UTC_TIMESTAMP() LIMIT 500`,
   );
+  // Ordered drafts are redundant once every message has its own encrypted copy.
+  await query(`UPDATE santa_message_drafts d SET d.personalization_enc = NULL, d.script_enc = NULL
+    WHERE d.status = 'ordered' AND d.personalization_enc IS NOT NULL
+      AND EXISTS (SELECT 1 FROM santa_message_instances s WHERE s.order_id = d.order_id)
+      AND NOT EXISTS (SELECT 1 FROM santa_message_instances s WHERE s.order_id = d.order_id AND s.status NOT IN ('EXPIRED', 'CANCELLED'))`);
   return result?.affectedRows || 0;
 }
 

@@ -1,9 +1,7 @@
 import { Link } from 'react-router-dom';
 import logo from '@e-advent/assets/brand/eadvent-logo.png';
-import { useVoiceConfig } from '../santa-message/useVoiceConfig';
 
 export default function Footer() {
-  const { config: voiceConfig } = useVoiceConfig();
   return (
     <footer className="footer-bar text-white mt-auto relative">
       <div className="container mx-auto px-4 py-10 md:py-12">
@@ -12,15 +10,15 @@ export default function Footer() {
             <Link to="/" className="inline-block mb-5">
               <img
                 src={logo}
-                alt="e-Advent - Interaktywny Kalendarz Adwentowy Online"
+                alt="e-Advent - Kalendarz Adwentowy Online"
                 className="h-14 w-auto drop-shadow-lg"
                 width="160"
                 height="64"
                 loading="lazy"
               />
             </Link>
-            <p className="text-parchment-muted text-sm leading-relaxed mb-3">
-              Święta pełne ciepła — list do Mikołaja, kalendarze adwentowe i magia oczekiwania.
+            <p className="text-white/65 text-sm leading-relaxed mb-3">
+              Małe świąteczne rytuały. Kalendarz, list i głos Mikołaja personalizujesz pod swoją rodzinę.
             </p>
             <p className="text-white/40 text-xs">
               List od 29 zł · Kalendarze od 9 zł · Darmowa wysyłka od 100 zł
@@ -37,13 +35,11 @@ export default function Footer() {
                   List do Świętego Mikołaja
                 </Link>
               </li>
-              {voiceConfig?.enabled && (
-                <li>
-                  <Link to="/wiadomosc-od-mikolaja" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
-                    Wiadomość od Świętego Mikołaja
-                  </Link>
-                </li>
-              )}
+              <li>
+                <Link to="/wiadomosc-od-mikolaja" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
+                  Wiadomość od Świętego Mikołaja
+                </Link>
+              </li>
               <li>
                 <Link to="/kalendarze-adwentowe" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
                   Kalendarze adwentowe
@@ -51,12 +47,17 @@ export default function Footer() {
               </li>
               <li>
                 <Link to="/stworz-kalendarz/interaktywny" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
-                  Kalendarz interaktywny
+                  Kalendarz online
                 </Link>
               </li>
               <li>
                 <Link to="/stworz-kalendarz/zdrapka" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
                   Kalendarz zdrapka
+                </Link>
+              </li>
+              <li>
+                <Link to="/darmowy-kalendarz" className="text-white/60 hover:text-christmas-gold-light transition-colors text-sm">
+                  Darmowy kalendarz
                 </Link>
               </li>
             </ul>
@@ -128,7 +129,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 mt-10 pt-6 text-center">
           <p className="text-white/30 text-xs tracking-wider">
-            &copy; 2025 e-Advent. Wszelkie prawa zastrzeżone.
+            &copy; {new Date().getFullYear()} e-Advent. Wszelkie prawa zastrzeżone.
           </p>
         </div>
       </div>

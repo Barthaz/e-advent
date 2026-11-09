@@ -2,7 +2,7 @@
 // Copy to config.local.php; this file must never be publicly served.
 return [
     'environment' => 'production',
-    'base_url' => 'https://soa.e-advent.pl',
+    'base_url' => 'https://soa-katowice.e-advent.pl',
     'preview_now' => null,
     'stats_source' => 'mysql',
     'analytics_enabled' => false,
@@ -16,6 +16,6 @@ return [
     'content_approved' => false,
     'branding_approved' => false,
     'legal_approved' => false,
-    'contact_email' => '',
+    'contact_email' => 'osrodek@soa-katowice.pl',
     'funding_text' => '',
 ];

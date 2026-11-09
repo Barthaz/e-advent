@@ -44,9 +44,10 @@ export default function Terms() {
                     nieposiadająca osobowości prawnej, korzystająca z Serwisu</li>
                 <li><strong>Usługa</strong> - usługa świadczona przez Administratora drogą elektroniczną,
                     polegająca na umożliwieniu Użytkownikowi utworzenia personalizowanego kalendarza adwentowego
-                    (interaktywnego online lub fizycznej zdrapki)</li>
+                    (online lub fizycznej zdrapki) oraz zamówienia produktów fizycznych i wiadomości głosowych</li>
                 <li><strong>Kalendarz</strong> - spersonalizowany kalendarz adwentowy utworzony przez Użytkownika w ramach Serwisu</li>
-                <li><strong>Produkt fizyczny</strong> - kalendarz zdrapka wytwarzany na zamówienie i wysyłany na adres podany przez Użytkownika</li>
+                <li><strong>Produkt fizyczny</strong> — kalendarz zdrapka, gotowy zestaw listu lub personalizowany certyfikat z imieniem.</li>
+                <li><strong>Wiadomość głosowa</strong> — personalizowane nagranie MP3 przygotowane z wykorzystaniem syntezy mowy, dostarczane jako treść cyfrowa przez prywatny link; nie jest rozmową na żywo.</li>
               </ul>
             </section>
 
@@ -54,7 +55,7 @@ export default function Terms() {
               <h2 className="legal-h2">3. Zasady korzystania z Serwisu</h2>
               <p className="mb-4">
                 e-Advent oferuje dwa warianty personalizowanego kalendarza adwentowego:
-                interaktywny (online) oraz fizyczna zdrapka. Użytkownik dodaje własne zadania
+                online oraz fizyczna zdrapka. Użytkownik dodaje własne zadania
                 i — w przypadku produktów fizycznych — wybiera grafikę kalendarza w formacie A3.
               </p>
               <p className="mb-4">Użytkownik zobowiązuje się do:</p>
@@ -68,16 +69,9 @@ export default function Terms() {
             </section>
 
             <section>
-              <h2 className="legal-h2">4. Rejestracja i dostęp do usługi</h2>
-              <p className="mb-4">
-                Aby skorzystać z usługi, Użytkownik zobowiązany jest do podania prawidłowych 
-                danych osobowych (imię, adres e-mail) oraz utworzenia kalendarza poprzez 
-                wypełnienie formularza dostępnego w Serwisie.
-              </p>
-              <p className="mb-4">
-                Po dokonaniu płatności, Użytkownik otrzymuje unikalny link do swojego kalendarza, 
-                który umożliwia dostęp do utworzonego kalendarza.
-              </p>
+              <h2 className="legal-h2">4. Zamówienia bez rejestracji i dostęp do produktów</h2>
+              <p className="mb-4">Zakupy nie wymagają konta. W koszyku należy podać prawidłowy adres e-mail, na który wysyłamy potwierdzenie zakupu i linki do produktów cyfrowych. Dane do dostawy są wymagane tylko dla produktów fizycznych.</p>
+              <p className="mb-4">Przed złożeniem zamówienia Użytkownik sprawdza produkty, ceny, rabat i koszt dostawy oraz akceptuje regulamin. Zamówienie z obowiązkiem zapłaty składa przez przycisk kończący zakup. Potwierdzenie przyjęcia opłaconego zamówienia otrzymuje e-mailem.</p>
             </section>
 
             <section>
@@ -86,14 +80,17 @@ export default function Terms() {
                 Ceny produktów (brutto, zawierają podatek VAT 23%):
               </p>
               <ul className="list-disc pl-6 space-y-2 mb-4">
-                <li>Kalendarz interaktywny — 9 zł (produkt cyfrowy, bez wysyłki)</li>
+                <li>Kalendarz online — 9 zł (produkt cyfrowy, bez wysyłki)</li>
                 <li>Kalendarz zdrapka — 69 zł</li>
                 <li>List do Świętego Mikołaja (zestaw) — 29 zł</li>
+                <li>Certyfikat Grzecznego Dziecka z imieniem — 9 zł, opcjonalnie do listu (również w pakiecie z nagraniem)</li>
+                <li>Wiadomość głosowa od Świętego Mikołaja — 24 zł samodzielnie albo 19 zł jako dodatek do listu w tym samym zamówieniu, maksymalnie jedna wiadomość w cenie dodatku na każdy list</li>
+                <li>List + wiadomość — 48 zł; z jednym certyfikatem — 57 zł, przed doliczeniem dostawy i ewentualnego rabatu. Nagranie i certyfikat są osobnymi, opcjonalnymi pozycjami zamówienia.</li>
                 <li>Dostawa produktów fizycznych — Paczkomat lub kurier InPost; koszt jest wyświetlany przed płatnością i zależy od rodzaju przesyłki</li>
               </ul>
               <p className="mb-4">
                 Płatność odbywa się online przez system płatności elektronicznych (Stripe).
-                Po opłaceniu kalendarza interaktywnego Użytkownik otrzymuje link na e-mail.
+                Po opłaceniu kalendarza online Użytkownik otrzymuje link na e-mail.
                 Po opłaceniu produktu fizycznego Użytkownik otrzymuje potwierdzenie zamówienia na e-mail.
               </p>
             </section>
@@ -104,7 +101,7 @@ export default function Terms() {
                 Produkty fizyczne (kalendarz zdrapka, list do Świętego Mikołaja) są przygotowywane po zaksięgowaniu płatności
                 i wysyłane InPost do wybranego Paczkomatu lub na podany adres (terytorium Polski).
                 Standardowy czas realizacji wynosi 3–5 dni roboczych; w okresie wysokiego obciążenia sezonowego może wydłużyć się do 14 dni roboczych.
-                Przy zamówieniu produktów o łącznej wartości od 100 zł (bez kosztów wysyłki) wysyłka jest bezpłatna.
+                Wartość wiadomości głosowych nie zwiększa kwoty uprawniającej do darmowej dostawy. Warunki i ostateczny koszt dostawy są widoczne w podsumowaniu przed zakupem.
               </p>
               <p className="mb-4">
                 Użytkownik ponosi odpowiedzialność za poprawność adresu wysyłki.
@@ -114,6 +111,15 @@ export default function Terms() {
                 </Link>
                 .
               </p>
+            </section>
+
+            <section>
+              <h2 className="legal-h2">5b. Wiadomość głosowa — personalizacja i dostarczenie</h2>
+              <p className="mb-4">Po opłaceniu zamówienia klient otrzymuje link do uzupełnienia danych dziecka i zatwierdzenia tekstu. Dane mogą być przygotowane również przed zakupem. Nagranie powstaje po zatwierdzeniu tekstu, zwykle w ciągu 24 godzin; o ewentualnym opóźnieniu informujemy e-mailem. Przed zatwierdzeniem można poprawić dane w zakresie wskazanym w formularzu.</p>
+              <p className="mb-4">Nagranie trwa zwykle około 1,5 minuty, maksymalnie około 2 minut. Nie należy podawać danych o zdrowiu, adresu, szkoły ani innych informacji, które nie są potrzebne do przygotowania życzeń. Zamówienie składa osoba dorosła uprawniona do przekazania danych dziecka.</p>
+              <p className="mb-4">Gotowe nagranie udostępniamy przez prywatny link do strony e-Advent wysłany na e-mail zamówienia. Strona pozwala na wielokrotne odtwarzanie i pobranie MP3. Link działa przez 365 dni od pierwszego dostarczenia nagrania; termin widoczny jest na stronie. Pobrany plik można zachować na własnym urządzeniu. Wiadomość nie obejmuje certyfikatu PDF; papierowy certyfikat można dokupić do listu.</p>
+              <p className="mb-4">Link daje dostęp każdej osobie, która go posiada — należy przekazywać go wyłącznie zaufanym osobom. Same pliki są przechowywane w prywatnym magazynie Cloudflare R2 i udostępniane przez API e-Advent po sprawdzeniu uprawnienia. Do odsłuchu potrzebna jest aktualna przeglądarka z obsługą MP3, JavaScript i dostęp do internetu; po pobraniu wystarczy odtwarzacz MP3. Nie ma potrzeby instalowania aplikacji ani logowania.</p>
+              <p className="mb-4">List i certyfikat dostarczamy przesyłką niezależnie od nagrania. Brak uzupełnienia personalizacji lub zatwierdzenia tekstu wstrzymuje przygotowanie wiadomości głosowej.</p>
             </section>
 
             <section>
@@ -132,43 +138,12 @@ export default function Terms() {
 
             <section>
               <h2 className="legal-h2">7. Zwroty i reklamacje</h2>
-              <p className="mb-4">
-                Kalendarze adwentowe (interaktywny oraz zdrapka) są produktami spersonalizowanymi
-                i wykonywanymi na indywidualne zamówienie. Zgodnie z art. 38 pkt 3 ustawy z dnia
-                30 maja 2014 r. o prawach konsumenta prawo odstąpienia od umowy nie przysługuje
-                w odniesieniu do umów, których przedmiotem jest rzecz nieprefabrykowana,
-                wyprodukowana według specyfikacji konsumenta lub służąca zaspokojeniu jego
-                zindywidualizowanych potrzeb. Analogicznie prawo odstąpienia nie przysługuje
-                wobec dodatków personalizowanych (np. certyfikatu z imieniem dziecka).
-              </p>
-              <p className="mb-4">
-                Kalendarz interaktywny jest treścią cyfrową udostępnianą natychmiast po dokonaniu
-                płatności. Zgodnie z art. 38 pkt 13 ustawy o prawach konsumenta prawo odstąpienia
-                od umowy nie przysługuje, jeżeli spełnianie świadczenia rozpoczęło się za wyraźną
-                zgodą konsumenta przed upływem terminu do odstąpienia od umowy i po poinformowaniu
-                go o utracie prawa odstąpienia.
-              </p>
-              <p className="mb-4">
-                Gotowy zestaw „List do Świętego Mikołaja” (bez personalizacji online) nie jest
-                produktem wykonywanym według indywidualnej specyfikacji. W przypadku tego produktu
-                konsumentowi przysługuje prawo odstąpienia od umowy w terminie 14 dni od otrzymania
-                przesyłki, o ile produkt nie nosi śladów użytkowania uniemożliwiających ponowną
-                sprzedaż. Oświadczenie o odstąpieniu należy przesłać na adres: kontakt@e-advent.pl.
-              </p>
-              <p className="mb-4">
-                Niezależnie od powyższego Użytkownikowi przysługują uprawnienia z tytułu rękojmi
-                za wady oraz prawo złożenia reklamacji (np. uszkodzenie przesyłki, problemy
-                techniczne z kalendarzem interaktywnym). Reklamacje należy składać na adres e-mail:
-                kontakt@e-advent.pl. Administrator rozpatruje reklamacje w ciągu 14 dni roboczych
-                od dnia ich otrzymania.
-              </p>
-              <p className="mb-4">
-                Pełne informacje dla konsumentów znajdują się na stronie{' '}
-                <Link to="/dostawa-i-zwroty" className="text-christmas-green hover:underline font-medium">
-                  Dostawa i zwroty
-                </Link>
-                .
-              </p>
+              <p className="mb-4">Konsument może odstąpić od umowy zawartej na odległość w ciągu 14 dni: dla towaru od jego otrzymania, a dla treści cyfrowej od zawarcia umowy, z wyjątkami przewidzianymi w ustawie. Oświadczenie można wysłać na kontakt@e-advent.pl. Uprawnienia konsumenckie stosujemy również do przedsiębiorców korzystających z ochrony konsumenckiej na zasadach określonych w ustawie.</p>
+              <p className="mb-4">Wyjątek z art. 38 ust. 1 pkt 3 ustawy o prawach konsumenta obejmuje fizyczną zdrapkę wykonaną według specyfikacji klienta oraz certyfikat z imieniem. Nie dotyczy gotowego zestawu listu ani samych treści cyfrowych.</p>
+              <p className="mb-4">W przypadku odpłatnej treści cyfrowej niedostarczanej na nośniku materialnym (w tym wiadomości głosowej) utrata prawa odstąpienia wymaga spełnienia przesłanek art. 38 ust. 1 pkt 13 ustawy: uprzedniej, wyraźnej zgody na rozpoczęcie świadczenia, poinformowania o utracie prawa po spełnieniu świadczenia, przyjęcia tego do wiadomości oraz przekazania potwierdzenia zawarcia umowy. Zgoda dotycząca wiadomości głosowej jest osobnym polem przy zakupie, a jej treść i data są potwierdzane e-mailem. Sama personalizacja ani samo zaznaczenie akceptacji regulaminu nie wyłączają prawa odstąpienia.</p>
+              <p className="mb-4">Gotowy list można zwrócić w ustawowym terminie także wtedy, gdy był kupiony w pakiecie z wiadomością lub certyfikatem. Ocena prawa odstąpienia następuje osobno dla każdej pozycji. Konsument odpowiada jedynie za zmniejszenie wartości towaru wynikające z korzystania wykraczającego poza konieczne sprawdzenie jego charakteru, cech i funkcjonowania.</p>
+              <p className="mb-4">Niezależnie od prawa odstąpienia sprzedawca odpowiada za zgodność towaru i treści cyfrowej z umową. W razie niezgodności przysługują ustawowe środki ochrony, w tym żądanie doprowadzenia do zgodności, a w przewidzianych prawem przypadkach obniżenie ceny lub odstąpienie. Reklamacje, także dotyczące błędnego nagrania, braku dostępu lub pobrania MP3, można zgłaszać na kontakt@e-advent.pl. Odpowiadamy w ciągu 14 dni od otrzymania reklamacji.</p>
+              <p className="mb-4">Szczegóły zwrotu produktów fizycznych: <Link to="/dostawa-i-zwroty" className="link-inline">Dostawa i zwroty</Link>.</p>
             </section>
 
             <section>
@@ -193,8 +168,8 @@ export default function Terms() {
                 osób trzecich, które udzieliły licencji Administratorowi.
               </p>
               <p className="mb-4">
-                Użytkownik nie ma prawa do kopiowania, rozpowszechniania lub wykorzystywania 
-                treści Serwisu bez zgody Administratora.
+                Pobrane nagranie można zachować i odtwarzać w prywatnym kręgu rodzinnym. Pozostałe kopiowanie, publiczne rozpowszechnianie lub komercyjne wykorzystywanie 
+                treści Serwisu wymaga zgody uprawnionego, z zastrzeżeniem dozwolonego użytku.
               </p>
             </section>
 
@@ -212,7 +187,7 @@ export default function Terms() {
               <p className="mb-4">
                 Administrator zastrzega sobie prawo do wprowadzania zmian w Regulaminie. 
                 O zmianach Użytkownik zostanie poinformowany przez publikację nowej wersji 
-                Regulaminu w Serwisie.
+                Regulaminu w Serwisie. Do wcześniej złożonych zamówień stosuje się wersję obowiązującą przy ich złożeniu.
               </p>
               <p className="mb-4">
                 W sprawach nieuregulowanych w Regulaminie mają zastosowanie przepisy prawa polskiego, 
@@ -224,11 +199,7 @@ export default function Terms() {
               </p>
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mt-6">
                 <p className="text-sm text-gray-700">
-                  <strong>Data ostatniej aktualizacji:</strong> {new Date().toLocaleDateString('pl-PL', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
+                  <strong>Data ostatniej aktualizacji:</strong> 6 listopada 2026 r.
                 </p>
               </div>
             </section>

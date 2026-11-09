@@ -8,6 +8,7 @@ const { resolveCheckoutItems } = require('./orderCheckout');
 const { formatOrderNumber } = require('../utils/orderNumber');
 const { orderFingerprint } = require('./orderIdentity');
 const { normalizeCode } = require('./discountCodes');
+const { voiceConsentForCheckout } = require('./santaMessages/consent');
 
 function hash(value) { return createHash('sha256').update(value).digest('hex'); }
 function conflict(message) { return Object.assign(new Error(message), { status: 409 }); }
@@ -145,6 +146,9 @@ async function initializeCheckout(request, clientIP) {
       status: resolved.errors[0].msg.includes('Calendar not found') ? 404 : 400, errors: resolved.errors,
     });
     const { items, totals, delivery, shippingAddress, primaryProductId, primarySku, primaryProductType, hasPhysical, discount } = resolved;
+    const digitalContentConsent = voiceConsentForCheckout(items, request.acceptanceData, wantsOrder(request, totals));
+    // Server-created receipt, never trust a client-supplied timestamp or consent text.
+    request = { ...request, digitalContentConsent };
     if (Number(request.amount) !== totals.total) throw Object.assign(new Error(`Amount must be exactly ${totals.total} PLN for this order.`), { status: 400 });
     const customerEmail = String(request.customerEmail).trim().toLowerCase();
     const orderItems = items.map((item, index) => ({
@@ -243,6 +247,7 @@ async function initializeCheckout(request, clientIP) {
           termsAcceptedAt: request.acceptanceData.termsAcceptedAt,
           privacyPolicyAcceptedAt: request.acceptanceData.privacyAcceptedAt || request.acceptanceData.termsAcceptedAt,
           clientIP: request.acceptanceData.clientIP || clientIP,
+          ...(digitalContentConsent && !order.metadata.digitalContentConsent ? { metadata: { ...order.metadata, digitalContentConsent } } : {}),
         });
       }
       await saveSession(owner, { orderId: order.id, paymentIntentId: intent.id, fingerprint });
@@ -274,6 +279,7 @@ async function persistOrder({
     termsAcceptedAt: request.acceptanceData?.termsAcceptedAt || null,
     privacyPolicyAcceptedAt: request.acceptanceData?.privacyAcceptedAt || null,
     metadata: { ...(delivery ? { inpostDelivery: delivery } : {}), ...(discount ? { discount } : {}),
+      ...(request.digitalContentConsent ? { digitalContentConsent: request.digitalContentConsent } : {}),
       checkoutVersion: 2, checkoutFingerprint: fingerprint, clientIP,
       clientOrderId: String(request.orderId || '').slice(0, 200) },
   });

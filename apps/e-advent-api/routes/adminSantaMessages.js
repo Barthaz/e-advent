@@ -13,6 +13,8 @@ const upload = multer({
 const MESSAGES = {
   CLOSED: 'Wiadomość jest anulowana lub wygasła.',
   NO_SCRIPT: 'Najpierw klient musi uzupełnić personalizację.',
+  NOT_APPROVED: 'Najpierw klient musi zatwierdzić tekst wiadomości.',
+  NOT_PAID: 'Zamówienie nie jest opłacone.',
   NOT_EDITABLE: 'Tekstu nie można już zmienić na tym etapie.',
   NOT_RETRYABLE: 'Ponowienie syntezy jest możliwe tylko dla wiadomości wymagających uwagi.',
   NOTHING_TO_RESEND: 'Na tym etapie nie ma linku do ponownej wysyłki.',
@@ -84,6 +86,14 @@ module.exports = (router, authAdmin) => {
       return respond(res, await santa.adminUploadAudio(req.params.id, req.file.buffer));
     } catch (error) {
       return fail(res, 'upload', error);
+    }
+  });
+
+  router.post('/santa-messages/:id/r2-audio', authAdmin, validId, async (req, res) => {
+    try {
+      return respond(res, await santa.adminAttachR2Audio(req.params.id, req.body?.objectKey));
+    } catch (error) {
+      return fail(res, 'attach R2', error);
     }
   });
 

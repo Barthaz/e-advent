@@ -2,7 +2,7 @@
 
 const express = require('express');
 const { rateLimit } = require('../middleware/rateLimits');
-const { canSell, publicConfig } = require('../services/santaMessages/config');
+const { publicConfig } = require('../services/santaMessages/config');
 const { isTokenShape, verifyAudioSignature } = require('../services/santaMessages/crypto');
 const drafts = require('../services/santaMessages/drafts');
 const santa = require('../services/santaMessages/fulfillment');
@@ -58,7 +58,6 @@ router.get('/config', (req, res) => {
 
 router.post('/drafts', draftCreateLimiter, async (req, res) => {
   const mode = req.body?.mode === 'letter_addon' ? 'letter_addon' : 'standalone';
-  if (!canSell(mode)) return res.status(404).json({ error: 'NOT_AVAILABLE', message: 'Produkt jest chwilowo niedostępny.' });
   try {
     const result = await drafts.createDraft({ mode, personalization: req.body?.personalization });
     if (result.errors) return validationError(res, result.errors);
@@ -139,7 +138,7 @@ async function withPlayable(req, res, handler) {
   try {
     const instance = await santa.findByToken('play', req.params.token);
     if (!instance) return res.status(404).json({ error: 'NOT_FOUND', message: 'Link jest nieprawidłowy albo wygasł.' });
-    if (instance.status === 'EXPIRED') return res.status(410).json({ error: 'EXPIRED', message: 'Nagranie nie jest już dostępne.' });
+    if (instance.status === 'EXPIRED' || santa.isExpired(instance)) return res.status(410).json({ error: 'EXPIRED', message: 'Nagranie nie jest już dostępne.' });
     if (instance.status !== 'DELIVERED' || !instance.audio_key) {
       return res.status(409).json({ error: 'NOT_READY', message: 'Wiadomość jest jeszcze w przygotowaniu.' });
     }
@@ -156,19 +155,6 @@ router.get('/play/:token', tokenLimiter, (req, res) => withPlayable(req, res, as
 router.post('/play/:token/refresh-audio', tokenLimiter, (req, res) => withPlayable(req, res, async (instance) => (
   res.json(await santa.playbackView(instance))
 )));
-
-const audioCache = new Map();
-
-async function cachedAudio(id) {
-  const hit = audioCache.get(id);
-  if (hit && Date.now() - hit.at < 120_000) return hit.buffer;
-  const buffer = await santa.audioForStreaming(id);
-  if (buffer) {
-    audioCache.set(id, { buffer, at: Date.now() });
-    if (audioCache.size > 8) audioCache.delete(audioCache.keys().next().value);
-  }
-  return buffer;
-}
 
 /** Streams MP3 with Range support; the URL is short-lived and HMAC-signed. */
 function sendMp3(req, res, buffer, { download = false } = {}) {
@@ -202,12 +188,15 @@ function sendMp3(req, res, buffer, { download = false } = {}) {
 router.get('/audio/:id', audioLimiter, async (req, res) => {
   const exp = Number(req.query.exp);
   const download = req.query.dl === '1';
+  const version = Number(req.query.v);
+  privateHeaders(res);
   if (!drafts.UUID.test(req.params.id) || !Number.isFinite(exp) || exp * 1000 < Date.now()
-      || !verifyAudioSignature(req.params.id, exp, download, req.query.sig)) {
+      || !Number.isSafeInteger(version) || version < 1
+      || !verifyAudioSignature(req.params.id, exp, download, req.query.sig, version)) {
     return res.status(403).json({ error: 'LINK_EXPIRED', message: 'Odśwież stronę, aby ponownie odtworzyć nagranie.' });
   }
   try {
-    const buffer = await cachedAudio(req.params.id);
+    const buffer = await santa.audioForStreaming(req.params.id, version);
     if (!buffer) return res.status(404).json({ error: 'NOT_FOUND' });
     return sendMp3(req, res, buffer, { download });
   } catch (error) {

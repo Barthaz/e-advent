@@ -1,531 +1,197 @@
-import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import PageBackground from '../components/PageBackground';
-import ParchmentCard from '../components/ParchmentCard';
-import DemoCalendar from '../components/DemoCalendar';
-import SocialShare from '../components/SocialShare';
 import SEOHead from '../components/SEOHead';
-import ProductCard from '../components/products/ProductCard';
-import { formatPrice, PRODUCT_FAMILIES } from '../config/products';
+import ChristmasCountdown from '../components/ChristmasCountdown';
+import SocialShare from '../components/SocialShare';
+import SantaAudioPlayer from '../santa-message/SantaAudioPlayer';
+import { formatPrice, getProduct, PRODUCT_FAMILIES } from '../config/products';
 import { trackSantaEvent } from '../utils/analytics';
-import { useVoiceConfig } from '../santa-message/useVoiceConfig';
-import { formatCountdown, getDaysUntilChristmas } from '../utils/countdown';
-import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import calendar from '../assets/home/calendar.webp';
+import letter from '../assets/list/list_1.webp';
+import room from '../assets/home/christmas-room.webp';
+import '../santa-message/santa-mail.css';
+import './landing.css';
+
+const LETTER_PRICE = getProduct('santa-letter')!.basePrice;
+const CALENDAR_PRICE = PRODUCT_FAMILIES.find((family) => family.type === 'interactive')!.priceFrom;
+
+const FAQ = [
+  {
+    question: 'Co dokładnie otrzymam po zamówieniu?',
+    answer: 'Kalendarz online to prywatna strona z 24 okienkami — link otrzymasz e-mailem po płatności. Kalendarz zdrapka i zestaw do napisania listu to produkty fizyczne, które wysyłamy InPost. Wiadomość od Mikołaja to spersonalizowane nagranie głosowe ze stroną odsłuchu i możliwością pobrania MP3.',
+  },
+  {
+    question: 'Czy wiadomość od Mikołaja jest rozmową na żywo?',
+    answer: 'To nagranie przygotowane automatycznie z użyciem syntezy mowy, na podstawie informacji podanych przez rodzica. Mikołaj zwraca się do dziecka po imieniu i nawiązuje do jego małych sukcesów. Przykładowego głosu możesz posłuchać przed zakupem.',
+  },
+  {
+    question: 'Kiedy dotrze moja przesyłka lub wiadomość?',
+    answer: 'Link do kalendarza online jest dostępny po opłaceniu zamówienia. Produkty fizyczne przygotowujemy w ciągu 3–5 dni roboczych, do których należy doliczyć czas dostawy. Nagranie powstaje zwykle w ciągu 24 godzin od zatwierdzenia tekstu. W szczycie sezonu może to potrwać dłużej.',
+  },
+  {
+    question: 'Jak działa zestaw list + wiadomość?',
+    answer: 'Do papierowego zestawu do napisania listu dodajesz wiadomość głosową w cenie pakietowej. List dostarczymy przesyłką, a na e-mail wyślemy instrukcję personalizacji nagrania. Informacje o dziecku wpisujesz w formularzu — nie trzeba przesyłać zdjęcia napisanego listu.',
+  },
+  {
+    question: 'Czy możemy wracać do nagrania?',
+    answer: 'Tak. Prywatny link pozwala słuchać wiadomości wielokrotnie w okresie jej dostępności. Datę znajdziesz na stronie odsłuchu. Możesz też pobrać MP3 i zachować nagranie na swoim urządzeniu.',
+  },
+  {
+    question: 'Czy kalendarz muszę wypełniać samodzielnie?',
+    answer: 'W kalendarzu online możesz wpisać własne zadania albo skorzystać z gotowych propozycji. Kalendarz zdrapka zamawiasz z wybranym wzorem i zestawem zadań. Obie wersje znajdziesz w rozdziale „Kalendarze adwentowe”.',
+  },
+];
 
 export default function Landing() {
-  const [countdown, setCountdown] = useState(formatCountdown());
-  const [daysUntilChristmas, setDaysUntilChristmas] = useState(getDaysUntilChristmas());
-  const [heroVisible, setHeroVisible] = useState(false);
-  const scrollElementsRef = useRef<(HTMLElement | null)[]>([]);
-  const { config: voiceConfig } = useVoiceConfig();
-  const showVoice = Boolean(voiceConfig?.standaloneEnabled || voiceConfig?.letterAddonEnabled);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setHeroVisible(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-    );
-
-    const observeElements = () => {
-      scrollElementsRef.current.forEach((el) => {
-        if (el && !el.classList.contains('visible')) {
-          observer.observe(el);
-        }
-      });
-    };
-
-    observeElements();
-    const t1 = setTimeout(observeElements, 100);
-    const t2 = setTimeout(observeElements, 500);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      observer.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(formatCountdown());
-      setDaysUntilChristmas(getDaysUntilChristmas());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const heroClass = (delay: string) =>
-    `transition-all duration-1000 ease-out ${delay} ${
-      heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
-    }`;
+  const standalone = getProduct('voice-message')!.basePrice;
+  const addon = getProduct('voice-message-addon')!.basePrice;
+  const bundle = LETTER_PRICE + addon;
+  const savings = Math.max(0, standalone - addon);
+  const chapters = [
+    {
+      number: '01', title: 'List do Mikołaja', line: 'Daj marzeniom miejsce na papierze.',
+      text: 'Usiądźcie przy stole. Przygotujcie kredki. Niech małe i wielkie życzenia wyruszą w swoją najważniejszą podróż.',
+      image: letter, alt: 'Papierowy zestaw do napisania listu do Świętego Mikołaja',
+      to: '/list-do-swietego-mikolaja', cta: 'Poznaj zestaw do listu', price: `od ${formatPrice(LETTER_PRICE)}`, detail: 'Papierowy zestaw · wysyłka',
+    },
+    {
+      number: '02', title: 'Kalendarze adwentowe', line: 'Zacznij od wspólnego odliczania.',
+      text: 'Jedno okienko, jeden mały powód, żeby pobyć razem. Przez 24 grudniowe dni — online lub na papierowej zdrapce.',
+      image: calendar, alt: 'Kalendarz online e-Advent z 24 okienkami',
+      to: '/kalendarze-adwentowe', cta: 'Odkryj kalendarze', price: `od ${formatPrice(CALENDAR_PRICE)}`, detail: 'Online lub zdrapka',
+    },
+    {
+      number: '03', title: 'Wiadomość od Mikołaja', line: 'A potem usłysz coś tylko dla siebie.',
+      text: 'Spersonalizowane nagranie. Mikołaj zwraca się po imieniu i mówi o tym, co dla Twojego dziecka naprawdę ważne.',
+      image: '/assets/santa-mail/santa-reading.webp', alt: 'Święty Mikołaj czyta list w swojej pracowni',
+      to: '/wiadomosc-od-mikolaja', cta: 'Poznaj wiadomość', price: formatPrice(standalone), detail: 'Nagranie z imieniem dziecka · link i MP3',
+    },
+  ];
 
   return (
     <>
       <SEOHead
-        title="e-Advent — Niezapomniane chwile świąt | List do Mikołaja i kalendarze adwentowe"
-        description="e-Advent pomaga przeżywać czas świąteczny w cieple: list do Świętego Mikołaja, personalizowane kalendarze adwentowe i śledzenie Mikołaja. Każde święta mogą być niezapomniane."
-        keywords="e-advent, niezapomniane święta, list do świętego mikołaja, kalendarz adwentowy, okres oczekiwania na święta, magia adwentu"
+        title="Poczuj Magię Świąt — kalendarze, listy i głos Mikołaja | e-Advent"
+        description="Zaproś bliskich do świątecznej przygody. Personalizowane kalendarze adwentowe, zestawy do napisania listu i wiadomości głosowe od Świętego Mikołaja."
         canonical="https://e-advent.pl/"
       />
-
-      <div className="min-h-screen">
-        {/* Hero */}
-        <PageBackground
-          className="min-h-screen flex flex-col justify-center py-10 md:py-12"
-          showSnow
-          overlayOpacity="medium"
-        >
-          <div className="container mx-auto px-4 text-center">
-            <div className={`mb-8 flex justify-center ${heroClass('delay-0')}`}>
-              <Link to="/" className="transition-transform hover:scale-[1.02] duration-500">
-                <img
-                  src={logo}
-                  alt="e-Advent - Interaktywny Kalendarz Adwentowy Online"
-                  className="h-28 md:h-32 w-auto drop-shadow-2xl"
-                  width="300"
-                  height="120"
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              </Link>
-            </div>
-
-            <h1 className={`font-display text-3xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight text-christmas-gold-light ${heroClass('delay-100')}`}>
-              Niezapomniane chwile świąt
-            </h1>
-
-            {/* Odliczanie — styl aplikacji */}
-            <div className={`countdown-box max-w-lg mx-auto px-6 py-5 mb-8 ${heroClass('delay-300')}`}>
-              <p className="text-christmas-gold-light text-sm md:text-base font-medium mb-4 tracking-wide">
-                {daysUntilChristmas > 0
-                  ? 'Do Bożego Narodzenia zostało już tylko'
-                  : daysUntilChristmas === 0
-                  ? 'Dziś są Święta!'
-                  : `Święta za ${Math.abs(daysUntilChristmas)} dni!`}
-              </p>
-              {daysUntilChristmas > 0 && (
-                <div className="flex items-center justify-center gap-3 md:gap-5">
-                  {[
-                    { value: countdown.days, label: 'dni' },
-                    { value: countdown.hours, label: 'godz' },
-                    { value: countdown.minutes, label: 'min' },
-                  ].map((item, i) => (
-                    <div key={item.label} className="flex items-center gap-3 md:gap-5">
-                      {i > 0 && (
-                        <span className="countdown-digit text-xl md:text-2xl font-bold opacity-60">:</span>
-                      )}
-                      <div className="text-center min-w-[3rem]">
-                        <div className="countdown-digit text-2xl md:text-3xl font-bold">
-                          {item.value}
-                        </div>
-                        <div className="text-christmas-gold-light/80 text-xs mt-1">{item.label}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Cytat — karta pergaminowa */}
-            <div className={`max-w-2xl mx-auto mb-8 ${heroClass('delay-400')}`}>
-              <ParchmentCard padding="md">
-                <p className="text-parchment-text text-base md:text-lg leading-relaxed italic text-center">
-                  „Niech ten grudzień przyniesie Ci to, czego Twoje serce naprawdę pragnie."
-                </p>
-              </ParchmentCard>
-            </div>
-
-            <p className={`text-white/80 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed ${heroClass('delay-500')}`}>
-              List do Świętego Mikołaja, kalendarze adwentowe i magia oczekiwania — żeby grudzień przeżywać w cieple i miłej atmosferze.
-            </p>
-
-            <div className={`hero-actions ${showVoice ? 'hero-actions--three' : ''} ${heroClass('delay-600')}`}>
-              <Link to="/list-do-swietego-mikolaja" className="hero-action hero-action--letter">
-                <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-envelope-open-text" /></span>
-                <span className="hero-action-content">
-                  <span className="hero-action-eyebrow">Mały list, wielkie marzenia</span>
-                  <span className="hero-action-title">List do Mikołaja</span>
-                  <span className="hero-action-description">Zestaw z kopertą i naklejkami na najważniejsze świąteczne życzenia.</span>
-                  <span className="hero-action-footer"><span>Zobacz zestaw <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od 29 zł</span></span>
-                </span>
-              </Link>
-              <Link to="/kalendarze-adwentowe" className="hero-action hero-action--calendar">
-                <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-calendar-alt" /></span>
-                <span className="hero-action-content">
-                  <span className="hero-action-eyebrow">24 dni wspólnej radości</span>
-                  <span className="hero-action-title">Kalendarz adwentowy</span>
-                  <span className="hero-action-description">Twoje zadania i codzienne niespodzianki — online lub na kalendarzu zdrapka.</span>
-                  <span className="hero-action-footer"><span>Wybierz kalendarz <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od 9 zł</span></span>
-                </span>
-              </Link>
-              {showVoice && (
-                <Link
-                  to="/wiadomosc-od-mikolaja"
-                  className="hero-action hero-action--voice"
-                  onClick={() => trackSantaEvent('santa_product_cta_click', { cta_location: 'landing_hero' })}
-                >
-                  <span className="hero-action-badge">NOWE</span>
-                  <span className="hero-action-icon" aria-hidden="true"><i className="fas fa-microphone-alt" /></span>
-                  <span className="hero-action-content">
-                    <span className="hero-action-eyebrow">Głos prosto z Laponii</span>
-                    <span className="hero-action-title">Wiadomość od Mikołaja</span>
-                    <span className="hero-action-description">Mikołaj mówi do dziecka po imieniu i docenia jego tegoroczne sukcesy.</span>
-                    <span className="hero-action-footer"><span>Posłuchaj <i className="fas fa-arrow-right" aria-hidden="true" /></span><span className="hero-action-price">od {formatPrice(voiceConfig?.prices.letterAddon ?? 14.9)}</span></span>
-                  </span>
-                </Link>
-              )}
-            </div>
-
-            <div className={`hero-returning ${heroClass('delay-700')}`}>
-              <span>Masz już swój kalendarz?</span>
-              <Link to="/kalendarz" className="hero-returning-link">
-                Otwórz swój kalendarz <i className="fas fa-arrow-right" aria-hidden="true" />
-              </Link>
-            </div>
+      <div className="home-story">
+        <section className="story-hero" aria-labelledby="home-title">
+          <div className="story-hero-photo"><img src={room} alt="" /></div>
+          <div className="story-hero-shade" />
+          <div className="story-container story-hero-content">
+            <p className="story-kicker">Twój dom. Wasi bliscy. Wasze święta.</p>
+            <h1 id="home-title">Poczuj<br /><em>Magię Świąt</em></h1>
+            <ChristmasCountdown />
+            <p className="story-hero-copy">W czekaniu na pierwsze okienko. W liście pisanym z przejęciem. W głosie Mikołaja, który zna Twoje imię.</p>
+            <p className="story-hero-invitation">Małe rytuały, do których wraca się po latach.</p>
+            <a className="btn-red story-cta" href="#rozdzialy">Rozpocznij świąteczną przygodę <i className="fas fa-arrow-down" aria-hidden="true" /></a>
+            <Link className="story-return" to="/kalendarz">Masz już kalendarz? <span>Otwórz swoje okienko <i className="fas fa-arrow-right" aria-hidden="true" /></span></Link>
           </div>
-        </PageBackground>
-
-        {/* Wybierz produkt */}
-        <section className="section-cream py-16 md:py-24">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="section-title mb-4">
-                Świąteczne produkty e-Advent
-              </h2>
-              <div className="gold-divider mb-6" />
-              <p className="text-parchment-muted text-base md:text-lg max-w-3xl mx-auto">
-                List do Mikołaja, kalendarze adwentowe i wspólne oczekiwanie na święta — wybierz to, co najlepiej pasuje do Twojego grudnia.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {PRODUCT_FAMILIES.map((product) => (
-                <ProductCard key={product.type} product={product} featured={product.type === 'interactive'} />
-              ))}
-            </div>
-          </div>
+          <p className="story-hero-caption">Najpiękniejsze święta zaczynają się od bycia razem.</p>
         </section>
 
-        {/* Dla istniejących użytkowników */}
-        <section className="bg-white py-16 md:py-20">
-          <div
-            ref={(el) => { scrollElementsRef.current[0] = el; }}
-            className="fade-in-scroll container mx-auto px-4 text-center"
-          >
-            <div className="max-w-2xl mx-auto">
-              <h2 className="section-title mb-4">
-                Masz już swój kalendarz?
-              </h2>
-              <div className="gold-divider mb-6" />
-              <p className="text-parchment-muted text-lg md:text-xl mb-8 leading-relaxed">
-                Zacznij otwieranie okienek i odkrywaj magiczne zadania każdego dnia grudnia
-              </p>
-              <Link to="/kalendarz" className="btn-gold px-8 py-4 text-lg">
-                <i className="fas fa-gift" />
-                Otwórz swój kalendarz
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Co to jest? */}
-        <section className="section-cream py-16 md:py-24">
-          <div className="container mx-auto px-4">
-            <div
-              ref={(el) => { scrollElementsRef.current[1] = el; }}
-              className="fade-in-scroll text-center mb-14"
-            >
-              <h2 className="section-title mb-4">
-                Co to jest e-Advent?
-              </h2>
-              <div className="gold-divider mb-6" />
-              <p className="text-parchment-muted text-base md:text-lg max-w-3xl mx-auto leading-relaxed mb-4">
-                e-Advent to personalizowany kalendarz adwentowy w dwóch formach: interaktywny online
-                lub fizyczna zdrapka. Dodaj własne zadania i twórz wyjątkowe wspomnienia przez cały grudzień.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
-              <div
-                ref={(el) => { scrollElementsRef.current[2] = el; }}
-                className="fade-in-scroll space-y-5"
-              >
-                {[
-                  {
-                    icon: 'fa-bullseye',
-                    title: 'Własne zadania',
-                    text: 'Dodaj 24 unikalne zadania dla każdego dnia grudnia. Piecz pierniki, czytaj opowieści, dekoruj dom — to Ty decydujesz!',
-                  },
-                  {
-                    icon: 'fa-palette',
-                    title: 'Pełna personalizacja',
-                    text: 'Nadaj kalendarzowi własny tytuł, dodaj zadania lub wylosuj z gotowych świątecznych zestawów.',
-                  },
-                  {
-                    icon: 'fa-lock',
-                    title: 'Bezpieczny dostęp',
-                    text: 'Otrzymasz unikalny, prywatny link do swojego kalendarza. Udostępnij link bliskim albo zachowaj dla siebie.',
-                  },
-                ].map((feature) => (
-                  <ParchmentCard key={feature.title} padding="sm">
-                    <div className="flex items-start gap-4">
-                      <div className="icon-circle">
-                        <i className={`fas ${feature.icon} text-parchment-text`} />
-                      </div>
-                      <div>
-                        <h3 className="font-display text-xl font-semibold text-parchment-text mb-1">
-                          {feature.title}
-                        </h3>
-                        <p className="text-parchment-muted text-sm leading-relaxed">{feature.text}</p>
-                      </div>
-                    </div>
-                  </ParchmentCard>
-                ))}
-              </div>
-
-              <div
-                ref={(el) => { scrollElementsRef.current[3] = el; }}
-                className="fade-in-scroll"
-              >
-                <ParchmentCard padding="lg">
-                  <h3 className="font-display text-2xl md:text-3xl font-semibold text-parchment-text text-center mb-6">
-                    Jak to działa?
-                  </h3>
-                  <div className="space-y-4">
-                    {[
-                      { step: '1', title: 'Stwórz kalendarz', desc: 'Wypełnij formularz w 2 minuty' },
-                      { step: '2', title: 'Zapłać bezpiecznie', desc: 'Tylko 9 zł — jednorazowa płatność' },
-                      { step: '3', title: 'Otrzymaj link', desc: 'Natychmiast na Twój e-mail' },
-                      { step: '4', title: 'Otwieraj codziennie', desc: '24 dni magii i radości!' },
-                    ].map((item) => (
-                      <div key={item.step} className="step-row">
-                        <span className="step-badge">{item.step}</span>
-                        <div>
-                          <p className="font-semibold text-parchment-text">{item.title}</p>
-                          <p className="text-parchment-muted text-sm">{item.desc}</p>
-                        </div>
-                      </div>
-                    ))}
+        <section id="rozdzialy" className="story-section story-chapters" aria-labelledby="chapters-title">
+          <div className="story-container">
+            <header className="story-section-heading">
+              <p className="story-kicker">Jeden świąteczny świat</p>
+              <h2 id="chapters-title">Trzy rozdziały magii świąt</h2>
+              <p>Każda rodzina ma swoje tradycje. Tu znajdziesz początek kolejnej.</p>
+            </header>
+            <div className="story-chapter-grid">
+              {chapters.map((chapter) => (
+                <article className="story-chapter" key={chapter.number}>
+                  <Link className={`story-chapter-image story-chapter-image--${chapter.number}`} to={chapter.to} aria-label={chapter.title}>
+                    <img src={chapter.image} alt={chapter.alt} loading="lazy" width={600} height={450} />
+                    <span>Rozdział {chapter.number}</span>
+                  </Link>
+                  <div className="story-chapter-copy">
+                    <p className="story-chapter-detail">{chapter.detail}</p>
+                    <h3>{chapter.title}</h3>
+                    <p className="story-chapter-line">{chapter.line}</p>
+                    <p className="story-chapter-description">{chapter.text}</p>
+                    <div className="story-chapter-bottom"><span>{chapter.price}</span><Link className="btn-green" to={chapter.to}>{chapter.cta}<i className="fas fa-arrow-right" aria-hidden="true" /></Link></div>
                   </div>
-                </ParchmentCard>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Demo Calendar */}
-        <PageBackground className="py-16 md:py-24" showSnow overlayOpacity="medium">
-          <div className="container mx-auto px-4">
-            <div
-              ref={(el) => { scrollElementsRef.current[4] = el; }}
-              className="fade-in-scroll text-center mb-10"
-            >
-              <h2 className="section-title-light mb-4">
-                Darmowy Kalendarz od e-Advent
-              </h2>
-              <div className="gold-divider mb-6" />
-              <p className="text-white/80 text-base md:text-lg max-w-3xl mx-auto leading-relaxed">
-                Kalendarz z gotowymi zadaniami, dostępny dla wszystkich. Otwieraj okienka codziennie
-                i ciesz się magiczną chwilą — Twój postęp jest automatycznie zapisywany.
-              </p>
-            </div>
-
-            <div
-              ref={(el) => { scrollElementsRef.current[5] = el; }}
-              className="fade-in-scroll max-w-5xl mx-auto"
-            >
-              <DemoCalendar />
-            </div>
-
-            <div
-              ref={(el) => { scrollElementsRef.current[6] = el; }}
-              className="fade-in-scroll text-center mt-12"
-            >
-              <p className="text-white/70 mb-6">
-                Chcesz stworzyć swój własny kalendarz z personalizowanymi zadaniami?
-              </p>
-              <Link to="/stworz-kalendarz" className="btn-gold px-8 py-4 text-lg">
-                <i className="fas fa-gift" />
-                Stwórz swój kalendarz teraz
-              </Link>
-            </div>
-          </div>
-        </PageBackground>
-
-        {/* Dlaczego warto */}
-        <section className="section-cream py-16 md:py-24">
-          <div className="container mx-auto px-4">
-            <div
-              ref={(el) => { scrollElementsRef.current[7] = el; }}
-              className="fade-in-scroll text-center mb-12"
-            >
-              <h2 className="section-title mb-4">
-                Dlaczego warto wybrać e-Advent?
-              </h2>
-              <div className="gold-divider mb-6" />
-              <p className="text-parchment-muted text-base md:text-lg max-w-2xl mx-auto">
-                Pomagamy przeżywać święta w cieple — dzień po dniu, przez cały grudzień
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {[
-                { icon: 'fa-magic', title: 'Magia każdego dnia', text: 'Budź się z ekscytacją na otwarcie nowego okienka. Każdy dzień grudnia to nowa przygoda!' },
-                { icon: 'fa-gift', title: 'Idealny prezent', text: 'Podaruj bliskiej osobie kalendarz pełen osobistych zadań. Prezent, który tworzy się przez cały miesiąc!' },
-                { icon: 'fa-mobile-alt', title: 'Dostęp wszędzie', text: 'Otwieraj kalendarz na telefonie, tablecie lub komputerze. Postęp synchronizowany na wszystkich urządzeniach!', hasApp: true },
-                { icon: 'fa-palette', title: 'Nieograniczona kreatywność', text: 'Dodaj tyle zadań, ile chcesz. Wypełnij wszystkie 24 dni lub tylko wybrane — całkowita swoboda!' },
-                { icon: 'fa-rocket', title: 'Natychmiastowy dostęp', text: 'Po płatności natychmiast otrzymasz link do kalendarza. Nie musisz czekać!' },
-                { icon: 'fa-heart', title: 'Razem przez grudzień', text: 'Udostępnij link. Otwierajcie okienka razem i cieszcie się magią dnia po dniu!' },
-              ].map((feature, index) => (
-                <div
-                  key={feature.title}
-                  ref={(el) => { scrollElementsRef.current[8 + index] = el; }}
-                  className="fade-in-scroll"
-                >
-                  <ParchmentCard padding="md" className="h-full">
-                    <div className="text-center">
-                      <div className="icon-circle-lg">
-                        <i className={`fas ${feature.icon} text-parchment-text text-xl leading-none`} />
-                      </div>
-                      <h3 className="font-display text-xl font-semibold text-parchment-text mb-3 mt-0">
-                        {feature.title}
-                      </h3>
-                      <p className="text-parchment-muted text-sm leading-relaxed">{feature.text}</p>
-                      {feature.hasApp && (
-                        <div className="mt-4 pt-4 divider-parchment">
-                          <a
-                            href="https://e-advent.pl/download/e-advent.apk"
-                            className="btn-gold px-4 py-2 text-sm"
-                            onClick={() => {
-                              if (typeof window !== 'undefined' && window.gtag) {
-                                window.gtag('event', 'android_app_downloaded', {
-                                  event_category: 'engagement',
-                                  event_label: 'landing_page',
-                                });
-                              }
-                            }}
-                          >
-                            <i className="fab fa-android" />
-                            Pobierz na Androida
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </ParchmentCard>
-                </div>
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="bg-white py-16 md:py-24">
-          <div
-            ref={(el) => { scrollElementsRef.current[14] = el; }}
-            className="fade-in-scroll container mx-auto px-4 text-center"
-          >
-            <h2 className="section-title mb-5">
-              Gotowy na niezapomniane święta?
-            </h2>
-            <div className="gold-divider mb-6" />
-            <p className="text-parchment-muted text-lg md:text-xl mb-8 max-w-2xl mx-auto">
-              Wybierz interaktywny kalendarz od{' '}
-              <span className="text-christmas-green font-semibold">9 zł</span>
-              {' '}lub fizyczną zdrapkę od{' '}
-              <span className="text-christmas-green font-semibold">69 zł</span>
-            </p>
-            <Link to="/stworz-kalendarz" className="btn-gold px-12 py-5 text-xl md:text-2xl">
-              <i className="fas fa-gift" />
-              Rozpocznij magię grudnia
-            </Link>
-            <p className="mt-8 text-parchment-muted/60 text-sm">
-              Natychmiastowy dostęp &nbsp;·&nbsp; 100% bezpieczna płatność &nbsp;·&nbsp; Satysfakcja gwarantowana
-            </p>
+        <section className="story-voice" aria-labelledby="voice-title">
+          <div className="story-voice-photo"><img src="/assets/santa-mail/santa-reading.webp" alt="Święty Mikołaj przy biurku, gotowy do nagrania wiadomości" /></div>
+          <div className="story-container story-voice-layout">
+            <div className="story-voice-copy">
+              <p className="story-kicker">Nowy rozdział w e-Advent</p>
+              <h2 id="voice-title">Mikołaj<br /><em>ma wiadomość.</em></h2>
+              <p>Przykład poniżej to tylko głos. Własną wiadomość układasz pod dziecko: Mikołaj wypowie jego imię, wspomni mały sukces i powie kilka słów tylko dla niego.</p>
+              <ul className="story-voice-points">
+                <li>Po zakupie wpisujesz imię i to, z czego dziecko jest dumne</li>
+                <li>Sprawdzasz tekst, zanim powstanie nagranie</li>
+                <li>Na e-mail przychodzi prywatny link i plik MP3</li>
+              </ul>
+              <div className="story-sample">
+                <p className="story-sample-label"><span /> Posłuchaj, jak to brzmi <small>Przykład, bez imienia Twojego dziecka</small></p>
+                <SantaAudioPlayer src="/assets/santa_sample.mp3" variant="wave" size={400} durationHint={24}
+                  onFirstPlay={() => trackSantaEvent('santa_audio_play', { source: 'demo' })}
+                  onProgress={(mark) => trackSantaEvent('santa_audio_progress', { progress_percent: mark, source: 'demo' })}
+                  onError={(kind) => trackSantaEvent('santa_player_error', { error_type: kind, source: 'demo' })}
+                />
+              </div>
+              <Link className="btn-red story-cta" to="/wiadomosc-od-mikolaja/kreator" onClick={() => trackSantaEvent('santa_product_cta_click', { cta_location: 'landing_voice', purchase_mode: 'standalone' })}>
+                Stwórz wiadomość dla dziecka<i className="fas fa-arrow-right" aria-hidden="true" />
+              </Link>
+            </div>
           </div>
         </section>
 
-        {/* SEO Content */}
-        <section className="section-cream py-16 md:py-20">
-          <div className="container mx-auto px-4 max-w-4xl">
-            <div className="prose prose-lg max-w-none">
-              <h2 className="font-display text-2xl md:text-3xl font-semibold text-christmas-green mb-6 leading-snug tracking-wide">
-                Interaktywny Kalendarz Adwentowy Online — e-Advent
-              </h2>
-              <p className="text-parchment-muted leading-relaxed mb-4">
-                e-Advent to innowacyjny,{' '}
-                <Link to="/stworz-kalendarz" className="text-christmas-green hover:text-christmas-gold underline font-medium transition-colors">
-                  interaktywny kalendarz adwentowy online
-                </Link>
-                , który pozwala na pełną personalizację doświadczenia świątecznego. W przeciwieństwie do tradycyjnych kalendarzy
-                adwentowych, nasz wirtualny kalendarz oferuje nieograniczone możliwości dostosowania do Twoich potrzeb.
-              </p>
-              <p className="text-parchment-muted leading-relaxed mb-4">
-                Kalendarz adwentowy e-Advent to idealne rozwiązanie dla wszystkich, którzy chcą stworzyć wyjątkowe wspomnienia
-                podczas adwentu.{' '}
-                <Link to="/stworz-kalendarz" className="text-christmas-green hover:text-christmas-gold underline font-medium transition-colors">
-                  Stwórz swój kalendarz już dziś
-                </Link>{' '}
-                i odkryj magię świąt!
-              </p>
-              <h3 className="font-display text-2xl md:text-3xl font-semibold text-parchment-text mt-8 mb-4">
-                Dlaczego warto wybrać kalendarz adwentowy online?
-              </h3>
-              <p className="text-parchment-muted leading-relaxed mb-4">
-                Interaktywny kalendarz adwentowy e-Advent to połączenie klasycznej magii świąt z wygodą świata cyfrowego.
-                Dostępny zawsze i wszędzie — wystarczy mieć dostęp do internetu.
-              </p>
-              <p className="text-parchment-muted leading-relaxed mb-4">
-                Kalendarz bożonarodzeniowy e-Advent pozwala na dodanie własnych zadań adwentowych — od gotowania pierników
-                i dekorowania domu, przez czytanie świątecznych opowieści, aż po wspólne świąteczne aktywności.
-              </p>
-              <h3 className="font-display text-2xl md:text-3xl font-semibold text-parchment-text mt-8 mb-4">
-                Jak działa spersonalizowany kalendarz adwentowy?
-              </h3>
-              <p className="text-parchment-muted leading-relaxed mb-4">
-                Wystarczy wypełnić krótki formularz, dodać własne zadania lub pozwolić systemowi wylosować je automatycznie,
-                dokonać bezpiecznej płatności i natychmiast otrzymać unikalny link do swojego kalendarza.
-              </p>
-              <p className="text-parchment-muted leading-relaxed mb-4">
-                Każdego dnia grudnia możesz otworzyć jedno okienko i odkryć zadanie na dany dzień.
-                System automatycznie zapisuje Twój postęp.
-              </p>
-              <h3 className="font-display text-2xl md:text-3xl font-semibold text-parchment-text mt-8 mb-4">
-                Idealny prezent na święta Bożego Narodzenia
-              </h3>
-              <p className="text-parchment-muted leading-relaxed mb-4">
-                Kalendarz adwentowy e-Advent to wyjątkowy prezent, który można podarować bliskim na święta.
-                Doświadczenie, które będzie trwać przez cały grudzień.
-              </p>
-              <p className="text-parchment-muted leading-relaxed mb-6">
-                Dołącz do tysięcy zadowolonych użytkowników i{' '}
-                <Link to="/stworz-kalendarz" className="text-christmas-green hover:text-christmas-gold underline font-medium transition-colors">
-                  stwórz swój własny interaktywny kalendarz adwentowy już dziś
-                </Link>
-                ! Przeczytaj naszą{' '}
-                <Link to="/polityka-prywatnosci" className="text-christmas-green hover:text-christmas-gold underline transition-colors">
-                  politykę prywatności
-                </Link>{' '}
-                i{' '}
-                <Link to="/regulamin" className="text-christmas-green hover:text-christmas-gold underline transition-colors">
-                  regulamin
-                </Link>{' '}
-                przed rozpoczęciem.
-              </p>
-            </div>
-
-            <div className="mt-8 pt-8 divider-parchment">
-              <SocialShare />
+        <section className="story-section story-bundle" aria-labelledby="bundle-title">
+          <div className="story-container story-bundle-layout">
+            <div className="story-bundle-image"><img src={letter} alt="Zestaw do napisania listu z kopertą i świątecznymi dodatkami" loading="lazy" width={900} height={1125} /><span className="story-bundle-note">Najpierw list.<br /><em>Potem ten głos.</em></span></div>
+            <div className="story-bundle-copy">
+              <p className="story-kicker">Dwa rozdziały, jedna opowieść</p>
+              <h2 id="bundle-title">Od „Drogi Mikołaju…”<br />do „Witaj, <em>maluchu!</em>”</h2>
+              <p>Najpierw wspólnie zapisujecie marzenia. Później dziecko słyszy Mikołaja, który zwraca się właśnie do niego. Połącz papierowy list z osobistą wiadomością głosową.</p>
+              <ul className="story-bundle-includes"><li><i className="far fa-envelope" aria-hidden="true" /> Zestaw do napisania listu — przesyłka do domu</li><li><i className="fas fa-headphones" aria-hidden="true" /> Spersonalizowane nagranie — prywatny link i MP3</li></ul>
+              <div className="story-bundle-price"><span>List + wiadomość</span><strong>{formatPrice(bundle)}</strong><p>Osobno: {formatPrice(LETTER_PRICE + standalone)}{savings > 0 && <> · W zestawie oszczędzasz {formatPrice(savings)}</>}</p><small>+ koszt dostawy papierowego zestawu</small></div>
+              <Link className="btn-green story-cta" to="/list-do-swietego-mikolaja?wiadomosc=1" onClick={() => trackSantaEvent('santa_product_cta_click', { cta_location: 'landing_bundle', purchase_mode: 'letter_addon' })}>
+                Wybierz magiczny zestaw<i className="fas fa-arrow-right" aria-hidden="true" />
+              </Link>
             </div>
           </div>
+        </section>
+
+        <section className="story-section story-how" aria-labelledby="how-title">
+          <div className="story-container">
+            <header className="story-section-heading"><p className="story-kicker">Dla rodziców — po prostu</p><h2 id="how-title">Ty wybierasz chwilę.<br />My pomagamy ją przygotować.</h2><p>Każdy produkt ma własną drogę do Waszego domu. Wszystko wyjaśniamy przed zakupem.</p></header>
+            <ol className="story-steps">
+              <li><span>01</span><h3>Wybierz swój rozdział</h3><p>Kalendarz, papierowy list, nagranie — albo zestaw. Na stronie produktu zobaczysz jego zawartość i cenę.</p></li>
+              <li><span>02</span><h3>Dodaj coś od siebie</h3><p>W kreatorze kalendarza wybierzesz zadania. Po zakupie wiadomości opowiesz Mikołajowi o dziecku i sprawdzisz tekst.</p></li>
+              <li><span>03</span><h3>Odbierz i cieszcie się razem</h3><p>Produkty cyfrowe otrzymasz e-mailem. Papierowy zestaw i zdrapkę wyślemy InPost. Pozostaje znaleźć Waszą wspólną chwilę.</p></li>
+            </ol>
+            <div className="story-delivery-note"><i className="fas fa-box-open" aria-hidden="true" /><p><strong>List i zdrapka:</strong> realizacja 3–5 dni roboczych + dostawa.<br /><strong>Nagranie:</strong> zwykle do 24 godzin od zatwierdzenia tekstu.</p><Link to="/dostawa-i-zwroty">O dostawie i zwrotach <i className="fas fa-arrow-right" aria-hidden="true" /></Link></div>
+          </div>
+        </section>
+
+        <section className="story-section story-trust" aria-labelledby="trust-title">
+          <div className="story-container story-trust-layout">
+            <div className="story-trust-intro">
+              <p className="story-kicker">Żeby spokojnie czekać na święta</p>
+              <h2 id="trust-title">Magia dla dzieci.<br /><em>Jasne zasady dla Ciebie.</em></h2>
+              <p>Chcemy, żeby niespodzianka czekała na dziecko. Ty możesz wcześniej poznać produkty, posłuchać głosu i sprawdzić, co zamawiasz.</p>
+              <ul><li>Próbka nagrania dostępna przed zakupem.</li><li>Prywatne linki do produktów cyfrowych.</li><li>Zawartość zestawu i koszty pokazane przy zamówieniu.</li></ul>
+              <p className="story-contact">Potrzebujesz pomocy w wyborze?<a href="mailto:kontakt@e-advent.pl">kontakt@e-advent.pl <i className="fas fa-arrow-up-right-from-square" aria-hidden="true" /></a></p>
+            </div>
+            <div className="story-faq"><h3>O co najczęściej pytają rodzice?</h3>{FAQ.map((item) => <details key={item.question}><summary>{item.question}<i className="fas fa-plus" aria-hidden="true" /></summary><p>{item.answer}</p></details>)}</div>
+          </div>
+        </section>
+
+        <section className="story-ending" aria-labelledby="ending-title">
+          <img src={room} alt="" />
+          <div className="story-container"><p className="story-kicker">To właśnie te chwile</p><h2 id="ending-title">Święta mijają.<br /><em>Magia zostaje.</em></h2><p>Nie zawsze pamiętamy, co było pod choinką.<br />Pamiętamy za to, z kim przeżywaliśmy święta.<br />I jak się wtedy czuliśmy.</p><a className="btn-red story-cta" href="#rozdzialy">Wybierz Wasz świąteczny rozdział<i className="fas fa-arrow-up" aria-hidden="true" /></a><span className="story-signature">Do zobaczenia w Waszych wspomnieniach, e-Advent</span></div>
+        </section>
+
+        <section className="story-share" aria-label="Udostępnij e-Advent">
+          <div className="story-container"><p className="story-kicker">Podziel się magią świąt z bliskimi</p><SocialShare /></div>
         </section>
       </div>
     </>

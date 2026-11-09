@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import certificatePreview from '../../assets/certyficate-preview.webp';
 import { formatPrice, FREE_SHIPPING_THRESHOLD } from '../../config/products';
 
@@ -10,6 +11,7 @@ interface LetterPackComposerProps {
   onCertNamesChange: (names: string[]) => void;
   letterPrice: number;
   certificatePrice: number;
+  voicePrice?: number;
   letterCompareAt?: number;
   certificateCompareAt?: number;
   error: string | null;
@@ -43,15 +45,26 @@ export default function LetterPackComposer({
   onCertNamesChange,
   letterPrice,
   certificatePrice,
+  voicePrice = 0,
   letterCompareAt,
   certificateCompareAt,
   error,
 }: LetterPackComposerProps) {
+  const [previewOpen, setPreviewOpen] = useState(false);
   const filledCerts = certNames.filter((name) => name.trim().length >= 2).length;
   const canAddCert = certNames.length < letterQty;
-  const packTotal = letterQty * letterPrice + filledCerts * certificatePrice;
+  const packTotal = letterQty * letterPrice + filledCerts * certificatePrice + voicePrice;
   const catalogTotal =
     letterQty * (letterCompareAt ?? letterPrice) + filledCerts * (certificateCompareAt ?? certificatePrice);
+
+  useEffect(() => {
+    if (!previewOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [previewOpen]);
 
   const setQty = (next: number) => {
     const qty = Math.min(MAX_LETTER_QTY, Math.max(1, next));
@@ -65,7 +78,7 @@ export default function LetterPackComposer({
 
   return (
     <div className="mb-6 space-y-4">
-      <div className="rounded-2xl border border-christmas-gold/35 bg-white/5 p-4 md:p-5 backdrop-blur-sm">
+      <div className="rounded-lg border border-christmas-gold/25 bg-[#0c281dd9] p-4 md:p-5">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="font-display text-lg text-christmas-gold-light">Zestawy listów</p>
@@ -99,19 +112,27 @@ export default function LetterPackComposer({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-christmas-gold/35 bg-white/5 p-4 md:p-5 backdrop-blur-sm">
+      <div className="rounded-lg border border-christmas-gold/25 bg-[#0c281dd9] p-4 md:p-5">
         <div className="flex gap-4 items-start">
-          <figure className="w-[88px] sm:w-[112px] shrink-0 rounded-lg border border-christmas-gold/30 bg-cream/10 p-1.5 shadow-lg">
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="relative w-[88px] sm:w-[112px] shrink-0 cursor-zoom-in rounded-lg border border-christmas-gold/30 bg-cream/10 p-1.5 shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-christmas-gold"
+            aria-label="Powiększ podgląd certyfikatu"
+          >
             <img
               src={certificatePreview}
-              alt="Podgląd Certyfikatu Grzecznego Dziecka"
+              alt=""
               width={280}
               height={364}
               loading="lazy"
               decoding="async"
               className="w-full h-auto rounded-md object-contain"
             />
-          </figure>
+            <span className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-[10px] text-white" aria-hidden="true">
+              <i className="fas fa-search-plus" />
+            </span>
+          </button>
           <div className="min-w-0 flex-1">
             <p className="font-display text-[15px] sm:text-lg text-christmas-gold-light leading-snug">
               Certyfikaty Grzecznego Dziecka
@@ -157,7 +178,7 @@ export default function LetterPackComposer({
         {canAddCert ? (
           <button
             type="button"
-            className="mt-4 text-sm text-christmas-gold-light hover:text-christmas-gold font-medium"
+            className="btn-gold mt-4 px-5 py-3 text-sm"
             onClick={() => onCertNamesChange([...certNames, ''])}
           >
             <i className="fas fa-plus mr-2" />
@@ -183,6 +204,7 @@ export default function LetterPackComposer({
         <div>
           <p className="text-white/70 text-sm">
             {polishCount(letterQty, 'zestaw', 'zestawy', 'zestawów')}
+            {voicePrice > 0 ? ' · 1 wiadomość głosowa' : ''}
             {filledCerts > 0
               ? ` · ${polishCount(filledCerts, 'certyfikat', 'certyfikaty', 'certyfikatów')}`
               : ''}
@@ -198,10 +220,10 @@ export default function LetterPackComposer({
           ) : null}
         </div>
         <p className="font-display text-2xl font-semibold text-christmas-gold-light">
-          {catalogTotal > packTotal ? (
+          {catalogTotal + voicePrice > packTotal ? (
             <>
               <span className="mr-2 text-white/45 line-through decoration-white/40 text-xl">
-                {formatPrice(catalogTotal)}
+                {formatPrice(catalogTotal + voicePrice)}
               </span>
               {formatPrice(packTotal)}
             </>
@@ -210,6 +232,30 @@ export default function LetterPackComposer({
           )}
         </p>
       </div>
+      {previewOpen && (
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Powiększony certyfikat"
+          onClick={() => setPreviewOpen(false)}
+        >
+          <button
+            type="button"
+            className="absolute top-4 right-4 p-2 text-2xl text-white/80 hover:text-white"
+            aria-label="Zamknij"
+            onClick={() => setPreviewOpen(false)}
+          >
+            <i className="fas fa-times" />
+          </button>
+          <img
+            src={certificatePreview}
+            alt="Certyfikat Grzecznego Dziecka"
+            className="max-h-[90vh] max-w-full rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

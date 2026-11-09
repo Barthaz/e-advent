@@ -289,6 +289,7 @@ function itemsTableHtml(items) {
 }
 
 function buildOrderConfirmationEmail({
+  digitalConsent,
   orderId,
   items = [],
   shipping = {},
@@ -339,6 +340,7 @@ function buildOrderConfirmationEmail({
     ${itemsTableHtml(items)}
     <div style="margin-top:10px;">${totalsHtml}</div>
     <div style="margin-top:18px;">${addressHtml}</div>
+    ${digitalConsent?.text ? `<div style="margin-top:18px;">${sectionLabel('Potwierdzenie zgody na treść cyfrową')}<p style="color:#2f3a30;font-size:12px;line-height:1.6;">${escapeHtml(digitalConsent.text)}<br>Data: ${escapeHtml(digitalConsent.acceptedAt)} · wersja ${escapeHtml(digitalConsent.version)}</p></div>` : ''}
   `;
 
   return emailShell({
@@ -351,6 +353,7 @@ function buildOrderConfirmationEmail({
 }
 
 function buildOrderConfirmationText({
+  digitalConsent,
   orderId,
   items = [],
   shipping = {},
@@ -366,6 +369,7 @@ function buildOrderConfirmationText({
     return `- ${name} × ${qty}`;
   });
   const parts = [
+    ...(digitalConsent?.text ? [`Potwierdzenie zgody na treść cyfrową (${digitalConsent.acceptedAt}, wersja ${digitalConsent.version}): ${digitalConsent.text}`, ''] : []),
     'Dziękujemy za zamówienie!',
     '',
     'Twoje zamówienie zostało przyjęte i trafiło do realizacji.',

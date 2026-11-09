@@ -29,7 +29,8 @@ export type SantaListItem = {
   deliveredAt: string | null;
 };
 
-export type SantaList = { items: SantaListItem[]; total: number; counts: Record<string, number> };
+type AudioStorage = { provider: string; r2Configured: boolean; maxAudioBytes: number };
+export type SantaList = { items: SantaListItem[]; total: number; counts: Record<string, number>; storage?: AudioStorage };
 
 export type SantaDetail = {
   id: string;
@@ -47,6 +48,7 @@ export type SantaDetail = {
   hasAudio: boolean;
   audio: { durationSeconds: number | null; bytes: number | null; source: string | null } | null;
   ttsAutomation: boolean;
+  storage: AudioStorage;
   lastErrorCode: string | null;
   timestamps: Record<string, string | null>;
   events: Array<{ type: string; actor: string; details: unknown; at: string }>;
@@ -79,12 +81,16 @@ export const santaMessagesApi = createApi({
       query: (id) => `/santa-messages/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'SantaMessage', id }],
     }),
-    santaAction: builder.mutation<unknown, { id: string; action: SantaAction }>({
+    santaAction: builder.mutation<{ queued?: boolean }, { id: string; action: SantaAction }>({
       query: ({ id, action }) => ({ url: `/santa-messages/${id}/${action}`, method: 'POST' }),
       invalidatesTags: ['SantaMessage'],
     }),
     updateSantaScript: builder.mutation<unknown, { id: string; text: string }>({
       query: ({ id, text }) => ({ url: `/santa-messages/${id}/script`, method: 'PUT', body: { text } }),
+      invalidatesTags: ['SantaMessage'],
+    }),
+    attachSantaR2Audio: builder.mutation<unknown, { id: string; objectKey: string }>({
+      query: ({ id, objectKey }) => ({ url: `/santa-messages/${id}/r2-audio`, method: 'POST', body: { objectKey } }),
       invalidatesTags: ['SantaMessage'],
     }),
     uploadSantaAudio: builder.mutation<unknown, { id: string; file: File }>({
@@ -113,4 +119,5 @@ export const {
   useSantaActionMutation,
   useUpdateSantaScriptMutation,
   useUploadSantaAudioMutation,
+  useAttachSantaR2AudioMutation,
 } = santaMessagesApi;

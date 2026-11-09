@@ -18,7 +18,7 @@ import {
   trackSantaTrackingReset,
   trackSantaTrackingStarted,
 } from '../utils/santa/analytics';
-import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import Logo from '../components/Logo';
 
 const SANTA_JSON_LD = {
   '@context': 'https://schema.org',
@@ -138,21 +138,9 @@ export default function SantaTracker() {
 
       <div className="min-h-screen">
         {/* Hero — te same style co Landing */}
-        <PageBackground className="py-12 md:py-16" showSnow overlayOpacity="medium">
+        <PageBackground className="py-8 md:py-12" showSnow overlayOpacity="medium">
           <div className="container mx-auto px-4 text-center max-w-4xl">
-            <div className="mb-8 flex justify-center">
-              <Link to="/" onClick={goHome} className="transition-transform hover:scale-[1.02] duration-500">
-                <img
-                  src={logo}
-                  alt="e-Advent - Interaktywny Kalendarz Adwentowy Online"
-                  className="h-28 md:h-36 w-auto drop-shadow-2xl"
-                  width="260"
-                  height="104"
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              </Link>
-            </div>
+            <Logo className="mb-6" />
 
             <p className="text-christmas-gold text-sm md:text-base tracking-[0.25em] uppercase mb-4">
               Magia Świąt
@@ -187,7 +175,7 @@ export default function SantaTracker() {
         )}
 
         {/* Tracker — cream jak sekcje Landing */}
-        <section className="section-cream py-12 md:py-20">
+        <section className="section-festive py-12 md:py-20">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="text-center mb-10">
               <h2 className="section-title mb-4">Live tracker</h2>
@@ -286,7 +274,7 @@ export default function SantaTracker() {
         </section>
 
         {/* SEO — ten sam wzorzec co Landing */}
-        <section className="bg-white py-16 md:py-20">
+        <section className="section-festive py-16 md:py-20">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="prose prose-lg max-w-none">
               <h2 className="font-display text-2xl md:text-3xl font-semibold text-christmas-green mb-6 leading-snug tracking-wide">

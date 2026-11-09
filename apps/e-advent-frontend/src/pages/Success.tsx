@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import FestivePage from '../components/FestivePage';
-import ParchmentCard from '../components/ParchmentCard';
+import OrderResultLayout from '../components/checkout/OrderResultLayout';
 import LoadingState from '../components/LoadingState';
 import {
   getCalendar,
@@ -114,7 +113,7 @@ export default function Success() {
             const response = await getCalendar(id);
             if (response.calendar.status !== 'succeeded') throw new Error('Calendar is not active');
             ids = [id]; interactiveIds = [id];
-            setOrderItems([{ sku: response.calendar.sku || 'interactive', name: 'Kalendarz interaktywny', quantity: 1, price: 0 }]);
+            setOrderItems([{ sku: response.calendar.sku || 'interactive', name: 'Kalendarz online', quantity: 1, price: 0 }]);
           } else if (summary) {
             setOrderItems(summary.items);
             setOrderNumber(summary.orderNumber || '');
@@ -167,9 +166,9 @@ export default function Success() {
   };
 
   if (verificationMessage) {
-    return <FestivePage maxWidth="md"><ParchmentCard><p>{verificationMessage}</p>
+    return <OrderResultLayout><h1 className="font-display text-3xl mb-4">Sprawdzamy Twoje zamówienie</h1><p>{verificationMessage}</p>
       <button className="btn-green mt-4" onClick={() => window.location.reload()}>Sprawdź ponownie</button>
-    </ParchmentCard></FestivePage>;
+    </OrderResultLayout>;
   }
 
   if (isVerifyingPayment || !paymentVerified) {
@@ -188,18 +187,17 @@ export default function Success() {
   const productsHeading = totalItemQty <= 1 && orderItems.length <= 1 ? 'Produkt' : 'Produkty';
 
   return (
-    <FestivePage maxWidth="md" showLogo={false}>
-      <ParchmentCard padding="lg">
+    <OrderResultLayout>
         <div className="success-page text-center">
           <div className="mb-6 flex justify-center">
             <img
               src={logo}
-              alt="e-Advent - Interaktywny Kalendarz Adwentowy Online"
+              alt="e-Advent - Kalendarz Adwentowy Online"
               width="200"
               height="80"
               loading="eager"
               fetchPriority="high"
-              className="h-24 md:h-32 w-auto"
+              className="h-16 md:h-20 w-auto drop-shadow-xl"
             />
           </div>
 
@@ -450,7 +448,6 @@ export default function Success() {
             Życzymy niezapomnianego czasu adwentowego.
           </p>
         </div>
-      </ParchmentCard>
-    </FestivePage>
+    </OrderResultLayout>
   );
 }

@@ -1,0 +1,11 @@
+.santa-player .santa-controls { display: flex; align-items: center; justify-content: center; gap: 12px; width: min(100%, 384px); }
+.santa-player--wave .santa-controls { display: grid; grid-template-columns: minmax(0, 1fr) 66px minmax(0, 1fr); gap: 16px; }
+.santa-player .santa-volume-controls { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.santa-player .santa-volume { width: 48px; min-width: 0; }
+.santa-player .santa-wave-play { width: 66px; height: 66px; margin: 0; flex-shrink: 0; transition: background-color 160ms ease, border-color 160ms ease; }
+.santa-player .santa-wave-play:hover, .santa-player .santa-chip:hover { transform: none; }
+.santa-player--wave .santa-controls > .santa-chip { justify-self: end; white-space: nowrap; gap: 7px; padding-inline: 4px; }
+.santa-player .santa-chip { min-width: 44px; justify-content: center; }
+.santa-player .santa-controls > a { grid-column: 1 / -1; justify-self: center; }
+.santa-player .santa-seek { touch-action: pan-y; }
+@media (max-width: 380px) { .santa-player--wave .santa-controls { gap: 10px; } .santa-player .santa-volume { display: none; } }

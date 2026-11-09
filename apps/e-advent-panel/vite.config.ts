@@ -10,7 +10,7 @@ const monorepoRoot = resolve(__dirname, '../..');
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, __dirname, '');
   const proxyTarget = env.VITE_API_PROXY_TARGET;
-  if (command === 'serve' && !proxyTarget) {
+  if (command === 'serve' && !proxyTarget && mode !== 'santa-preview') {
     throw new Error('Missing VITE_API_PROXY_TARGET — set it in apps/e-advent-panel/.env');
   }
 

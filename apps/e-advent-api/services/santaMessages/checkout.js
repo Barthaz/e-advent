@@ -1,6 +1,5 @@
 'use strict';
 
-const { canSell } = require('./config');
 const { loadDraftRow } = require('./drafts');
 
 const MAX_VOICE_MESSAGES_PER_ORDER = 10;
@@ -15,10 +14,6 @@ function fieldError(msg, path) {
  * @returns {Promise<{ item?: object, error?: object }>}
  */
 async function resolveVoiceLine(product, raw, quantity, index) {
-  const mode = product.voiceMode;
-  if (!canSell(mode)) {
-    return { error: fieldError('Wiadomość od Świętego Mikołaja jest chwilowo niedostępna. Usuń ją z koszyka, aby kontynuować.', `items[${index}].sku`) };
-  }
   const draftId = raw.metadata?.voiceDraftId ? String(raw.metadata.voiceDraftId) : null;
   if (draftId) {
     if (quantity !== 1) {
@@ -41,7 +36,7 @@ async function resolveVoiceLine(product, raw, quantity, index) {
       calendarId: null,
       calendar: null,
       requiresShipping: false,
-      metadata: { voiceMode: mode, ...(draftId ? { voiceDraftId: draftId } : {}) },
+      metadata: { voiceMode: product.voiceMode, ...(draftId ? { voiceDraftId: draftId } : {}) },
     },
   };
 }

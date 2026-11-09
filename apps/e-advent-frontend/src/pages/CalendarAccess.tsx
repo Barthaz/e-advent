@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import FestivePage from '../components/FestivePage';
-import ContentCard from '../components/ContentCard';
-import AndroidPromo from '../components/AndroidPromo';
+import { useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
+import room from '../assets/home/christmas-room.webp';
+import '../components/calendar-experience.css';
 import { getCalendarByAccessCode } from '../api/api';
 
 export default function CalendarAccess() {
@@ -12,10 +12,6 @@ export default function CalendarAccess() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  useEffect(() => {
-    inputRefs.current[0]?.focus();
-  }, []);
 
   const handleCodeChange = (index: number, value: string) => {
     const sanitizedValue = value.replace(/[^0-9A-Za-z]/g, '').toUpperCase().slice(0, 1);
@@ -66,7 +62,7 @@ export default function CalendarAccess() {
 
     setIsLoading(true);
     try {
-      const response = await getCalendarByAccessCode(email, fullCode);
+      const response = await getCalendarByAccessCode(email.trim(), fullCode);
       if (response.success && response.calendar?.id) {
         try {
           sessionStorage.setItem(`e-advent-access-code-${response.calendar.id}`, fullCode);
@@ -86,17 +82,15 @@ export default function CalendarAccess() {
   };
 
   return (
-    <FestivePage showLogo maxWidth="sm">
-      <ContentCard variant="gold" padding="md">
-        <div className="text-center mb-6">
-          <h1 className="heading-page font-calligraphy mb-2">Dostęp do kalendarza</h1>
-          <p className="text-parchment-muted text-lg">Wprowadź swój adres email i kod dostępu</p>
-        </div>
-
+    <div className="calendar-access">
+      <SEOHead title="Otwórz swój kalendarz | e-Advent" robots="noindex, follow" />
+      <div className="calendar-access-layout">
+        <div className="calendar-access-intro"><img src={room} alt="Świąteczny dom z choinką i kominkiem" /><p className="calendar-eyebrow">Dobrze, że jesteście</p><h1>Wasza grudniowa<br />opowieść czeka.</h1><p>Mała chwila dla siebie, jedno okienko i kolejny powód do uśmiechu.</p></div>
+        <section className="calendar-access-form"><h2>Otwórz swój kalendarz</h2><p>Podaj e-mail użyty przy zamówieniu i sześcioznakowy kod z wiadomości potwierdzającej zakup.</p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-parchment-muted mb-2">
-              Adres email
+              Adres e-mail
             </label>
             <input
               type="email"
@@ -115,7 +109,7 @@ export default function CalendarAccess() {
             <label className="block text-sm font-semibold text-parchment-muted mb-2">
               Kod dostępu (6 znaków)
             </label>
-            <div className="flex gap-1.5 md:gap-2 justify-center">
+            <div className="calendar-code" role="group" aria-label="Kod dostępu (6 znaków)">
               {code.map((digit, index) => (
                 <input
                   key={index}
@@ -123,35 +117,31 @@ export default function CalendarAccess() {
                   type="text"
                   inputMode="text"
                   maxLength={1}
+                  aria-label={`Znak ${index + 1} kodu dostępu`}
                   value={digit}
                   onChange={(e) => handleCodeChange(index, e.target.value)}
                   onPaste={(e) => handleCodePaste(e, index)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   className="input-code"
                   disabled={isLoading}
-                  autoComplete="off"
+                  autoComplete={index === 0 ? "one-time-code" : "off"}
                 />
               ))}
             </div>
           </div>
 
-          {error && <div className="alert-error">{error}</div>}
+          <p className="calendar-access-help">Kod znajdziesz w e-mailu z linkiem do kalendarza. Możesz go tutaj wkleić w całości.</p>
 
-          <div className="md:hidden">
-            <AndroidPromo label="Pobierz aplikację" analyticsLabel="calendar_access_page" />
-          </div>
+          {error && <div role="alert" className="alert-error">{error}</div>}
 
           <button type="submit" disabled={isLoading} className="btn-green-full">
             {isLoading ? 'Sprawdzanie...' : 'Otwórz kalendarz'}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <button onClick={() => navigate('/')} className="link-green">
-            Wróć na stronę główną
-          </button>
-        </div>
-      </ContentCard>
-    </FestivePage>
+        <div className="calendar-access-links"><Link to="/darmowy-kalendarz">Nie masz jeszcze kalendarza? Otwórz darmowy</Link><a href="mailto:kontakt@e-advent.pl">Nie możesz znaleźć kodu? Napisz do nas</a></div>
+        </section>
+      </div>
+    </div>
   );
 }

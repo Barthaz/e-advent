@@ -7,8 +7,8 @@ import { PRODUCT_FAMILIES } from '../../config/products';
 
 export default function ProductSelector() {
   return (
-    <FestivePage className="py-4" maxWidth="full">
-      <SEOHead title="Wybierz kalendarz adwentowy lub list do Mikołaja | e-Advent" description="Porównaj kalendarz interaktywny, kalendarz zdrapka i zestaw listów do Świętego Mikołaja. Wybierz produkt i rozpocznij zamówienie." canonical="https://e-advent.pl/stworz-kalendarz" />
+    <FestivePage maxWidth="full">
+      <SEOHead title="Wybierz kalendarz adwentowy lub list do Mikołaja | e-Advent" description="Porównaj kalendarz online, kalendarz zdrapka i zestaw listów do Świętego Mikołaja. Wybierz produkt i rozpocznij zamówienie." canonical="https://e-advent.pl/stworz-kalendarz" />
       <div className="text-center mb-10">
         <h1 className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light mb-3 leading-tight">
           Wybierz swój kalendarz
@@ -30,7 +30,7 @@ export default function ProductSelector() {
 
       <ParchmentCard padding="sm" className="max-w-xl mx-auto text-center">
         <p className="text-sm text-parchment-muted">
-          Masz już kalendarz interaktywny?{' '}
+          Masz już kalendarz online?{' '}
           <Link to="/kalendarz" className="text-christmas-green hover:underline font-medium">
             Otwórz go tutaj
           </Link>

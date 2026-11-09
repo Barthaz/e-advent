@@ -57,7 +57,7 @@ export default function StepSummary({
   const meta = PRODUCT_META[productType];
 
   const productLabel =
-    productType === 'interactive' ? 'Kalendarz interaktywny' :
+    productType === 'interactive' ? 'Kalendarz online' :
     'Kalendarz zdrapka';
 
   const tasksLabel =

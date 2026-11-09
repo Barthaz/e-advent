@@ -3,7 +3,7 @@ declare(strict_types=1);
 // Override with an ignored config.local.php placed OUTSIDE the document root.
 $config = [
     'environment' => 'production', // fail closed until configured; setup:demo overrides locally
-    'base_url' => 'http://127.0.0.1:5180',
+    'base_url' => 'https://soa-katowice.e-advent.pl',
     'preview_now' => null,
     'stats_source' => 'mock', // mock | mysql; never silently fallback in production
     'analytics_enabled' => false,

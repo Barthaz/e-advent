@@ -1,19 +1,25 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import PageBackground from '../components/PageBackground';
-import ParchmentCard from '../components/ParchmentCard';
 import SEOHead from '../components/SEOHead';
 import {
   formatPrice,
   getProduct,
+  PRODUCT_FAMILIES,
   SANTA_CERTIFICATE_SKU,
 } from '../config/products';
 import { useCart } from '../context/useCart';
 import { trackSantaEvent, trackViewItem } from '../utils/analytics';
-import { useVoiceConfig } from '../santa-message/useVoiceConfig';
-import logo from '@e-advent/assets/brand/eadvent-logo.png';
 import LetterPackComposer, { MAX_LETTER_QTY } from '../components/letter/LetterPackComposer';
 import AddedToCartModal from '../components/AddedToCartModal';
+import ProductHero from '../components/product-page/ProductHero';
+import ProductGallery from '../components/product-page/ProductGallery';
+import ProductIntro from '../components/product-page/ProductIntro';
+import ProductCartAction from '../components/product-page/ProductCartAction';
+import ProductHighlights from '../components/product-page/ProductHighlights';
+import ProductSteps from '../components/product-page/ProductSteps';
+import ProductStory from '../components/product-page/ProductStory';
+import ProductCrossSell from '../components/product-page/ProductCrossSell';
+import ProductFaq from '../components/product-page/ProductFaq';
 import letter1 from '../assets/list/list_1.webp';
 import letter2 from '../assets/list/list_2.webp';
 import letter3 from '../assets/list/list_3.webp';
@@ -23,11 +29,30 @@ import letter3Thumb from '../assets/list/list_3-thumb.webp';
 
 const SKU = 'santa-letter';
 const CERTIFICATE_PRICE = getProduct(SANTA_CERTIFICATE_SKU)?.basePrice ?? 9;
+const CALENDAR_PRICE = PRODUCT_FAMILIES.find((family) => family.type === 'interactive')?.priceFrom ?? 9;
 
 const GALLERY = [
   { src: letter1, thumb: letter1Thumb, alt: 'Zestaw List do Świętego Mikołaja' },
   { src: letter2, thumb: letter2Thumb, alt: 'List do Świętego Mikołaja' },
   { src: letter3, thumb: letter3Thumb, alt: 'Koperta i naklejki świąteczne' },
+];
+
+const HIGHLIGHTS = [
+  { icon: 'far fa-envelope', label: 'Koperta zaadresowana do Mikołaja' },
+  { icon: 'fas fa-truck', label: 'Wysyłka InPost w 3–5 dni roboczych' },
+  { icon: 'far fa-heart', label: 'Rytuał, który dzieci zapamiętają' },
+];
+
+const STEPS = [
+  { title: 'Siadacie razem', text: 'Niech dziecko wpisze swoje życzenia i marzenia — rysunek też może być listem.' },
+  { title: 'Ozdabiacie kopertę', text: 'Koperta jest już zaadresowana do Świętego Mikołaja. Ozdóbcie ją naklejkami i włóżcie list do środka.' },
+  { title: 'Śledzicie Mikołaja', text: 'Niech ten list zostanie częścią Waszej świątecznej przygody, a 24 grudnia śledźcie razem Mikołaja na mapie.' },
+];
+
+const CONTENTS = [
+  { title: '2 wersje listu', text: 'Dwa szablony — dziecko wybiera ulubiony lub wypełnia oba.' },
+  { title: 'Opisana koperta', text: 'Gotowy adres do Świętego Mikołaja — wystarczy włożyć list.' },
+  { title: 'Naklejki', text: 'Świąteczne naklejki do ozdobienia koperty i listu.' },
 ];
 
 function buildFaq(certificatePriceNote: string) {
@@ -76,14 +101,13 @@ export default function SantaLetterProduct() {
   const navigate = useNavigate();
   const { addSantaLetterBundle } = useCart();
   const product = getProduct(SKU);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [cartAdded, setCartAdded] = useState(false);
   const [letterQty, setLetterQty] = useState(1);
   const [certNames, setCertNames] = useState<string[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
-  const { config: voiceConfig } = useVoiceConfig();
+  const voiceAddonPrice = getProduct('voice-message-addon')!.basePrice;
+  const voiceStandalonePrice = getProduct('voice-message')!.basePrice;
   const [withVoice, setWithVoice] = useState(() => searchParams.get('wiadomosc') === '1');
 
   const basePrice = product?.basePrice ?? 29;
@@ -97,15 +121,6 @@ export default function SantaLetterProduct() {
       category: 'letter',
     });
   }, [basePrice, product?.name]);
-
-  useEffect(() => {
-    if (!lightboxOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLightboxOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [lightboxOpen]);
 
   const handleAddToCart = () => {
     setFormError(null);
@@ -127,14 +142,12 @@ export default function SantaLetterProduct() {
       letterLabel: product?.name,
       letterQuantity: Math.min(MAX_LETTER_QTY, Math.max(1, letterQty)),
       childNames: trimmedNames,
-      withVoiceMessage: Boolean(voiceConfig?.letterAddonEnabled && withVoice),
+      withVoiceMessage: withVoice,
     });
     setWithVoice(false);
 
     setCartAdded(true);
   };
-
-  const active = GALLERY[activeIndex];
 
   return (
     <>
@@ -148,262 +161,83 @@ export default function SantaLetterProduct() {
       />
 
       <div className="min-h-screen">
-        <PageBackground className="py-8 md:py-12" showSnow overlayOpacity="medium">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <div className="mb-6 flex justify-center">
-              <Link to="/">
-                <img src={logo} alt="e-Advent" className="h-16 md:h-20 w-auto drop-shadow-xl" />
-              </Link>
-            </div>
+        <ProductHero media={<ProductGallery images={GALLERY} />}>
+          <ProductIntro
+            eyebrow="Prezent adwentowy"
+            title="List do Świętego Mikołaja"
+            description="Gotowy zestaw do wysyłki: dwie wersje listu, opisana koperta i naklejki świąteczne. Magiczny rytuał, który dzieci zapamiętają na lata."
+            price={formatPrice(basePrice)}
+            priceHint="+ dostawa"
+            priceNote="Cena za jeden zestaw, bez dostawy"
+            features={['2 wersje listu', 'Opisana koperta', 'Naklejki świąteczne', 'Wysyłka InPost']}
+          />
 
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-              {/* Gallery */}
-              <div className="product-gallery-pin">
-                <button
-                  type="button"
-                  onClick={() => setLightboxOpen(true)}
-                  className="block w-full rounded-2xl overflow-hidden border border-christmas-gold/30 bg-cream shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-christmas-gold"
-                  aria-label="Powiększ zdjęcie"
-                >
-                  <img
-                    src={active.src}
-                    alt={active.alt}
-                    className="w-full aspect-[4/5] object-cover"
-                    width={960}
-                    height={1200}
-                    decoding="async"
-                  />
-                </button>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {GALLERY.map((img, i) => (
-                    <button
-                      key={img.src}
-                      type="button"
-                      onClick={() => setActiveIndex(i)}
-                      className={`rounded-xl overflow-hidden border-2 transition-colors ${
-                        i === activeIndex
-                          ? 'border-christmas-gold'
-                          : 'border-transparent opacity-80 hover:opacity-100'
-                      }`}
-                      aria-label={img.alt}
-                      aria-current={i === activeIndex}
-                    >
-                      <img
-                        src={img.thumb}
-                        alt=""
-                        className="w-full aspect-square object-cover"
-                        width={180}
-                        height={180}
-                        decoding="async"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <LetterPackComposer
+            letterQty={letterQty}
+            onLetterQtyChange={(qty) => {
+              setLetterQty(qty);
+              setFormError(null);
+            }}
+            certNames={certNames}
+            onCertNamesChange={(names) => {
+              setCertNames(names);
+              setFormError(null);
+            }}
+            letterPrice={basePrice}
+            certificatePrice={CERTIFICATE_PRICE}
+            voicePrice={withVoice ? voiceAddonPrice : 0}
+            error={formError}
+          />
 
-              {/* Product info */}
-              <div className="text-white">
-                <p className="text-christmas-gold text-sm tracking-[0.2em] uppercase mb-3">
-                  Prezent adwentowy
-                </p>
-                <h1 className="font-display text-3xl md:text-5xl font-semibold text-christmas-gold-light mb-4 leading-tight">
-                  List do Świętego Mikołaja
-                </h1>
-                <p className="text-white/80 text-base md:text-lg leading-relaxed mb-6">
-                  Gotowy zestaw do wysyłki: dwie wersje listu, opisana koperta i naklejki świąteczne.
-                  Magiczny rytuał, który dzieci zapamiętają na lata.
-                </p>
+          <label className="mb-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-christmas-gold/40 bg-black/25 p-4 hover:border-christmas-gold/70 transition-colors">
+            <input
+              type="checkbox"
+              checked={withVoice}
+              onChange={(e) => {
+                setWithVoice(e.target.checked);
+                trackSantaEvent('santa_addon_toggle', { checked: e.target.checked, cta_location: 'letter_product' });
+              }}
+              className="mt-1 h-5 w-5 accent-[#d4af37] shrink-0"
+            />
+            <span className="text-sm text-white/85 leading-relaxed">
+              <span className="block font-semibold text-christmas-gold-light">
+                <i className="fas fa-microphone-alt mr-1.5" aria-hidden="true" />
+                Dodaj wiadomość głosową od Mikołaja — {formatPrice(voiceAddonPrice)}
+                <span className="ml-2 text-xs font-normal text-white/50 line-through">{formatPrice(voiceStandalonePrice)}</span>
+              </span>
+              Mikołaj zwróci się do dziecka po imieniu i wspomni jego sukcesy. Szczegóły uzupełnisz po zakupie —
+              link do nagrania przyjdzie na e-mail.{' '}
+              <Link to="/wiadomosc-od-mikolaja" className="underline underline-offset-2 hover:text-white">Posłuchaj przykładu</Link>
+            </span>
+          </label>
 
-                <div className="mb-6">
-                  <p className="font-display text-4xl font-semibold text-christmas-gold-light">
-                    {formatPrice(basePrice)}
-                  </p>
-                  <p className="text-white/60 text-sm mt-2">
-                    + dostawa
-                  </p>
-                  <p className="text-white/50 text-xs mt-1">
-                    Cena za jeden zestaw, bez dostawy
-                  </p>
-                </div>
+          <ProductCartAction onClick={handleAddToCart} />
+        </ProductHero>
 
-                <ul className="space-y-2 mb-6 text-white/85 text-sm">
-                  {['2 wersje listu', 'Opisana koperta', 'Naklejki świąteczne', 'Wysyłka InPost'].map(
-                    (f) => (
-                      <li key={f} className="flex items-center gap-2">
-                        <i className="fas fa-check text-christmas-gold text-xs" />
-                        {f}
-                      </li>
-                    ),
-                  )}
-                </ul>
-
-                <LetterPackComposer
-                  letterQty={letterQty}
-                  onLetterQtyChange={(qty) => {
-                    setLetterQty(qty);
-                    setFormError(null);
-                  }}
-                  certNames={certNames}
-                  onCertNamesChange={(names) => {
-                    setCertNames(names);
-                    setFormError(null);
-                  }}
-                  letterPrice={basePrice}
-                  certificatePrice={CERTIFICATE_PRICE}
-                  error={formError}
-                />
-
-                {voiceConfig?.letterAddonEnabled && (
-                  <label className="mb-5 flex cursor-pointer items-start gap-3 rounded-2xl border border-christmas-gold/40 bg-black/25 p-4 hover:border-christmas-gold/70 transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={withVoice}
-                      onChange={(e) => {
-                        setWithVoice(e.target.checked);
-                        trackSantaEvent('santa_addon_toggle', { checked: e.target.checked, cta_location: 'letter_product' });
-                      }}
-                      className="mt-1 h-5 w-5 accent-[#d4af37] shrink-0"
-                    />
-                    <span className="text-sm text-white/85 leading-relaxed">
-                      <span className="block font-semibold text-christmas-gold-light">
-                        <i className="fas fa-microphone-alt mr-1.5" aria-hidden="true" />
-                        Dodaj wiadomość głosową od Mikołaja — {formatPrice(voiceConfig.prices.letterAddon)}
-                        <span className="ml-2 text-xs font-normal text-white/50 line-through">{formatPrice(voiceConfig.prices.standalone)}</span>
-                      </span>
-                      Mikołaj zwróci się do dziecka po imieniu i wspomni jego sukcesy. Szczegóły uzupełnisz po zakupie —
-                      link do nagrania przyjdzie na e-mail.{' '}
-                      <Link to="/wiadomosc-od-mikolaja" className="underline underline-offset-2 hover:text-white">Posłuchaj przykładu</Link>
-                    </span>
-                  </label>
-                )}
-
-                <div className="mb-4">
-                  <button type="button" onClick={handleAddToCart} className="btn-gold px-8 py-3.5 text-lg">
-                    <i className="fas fa-shopping-basket" />
-                    Dodaj do koszyka
-                  </button>
-                </div>
-                <p className="text-white/45 text-xs">
-                  Realizacja 3–5 dni roboczych · Bezpieczna płatność
-                </p>
-              </div>
-            </div>
-          </div>
-        </PageBackground>
-
-        {/* Zestaw */}
-        <section className="section-cream py-16 md:py-20">
-          <div className="container mx-auto px-4 max-w-4xl">
-            <h2 className="section-title mb-4 text-center">Co jest w zestawie?</h2>
-            <div className="gold-divider mb-10" />
-            <div className="grid sm:grid-cols-3 gap-5">
-              {[
-                {
-                  icon: 'fa-envelope-open-text',
-                  title: '2 wersje listu',
-                  text: 'Dwa szablony — dziecko wybiera ulubiony lub wypełnia oba.',
-                },
-                {
-                  icon: 'fa-mail-bulk',
-                  title: 'Opisana koperta',
-                  text: 'Gotowy adres do Świętego Mikołaja — wystarczy włożyć list.',
-                },
-                {
-                  icon: 'fa-sticky-note',
-                  title: 'Naklejki',
-                  text: 'Świąteczne naklejki do ozdobienia koperty i listu.',
-                },
-              ].map((card) => (
-                <ParchmentCard key={card.title} padding="md" className="h-full text-center">
-                  <div className="icon-circle mx-auto mb-3">
-                    <i className={`fas ${card.icon} text-parchment-text`} />
-                  </div>
-                  <h3 className="font-display text-xl font-semibold text-parchment-text mb-2">
-                    {card.title}
-                  </h3>
-                  <p className="text-parchment-muted text-sm leading-relaxed">{card.text}</p>
-                </ParchmentCard>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Jak wysłać */}
-        <section className="bg-white py-16 md:py-20">
-          <div className="container mx-auto px-4 max-w-3xl">
-            <h2 className="section-title mb-4 text-center">Jak wysłać list?</h2>
-            <div className="gold-divider mb-10" />
-            <ParchmentCard padding="lg">
-              <ol className="space-y-4">
-                {[
-                  'Wypełnij list razem z dzieckiem — życzenia, rysunki, obietnice.',
-                  'Ozdób kopertę naklejkami i włóż list do środka.',
-                  'Wrzuć do skrzynki pocztowej lub zanieś na pocztę — koperta jest już opisana.',
-                  'Czekajcie na magię grudnia a 24 grudnia śledźcie Mikołaja na mapie e-Advent!',
-                ].map((step, i) => (
-                  <li key={step} className="step-row">
-                    <span className="step-badge">{i + 1}</span>
-                    <p className="text-parchment-text leading-relaxed">{step}</p>
-                  </li>
-                ))}
-              </ol>
-              <div className="mt-6 pt-6 divider-parchment text-center">
-                <Link to="/sledz-mikolaja" className="text-christmas-green hover:text-christmas-gold font-medium underline transition-colors">
-                  Śledź Świętego Mikołaja na żywo →
-                </Link>
-              </div>
-            </ParchmentCard>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section className="section-cream py-16 md:py-20">
-          <div className="container mx-auto px-4 max-w-3xl">
-            <h2 className="section-title mb-4 text-center">Najczęstsze pytania</h2>
-            <div className="gold-divider mb-10" />
-            <div className="space-y-4">
-              {faq.map((item) => (
-                <ParchmentCard key={item.q} padding="md">
-                  <h3 className="font-display text-lg md:text-xl font-semibold text-parchment-text mb-2">
-                    {item.q}
-                  </h3>
-                  <p className="text-parchment-muted text-sm leading-relaxed">{item.a}</p>
-                </ParchmentCard>
-              ))}
-            </div>
-            <div className="text-center mt-10">
-              <Link to="/kalendarze-adwentowe" className="btn-gold px-8 py-3">
-                Zobacz też kalendarze adwentowe
-              </Link>
-            </div>
-          </div>
-        </section>
+        <ProductHighlights items={HIGHLIGHTS} />
+        <ProductSteps
+          kicker="Mały świąteczny rytuał"
+          title={<>List pełen<br /><em>marzeń.</em></>}
+          steps={STEPS}
+          footer={<Link to="/sledz-mikolaja">Śledź Świętego Mikołaja na żywo →</Link>}
+        />
+        <ProductStory
+          kicker="Co jest w zestawie?"
+          title={<>Wszystko, czego trzeba,<br /><em>żeby list wyruszył w drogę.</em></>}
+          description="Gotowy zestaw do wysyłki — wystarczy usiąść razem i zacząć pisać."
+          items={CONTENTS}
+        />
+        <ProductCrossSell
+          kicker="Zanim przyjdzie Wigilia"
+          title={<>List to początek.<br /><em>Odliczajcie razem dni.</em></>}
+          text="Kalendarz adwentowy online albo fizyczna zdrapka ze złotymi okienkami. Jedno okienko, jeden mały powód, żeby pobyć razem — przez 24 grudniowe dni."
+          price={`od ${formatPrice(CALENDAR_PRICE)}`}
+          priceNote="kalendarz online lub zdrapka"
+          cta={{ label: 'Zobacz kalendarze adwentowe', to: '/kalendarze-adwentowe' }}
+        />
+        <ProductFaq items={faq} />
       </div>
 
-      {lightboxOpen && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/85 flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Powiększone zdjęcie"
-          onClick={() => setLightboxOpen(false)}
-        >
-          <button
-            type="button"
-            className="absolute top-4 right-4 text-white/80 hover:text-white text-2xl p-2"
-            aria-label="Zamknij"
-            onClick={() => setLightboxOpen(false)}
-          >
-            <i className="fas fa-times" />
-          </button>
-          <img
-            src={active.src}
-            alt={active.alt}
-            className="max-h-[90vh] max-w-full rounded-xl shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
       <AddedToCartModal
         open={cartAdded}
         onContinue={() => setCartAdded(false)}

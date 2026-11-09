@@ -18,7 +18,7 @@ function requireAdmin(): void {
     global $config;
     startSession();
     if (empty($_SESSION['admin']) || time() - ($_SESSION['last_activity'] ?? 0) > $config['session_timeout']) {
-        unset($_SESSION['admin']); header('Location: /statystyki/login.php', true, 303); exit;
+        unset($_SESSION['admin']); header('Location: /statystyki/logowanie', true, 303); exit;
     }
     $_SESSION['last_activity'] = time();
 }

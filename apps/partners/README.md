@@ -1,6 +1,6 @@
 # ŚOA × e-Advent — kalendarz partnerski 2026
 
-Samodzielna aplikacja w monorepo e-advent dla `https://soa.e-advent.pl`.
+Samodzielna aplikacja w monorepo e-advent dla `https://soa-katowice.e-advent.pl`.
 PHP 8.2+ (zalecana aktualna wersja wspierana przez hosting), HTML, CSS i vanilla JavaScript.
 Brak Reacta, bundlera, bibliotek frontendowych, integracji z API sklepu i zewnętrznych fontów.
 
@@ -69,13 +69,13 @@ Warstwy są rozdzielone: routing w `public`, logika w `private`, widoki w `priva
 
 ## Mocki i materiały do zastąpienia
 
-Kompozycja bazuje na mockupach z zestawu: zimowe tło, szeryfowe nagłówki, granatowy pasek, magentowa wstęga projektu i kremowe okienka. Dodatkowe etykiety dekoracyjne usunięto. Nowe grafiki okienek dostarczone 04.11.2026 zastąpiły karty rysowane CSS. Wszystkie dni, również 24., używają tych samych dwóch stanów graficznych; dzień 24 wyróżnia magentowy numer. Oficjalnych logotypów nie zastępowano grafiką z mockupów.
+Kalendarz ma formę drewnianego domku z ośnieżonym dachem na tle zimowego lasu. Wszystkie okienka zachowują dotychczasową grafikę otwartą i zamkniętą, z małym znakiem ŚOA; okno wigilijne jest większe.
 
 1. `private/tasks.php`: wszystkie 24 ćwiczenia to przykłady do zastąpienia/akceptacji przez ŚOA. Nie są opracowaniem medycznym.
 2. `stats_source = mock`: statystyki generowane deterministycznie, niezwiązane z ruchem. Źródło `mysql` czyta rzeczywiste agregaty.
-3. Brak oficjalnego `public/assets/branding/soa-logo.svg` oraz `fe-sl-official-strip.svg`. Są tekstowe miejsca na oznaczenia; **nie odtworzono logotypów z mockupów**. Po dostarczeniu pliki pojawią się automatycznie.
-4. Strony prywatności i dostępności są szkicami do uzupełnienia i zatwierdzenia, nie deklaracją zgodności.
-5. W konfiguracji brakuje kontaktu i zatwierdzonego tekstu finansowania. Położenie znaków w modalach i wariant mobilny wymagają uzgodnienia.
+3. Logo ŚOA i baner finansowania pochodzą z materiałów partnera. Na wąskich ekranach te same znaki finansowania wyświetlają się w dwóch rzędach.
+4. Strony prywatności i dostępności opisują kalendarz i podają dane kontaktowe ŚOA. Formalna deklaracja dostępności wymaga oceny i dat dotyczących tej subdomeny.
+5. Wzór konfiguracji zawiera ogólny e-mail ŚOA; przed publikacją potrzebny jest zatwierdzony tekst finansowania. Położenie znaków w modalach i wariant mobilny wymagają uzgodnienia.
 
 ## Analityka
 

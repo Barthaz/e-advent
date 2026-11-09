@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import CalendarGrid from '../components/CalendarGrid';
-import FestivePage from '../components/FestivePage';
-import ContentCard from '../components/ContentCard';
+import CalendarScene, { CalendarProgress } from '../components/CalendarScene';
+import SEOHead from '../components/SEOHead';
 import CalendarStatusBanner from '../components/CalendarStatusBanner';
 import LoadingState from '../components/LoadingState';
 import StatusMessagePage from '../components/StatusMessagePage';
@@ -422,17 +422,8 @@ export default function CalendarView() {
   }
 
   return (
-    <FestivePage maxWidth="xl">
-      <ContentCard variant="gold" padding="md">
-          {/* Tytuł kalendarza */}
-          {calendarData.calendarTitle && (
-            <div className="text-center mb-6">
-              <h1 className="heading-page mb-2">
-                {calendarData.calendarTitle}
-              </h1>
-            </div>
-          )}
-          
+    <CalendarScene title={calendarData.calendarTitle || 'Wasz kalendarz adwentowy'} description="Jedno okienko dziennie. Małe zadania, wspólny czas i wspomnienia, które zostaną na dłużej.">
+      <SEOHead title={`${calendarData.calendarTitle || 'Twój kalendarz'} | e-Advent`} robots="noindex, nofollow" />
           {!hasOpenableWindows && nextAvailableDate && (
             <CalendarStatusBanner
               isBeforeDecember={!!isBeforeDecember}
@@ -447,6 +438,7 @@ export default function CalendarView() {
             currentDate={new Date()}
             debugMode={debugMode}
           />
+        <CalendarProgress opened={days.filter(day => day.isOpened).length} />
         <OpenedDayModal
           isOpen={openedDay !== null}
           onClose={() => setOpenedDay(null)}
@@ -470,8 +462,7 @@ export default function CalendarView() {
             onClose={() => setEmailSpecialWindow(null)}
           />
         )}
-      </ContentCard>
-    </FestivePage>
+    </CalendarScene>
   );
 }
 

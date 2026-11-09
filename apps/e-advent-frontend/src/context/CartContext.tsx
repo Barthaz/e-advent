@@ -9,6 +9,7 @@ import {
 } from '../config/products';
 import {
   appendSantaLetterBundle,
+  appendCertificateToLetter,
   appendVoiceMessage,
   convertVoiceToAddon as toAddon,
   normalizeVoiceItems,
@@ -37,7 +38,7 @@ import { CartContext, type AddItemInput, type AddSantaLetterBundleInput, type Ad
 
 const EMPTY_TOTALS: OrderTotals = getCartTotals([])!;
 const VOICE_CONVERTED_NOTICE =
-  'W koszyku nie ma już listu, więc wiadomość od Mikołaja ma teraz cenę samodzielną (19,90 zł). Nic nie zostało usunięte.';
+  'W koszyku nie ma już listu, więc wiadomość od Mikołaja ma teraz cenę samodzielną (24 zł). Nic nie zostało usunięte.';
 
 
 function trackAddedItems(added: CartItem[], quantityFallback = 1) {
@@ -212,6 +213,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => commit(prev, dropCertificate(prev, id)));
   }, [commit]);
 
+  const addCertificate = useCallback((name: string) => {
+    setItems((prev) => {
+      const result = appendCertificateToLetter(prev, name);
+      return commit(prev, result.items);
+    });
+  }, [commit]);
+
   const setLetterQuantity = useCallback((quantity: number) => {
     setItems((prev) => commit(prev, setLetterPackQuantity(prev, quantity)));
   }, [commit]);
@@ -255,6 +263,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addSantaLetterBundle,
       removeItem,
       removeCertificate: removeCertificateItem,
+      addCertificate,
       setLetterQuantity,
       removeLetterPack: removeLetters,
       updateQty,
@@ -264,7 +273,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       voiceNotice,
       dismissVoiceNotice,
     }),
-    [items, itemCount, totals, addItem, addSantaLetterBundle, removeItem, removeCertificateItem, setLetterQuantity, removeLetters, updateQty, clear, addVoiceMessage, convertVoiceToAddon, voiceNotice, dismissVoiceNotice],
+    [items, itemCount, totals, addItem, addSantaLetterBundle, removeItem, removeCertificateItem, addCertificate, setLetterQuantity, removeLetters, updateQty, clear, addVoiceMessage, convertVoiceToAddon, voiceNotice, dismissVoiceNotice],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

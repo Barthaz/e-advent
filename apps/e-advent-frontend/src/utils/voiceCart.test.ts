@@ -73,13 +73,13 @@ describe('voice message cart rules', () => {
   it('voice lines need no shipping and do not count toward free shipping', () => {
     const voiceOnly = computeOrderTotals([{ sku: VOICE_MESSAGE_SKU, quantity: 1 }], { shippingAmount: 0 });
     expect(voiceOnly?.hasPhysical).toBe(false);
-    expect(voiceOnly?.total).toBeCloseTo(19.9);
+    expect(voiceOnly?.total).toBeCloseTo(24);
 
     const bundle = computeOrderTotals(
       [{ sku: 'santa-letter', quantity: 1 }, { sku: VOICE_MESSAGE_ADDON_SKU, quantity: 1 }],
       { shippingAmount: 0 },
     );
-    expect(bundle?.subtotal).toBeCloseTo(43.9);
+    expect(bundle?.subtotal).toBeCloseTo(48);
     expect(bundle?.hasPhysical).toBe(true);
   });
 });

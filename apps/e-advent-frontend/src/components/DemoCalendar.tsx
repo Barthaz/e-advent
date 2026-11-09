@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import CalendarGrid from './CalendarGrid';
 import Modal from './Modal';
 import CalendarStatusBanner from './CalendarStatusBanner';
-import Logo from './Logo';
+import { CalendarProgress } from './CalendarScene';
 
 interface DemoDay {
   day: number;
@@ -75,11 +75,7 @@ export default function DemoCalendar({ debugMode = false }: DemoCalendarProps) {
   // W trybie DEBUG wszystkie dni są dostępne do otwarcia
   const createInitialDays = (): DemoDay[] => {
     return demoTasks.map((task, index) => {
-      const dayDate = new Date(dates[index]);
-      // Użyj lokalnej daty bez czasu dla porównania
-      const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const dayLocal = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
-      const isOpened = debugMode ? false : (dayLocal <= todayLocal); // W trybie DEBUG nic nie otwieraj automatycznie
+      const isOpened = false; // W trybie DEBUG nic nie otwieraj automatycznie
       
       return {
         day: task.day,
@@ -180,8 +176,8 @@ export default function DemoCalendar({ debugMode = false }: DemoCalendarProps) {
   const isBeforeDecember = nextAvailableDate && nextAvailableDate.getMonth() !== 11; // 11 = grudzień (0-indexed)
 
   return (
-    <div className="calendar-wrapper">
-      <Logo className="mb-6" />
+    <div className="calendar-demo">
+
 
       {!hasOpenableWindows && !debugMode && nextAvailableDate && (
         <CalendarStatusBanner
@@ -197,6 +193,9 @@ export default function DemoCalendar({ debugMode = false }: DemoCalendarProps) {
         currentDate={today}
         debugMode={debugMode}
       />
+
+      <CalendarProgress opened={days.filter(day => day.isOpened).length} />
+      <p className="calendar-access-help" style={{ color: "#c9bfa8" }}>Postęp tego darmowego kalendarza zapisuje się na tym urządzeniu.</p>
 
       <Modal
         isOpen={openedDay !== null}

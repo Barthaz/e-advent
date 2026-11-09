@@ -33,6 +33,7 @@
     "migrate:order-timezone": "node scripts/migrate-order-timezone.js",
     "migrate:calendar-origin": "node scripts/migrate-calendar-origin.js",
     "migrate:santa-messages": "node scripts/migrate-santa-messages.js",
+    "check:santa": "node scripts/check-santa-readiness.js",
     "seed:letter-promo": "node scripts/seed-letter-promo.js"
   },
   "nodemonConfig": {
@@ -53,6 +54,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1163.0",
     "@e-advent/products": "1.0.0",
     "@napi-rs/canvas": "^0.1.100",
     "@react-pdf/renderer": "^4.3.0",

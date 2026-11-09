@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="42" height="48" viewBox="0 0 42 48" fill="none">
+ <defs><linearGradient id="glass" x2=".3" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#fff2b8"/><stop offset="1" stop-color="#eeb554"/></linearGradient></defs>
+ <g stroke="#704124" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M16 12V9a5 5 0 0 1 10 0v3"/>
+ <path d="m7 19 14-9 14 9-3 3H10z" fill="#9f6c38"/>
+ <path d="m11 22 3 17h14l3-17z" fill="url(#glass)"/><path d="m14 39-4 3h22l-4-3z" fill="#9f6c38"/>
+ <path d="m15 22 3 17m9-17-3 17" stroke="#936a37" stroke-width="1"/>
+ </g><path d="M21 36c-6-2-2-7 0-10 0 3 6 7 0 10Z" fill="#fffcdf"/>
+</svg>

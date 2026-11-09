@@ -3,38 +3,26 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { randomBytes } = require('node:crypto');
+const { storageInfo, readR2Audio, writeR2Audio, deleteR2Audio, MAX_AUDIO_BYTES } = require('./r2');
 
 /** Outside /uploads on purpose: that directory is served statically. */
 const LOCAL_DIR = path.join(__dirname, '..', '..', 'storage', 'santa-audio');
 
-function useBlob() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
-}
-
-function blobAccess() {
-  return process.env.SANTA_BLOB_ACCESS === 'private' ? 'private' : 'public';
-}
-
 /**
- * Stores an MP3 and returns an opaque storage key. With a public Blob store the
- * object name carries a random suffix and the URL never leaves the API.
+ * New production recordings always use private R2; local storage is for development.
+ * Legacy Blob objects remain readable to avoid breaking already delivered messages.
  * @param {string} messageId
  * @param {Buffer} buffer
  * @returns {Promise<string>}
  */
 async function saveAudio(messageId, buffer) {
+  if (buffer.length > MAX_AUDIO_BYTES) throw Object.assign(new Error('Plik jest za duży (maks. 4 MB).'), { status: 400, code: 'AUDIO_TOO_LARGE' });
   const name = `santa-messages/${messageId}/${Date.now()}-${randomBytes(12).toString('hex')}.mp3`;
-  if (useBlob()) {
-    const { put } = require('@vercel/blob');
-    const access = blobAccess();
-    const blob = await put(name, buffer, {
-      access,
-      addRandomSuffix: true,
-      contentType: 'audio/mpeg',
-      cacheControlMaxAge: 60,
-    });
-    return `blob:${access}:${blob.url}`;
+  if (storageInfo().provider === 'r2') {
+    await writeR2Audio(name, buffer);
+    return `r2:${name}`;
   }
+  if (storageInfo().provider !== 'local' || process.env.NODE_ENV === 'production') throw new Error('Private R2 storage is required in production');
   const file = path.join(LOCAL_DIR, name.replace(/\//g, '_'));
   await fs.mkdir(LOCAL_DIR, { recursive: true });
   await fs.writeFile(file, buffer);
@@ -44,6 +32,7 @@ async function saveAudio(messageId, buffer) {
 /** @returns {Promise<Buffer|null>} */
 async function readAudio(key) {
   if (!key) return null;
+  if (key.startsWith('r2:')) return readR2Audio(key.slice(3));
   if (key.startsWith('local:')) {
     const file = path.join(LOCAL_DIR, path.basename(key.slice('local:'.length)));
     try {
@@ -72,6 +61,7 @@ async function readAudio(key) {
 
 async function deleteAudio(key) {
   if (!key) return;
+  if (key.startsWith('r2:')) return deleteR2Audio(key.slice(3));
   if (key.startsWith('local:')) {
     await fs.rm(path.join(LOCAL_DIR, path.basename(key.slice('local:'.length))), { force: true });
     return;

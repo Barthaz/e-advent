@@ -367,6 +367,7 @@ export interface CreatePaymentIntentRequest {
     [key: string]: string | undefined;
   };
   acceptanceData?: {
+    digitalContentConsent?: boolean;
     termsAccepted: boolean;
     privacyAccepted: boolean;
     termsAcceptedAt: string;

@@ -18,7 +18,7 @@ vi.mock('../config/products', async (importOriginal) => {
 vi.mock('../utils/analytics', () => ({ trackBeginCheckout: vi.fn(), saveGaPurchasePayload: vi.fn() }));
 vi.mock('@stripe/stripe-js', () => ({ loadStripe: vi.fn(() => Promise.resolve(null)) }));
 vi.mock('@stripe/react-stripe-js', () => ({
-  Elements: ({ children, options }: { children: ReactNode; options: { clientSecret: string } }) => <div data-testid="stripe-form" data-secret={options.clientSecret}>{children}</div>,
+  Elements: ({ children, options }: { children: ReactNode; options?: { clientSecret: string } }) => options ? <div data-testid="stripe-form" data-secret={options.clientSecret}>{children}</div> : <>{children}</>,
   PaymentElement: () => <div />, useStripe: () => null, useElements: () => null,
 }));
 beforeEach(() => {
@@ -53,6 +53,8 @@ it('locker requires a selected point and changing it replaces the payment', asyn
     ? { price: 17, currency: 'PLN', profile: 'test', quoteKey: 'quote-locker' }
     : { environment: 'sandbox', geowidgetToken: 'test-public-token' } })));
   render(<MemoryRouter><Checkout /></MemoryRouter>);
+  expect(document.querySelector('inpost-geowidget')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Wybierz Paczkomat na mapie' }));
   await waitFor(() => expect(document.querySelector('inpost-geowidget')).not.toBeNull());
   expect(screen.queryByTestId('stripe-form')).toBeNull();
   expect(createPaymentIntent).not.toHaveBeenCalled();
@@ -63,6 +65,10 @@ it('locker requires a selected point and changing it replaces the payment', asyn
   act(() => select({ name: 'KRA01M' }));
   await waitFor(() => expect(screen.getByTestId('stripe-form')).not.toBeNull(), { timeout: 3000 });
   expect(vi.mocked(createPaymentIntent).mock.calls[0][0]).toMatchObject({ amount: 46, delivery: { type: 'parcel_inpost', pointId: 'KRA01M', quoteKey: 'quote-locker' } });
+  expect(document.querySelector('inpost-geowidget')).toBeNull();
+  fireEvent.click(screen.getByRole('button', { name: 'Zmień Paczkomat' }));
+  await waitFor(() => expect(document.querySelector('inpost-geowidget')).not.toBeNull());
+  act(() => document.querySelector('inpost-geowidget')?.dispatchEvent(new CustomEvent('inpost.geowidget.init', { detail: { api } })));
   act(() => select({ name: 'KRA02M' }));
   expect(screen.queryByTestId('stripe-form')).toBeNull();
   await waitFor(() => expect(vi.mocked(createPaymentIntent).mock.calls).toHaveLength(2), { timeout: 3000 });

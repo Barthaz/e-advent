@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import PageBackground from '../../components/PageBackground';
 import ParchmentCard from '../../components/ParchmentCard';
 import SEOHead from '../../components/SEOHead';
-import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import Logo from '../../components/Logo';
 import { trackSantaEvent } from '../../utils/analytics';
 import PersonalizationFields from '../../santa-message/PersonalizationFields';
 import { approveActivation, getActivation, SantaApiError, submitActivation, type ActivationView } from '../../santa-message/api';
@@ -116,11 +116,7 @@ export default function VoiceMessagePersonalize() {
       />
       <PageBackground className="py-8 md:py-12 min-h-screen" showSnow overlayOpacity="medium">
         <div className="container mx-auto px-4 max-w-3xl">
-          <div className="mb-6 flex justify-center">
-            <Link to="/">
-              <img src={logo} alt="e-Advent" className="h-14 md:h-16 w-auto drop-shadow-xl" />
-            </Link>
-          </div>
+          <Logo className="mb-6" />
 
           {!view && !loadError && (
             <p className="text-center text-white/80 py-20" role="status">

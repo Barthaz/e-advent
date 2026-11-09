@@ -36,7 +36,7 @@ export default function ShippingAndReturns() {
               </li>
             </ul>
             <p className="mb-4">
-              Kalendarz interaktywny jest produktem cyfrowym — po opłaceniu Użytkownik otrzymuje
+              Kalendarz online jest produktem cyfrowym — po opłaceniu Użytkownik otrzymuje
               link dostępowy na podany adres e-mail; nie wymaga wysyłki pocztowej.
             </p>
             <p className="mb-4">
@@ -62,7 +62,7 @@ export default function ShippingAndReturns() {
 
             <h3 className="legal-h3">2.1. Produkty personalizowane i wykonywane na zamówienie</h3>
             <p className="mb-4">
-              Kalendarze adwentowe (interaktywny oraz zdrapka) są produktami{' '}
+              Fizyczne kalendarze zdrapki są produktami{' '}
               <strong>spersonalizowanymi i wykonywanymi na indywidualne zamówienie</strong> —
               Użytkownik samodzielnie ustala treści zadań oraz (w przypadku zdrapki) wybiera
               grafikę i format. Zgodnie z{' '}
@@ -77,31 +77,23 @@ export default function ShippingAndReturns() {
               indywidualnych danych podanych przy zamówieniu.
             </p>
 
-            <h3 className="legal-h3">2.2. Treści cyfrowe dostarczane natychmiast</h3>
-            <p className="mb-4">
-              Kalendarz interaktywny jest treścią cyfrową niedostarczaną na nośniku trwałym,
-              udostępnianą natychmiast po dokonaniu płatności. Zgodnie z{' '}
-              <strong>art. 38 pkt 13 ustawy o prawach konsumenta</strong> prawo odstąpienia od
-              umowy nie przysługuje, jeżeli spełnianie świadczenia rozpoczęło się za wyraźną zgodą
-              konsumenta przed upływem terminu do odstąpienia od umowy i po poinformowaniu go o
-              utracie prawa odstąpienia.
-            </p>
+            <h3 className="legal-h3">2.2. Treści cyfrowe</h3>
+            <p className="mb-4">Kalendarz online i wiadomość głosowa są treściami cyfrowymi. Sama personalizacja nie wyłącza prawa odstąpienia. Dla odpłatnych treści cyfrowych jego utrata wymaga uprzedniej, wyraźnej zgody, poinformowania o utracie prawa po spełnieniu świadczenia i przyjęcia tego do wiadomości oraz potwierdzenia zawarcia umowy na trwałym nośniku, zgodnie z art. 38 ust. 1 pkt 13 ustawy o prawach konsumenta.</p>
+            <p className="mb-4">Nagranie od Mikołaja dostarczamy e-mailem jako prywatny link po przygotowaniu wiadomości, zwykle w ciągu 24 godzin od zatwierdzenia tekstu. Można je wielokrotnie odsłuchać i pobrać jako MP3 przez 365 dni od pierwszego dostarczenia. Nie naliczamy za nie kosztów przesyłki. W pakiecie list i certyfikat są wysyłane osobno od nagrania.</p>
 
             <h3 className="legal-h3">2.3. Produkty gotowe (niepersonalizowane)</h3>
             <p className="mb-4">
               Gotowy zestaw „List do Świętego Mikołaja” (bez personalizacji online — dziecko
               uzupełnia treść samodzielnie na papierze) nie jest produktem wykonywanym według
               indywidualnej specyfikacji. W przypadku tego produktu konsumentowi przysługuje prawo
-              odstąpienia od umowy w terminie 14 dni od otrzymania przesyłki, o ile produkt nie
-              nosi śladów użytkowania uniemożliwiających ponowną sprzedaż.
+              odstąpienia od umowy w terminie 14 dni od otrzymania przesyłki. Korzystanie z produktu ponad zakres niezbędny do sprawdzenia jego cech może skutkować odpowiedzialnością za zmniejszenie jego wartości. Zakup w pakiecie z nagraniem lub certyfikatem nie odbiera prawa zwrotu gotowego listu.
             </p>
             <p className="mb-4">
               Aby skorzystać z prawa odstąpienia, należy przesłać oświadczenie na adres e-mail:{' '}
               <a href="mailto:kontakt@e-advent.pl" className="text-christmas-green hover:underline">
                 kontakt@e-advent.pl
               </a>
-              . Zwrot środków następuje niezwłocznie, nie później niż w terminie 14 dni od
-              otrzymania oświadczenia i zwrotu towaru.
+              . Towar należy odesłać w ciągu 14 dni od odstąpienia; bezpośredni koszt zwrotu ponosi konsument. Zwrot zapłaty, wraz z kosztem najtańszej zwykłej dostawy oferowanej dla zwracanej przesyłki, następuje w ciągu 14 dni od otrzymania oświadczenia. Możemy wstrzymać zwrot do otrzymania towaru lub dowodu jego odesłania, zależnie od tego, co nastąpi wcześniej. Dane do odesłania towaru przekażemy w odpowiedzi na zgłoszenie.
             </p>
           </section>
 
@@ -109,12 +101,12 @@ export default function ShippingAndReturns() {
             <h2 className="legal-h2">3. Reklamacje</h2>
             <p className="mb-4">
               Niezależnie od braku prawa odstąpienia od umowy w przypadkach wskazanych powyżej,
-              Użytkownikowi przysługują uprawnienia z tytułu rękojmi za wady oraz możliwość
+              Użytkownikowi przysługują uprawnienia z tytułu niezgodności towaru lub treści cyfrowej z umową oraz możliwość
               złożenia reklamacji, w szczególności gdy:
             </p>
             <ul className="list-disc pl-6 space-y-2 mb-4">
               <li>produkt fizyczny dotarł uszkodzony lub niepełny,</li>
-              <li>wystąpiły problemy techniczne uniemożliwiające korzystanie z kalendarza interaktywnego,</li>
+              <li>wystąpiły problemy techniczne uniemożliwiające korzystanie z kalendarza online,</li>
               <li>zamówienie zostało zrealizowane niezgodnie z ustaleniami.</li>
             </ul>
             <p className="mb-4">
@@ -122,7 +114,7 @@ export default function ShippingAndReturns() {
               <a href="mailto:kontakt@e-advent.pl" className="text-christmas-green hover:underline">
                 kontakt@e-advent.pl
               </a>
-              . Administrator rozpatruje reklamacje w ciągu 14 dni roboczych od dnia ich otrzymania.
+              . Administrator rozpatruje reklamacje w ciągu 14 dni od dnia ich otrzymania.
             </p>
           </section>
 
@@ -130,11 +122,7 @@ export default function ShippingAndReturns() {
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mt-6">
               <p className="text-sm text-gray-700">
                 <strong>Data ostatniej aktualizacji:</strong>{' '}
-                {new Date().toLocaleDateString('pl-PL', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                6 listopada 2026 r.
               </p>
             </div>
           </section>

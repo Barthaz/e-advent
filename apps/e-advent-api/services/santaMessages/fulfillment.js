@@ -11,6 +11,7 @@ const { buildSantaScript, countWords, WORDS_PER_SECOND } = require('./script');
 const { loadDraftById, markDraftOrdered } = require('./drafts');
 const { deliverSantaEmail, activationUrl, playUrl } = require('./emails');
 const { saveAudio, readAudio, deleteAudio } = require('./audioStore');
+const { readR2Audio, storageInfo } = require('./r2');
 const { mp3Info } = require('./mp3');
 
 const STATUS = Object.freeze({
@@ -59,7 +60,7 @@ async function logEvent(messageId, eventType, actor = 'system', details = null) 
 
 async function loadOrder(orderId) {
   const [rows] = await query(
-    'SELECT id, status, customer_email, order_number FROM orders WHERE id = ? LIMIT 1',
+    'SELECT id, status, customer_email, order_number, metadata FROM orders WHERE id = ? LIMIT 1',
     [orderId],
   );
   return rows[0] || null;
@@ -181,11 +182,11 @@ async function processDeliveries({ messageId = null, orderId = null, actor = 'sy
     if (claim.affectedRows !== 1) continue;
     const instance = await loadInstance(row.message_id);
     const order = instance ? await loadOrder(instance.order_id) : null;
-    if (!instance || !order || [STATUS.CANCELLED, STATUS.EXPIRED].includes(instance.status)) {
+    if (!instance || !order || order.status !== 'succeeded' || isExpired(instance) || [STATUS.CANCELLED, STATUS.EXPIRED].includes(instance.status)) {
       await query("UPDATE santa_message_deliveries SET status = 'failed', attempts = ?, last_error = 'not_deliverable' WHERE id = ?", [MAX_DELIVERY_ATTEMPTS, row.id]);
       continue;
     }
-    if (row.delivery_type === 'audio_ready' && !instance.audio_key) {
+    if (row.delivery_type === 'audio_ready' && (!instance.audio_key || ![STATUS.AUDIO_READY, STATUS.DELIVERED].includes(instance.status))) {
       await query("UPDATE santa_message_deliveries SET status = 'failed', last_error = 'audio_missing', next_attempt_at = ? WHERE id = ?", [minutesFromNow(30), row.id]);
       continue;
     }
@@ -195,6 +196,7 @@ async function processDeliveries({ messageId = null, orderId = null, actor = 'sy
         to: order.customer_email,
         url: deliveryUrl(row.delivery_type, instance),
         orderNumber: formatOrderNumber(order.order_number),
+        consent: parseJson(order.metadata).digitalContentConsent,
       });
       await query("UPDATE santa_message_deliveries SET status = 'sent', sent_at = UTC_TIMESTAMP(), last_error = NULL WHERE id = ?", [row.id]);
       if (row.delivery_type === 'audio_ready') {
@@ -410,13 +412,23 @@ async function storeAudio(instance, buffer, source, actor) {
   }
   const key = await saveAudio(instance.id, buffer);
   const delivered = instance.status === STATUS.DELIVERED;
-  await query(
+  let stored;
+  try {
+    [stored] = await query(
     `UPDATE santa_message_instances
      SET audio_key = ?, audio_duration_seconds = ?, audio_bytes = ?, audio_source = ?, status = ?,
          audio_ready_at = UTC_TIMESTAMP(), last_error_code = NULL
-     WHERE id = ?`,
-    [key, info.durationSeconds, buffer.length, source, delivered ? STATUS.DELIVERED : STATUS.AUDIO_READY, instance.id],
-  );
+     WHERE id = ? AND status = ? AND audio_key <=> ?`,
+    [key, info.durationSeconds, buffer.length, source, delivered ? STATUS.DELIVERED : STATUS.AUDIO_READY, instance.id, instance.status, instance.audio_key || null],
+    );
+  } catch (error) {
+    await deleteAudio(key).catch(() => {});
+    throw error;
+  }
+  if (stored.affectedRows !== 1) {
+    await deleteAudio(key);
+    return { conflict: 'NOT_READY' };
+  }
   if (instance.audio_key && instance.audio_key !== key) {
     deleteAudio(instance.audio_key).catch(() => {});
   }
@@ -431,16 +443,20 @@ async function deliverAudio(messageId, actor = 'admin') {
   if (![STATUS.AUDIO_READY, STATUS.DELIVERED].includes(instance.status)) return { conflict: 'NOT_READY' };
   await addDelivery(messageId, 'audio_ready');
   await logEvent(messageId, 'delivery_requested', actor);
-  await processDeliveries({ messageId, actor });
-  return { ok: true };
+  const result = await processDeliveries({ messageId, actor });
+  return { ok: true, queued: result.sent === 0 };
 }
 
 /* ---------- playback ---------- */
 
-function signedAudioPath(messageId, download = false) {
+function signedAudioPath(messageId, download = false, version = 1) {
   const exp = Math.floor(Date.now() / 1000) + santaConfig().signedUrlTtlSeconds;
-  const sig = audioSignature(messageId, exp, download);
-  return `/santa-messages/audio/${messageId}?exp=${exp}&sig=${sig}${download ? '&dl=1' : ''}`;
+  const sig = audioSignature(messageId, exp, download, version);
+  return `/santa-messages/audio/${messageId}?exp=${exp}&sig=${sig}&v=${version}${download ? '&dl=1' : ''}`;
+}
+
+function isExpired(instance) {
+  return Boolean(instance.retention_until && new Date(instance.retention_until).getTime() <= Date.now());
 }
 
 async function playbackView(instance) {
@@ -451,17 +467,21 @@ async function playbackView(instance) {
   }
   return {
     childVocative: personalization.childVocative || '',
+    childName: personalization.childName || '',
     durationSeconds: instance.audio_duration_seconds != null ? Number(instance.audio_duration_seconds) : null,
-    audioUrl: signedAudioPath(instance.id),
-    downloadUrl: signedAudioPath(instance.id, true),
+    audioUrl: signedAudioPath(instance.id, false, Number(instance.play_token_version) || 1),
+    downloadUrl: signedAudioPath(instance.id, true, Number(instance.play_token_version) || 1),
     transcript: script?.spokenText || '',
     availableUntil: instance.retention_until,
   };
 }
 
-async function audioForStreaming(messageId) {
+async function audioForStreaming(messageId, version) {
   const instance = await loadInstance(messageId);
-  if (!instance || instance.status !== STATUS.DELIVERED || !instance.audio_key) return null;
+  if (!instance || instance.status !== STATUS.DELIVERED || !instance.audio_key || isExpired(instance)
+      || Number(instance.play_token_version) !== version) return null;
+  const order = await loadOrder(instance.order_id);
+  if (order?.status !== 'succeeded') return null;
   return readAudio(instance.audio_key);
 }
 
@@ -492,6 +512,7 @@ async function listInstances({ status, q, limit = 50, offset = 0 } = {}) {
   );
   const [statusRows] = await query('SELECT status, COUNT(*) AS n FROM santa_message_instances GROUP BY status');
   return {
+      storage: storageInfo(),
     items: rows.map((row) => ({
       id: row.id,
       orderId: row.order_id,
@@ -546,6 +567,7 @@ async function instanceDetail(id) {
       source: instance.audio_source,
     } : null,
     ttsAutomation: ttsConfigured(),
+    storage: storageInfo(),
     lastErrorCode: instance.last_error_code,
     timestamps: {
       paidAt: instance.paid_at,
@@ -563,12 +585,33 @@ async function instanceDetail(id) {
   };
 }
 
-async function adminUploadAudio(id, buffer) {
+async function audioUploadTarget(id) {
   const instance = await loadInstance(id);
   if (!instance) return { notFound: true };
-  if ([STATUS.CANCELLED, STATUS.EXPIRED].includes(instance.status)) return { conflict: 'CLOSED' };
+  if ([STATUS.CANCELLED, STATUS.EXPIRED, STATUS.DELIVERED, STATUS.TTS_PROCESSING].includes(instance.status)) return { conflict: 'CLOSED' };
   if (!instance.script_enc) return { conflict: 'NO_SCRIPT' };
+  if (santaConfig().scriptApprovalRequired && !instance.script_approved_at) return { conflict: 'NOT_APPROVED' };
+  const order = await loadOrder(instance.order_id);
+  if (order?.status !== 'succeeded') return { conflict: 'NOT_PAID' };
+  return { instance };
+}
+
+async function adminUploadAudio(id, buffer) {
+  const target = await audioUploadTarget(id);
+  if (!target.instance) return target;
+  const instance = target.instance;
   return storeAudio(instance, buffer, 'upload', 'admin');
+}
+
+async function adminAttachR2Audio(id, objectKey) {
+  const target = await audioUploadTarget(id);
+  if (!target.instance) return target;
+  if (storageInfo().provider !== 'r2') throw Object.assign(new Error('Ustaw SANTA_AUDIO_STORAGE=r2 w środowisku API.'), { status: 400, code: 'R2_NOT_SELECTED' });
+  const buffer = await readR2Audio(objectKey);
+  if (!buffer) throw Object.assign(new Error('Nie znaleziono pliku w skonfigurowanym buckecie R2. Sprawdź klucz obiektu.'), { status: 400, code: 'R2_NOT_FOUND' });
+  // Keep an owned, validated snapshot. Later replacement or deletion of the source
+  // object cannot silently change a child's delivered message.
+  return storeAudio(target.instance, buffer, 'r2', 'admin');
 }
 
 async function adminUpdateScript(id, text) {
@@ -607,8 +650,8 @@ async function adminResendLink(id) {
   if (!type) return { conflict: 'NOTHING_TO_RESEND' };
   await addDelivery(id, type);
   await logEvent(id, 'resend_requested', 'admin', { type });
-  await processDeliveries({ messageId: id, actor: 'admin' });
-  return { ok: true, type };
+  const result = await processDeliveries({ messageId: id, actor: 'admin' });
+  return { ok: true, type, queued: result.sent === 0 };
 }
 
 async function adminRevokePlayLink(id) {
@@ -620,6 +663,7 @@ async function adminRevokePlayLink(id) {
     [version, tokenHash(deriveToken('play', id, version)), id],
   );
   await logEvent(id, 'play_link_revoked', 'admin', { version });
+  if (instance.status === STATUS.DELIVERED) return adminResendLink(id);
   return { ok: true };
 }
 
@@ -628,8 +672,13 @@ async function adminCancel(id) {
   if (!instance) return { notFound: true };
   await query('UPDATE santa_message_instances SET status = ? WHERE id = ?', [STATUS.CANCELLED, id]);
   if (instance.audio_key) {
-    await deleteAudio(instance.audio_key).catch(() => {});
-    await query('UPDATE santa_message_instances SET audio_key = NULL WHERE id = ?', [id]);
+    // Leave the key for the cleanup job when storage is temporarily unavailable.
+    try {
+      await deleteAudio(instance.audio_key);
+      await query('UPDATE santa_message_instances SET audio_key = NULL, personalization_enc = NULL, script_enc = NULL WHERE id = ?', [id]);
+    } catch (error) {
+      await logEvent(id, 'audio_cleanup_pending', 'admin', { code: error.code || 'STORAGE_ERROR' });
+    }
   }
   await logEvent(id, 'cancelled', 'admin');
   return { ok: true };
@@ -661,18 +710,25 @@ async function sweepPaidOrders() {
 async function expireRetainedAudio() {
   const [rows] = await query(
     `SELECT id, audio_key FROM santa_message_instances
-     WHERE status = ? AND retention_until IS NOT NULL AND retention_until < UTC_TIMESTAMP() LIMIT 50`,
-    [STATUS.DELIVERED],
+     WHERE (status = ? AND retention_until IS NOT NULL AND retention_until < UTC_TIMESTAMP())
+       OR (status IN (?, ?) AND audio_key IS NOT NULL) LIMIT 50`,
+    [STATUS.DELIVERED, STATUS.EXPIRED, STATUS.CANCELLED],
   );
+  let cleaned = 0;
   for (const row of rows) {
-    await deleteAudio(row.audio_key).catch(() => {});
-    await query(
-      'UPDATE santa_message_instances SET status = ?, audio_key = NULL, personalization_enc = NULL WHERE id = ?',
-      [STATUS.EXPIRED, row.id],
-    );
-    await logEvent(row.id, 'expired', 'cron');
+    try {
+      await deleteAudio(row.audio_key);
+      await query(
+        'UPDATE santa_message_instances SET status = IF(status = ?, status, ?), audio_key = NULL, personalization_enc = NULL, script_enc = NULL WHERE id = ?',
+        [STATUS.CANCELLED, STATUS.EXPIRED, row.id],
+      );
+      await logEvent(row.id, 'audio_removed', 'cron');
+      cleaned += 1;
+    } catch (error) {
+      await logEvent(row.id, 'audio_cleanup_pending', 'cron', { code: error.code || 'STORAGE_ERROR' });
+    }
   }
-  return rows.length;
+  return cleaned;
 }
 
 async function runSantaCron() {
@@ -719,9 +775,11 @@ module.exports = {
   deliverAudio,
   playbackView,
   audioForStreaming,
+  isExpired,
   listInstances,
   instanceDetail,
   adminUploadAudio,
+  adminAttachR2Audio,
   adminUpdateScript,
   adminRetryTts,
   adminResendLink,

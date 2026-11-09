@@ -1,9 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 
 import { shippingApi, type InpostChoice, type Quote } from './useInpostQuote';
 
 interface Point { name: string; address?: { line1?: string; line2?: string } }
 interface GeoApi { changePointsType: (type: string) => void; addPointSelectedCallback: (fn: (p: Point) => void) => void }
+
+function deliveryError(message: string) {
+  return /fetch|network|load failed|połączeni/i.test(message)
+    ? 'Nie udało się połączyć z dostawą InPost. Spróbuj ponownie za chwilę.'
+    : message;
+}
 
 function Geowidget({ onSelect }: { onSelect: (p: Point) => void }) {
   const host = useRef<HTMLDivElement>(null);
@@ -42,7 +48,7 @@ function Geowidget({ onSelect }: { onSelect: (p: Point) => void }) {
         script.onerror = () => { script.remove(); if (!controller.signal.aborted) setError('Nie udało się załadować mapy InPost. Spróbuj ponownie.'); };
         document.head.appendChild(script);
       }
-    }).catch(e => { if (!controller.signal.aborted) setError(e.message); });
+    }).catch(e => { if (!controller.signal.aborted) setError(deliveryError(e.message)); });
     return () => { controller.abort(); clearTimeout(timeout); widget?.remove(); };
   }, [retry]);
   return (
@@ -68,9 +74,12 @@ export default function InpostDelivery({ value, onChange, quote, error, retry }:
   value: InpostChoice; onChange: (choice: InpostChoice) => void; quote?: Quote; error?: string; retry: () => void;
 }) {
   const parcel = value.type === 'parcel_inpost';
+  const [mapOpen, setMapOpen] = useState(false);
+  const mapId = useId();
+  const mapButton = useRef<HTMLButtonElement>(null);
 
   return (
-    <section className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 space-y-5">
+    <section className="order-panel order-delivery space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h2 className="heading-section">Dostawa InPost</h2>
@@ -87,7 +96,7 @@ export default function InpostDelivery({ value, onChange, quote, error, retry }:
               </span>
             </>
           ) : error ? (
-            <span className="text-christmas-red">{error}</span>
+            <span className="text-christmas-red">{deliveryError(error)}</span>
           ) : (
             <span className="text-parchment-muted">Obliczam koszt dostawy…</span>
           )}
@@ -109,7 +118,7 @@ export default function InpostDelivery({ value, onChange, quote, error, retry }:
           <span>
             <span className="block font-semibold text-parchment-text">Paczkomat InPost</span>
             <span className="block text-sm text-parchment-muted mt-0.5">
-              Odbierz, kiedy Ci wygodnie — mapa poniżej.
+              Odbiór w wybranym przez Ciebie punkcie.
             </span>
           </span>
         </label>
@@ -119,7 +128,7 @@ export default function InpostDelivery({ value, onChange, quote, error, retry }:
             name="delivery"
             aria-label="Kurier InPost"
             checked={!parcel}
-            onChange={() => onChange({ type: 'courier_inpost' })}
+            onChange={() => { setMapOpen(false); onChange({ type: 'courier_inpost' }); }}
           />
           <span className="option-card-icon" aria-hidden>
             <i className="fas fa-truck" />
@@ -133,22 +142,12 @@ export default function InpostDelivery({ value, onChange, quote, error, retry }:
         </label>
       </div>
 
-      <button type="button" className="text-sm text-christmas-green underline hover:text-christmas-gold" onClick={retry}>
+      {error && <button type="button" className="text-sm text-christmas-green underline hover:text-christmas-gold" onClick={retry}>
         Odśwież cenę dostawy
-      </button>
+      </button>}
 
       {parcel && (
         <div className="space-y-3">
-          <p className="text-parchment-text text-sm">
-            Wpisz miasto lub ulicę na mapie i wybierz Paczkomat, w którym odbieresz zamówienie.
-          </p>
-          <Geowidget
-            onSelect={(p) => onChange({
-              type: 'parcel_inpost',
-              pointId: p.name,
-              pointLabel: [p.name, p.address?.line1, p.address?.line2].filter(Boolean).join(', '),
-            })}
-          />
           {value.pointId ? (
             <p className="rounded-xl border border-christmas-green/30 bg-white/70 px-4 py-3 text-parchment-text flex items-start gap-3" aria-live="polite">
               <i className="fas fa-check-circle text-christmas-green mt-0.5" aria-hidden />
@@ -162,6 +161,16 @@ export default function InpostDelivery({ value, onChange, quote, error, retry }:
           ) : (
             <p className="text-sm text-parchment-muted">Nie wybrano jeszcze Paczkomatu.</p>
           )}
+          <button ref={mapButton} type="button" className="btn-outline-parchment" aria-expanded={mapOpen} aria-controls={mapId} onClick={() => setMapOpen(!mapOpen)}>
+            <i className="fas fa-map-marker-alt" aria-hidden="true" />{mapOpen ? 'Zamknij mapę' : value.pointId ? 'Zmień Paczkomat' : 'Wybierz Paczkomat na mapie'}
+          </button>
+          <div id={mapId} hidden={!mapOpen}>
+            {mapOpen && <><p className="order-help mb-3">Wyszukaj miasto lub ulicę i wybierz punkt odbioru. Po wyborze mapa zamknie się automatycznie.</p><Geowidget onSelect={p => {
+              onChange({ type: 'parcel_inpost', pointId: p.name, pointLabel: [p.name, p.address?.line1, p.address?.line2].filter(Boolean).join(', ') });
+              setMapOpen(false);
+              mapButton.current?.focus();
+            }} /></>}
+          </div>
         </div>
       )}
     </section>

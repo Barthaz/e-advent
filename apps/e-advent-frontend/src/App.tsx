@@ -26,6 +26,7 @@ import SantaTracker from './pages/SantaTracker';
 import CartPage from './pages/CartPage';
 import SantaLetterProduct from './pages/SantaLetterProduct';
 import CalendarsHub from './pages/CalendarsHub';
+import FreeCalendarPage from './pages/FreeCalendarPage';
 import VoiceMessageProduct from './pages/santa-message/VoiceMessageProduct';
 import VoiceMessageCreator from './pages/santa-message/VoiceMessageCreator';
 import VoiceMessagePersonalize from './pages/santa-message/VoiceMessagePersonalize';
@@ -70,11 +71,13 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/kalendarze-adwentowe" element={<CalendarsHub />} />
+          <Route path="/darmowy-kalendarz" element={<FreeCalendarPage />} />
           <Route path="/list-do-swietego-mikolaja" element={<SantaLetterProduct />} />
           <Route path="/wiadomosc-od-mikolaja" element={<VoiceMessageProduct />} />
           <Route path="/wiadomosc-od-mikolaja/kreator" element={<VoiceMessageCreator />} />
           <Route path="/wiadomosc-od-mikolaja/personalizacja/:token" element={<VoiceMessagePersonalize />} />
           <Route path="/od-mikolaja/:token" element={<SantaPlayerPage />} />
+          <Route path="/od-mikolaja/przyklad/:sample" element={<SantaPlayerPage />} />
           <Route path="/koszyk" element={<CartPage />} />
           <Route path="/stworz-kalendarz" element={<ProductSelector />} />
           <Route path="/stworz-kalendarz/interaktywny" element={<CreatorInteractive />} />

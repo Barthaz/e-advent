@@ -1,23 +1,27 @@
 import InpostDelivery from '../components/checkout/InpostDelivery';
+import { SANTA_DIGITAL_CONSENT } from '@e-advent/products';
 import { useInpostQuote, type InpostChoice } from '../components/checkout/useInpostQuote';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import FestivePage from '../components/FestivePage';
-import ParchmentCard from '../components/ParchmentCard';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import OrderSummary from '../components/checkout/OrderSummary';
+import OrderSteps from '../components/checkout/OrderSteps';
+import { useCheckoutPromo } from '../components/checkout/useCheckoutPromo';
+import { readCheckoutEmail, saveCheckoutEmail, isValidCheckoutEmail, readCheckoutDelivery, saveCheckoutDelivery, clearCheckoutDetails } from '../utils/checkoutDetails';
+import SEOHead from '../components/SEOHead';
+import '../components/checkout/commerce.css';
 import FormField from '../components/FormField';
 import LoadingState from '../components/LoadingState';
 import { validateCalendarConfiguration, buildCalendarTasks } from '../utils/calendarGenerator';
 import { textToCatalogTaskId } from '../utils/catalogTaskIds';
-import { createPaymentIntent, createCalendar, type InternalCalendarData, validatePromoCode, createFreeCalendar, type CreatePaymentIntentRequest } from '../api/api';
+import { createPaymentIntent, createCalendar, type InternalCalendarData, createFreeCalendar, type CreatePaymentIntentRequest } from '../api/api';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import PriceBreakdown from '../components/PriceBreakdown';
-import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, computeOrderTotals, applyPercentDiscount, isSupportedDiscountPercent, isCalendarsOnSale, isCalendarSku } from '../config/products';
+import { getProduct, getProductPrice, formatPrice, isPhysicalProduct, computeOrderTotals, applyPercentDiscount, isSupportedDiscountPercent, isCalendarsOnSale, isCalendarSku } from '../config/products';
 import ShippingForm from '../components/checkout/ShippingForm';
 import { emptyShippingAddress, normalizeShippingAddress, validateShippingAddress } from '../utils/shippingAddress';
 import type { ProductType, ShippingAddress } from '../types/order';
 import { getActiveProduct, getStorageKeys, loadShipping, saveShipping, loadCheckoutCalendarData, resolveCheckoutProduct, getReusablePendingCalendarId, getPendingCalendarSession, setPendingCalendarSession, getPurchasedCalendarIds, markCalendarPurchased, PENDING_EDIT_TOKEN_KEY, PURCHASED_CALENDAR_IDS_KEY } from '../utils/creatorStorage';
-import { CART_STORAGE_KEY, loadCart, getCartTotals, checkoutItemsFromCart, getCartItemDisplayName, buildCartDisplayRows, clearCartStorage, isVoiceSku, type CartItem } from '../utils/cartStorage';
+import { CART_STORAGE_KEY, loadCart, getCartTotals, checkoutItemsFromCart, clearCartStorage, isVoiceSku, type CartItem } from '../utils/cartStorage';
 import { trackBeginCheckout, saveGaPurchasePayload } from '../utils/analytics';
 import { saveOrderSummary, cartItemsToOrderLines } from '../utils/orderSummary';
 import { getCheckoutToken, notifyCartChanged } from '../utils/checkoutSession';
@@ -50,10 +54,6 @@ function getStableCheckoutOrderId(fingerprint: string): string {
     /* ignore */
   }
   return orderId;
-}
-
-function isValidCheckoutEmail(email: string | undefined | null): boolean {
-  return Boolean(email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
 }
 
 // Funkcja pomocnicza do generowania kalendarza (fallback)
@@ -157,21 +157,24 @@ function PaymentForm({
   onCommitCheckout,
   payAmount,
   billingAddress,
+  hasVoice = false,
 }: { 
   clientSecret: string; 
   paymentIntentId: string;
   onError: (error: string) => void;
   isFree: boolean;
-  onCreateFreeCalendar: () => Promise<void>;
+  onCreateFreeCalendar: (digitalContentConsent?: boolean) => Promise<void>;
   onCommitCheckout: (acceptanceData: NonNullable<CreatePaymentIntentRequest['acceptanceData']>) => Promise<{ clientSecret: string; paymentIntentId: string }>;
   payAmount: number;
   billingAddress: StripeBillingAddress;
+  hasVoice?: boolean;
 }) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [acceptDigital, setAcceptDigital] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,11 +191,15 @@ function PaymentForm({
     }
 
     // Jeśli kalendarz jest za darmo (kod 100%), utwórz kalendarz przez API
+    if (hasVoice && !acceptDigital) {
+      onError('Zaznacz zgodę na dostarczenie wiadomości głosowej.');
+      return;
+    }
     if (isFree) {
       setIsProcessing(true);
       console.log('[Payment] Kalendarz za darmo - tworzę kalendarz przez API...');
       try {
-        await onCreateFreeCalendar();
+        await onCreateFreeCalendar(hasVoice && acceptDigital);
         // onCreateFreeCalendar powinien przekierować użytkownika
       } catch (error) {
         console.error('[Payment] Błąd podczas tworzenia darmowego kalendarza:', error);
@@ -218,6 +225,7 @@ function PaymentForm({
     const acceptanceData = {
       termsAccepted: true,
       privacyAccepted: true,
+      digitalContentConsent: hasVoice && acceptDigital,
       termsAcceptedAt: acceptanceTimestamp,
       privacyAcceptedAt: acceptanceTimestamp,
       clientIP: clientIP,
@@ -338,6 +346,12 @@ function PaymentForm({
           </label>
         </div>
         
+        {hasVoice && (
+          <div className="flex items-start">
+            <input id="acceptDigital" type="checkbox" className="checkbox-field" checked={acceptDigital} onChange={(event) => setAcceptDigital(event.target.checked)} required />
+            <label htmlFor="acceptDigital" className="text-sm leading-relaxed text-parchment-text cursor-pointer">{SANTA_DIGITAL_CONSENT} *</label>
+          </div>
+        )}
         <p className="text-xs text-parchment-muted">
           * Pola wymagane. Kliknij na linki, aby zapoznać się z pełną treścią regulaminu i polityki prywatności.
         </p>
@@ -381,6 +395,11 @@ function PaymentForm({
 
 export default function Checkout() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const explicitCart = searchParams.get('koszyk') === '1';
+  const promo = useCheckoutPromo();
+  const { code: promoCode, discount: promoCodeDiscount, checking: isCheckingPromoCode } = promo;
+  const [editingEmail, setEditingEmail] = useState(false);
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -388,10 +407,6 @@ export default function Checkout() {
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [activePaymentKey, setActivePaymentKey] = useState('');
   const [stripePromise] = useState(() => loadStripe(STRIPE_PUBLISHABLE_KEY));
-  const [promoCode, setPromoCode] = useState<string>('');
-  const [promoCodeDiscount, setPromoCodeDiscount] = useState<number | null>(null);
-  const [promoCodeError, setPromoCodeError] = useState<string | null>(null);
-  const [isCheckingPromoCode, setIsCheckingPromoCode] = useState(false);
   const [sku, setSku] = useState('interactive');
   const [productType, setProductType] = useState<ProductType>('interactive');
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>(emptyShippingAddress());
@@ -404,10 +419,8 @@ export default function Checkout() {
   const paymentInitLockRef = useRef(false);
   const paymentInitKeyRef = useRef<string | null>(null);
   const pendingIntentRequestRef = useRef<CreatePaymentIntentRequest | null>(null);
-  const promoRequestRef = useRef<string | null>(null);
-  const appliedPromoRef = useRef<string | null>(null);
 
-  const [delivery, setDelivery] = useState<InpostChoice>({ type: 'parcel_inpost' });
+  const [delivery, setDelivery] = useState<InpostChoice>(readCheckoutDelivery);
   const deliveryItems = cartItems.length ? cartItems.map(i => ({ sku: i.sku, quantity: i.quantity })) : [{ sku, quantity: 1 }];
   const needsDelivery = deliveryItems.some(i => isPhysicalProduct(i.sku));
   const shippingQuote = useInpostQuote(deliveryItems, delivery.type, needsDelivery);
@@ -458,7 +471,7 @@ export default function Checkout() {
       }
     }
     const resolved = parsedData ? resolveCheckoutProduct(parsedData, active) : null;
-    const isInteractiveCheckout = Boolean(resolved?.productType === 'interactive' && parsedData);
+    const isInteractiveCheckout = !explicitCart && Boolean(resolved?.productType === 'interactive' && parsedData);
 
     // ── Cart checkout (scratch + letter) ───────────────────────────────────
     if (!isInteractiveCheckout && cart.length > 0) {
@@ -467,7 +480,8 @@ export default function Checkout() {
       );
       const firstSku = cart[0].sku;
       const firstProduct = getProduct(firstSku);
-      const emailFromCart = cart.find((i) => i.customerEmail)?.customerEmail?.trim() || '';
+      const emailFromCart = readCheckoutEmail() || cart.find((i) => i.customerEmail)?.customerEmail?.trim() || '';
+      if (!isValidCheckoutEmail(emailFromCart)) { navigate('/koszyk', { replace: true }); return; }
       const nameFromCart = cart.find((i) => i.customerName)?.customerName?.trim() || '';
 
       setCartMode(true);
@@ -570,7 +584,7 @@ export default function Checkout() {
         quantity: 1,
       }],
     });
-  }, [navigate]);
+  }, [navigate, explicitCart]);
 
   useEffect(() => {
     // Wait until checkout data is loaded — avoid treating default interactive sku as "no shipping needed"
@@ -602,6 +616,7 @@ export default function Checkout() {
     const initializePayment = async () => {
       if (!calendarData) return;
 
+      if (isCheckingPromoCode) return;
       // Gate API on live address/email — never send create-payment-intent early for physical
       if (calendarSaleBlocked) {
         return;
@@ -1021,62 +1036,7 @@ export default function Checkout() {
       cancelled = true;
       if (debounceTimer) clearTimeout(debounceTimer);
     };
-  }, [checkoutFingerprint, calendarData, clientSecret, shippingCost, shippingAddressComplete, isPhysical, totalPrice, productType, sku, shippingAddress, cartMode, cartItems, delivery, shippingQuote.quote, promoCode, promoCodeDiscount, calendarSaleBlocked]);
-
-  const applyPromoCode = async (code: string) => {
-    const trimmed = code.trim();
-    if (!trimmed) {
-      promoRequestRef.current = null;
-      setPromoCodeError(null);
-      setPromoCodeDiscount(null);
-      return;
-    }
-    // Enter, blur and the button can all fire for one tap on mobile.
-    if (promoRequestRef.current === trimmed) return;
-    if (appliedPromoRef.current === trimmed && promoCodeDiscount !== null) return;
-    promoRequestRef.current = trimmed;
-
-    setIsCheckingPromoCode(true);
-    setPromoCodeError(null);
-
-    try {
-      const response = await validatePromoCode(trimmed);
-      if (promoRequestRef.current !== trimmed) return;
-      const discount = response.discount;
-      if (response.success && response.valid && typeof discount === 'number' && isSupportedDiscountPercent(discount)) {
-        appliedPromoRef.current = trimmed;
-        setPromoCodeDiscount(discount);
-        setPromoCodeError(null);
-        console.log('[PromoCode] Kod promocyjny zwalidowany:', {
-          code: trimmed,
-          discount: response.discount,
-        });
-      } else {
-        appliedPromoRef.current = null;
-        setPromoCodeDiscount(null);
-        setPromoCodeError(response.message || 'Nieprawidłowy kod promocyjny');
-      }
-    } catch (error) {
-      if (promoRequestRef.current !== trimmed) return;
-      console.error('[PromoCode] Błąd podczas sprawdzania kodu:', error);
-      appliedPromoRef.current = null;
-      setPromoCodeDiscount(null);
-      setPromoCodeError(
-        error instanceof Error && !(error instanceof TypeError)
-          ? error.message
-          : 'Nie udało się sprawdzić kodu. Sprawdź internet i spróbuj ponownie.',
-      );
-    } finally {
-      if (promoRequestRef.current === trimmed) {
-        promoRequestRef.current = null;
-        setIsCheckingPromoCode(false);
-      }
-    }
-  };
-
-  const handlePromoCodeBlur = async () => {
-    await applyPromoCode(promoCode);
-  };
+  }, [checkoutFingerprint, calendarData, clientSecret, shippingCost, shippingAddressComplete, isPhysical, totalPrice, productType, sku, shippingAddress, cartMode, cartItems, delivery, shippingQuote.quote, promoCode, promoCodeDiscount, calendarSaleBlocked, isCheckingPromoCode]);
 
   // Funkcja do tworzenia darmowego kalendarza
   const handleCreateFreeCalendar = async () => {
@@ -1250,7 +1210,7 @@ export default function Checkout() {
     }
   };
 
-  const completeFreeOrder = async () => {
+  const completeFreeOrder = async (digitalContentConsent = false) => {
     if (!calendarData) throw new Error('Brak danych zamówienia');
     if (!cartMode && !isPhysical) {
       await handleCreateFreeCalendar();
@@ -1274,6 +1234,7 @@ export default function Checkout() {
       ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
       items,
       acceptanceData: {
+        digitalContentConsent,
         termsAccepted: true,
         privacyAccepted: true,
         termsAcceptedAt: acceptanceTimestamp,
@@ -1294,6 +1255,7 @@ export default function Checkout() {
     });
     if (cartMode) {
       clearCartStorage();
+      clearCheckoutDetails();
       notifyCartChanged();
     }
     navigate(`/sukces?free=true&order_id=${encodeURIComponent(result.orderId)}`);
@@ -1340,6 +1302,7 @@ export default function Checkout() {
   }
 
   const resetPaymentForEmail = (email: string) => {
+    saveCheckoutEmail(email);
     setCalendarData({ ...calendarData, email });
     setClientSecret(null);
     setPaymentIntentId(null);
@@ -1351,250 +1314,24 @@ export default function Checkout() {
   };
 
   return (
-    <FestivePage className="py-4" maxWidth={isPhysical ? 'full' : 'lg'}>
-      <ParchmentCard padding="lg" className="checkout-page">
-        <h1 className="heading-page mb-2">Zamówienie</h1>
-        <div className="gold-divider mb-8" />
-
-        {calendarSaleBlocked && (
-          <div className="alert-error mb-8">
-            <p>Kalendarze adwentowe nie są teraz dostępne w sprzedaży.</p>
-          </div>
-        )}
-
-        {validationError && (
-          <div className="alert-error mb-6">
-            <h3 className="font-bold mb-2">Nie można wygenerować kalendarza</h3>
-            <p>{validationError}</p>
-            <button
-              onClick={() => navigate('/stworz-kalendarz')}
-              className="link-inline mt-3"
-            >
-              Wróć i popraw konfigurację →
-            </button>
-          </div>
-        )}
-
-        {!calendarSaleBlocked && <div className="grid lg:grid-cols-12 gap-6 lg:gap-8">
-          <section className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-12">
-            <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 lg:items-start">
-              <div className="lg:col-span-7">
-                <div className="flex items-start gap-3 mb-4">
-                  <span className="option-card-icon mt-0.5" aria-hidden>
-                    <i className="fas fa-envelope" />
-                  </span>
-                  <div>
-                    <h2 className="heading-section">Twoje dane</h2>
-                    <p className="text-parchment-muted text-sm mt-1">
-                      {isPhysical
-                        ? 'Potwierdzenie zamówienia wyślemy na e-mail. Paczkomat, kuriera i dane odbiorcy podasz poniżej.'
-                        : isVoiceOnly
-                          ? 'Na ten adres wyślemy potwierdzenie zakupu i link do wiadomości od Świętego Mikołaja.'
-                          : 'Na ten adres wyślemy potwierdzenie zakupu i link do kalendarza.'}
-                    </p>
-                  </div>
-                </div>
-                {cartMode ? (
-                  <>
-                    <FormField
-                      label="E-mail (potwierdzenie zamówienia)"
-                      type="email"
-                      id="checkout-email"
-                      name="checkout-email"
-                      autoComplete="email"
-                      value={calendarData.email}
-                      onChange={(v) => resetPaymentForEmail(v.trim())}
-                      placeholder="jan@example.com"
-                      required
-                    />
-                    {calendarData.name ? (
-                      <p className="text-sm text-parchment-muted"><strong>Imię:</strong> {calendarData.name}</p>
-                    ) : null}
-                  </>
-                ) : (
-                  <div className="text-parchment-text space-y-1">
-                    <p><strong>Imię:</strong> {calendarData.name}</p>
-                    <p><strong>Email:</strong> {calendarData.email}</p>
-                  </div>
-                )}
-                {isPhysical && (
-                  <ol className="mt-2 space-y-2.5 text-sm text-parchment-text !list-none pl-0">
-                    <li className="flex items-center gap-3">
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-christmas-green/10 text-christmas-green text-xs font-semibold shrink-0">1</span>
-                      Wybierz Paczkomat albo kuriera InPost
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-christmas-green/10 text-christmas-green text-xs font-semibold shrink-0">2</span>
-                      Uzupełnij dane odbiorcy
-                    </li>
-                    <li className="flex items-center gap-3">
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-christmas-green/10 text-christmas-green text-xs font-semibold shrink-0">3</span>
-                      Opłać zamówienie
-                    </li>
-                  </ol>
-                )}
-              </div>
-
-              <div className="lg:col-span-5 lg:border-l lg:border-christmas-gold/25 lg:pl-8">
-                <h2 className="heading-section mb-3">Zamówienie</h2>
-                {cartItems.length > 0 ? (
-                  <ul className="space-y-3">
-                    {buildCartDisplayRows(cartItems).map((row) => {
-                      if (row.kind === 'letter-group') {
-                        return (
-                          <li key="letter-pack" className="text-sm">
-                            <div className="flex justify-between gap-3">
-                              <span className="text-parchment-text">
-                                <strong>{row.label}</strong>
-                                {' '}× {row.quantity}
-                              </span>
-                              <span className="whitespace-nowrap font-medium text-christmas-green">
-                                {formatPrice(row.unitPrice * row.quantity)}
-                              </span>
-                            </div>
-                            {row.certificates.map((cert) => {
-                              const unit = cert.unitPrice ?? getProduct(cert.sku)?.basePrice ?? 0;
-                              return (
-                                <div key={cert.id} className="mt-1.5 ml-3 flex justify-between gap-3 text-parchment-muted">
-                                  <span>{getCartItemDisplayName(cert)}</span>
-                                  <span className="whitespace-nowrap text-christmas-green">{formatPrice(unit)}</span>
-                                </div>
-                              );
-                            })}
-                          </li>
-                        );
-                      }
-                      const item = row.item;
-                      const p = getProduct(item.sku);
-                      const unit = item.unitPrice ?? p?.basePrice ?? 0;
-                      const displayName = getCartItemDisplayName(item);
-                      return (
-                        <li key={item.id} className="flex justify-between gap-3 text-sm">
-                          <span className="text-parchment-text">
-                            <strong>{displayName}</strong>
-                            {item.format ? ` (${item.format})` : ''}
-                            {' '}× {item.quantity}
-                          </span>
-                          <span className="whitespace-nowrap font-medium text-christmas-green">
-                            {formatPrice(unit * item.quantity)}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p className="text-parchment-text"><strong>{product?.name || 'Kalendarz adwentowy'}</strong></p>
-                )}
-                {calendarData.format && !cartMode && (
-                  <p className="text-sm text-parchment-muted mt-2">Format: {calendarData.format}</p>
-                )}
-                {calendarData.design?.imageUrl && !cartMode && (
-                  <img src={calendarData.design.imageUrl} alt="Grafika" className="mt-2 max-h-24 rounded border border-christmas-gold/20" />
-                )}
-                {isPhysical && (
-                  <p className="mt-3 text-sm text-parchment-muted">
-                    Realizacja {PHYSICAL_FULFILLMENT_TIME}. Wysyłka InPost.
-                    {orderTotals?.freeShipping ? ' Wysyłka gratis.' : ' Darmowa wysyłka od 100 zł.'}
-                  </p>
-                )}
-                {cartMode && (
-                  <p className="mt-3 text-sm text-parchment-muted">
-                    Wszystkie pozycje opłacisz jako jedno zamówienie.
-                  </p>
-                )}
-                <div className="mt-5">
-                  <label htmlFor="promoCode" className="block text-sm font-medium text-parchment-muted mb-2">
-                    Kod rabatowy
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      id="promoCode"
-                      value={promoCode}
-                      onChange={(e) => {
-                        setPromoCode(e.target.value);
-                        setPromoCodeError(null);
-                        setPromoCodeDiscount(null);
-                      }}
-                      onBlur={handlePromoCodeBlur}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault();
-                          void handlePromoCodeBlur();
-                        }
-                      }}
-                      placeholder="Wpisz kod rabatowy"
-                      className="input-field flex-1"
-                      disabled={isCheckingPromoCode}
-                      autoCapitalize="characters"
-                    />
-                    <button type="button" className="btn-secondary shrink-0" disabled={isCheckingPromoCode || !promoCode.trim()} onClick={() => void handlePromoCodeBlur()}>
-                      {isCheckingPromoCode ? 'Sprawdzam…' : 'Zastosuj'}
-                    </button>
-                  </div>
-                  {promoCodeError && (
-                    <p className="mt-2 text-sm text-red-600">{promoCodeError}</p>
-                  )}
-                  {promoCodeDiscount !== null && promoCodeDiscount > 0 && !promoCodeError && (
-                    <p className="mt-2 text-sm text-christmas-green font-semibold">
-                      {promoCodeDiscount === 100
-                        ? 'Kod zastosowany — zamówienie za 0 zł.'
-                        : promoCodeDiscount === 95
-                          ? 'Kod zastosowany — zniżka 95% od wartości zamówienia.'
-                          : `Kod zastosowany — zniżka ${promoCodeDiscount}% od produktów.`}
-                    </p>
-                  )}
-                </div>
-                <div className="price-box mt-4">
-                  <PriceBreakdown
-                    basePrice={subtotal}
-                    shippingCost={shippingCost}
-                    variant="checkout"
-                    totalLabel="Do zapłaty"
-                    freeShipping={Boolean(isPhysical && pricedTotals?.freeShipping)}
-                    shippingPending={isPhysical && !shippingQuote.quote}
-                    discount={discountAmount}
-                    discountPercent={promoCodeDiscount ?? undefined}
-                  />
-                </div>
-                {!cartMode && (
-                  <div className="mt-5 text-sm text-parchment-text space-y-1">
-                    <h2 className="heading-section mb-3">Kalendarz</h2>
-                    <p><strong>Tytuł:</strong> {calendarData.calendarTitle}</p>
-                    <p><strong>Własne zadania:</strong> {calendarData.tasks.length} / 24</p>
-                    {calendarData.tasks.length > 0 && (
-                      <p className="text-parchment-muted">Zadania będą losowo przypisane do dni.</p>
-                    )}
-                    {(calendarData.openingMethod === 'email' || calendarData.dailyEmailReminders) && (
-                      <p className="text-christmas-green mt-2">
-                        Codzienna treść na: {calendarData.dailyContentEmail || calendarData.email}
-                      </p>
-                    )}
-                    {calendarData.openingMethod === 'app' && (
-                      <p className="text-christmas-green mt-2">Otwieranie w aplikacji Android</p>
-                    )}
-                    {calendarData.openingMethod === 'online' && (
-                      <p className="text-christmas-green mt-2">Otwieranie online przez unikalny link</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+    <div className="commerce-page"><div className="commerce-container">
+      <SEOHead title="Dostawa i płatność | e-Advent" robots="noindex, follow" />
+      <OrderSteps step={2} interactive={!cartMode} />
+      <header className="commerce-heading"><p className="order-eyebrow">Ostatni krok do świątecznej niespodzianki</p><h1>Dostawa i płatność</h1><p>{isPhysical ? 'Wybierz, jak ma dotrzeć przesyłka. Potem wygodnie opłać zamówienie.' : 'Twój prezent dotrze e-mailem. Pozostaje wybrać sposób płatności.'}</p></header>
+      {calendarSaleBlocked && <p role="alert" className="alert-error">Kalendarze adwentowe nie są teraz dostępne w sprzedaży.</p>}
+      {validationError && <div className="alert-error"><p>{validationError}</p><Link to="/stworz-kalendarz">Wróć i popraw konfigurację</Link></div>}
+      {!calendarSaleBlocked && <div className="commerce-layout">
+        <div className="commerce-main">
+          <section className="order-panel order-email-review">
+            <div><p className="order-eyebrow">Potwierdzenie i linki wyślemy na</p><strong>{calendarData.email}</strong></div>
+            <button type="button" className="order-text-button" onClick={() => setEditingEmail(!editingEmail)}>{editingEmail ? 'Zamknij edycję' : 'Zmień e-mail'}</button>
+            {editingEmail && <div className="order-email-edit"><FormField label="E-mail (potwierdzenie zamówienia)" type="email" id="checkout-email" autoComplete="email" value={calendarData.email} onChange={v => resetPaymentForEmail(v.trim())} required /><p className="order-help">{emailReady ? 'Adres został zapisany.' : 'Wpisz pełny adres e-mail, aby przejść do płatności.'}</p></div>}
           </section>
-
-          {isPhysical && (
-            <div className="lg:col-span-12">
-              <InpostDelivery value={delivery} onChange={setDelivery} {...shippingQuote} />
-            </div>
-          )}
-
-          {isPhysical && (
-            <div className="lg:col-span-12">
-              <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} deliveryType={delivery.type} />
-            </div>
-          )}
-
-            <div className="rounded-2xl border border-christmas-gold/30 bg-white/45 p-4 md:p-6 lg:col-span-12">
+          {isPhysical ? <>
+            <InpostDelivery value={delivery} onChange={choice => { setDelivery(choice); saveCheckoutDelivery(choice); }} {...shippingQuote} />
+            <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} deliveryType={delivery.type} />
+          </> : <section className="order-panel order-digital"><i className="far fa-envelope" aria-hidden="true" /><div><h2>Dostawa prosto na e-mail</h2><p>{isVoiceOnly ? 'Po płatności otrzymasz link do personalizacji lub zatwierdzenia wiadomości. Gotowe nagranie będzie dostępne pod prywatnym linkiem.' : 'Po płatności wyślemy prywatny link do Twojego kalendarza.'}</p><span>Bez kosztów dostawy</span></div></section>}
+            <div className="order-panel order-payment" id="payment-section">
               <h3 className="heading-section mb-2">Bezpieczna płatność</h3>
               <p className="text-parchment-muted text-sm mb-6">
                 {isPhysical
@@ -1628,7 +1365,7 @@ export default function Checkout() {
                 </div>
               )}
 
-              {isFree && emailReady && (!isPhysical || shippingAddressComplete) ? (
+              {isCheckingPromoCode ? <p className="order-help" role="status">Sprawdzamy kod rabatowy przed przygotowaniem płatności…</p> : isFree && emailReady && (!isPhysical || shippingAddressComplete) ? (
                 <Elements stripe={null}>
                   <PaymentForm
                     clientSecret=""
@@ -1637,6 +1374,7 @@ export default function Checkout() {
                     isFree
                     onCreateFreeCalendar={completeFreeOrder}
                     onCommitCheckout={commitPaidCheckout}
+                    hasVoice={cartMode && cartItems.some((item) => isVoiceSku(item.sku))}
                     payAmount={0}
                     billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
                   />
@@ -1649,6 +1387,7 @@ export default function Checkout() {
                     clientSecret,
                     appearance: {
                       theme: 'stripe',
+                      variables: { colorPrimary: '#173c2c', colorText: '#203b2d', colorBackground: '#fffdf8', colorDanger: '#a43131', borderRadius: '6px', fontFamily: 'Georgia, serif', spacingUnit: '5px' },
                     },
                   }}
                 >
@@ -1659,6 +1398,7 @@ export default function Checkout() {
                     isFree={false}
                     onCreateFreeCalendar={completeFreeOrder}
                     onCommitCheckout={commitPaidCheckout}
+                    hasVoice={cartMode && cartItems.some((item) => isVoiceSku(item.sku))}
                     payAmount={totalPrice}
                     billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
                   />
@@ -1686,9 +1426,14 @@ export default function Checkout() {
                 </div>
               )}
             </div>
-        </div>}
-      </ParchmentCard>
-    </FestivePage>
+
+          <Link className="order-back" to={cartMode ? '/koszyk' : '/podglad'}><i className="fas fa-arrow-left" aria-hidden="true" /> {cartMode ? 'Wróć do koszyka' : 'Wróć do kalendarza'}</Link>
+        </div>
+        <OrderSummary items={cartItems} subtotal={subtotal} total={totalPrice} discount={discountAmount} shipping={shippingCost} shippingPending={isPhysical && !shippingQuote.quote} hasPhysical={isPhysical} promo={promo}>
+          <p className="order-next-note">{isPhysical ? 'Przygotowanie przesyłki: 3–5 dni roboczych + dostawa InPost.' : 'Produkt cyfrowy — bez przesyłki pocztowej.'}</p>
+          <a className="order-summary-jump" href="#payment-section">Przejdź do płatności <i className="fas fa-arrow-down" aria-hidden="true" /></a>
+        </OrderSummary>
+      </div>}
+    </div></div>
   );
 }
-

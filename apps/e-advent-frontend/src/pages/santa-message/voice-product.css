@@ -1,0 +1,19 @@
+.voice-listen-card { overflow: hidden; border-radius: 1rem; border: 1px solid #bba06a; background: #102c20; color: #f4e8d0; box-shadow: 0 20px 25px -5px #0000001a, 0 8px 10px -6px #0000001a; }
+.voice-photo { position: relative; aspect-ratio: 1.28; }
+.voice-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 82% center; }
+.voice-photo::after { content: ''; position: absolute; inset: 45% 0 0; background: linear-gradient(transparent, #102c20); }
+.voice-photo > span { position: absolute; bottom: 22px; left: 24px; right: 24px; z-index: 1; font-style: italic; font-size: .85rem; color: #e5d3b1; text-align: center; }
+.voice-sample { padding: 8px 30px 26px; }
+.voice-sample-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+.voice-sample-kicker { font-size: .58rem; text-transform: uppercase; letter-spacing: .15em; color: #c3a76e; margin-bottom: 7px; }
+.voice-sample h2 { font: 500 1.9rem 'Cormorant Garamond', Georgia, serif; }
+.voice-sample-heading > span { font-size: .65rem; color: #c7b99d; padding-bottom: 4px; }
+.voice-sample .santa-player { margin-top: 4px; }
+.voice-sample .santa-visualizer { height: 65px !important; }
+.voice-sample-link { display: block; text-align: center; color: #c7b99d; margin-top: 22px; font-size: .7rem; text-decoration: underline; text-underline-offset: 4px; }
+.voice-sample-link i { margin-left: 6px; font-size: .58rem; }
+@media (max-width: 1000px) { .voice-sample { padding-inline: 20px; } }
+@media (max-width: 760px) {
+  .voice-photo { aspect-ratio: 1.35; }
+  .voice-sample-heading > span { display: none; }
+}

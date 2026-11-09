@@ -1,4 +1,6 @@
-# Wdrożenie soa.e-advent.pl
+# Wdrożenie soa-katowice.e-advent.pl
+
+Instrukcja kopiowania plików z ZIP do istniejącego katalogu public: [Wgranie na hosting](WGRANIE-NA-HOSTING.md).
 
 ## Przed odbiorem od ŚOA
 
@@ -16,7 +18,7 @@
 3. Uruchom `npm run build:partners` lokalnie. Wgraj zawartość `dist/soa` do katalogu kampanii. `private`, `database`, `docs` i `scripts` muszą być poza document root.
 4. Utwórz osobną bazę MySQL i zaimportuj `database/schema.sql` kontem wdrożeniowym. Konto aplikacji potrzebuje SELECT/INSERT/UPDATE na tych dwóch tabelach, bez DDL/DROP.
 5. Skopiuj `private/config.example.php` do `private/config.local.php`. Ustaw DSN i dane DB, `base_url`, `environment=production`, `preview_now=null`, klucz bezpieczeństwa i hash hasła. Narzędzie `php scripts/set-password.php` czyta hasło z wejścia standardowego.
-6. Uzupełnij finalne zadania, logo i pasek znaków SVG. Zweryfikuj zaufane SVG przed publikacją. Dopiero po rzeczywistej akceptacji ustaw flagi treści, brandingu i dokumentów.
+6. Uzupełnij finalne zadania i sprawdź dostarczone logo ŚOA oraz baner finansowania w obu układach ekranu. Dopiero po rzeczywistej akceptacji ustaw flagi treści, brandingu i dokumentów.
 7. Nadaj PHP prawo zapisu tylko w prywatnym `storage/` i katalogu sesji hostingu; nie stosuj 777. Sekrety: 600/640 zależnie od konfiguracji użytkowników.
 8. `php scripts/preflight.php` musi zakończyć się bez pozycji BRAK. Sprawdź HTTPS, nagłówki, sesję i endpointy na docelowej domenie. `.htaccess` zakłada bezpośrednie HTTPS; przy terminacji TLS przez proxy skonfiguruj zaufany proxy na hostingu, nie ufaj dowolnemu nagłówkowi klienta.
 9. Ustal sposób przekazania hasła upoważnionym osobom. Nie wysyłaj publicznie `demo-access.txt` ani `config.local.php`.
@@ -25,7 +27,7 @@
 ## Odbiór techniczny
 
 - Daty graniczne: przed 1 XII, północ 1 XII, 10 XII, 24 XII, koniec 26 XII, początek 27 XII. Symulację zmieniać wyłącznie prywatną konfiguracją stagingu.
-- DevTools/source i `/api/calendar.php`: brak przyszłych treści. Bezpośredni `/dzien.php?day=24` przed czasem nie zwraca tekstu.
+- DevTools/source i `/api/calendar.php`: brak przyszłych treści. Bezpośredni `/dzien/24` przed czasem nie zwraca tekstu.
 - `/private/tasks.php`, `/private/config.local.php`, `/database/schema.sql` niedostępne z sieci; PHP wykonywany, nie pobierany jako kod źródłowy.
 - Brak logowania uczestników. LocalStorage usunięty/zablokowany nie blokuje ćwiczeń. Powrót po północy odświeża dostępność.
 - Raport i CSV wymagają aktywnej sesji, wylogowanie ją kończy. Po 30 minutach bezczynności ponowne logowanie. Limit prób działa również po zmianie sesji.

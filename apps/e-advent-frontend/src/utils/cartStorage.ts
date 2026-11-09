@@ -148,7 +148,7 @@ export function voiceAddonSlots(items: CartItem[]): number {
 }
 
 /**
- * Dodatek bez listu przechodzi na cenę samodzielną (19,90 zł) zamiast znikać z koszyka.
+ * Dodatek bez listu przechodzi na cenę samodzielną (24 zł) zamiast znikać z koszyka.
  * Każda wiadomość to osobna linia z ilością 1 (jedna personalizacja = jedno nagranie).
  */
 export function normalizeVoiceItems(items: CartItem[]): { items: CartItem[]; converted: number } {
@@ -260,6 +260,16 @@ function addPlainLetters(
     unitPrice: letterProduct?.basePrice,
   });
   return { items: [...items, letter], added: [letter] };
+}
+
+/** Add a certificate to a letter already in the cart, without buying another letter. */
+export function appendCertificateToLetter(items: CartItem[], name: string): { items: CartItem[]; added: CartItem[] } {
+  const childName = name.replace(/\s+/g, ' ').trim();
+  const letter = items.find((item) => item.sku === SANTA_LETTER_SKU && !hasLinkedCertificate(items, item.id));
+  if (!letter || childName.length < 2 || childName.length > 60) return { items, added: [] };
+  const remaining = items.flatMap((item) => item.id !== letter.id ? [item] : item.quantity > 1 ? [{ ...item, quantity: item.quantity - 1 }] : []);
+  const result = addLinkedLetterAndCertificate(remaining, childName, letter.label);
+  return { items: result.items, added: result.added.filter((item) => item.sku === SANTA_CERTIFICATE_SKU) };
 }
 
 export function appendSantaLetterBundle(

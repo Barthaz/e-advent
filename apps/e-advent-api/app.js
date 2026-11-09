@@ -216,7 +216,7 @@ const PORT = process.env.PORT || 3000;
 
 // Uruchom serwer tylko jeĹ›li nie jesteĹ›my na Vercel ani w testach Jest
 if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'test') {
-    server.listen(PORT, () => {
+    server.listen(PORT, process.env.LISTEN_HOST || undefined, () => {
         console.log(`Server is running on port ${PORT}`);
         console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
         console.log(`Mode: ${testingMode ? 'TEST (test DB + Stripe test)' : 'PROD (prod DB + Stripe live)'}`);

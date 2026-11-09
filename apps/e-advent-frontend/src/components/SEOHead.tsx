@@ -16,7 +16,7 @@ const JSON_LD_ATTR = 'data-e-advent-jsonld';
 export default function SEOHead({
   title = 'e-Advent — Niezapomniane chwile świąt | Kalendarze adwentowe',
   description = 'e-Advent pomaga przeżywać czas świąteczny w cieple: personalizowane kalendarze adwentowe, list do Mikołaja i magia oczekiwania. Każde święta mogą być niezapomniane.',
-  keywords = 'kalendarz adwentowy, e-advent, e-dawent, interaktywny kalendarz adwentowy, personalizowany kalendarz adwentowy, kalendarz adwentowy online',
+  keywords = 'kalendarz adwentowy, e-advent, e-dawent, kalendarz online, personalizowany kalendarz adwentowy, kalendarz adwentowy online',
   canonical = new URL(window.location.pathname, 'https://e-advent.pl').href,
   ogImage = 'https://e-advent.pl/og-logo.png',
   robots = 'index, follow, max-image-preview:large',

@@ -16,10 +16,6 @@ function int(name, fallback) {
 /** Read at call time so flags can be flipped without a code change (and in tests). */
 function santaConfig() {
   return {
-    enabled: flag('SANTA_MESSAGES_ENABLED'),
-    standaloneEnabled: flag('SANTA_STANDALONE_ENABLED'),
-    letterAddonEnabled: flag('SANTA_LETTER_ADDON_ENABLED'),
-    // Separate from the sales flags: paid orders keep being fulfilled after a rollback.
     fulfillmentEnabled: flag('SANTA_FULFILLMENT_ENABLED', true),
     scriptApprovalRequired: flag('SANTA_SCRIPT_APPROVAL_REQUIRED', true),
     adminReviewRequired: flag('SANTA_ADMIN_REVIEW_REQUIRED', true),
@@ -42,11 +38,6 @@ function santaConfig() {
   };
 }
 
-function canSell(mode, config = santaConfig()) {
-  if (!config.enabled) return false;
-  return mode === 'letter_addon' ? config.letterAddonEnabled : config.standaloneEnabled;
-}
-
 function ttsConfigured(config = santaConfig()) {
   const { apiKey, voiceId, modelId } = config.elevenlabs;
   return Boolean(config.ttsAutomationEnabled && apiKey && voiceId && modelId);
@@ -55,9 +46,6 @@ function ttsConfigured(config = santaConfig()) {
 function publicConfig() {
   const config = santaConfig();
   return {
-    enabled: config.enabled,
-    standaloneEnabled: canSell('standalone', config),
-    letterAddonEnabled: canSell('letter_addon', config),
     scriptApprovalRequired: config.scriptApprovalRequired,
     maxAudioSeconds: config.maxAudioSeconds,
     prices: {
@@ -67,4 +55,4 @@ function publicConfig() {
   };
 }
 
-module.exports = { santaConfig, canSell, ttsConfigured, publicConfig };
+module.exports = { santaConfig, ttsConfigured, publicConfig };

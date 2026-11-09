@@ -2,15 +2,6 @@ import type { Personalization, PurchaseMode } from './validation';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL as string;
 
-export interface VoiceConfig {
-  enabled: boolean;
-  standaloneEnabled: boolean;
-  letterAddonEnabled: boolean;
-  scriptApprovalRequired: boolean;
-  maxAudioSeconds: number;
-  prices: { standalone: number; letterAddon: number };
-}
-
 export interface FieldError {
   field: string;
   code: string;
@@ -42,20 +33,17 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   } catch {
     throw new SantaApiError(0, 'NETWORK', 'Brak połączenia z serwerem. Sprawdź internet i spróbuj ponownie.');
   }
-  const body = await response.json().catch(() => ({}));
+  const body = await response.json().catch(() => null);
   if (!response.ok) {
     throw new SantaApiError(
       response.status,
-      body.error || 'ERROR',
-      body.message || 'Coś poszło nie tak. Spróbuj ponownie.',
-      Array.isArray(body.errors) ? body.errors : [],
+      body?.error || 'ERROR',
+      body?.message || 'Coś poszło nie tak. Spróbuj ponownie.',
+      Array.isArray(body?.errors) ? body.errors : [],
     );
   }
+  if (body === null) throw new SantaApiError(response.status, 'INVALID_RESPONSE', 'Serwer nie zwrócił danych wiadomości.');
   return body as T;
-}
-
-export function fetchVoiceConfig(): Promise<VoiceConfig> {
-  return request<VoiceConfig>('/config');
 }
 
 export interface DraftResult {
@@ -126,6 +114,7 @@ export function approveActivation(token: string): Promise<ActivationView> {
 }
 
 export interface PlaybackView {
+  childName?: string;
   childVocative: string;
   durationSeconds: number | null;
   audioUrl: string;
@@ -144,4 +133,23 @@ export function getPlayback(token: string): Promise<PlaybackView> {
 
 export function refreshPlayback(token: string): Promise<PlaybackView> {
   return request<PlaybackView>(`/play/${encodeURIComponent(token)}/refresh-audio`, { method: 'POST', body: '{}' });
+}
+
+/** Refresh the signed URL at download time, including after a long pause on the finale. */
+export async function downloadRecording(token: string): Promise<void> {
+  const fresh = await refreshPlayback(token);
+  await saveAudioFile(absoluteAudioUrl(fresh.downloadUrl));
+}
+
+export async function saveAudioFile(sourceUrl: string): Promise<void> {
+  const response = await fetch(sourceUrl, { referrerPolicy: 'no-referrer' });
+  if (!response.ok) throw new Error('Audio download failed');
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'wiadomosc-od-swietego-mikolaja.mp3';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

@@ -6,8 +6,12 @@ const opened = getChoices().history ? readProgress(storage) : new Set();
 const root = document.querySelector('[data-calendar]');
 const dialog = document.querySelector('#task-dialog');
 const status = document.querySelector('#calendar-status');
-let activeButton, busy = false, tasks = {};
+let activeButton, busy = false;
+let tasks = JSON.parse(root.dataset.tasks || '{}');
 let state = { phase: root.dataset.phase, available: Number(root.dataset.available) };
+// The server supplies today's tasks with the page and the time to the next Warsaw midnight.
+let refreshAt = Date.now() + Number(root.dataset.refreshAfter || 0) * 1000;
+let pendingRefresh;
 function paint() {
   document.querySelector('.calendar-grid').hidden = state.phase === 'ended';
   for (const button of document.querySelectorAll('[data-day]')) {
@@ -23,13 +27,18 @@ function paint() {
   document.querySelector('#calendar-progress').value = count;
   document.querySelector('#calendar-progress').textContent = `${count} z 24`;
 }
-async function refresh() {
+async function fetchCalendar() {
   const response = await fetch('/api/calendar.php', { cache: 'no-store' });
   if (!response.ok) throw new Error('calendar');
   const data = await response.json(); state = data.state; tasks = data.tasks; paint();
+  refreshAt = Date.now() + state.refreshAfter * 1000;
   status.textContent = state.phase === 'upcoming' ? 'Zaczynamy 1 grudnia' : state.phase === 'ended' ? 'Dziękujemy za wspólny grudzień. Kalendarz zakończył działanie.' : state.available === 1 ? 'Dostępne okienko: 1' : `Dostępne okienka: 1–${state.available}`;
   if (state.phase !== 'active' && dialog.open) dialog.close();
-  return data;
+}
+async function refresh() {
+  if (Date.now() < refreshAt) return;
+  pendingRefresh ??= fetchCalendar().finally(() => { pendingRefresh = undefined; });
+  await pendingRefresh;
 }
 async function revealWindow(button) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -52,8 +61,8 @@ for (const button of document.querySelectorAll('[data-day]')) button.addEventLis
   const day = Number(button.dataset.day);
   busy = true; button.setAttribute('aria-busy', 'true');
   try {
-    const data = await refresh();
-    const task = data.tasks[day];
+    await refresh();
+    const task = tasks[day];
     if (!task) { status.textContent = state.phase === 'ended' ? 'Kalendarz zakończył działanie.' : `To okienko będzie dostępne od ${day} grudnia.`; return; }
     document.querySelector('#task-title').textContent = task.title;
     document.querySelector('#task-body').textContent = task.body;

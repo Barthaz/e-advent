@@ -1,0 +1,76 @@
+.pdp-band { background: #f8f4eb; color: #243f32; }
+.pdp-band--tinted { background: #eee7d9; }
+.pdp-container { width: min(1180px, calc(100% - 64px)); margin-inline: auto; }
+.pdp-band h2, .pdp-band h3 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 500; text-wrap: balance; }
+.pdp-band h2 { font-size: clamp(2.3rem, 3.8vw, 3.5rem); line-height: 1.12; }
+.pdp-band em { font-weight: 400; }
+.pdp-kicker { font-size: .67rem; text-transform: uppercase; letter-spacing: .15em; color: #8a7046; margin-bottom: 16px; }
+.pdp-text { margin-top: 16px; max-width: 460px; color: #716d60; font-size: .92rem; line-height: 1.85; }
+.pdp-small { color: #807767; line-height: 1.8; font-size: .74rem; margin-top: 18px; }
+.pdp-small a { text-decoration: underline; text-underline-offset: 3px; }
+.pdp-section { padding-block: 80px; }
+.pdp-section-heading { margin-bottom: 42px; }
+.pdp-section-footer { margin-top: 42px; font-size: .9rem; }
+.pdp-section-footer a { text-decoration: underline; text-underline-offset: 4px; transition: color .2s ease; }
+.pdp-section-footer a:hover { color: #8a7046; }
+
+.pdp-highlights { border-block: 1px solid #ded3bf; background: #f0eadf; color: #243f32; padding-block: 22px; }
+.pdp-highlights > div { display: flex; justify-content: space-between; gap: 18px; }
+.pdp-highlights span { display: flex; align-items: center; gap: 12px; font-size: .85rem; }
+.pdp-highlights i { color: #9c7d45; }
+
+.pdp-steps { list-style: none; display: grid; grid-template-columns: repeat(var(--pdp-steps, 4), minmax(0, 1fr)); gap: 30px; padding: 0; }
+.pdp-steps li { border-top: 1px solid #cbb995; padding-top: 20px; }
+.pdp-steps li > span { font: 500 1.9rem 'Cormorant Garamond', Georgia, serif; color: #aa8c56; }
+.pdp-steps h3 { font-size: 1.6rem; margin: 14px 0 10px; }
+.pdp-steps p { color: #716d60; font-size: .85rem; line-height: 1.8; }
+
+.pdp-story { padding-block: 70px; }
+.pdp-story-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 80px; }
+.pdp-story-list { list-style: none; padding: 0; }
+.pdp-story-list li { display: flex; align-items: start; gap: 22px; padding-block: 22px; border-bottom: 1px solid #ccbea4; }
+.pdp-story-list li:first-child { padding-top: 0; }
+.pdp-story-list li:last-child { border: 0; padding-bottom: 0; }
+.pdp-story-list span { color: #99794a; font-size: .8rem; padding-top: 4px; }
+.pdp-story-list h3 { font-size: 1.45rem; line-height: 1.2; margin-bottom: 6px; }
+.pdp-story-list p { font-size: .93rem; line-height: 1.85; color: #4f5c4f; }
+
+.pdp-cross-sell { border: 1px solid #cfbb95; border-radius: 8px; padding: 42px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 56px; align-items: center; }
+.pdp-cross-sell-copy > p:last-child { color: #716d60; font-size: .9rem; line-height: 1.9; margin-top: 22px; }
+.pdp-cross-sell-price { text-align: center; }
+.pdp-cross-sell-price strong { font: 500 3.5rem 'Cormorant Garamond', Georgia, serif; }
+.pdp-cross-sell-price p { color: #716d60; font-size: .9rem; line-height: 1.7; margin-bottom: 20px; }
+.pdp-cross-sell-price small { font-size: .72rem; }
+
+.pdp-faq { display: grid; grid-template-columns: .8fr 1.2fr; gap: 80px; }
+.pdp-faq header > p:last-child { color: #716d60; font-size: .9rem; line-height: 1.9; margin-top: 22px; }
+.pdp-faq header a { text-decoration: underline; text-underline-offset: 4px; }
+.pdp-faq details { border-bottom: 1px solid #d1c5ad; }
+.pdp-faq details:first-child { border-top: 1px solid #d1c5ad; }
+.pdp-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; cursor: pointer; padding-block: 22px; font-size: .95rem; list-style: none; }
+.pdp-faq summary::-webkit-details-marker { display: none; }
+.pdp-faq summary i { font-size: .7rem; color: #9c7c46; transition: transform .2s ease; }
+.pdp-faq details[open] summary i { transform: rotate(45deg); }
+.pdp-faq details > p { padding-bottom: 22px; color: #716d60; font-size: .85rem; line-height: 1.9; }
+
+.pdp-prose { max-width: 760px; }
+.pdp-prose h3 { font-size: 1.8rem; line-height: 1.2; margin: 38px 0 12px; }
+.pdp-prose p { color: #716d60; font-size: .95rem; line-height: 1.85; margin-bottom: 14px; }
+.pdp-prose a { color: #0f5132; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; transition: color .2s ease; }
+.pdp-prose a:hover { color: #8a7046; }
+
+@media (max-width: 1000px) { .pdp-story-grid, .pdp-faq { gap: 40px; } }
+@media (max-width: 760px) {
+  .pdp-container { width: calc(100% - 36px); max-width: 560px; }
+  .pdp-highlights > div { display: grid; gap: 18px; }
+  .pdp-section { padding-block: 50px; }
+  .pdp-steps { grid-template-columns: 1fr 1fr; gap: 25px 20px; }
+  .pdp-steps[data-count="3"] { grid-template-columns: 1fr; }
+  .pdp-steps h3 { font-size: 1.45rem; }
+  .pdp-story { padding-block: 50px; }
+  .pdp-story-grid, .pdp-faq, .pdp-cross-sell { grid-template-columns: 1fr; gap: 30px; }
+  .pdp-cross-sell { padding: 28px 22px; }
+  .pdp-cross-sell-price { text-align: left; border-top: 1px solid #d1c5ad; padding-top: 24px; }
+  .pdp-cross-sell-price .btn-green { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .pdp-faq summary i { transition: none; } }

@@ -39,18 +39,12 @@ const VALID = {
 };
 
 const SHIPPING = { firstName: 'Anna', lastName: 'Nowak', street: 'Kwiatowa 1', city: 'Kraków', postalCode: '30-001', phone: '500600700' };
-const ENV_KEYS = ['SANTA_MESSAGES_ENABLED', 'SANTA_STANDALONE_ENABLED', 'SANTA_LETTER_ADDON_ENABLED'];
-
-function enableSales(on = true) {
-  for (const key of ENV_KEYS) process.env[key] = on ? 'true' : 'false';
-}
 
 beforeAll(() => {
   process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-for-santa-messages-0123456789';
 });
 
 afterEach(() => {
-  for (const key of ENV_KEYS) delete process.env[key];
   db.query.mockReset();
 });
 
@@ -148,42 +142,41 @@ describe('mp3 duration', () => {
 describe('order totals', () => {
   test('voice messages are digital: no shipping on their own and no free-shipping effect', () => {
     const voiceOnly = computeOrderTotals([{ sku: 'voice-message', quantity: 1 }]);
-    expect(voiceOnly).toMatchObject({ subtotal: 19.9, shipping: 0, total: 19.9, hasPhysical: false });
+    expect(voiceOnly).toMatchObject({ subtotal: 24, shipping: 0, total: 24, hasPhysical: false });
 
     const letterOnly = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }]);
     const withAddon = computeOrderTotals([{ sku: 'santa-letter', quantity: 1 }, { sku: 'voice-message-addon', quantity: 1 }]);
     expect(withAddon.shipping).toBe(letterOnly.shipping);
-    expect(withAddon.total).toBeCloseTo(letterOnly.total + 14.9, 2);
+    expect(withAddon.total).toBeCloseTo(letterOnly.total + 19, 2);
   });
 });
 
 describe('checkout validation', () => {
-  test('rejects voice SKUs while the feature flags are off', async () => {
+  test('sells a standalone voice message like any other product', async () => {
     const result = await resolveCheckoutItems({ items: [{ sku: 'voice-message', quantity: 1 }], customerEmail: 'a@b.pl' });
-    expect(result.errors[0].msg).toMatch(/niedostępna/);
+    expect(result.errors).toBeUndefined();
+    expect(result.items[0].metadata).toEqual({ voiceMode: 'standalone' });
+    expect(result.totals.total).toBe(24);
   });
 
   test('the add-on price requires a letter in the same order', async () => {
-    enableSales();
     const result = await resolveCheckoutItems({ items: [{ sku: 'voice-message-addon', quantity: 1 }], customerEmail: 'a@b.pl' });
     expect(result.errors[0].msg).toMatch(/List/);
   });
 
   test('a letter with an add-on is priced on the server', async () => {
-    enableSales();
     const result = await resolveCheckoutItems({
       items: [{ sku: 'santa-letter', quantity: 1 }, { sku: 'voice-message-addon', quantity: 1 }],
       customerEmail: 'a@b.pl',
       shippingAddress: SHIPPING,
     });
     expect(result.errors).toBeUndefined();
-    expect(result.totals.lines.map((l) => l.unitPrice)).toEqual([29, 14.9]);
+    expect(result.totals.lines.map((l) => l.unitPrice)).toEqual([29, 19]);
     expect(result.items[1].metadata).toEqual({ voiceMode: 'letter_addon' });
     expect(result.primarySku).toBe('santa-letter');
   });
 
   test('more add-ons than letters are rejected', async () => {
-    enableSales();
     const result = await resolveCheckoutItems({
       items: [{ sku: 'santa-letter', quantity: 1 }, { sku: 'voice-message-addon', quantity: 2 }],
       customerEmail: 'a@b.pl',
@@ -193,7 +186,6 @@ describe('checkout validation', () => {
   });
 
   test('a draft line needs a matching draft key and stores only the draft id', async () => {
-    enableSales();
     const draftId = '8b7b1f7e-3a3f-4c55-9a71-1c2d3e4f5a6b';
     db.query.mockResolvedValueOnce([[]]);
     const missing = await resolveCheckoutItems({
@@ -209,7 +201,7 @@ describe('checkout validation', () => {
     });
     expect(ok.errors).toBeUndefined();
     expect(ok.items[0].metadata).toEqual({ voiceMode: 'standalone', voiceDraftId: draftId });
-    expect(ok.totals.total).toBe(19.9);
+    expect(ok.totals.total).toBe(24);
     expect(ok.hasPhysical).toBe(false);
   });
 

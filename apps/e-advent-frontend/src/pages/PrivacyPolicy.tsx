@@ -101,6 +101,14 @@ export default function PrivacyPolicy() {
             </section>
 
             <section>
+              <h2 className="legal-h2">3a. Wiadomości głosowe od Mikołaja</h2>
+              <p className="mb-4">Do przygotowania i dostarczenia nagrania wykorzystujemy adres e-mail kupującego, imię i formę zwracania się do dziecka, przedział wieku oraz dobrowolnie podane informacje potrzebne do życzeń. Nie podawaj danych o zdrowiu, adresu, nazwy szkoły ani innych danych szczególnie wrażliwych. Dane dziecka powinien przekazać rodzic, opiekun lub osoba uprawniona.</p>
+              <p className="mb-4">Personalizacja i tekst są szyfrowane w bazie, a nagrania są przechowywane w prywatnym magazynie Cloudflare R2 (Cloudflare, Inc., dostawca infrastruktury). Przeglądarka otrzymuje nagranie za pośrednictwem API po sprawdzeniu dostępu. Prywatny link umożliwia dostęp każdej osobie, która go zna — nie należy publikować go w internecie.</p>
+              <p className="mb-4">Nagranie i dane personalizacji przechowujemy przez okres dostępu, wynoszący 365 dni od pierwszego dostarczenia. Wersje robocze przed zakupem wygasają po 30 dniach. Dokumenty zamówienia, rozliczenia i potwierdzenia zgód przechowujemy odrębnie przez okres wynikający z obowiązków prawnych i ochrony roszczeń. Usunięcie nagrania z serwisu nie usuwa kopii pobranych wcześniej przez odbiorców.</p>
+              <p className="mb-4">Usługi infrastruktury i syntezy mowy mogą wymagać przetwarzania danych przez dostawców spoza Europejskiego Obszaru Gospodarczego. Przekazanie danych następuje wyłącznie z zachowaniem zabezpieczeń wymaganych przez RODO, w szczególności odpowiedniej decyzji Komisji Europejskiej lub standardowych klauzul umownych. Informacje o dostawcach wykorzystywanych przy realizacji zamówienia można uzyskać pod adresem kontakt@e-advent.pl.</p>
+            </section>
+
+            <section>
               <h2 className="legal-h2">4. Pliki cookie i technologie śledzące</h2>
               <p className="mb-4">
                 Serwis wykorzystuje pliki cookie i podobne technologie w następujących celach:

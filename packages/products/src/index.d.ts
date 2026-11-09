@@ -133,3 +133,5 @@ export const LETTER_PROMO_PERCENT: number;
 export const CALENDARS_ON_SALE_FROM: string;
 export function isCalendarsOnSale(now?: Date | string | number): boolean;
 export function isLetterPromoActive(now?: Date | string | number): boolean;
+export declare const SANTA_CONSENT_VERSION: string;
+export declare const SANTA_DIGITAL_CONSENT: string;

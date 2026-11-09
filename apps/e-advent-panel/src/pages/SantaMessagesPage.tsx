@@ -8,6 +8,7 @@ import {
   useSantaActionMutation,
   useUpdateSantaScriptMutation,
   useUploadSantaAudioMutation,
+  useAttachSantaR2AudioMutation,
   type SantaAction,
   type SantaDetail,
 } from '../api/santaMessagesApi';
@@ -97,6 +98,11 @@ export default function SantaMessagesPage() {
         </button>
       </div>
 
+      {data?.storage?.provider === 'r2' && !data.storage.r2Configured && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="status">
+          Aby wgrywać i odsłuchiwać nagrania, uzupełnij dane prywatnego bucketu Cloudflare R2 w środowisku API.
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => { setStatus(''); setPage(0); }} className={`btn-secondary px-3 py-1.5 text-xs ${status === '' ? '!border-christmas-gold !bg-christmas-gold/10' : ''}`}>
           Wszystkie
@@ -187,6 +193,8 @@ function SantaMessageDetail({ id, onClose }: { id: string; onClose: () => void }
   const [runAction, { isLoading: acting }] = useSantaActionMutation();
   const [saveScript, { isLoading: saving }] = useUpdateSantaScriptMutation();
   const [upload, { isLoading: uploading }] = useUploadSantaAudioMutation();
+  const [attachR2, { isLoading: attaching }] = useAttachSantaR2AudioMutation();
+  const [objectKey, setObjectKey] = useState('');
   const [editingScript, setEditingScript] = useState(false);
   const [scriptDraft, setScriptDraft] = useState('');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -195,6 +203,7 @@ function SantaMessageDetail({ id, onClose }: { id: string; onClose: () => void }
 
   useEffect(() => {
     setEditingScript(false);
+    setObjectKey('');
     setAudioUrl(null);
   }, [id]);
 
@@ -221,8 +230,8 @@ function SantaMessageDetail({ id, onClose }: { id: string; onClose: () => void }
   const act = async (action: SantaAction, confirmText?: string) => {
     if (confirmText && !window.confirm(confirmText)) return;
     try {
-      await runAction({ id, action }).unwrap();
-      toast.success('Gotowe.');
+      const result = await runAction({ id, action }).unwrap();
+      toast.success(result.queued ? 'Wysyłka oczekuje na ponowienie. Sprawdź historię e-maili poniżej.' : 'Gotowe.');
     } catch (err) {
       toast.error(santaErrorMessage(err, 'Operacja nie powiodła się.'));
     }
@@ -260,7 +269,8 @@ function SantaMessageDetail({ id, onClose }: { id: string; onClose: () => void }
   };
 
   const closed = CLOSED.includes(data.status);
-  const busy = acting || saving || uploading;
+  const busy = acting || saving || uploading || attaching;
+  const canAttach = Boolean(data.script && data.timestamps.approvedAt && !closed && !['DELIVERED', 'TTS_PROCESSING'].includes(data.status) && data.orderStatus === 'succeeded');
 
   return (
     <div className="panel-card p-5 space-y-5">
@@ -362,10 +372,10 @@ function SantaMessageDetail({ id, onClose }: { id: string; onClose: () => void }
           ) : (
             <p className="text-sm text-gray-500">
               Brak nagrania.{' '}
-              {data.ttsAutomation ? 'Synteza uruchomi się po akceptacji tekstu.' : 'Automatyczna synteza jest wyłączona — wgraj MP3.'}
+              {data.ttsAutomation ? 'Synteza uruchomi się po akceptacji tekstu.' : 'Po akceptacji tekstu przypisz plik z R2 albo wgraj MP3.'}
             </p>
           )}
-          {data.script && !closed && data.status !== 'DELIVERED' && (
+          {canAttach && (
             <label className="mt-3 inline-flex cursor-pointer items-center gap-2 btn-secondary px-3 py-1.5 text-xs">
               <i className={`fa-solid ${uploading ? 'fa-circle-notch fa-spin' : 'fa-upload'}`} />
               {data.audio ? 'Podmień MP3' : 'Wgraj MP3'}
@@ -380,6 +390,26 @@ function SantaMessageDetail({ id, onClose }: { id: string; onClose: () => void }
                 }}
               />
             </label>
+          )}
+          {canAttach && (
+            <form className="mt-4 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3" onSubmit={async (event) => {
+              event.preventDefault();
+              try {
+                await attachR2({ id, objectKey: objectKey.trim() }).unwrap();
+                setObjectKey('');
+                toast.success('Plik z R2 przypisany. Odsłuchaj go przed wysyłką.');
+              } catch (error) {
+                toast.error(santaErrorMessage(error, 'Nie udało się przypisać nagrania z R2.'));
+              }
+            }}>
+              <label htmlFor="santa-r2-key" className="block text-sm font-medium">Nagranie z prywatnego R2</label>
+              <p className="text-xs leading-relaxed text-gray-500">Wklej klucz obiektu, np. gotowe/zamowienie-123.mp3. Powstanie osobna kopia przypisana do tej wiadomości. Plik źródłowy pozostaje w Twoim buckecie.</p>
+              <input id="santa-r2-key" className="input-field" value={objectKey} onChange={(event) => setObjectKey(event.target.value)} placeholder="gotowe/zamowienie-123.mp3" required maxLength={1024} autoComplete="off" />
+              {(!data.storage?.r2Configured || data.storage.provider !== 'r2') && <p className="text-xs text-amber-800">Najpierw skonfiguruj R2 w zmiennych środowiskowych API.</p>}
+              <button type="submit" className="btn-secondary px-4 py-2 text-sm" disabled={busy || !objectKey.trim() || !data.storage?.r2Configured || data.storage.provider !== 'r2'}>
+                {attaching ? 'Sprawdzanie pliku…' : 'Przypisz plik z R2'}
+              </button>
+            </form>
           )}
         </div>
       </div>

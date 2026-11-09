@@ -1,11 +1,38 @@
-Options -Indexes
+Options -Indexes -MultiViews
 DirectoryIndex index.php
-<IfModule mod_rewrite.c>
+AddType application/javascript .mjs
 RewriteEngine On
-RewriteCond %{HTTPS} !=on
-RewriteRule ^ https://soa.e-advent.pl%{REQUEST_URI} [R=301,L]
+
+# Permit hosting-managed HTTP certificate validation before enforcing HTTPS.
+RewriteRule ^\.well-known/acme-challenge/[A-Za-z0-9_-]+$ - [L]
 RewriteRule (^|/)\. - [F]
-</IfModule>
+RewriteCond %{HTTPS} !=on [OR]
+RewriteCond %{HTTP_HOST} !^soa-katowice\.e-advent\.pl$ [NC]
+RewriteRule ^ https://soa-katowice.e-advent.pl%{REQUEST_URI} [R=308,L]
+
+# Redirect only the browser's original PHP URL, never an internal rewrite.
+RewriteCond %{THE_REQUEST} \s/+index\.php[?\s]
+RewriteRule ^index\.php$ / [R=308,L]
+RewriteCond %{THE_REQUEST} \s/+polityka-prywatnosci\.php[?\s]
+RewriteRule ^polityka-prywatnosci\.php$ /prywatnosc [R=308,L]
+RewriteCond %{THE_REQUEST} \s/+deklaracja-dostepnosci\.php[?\s]
+RewriteRule ^deklaracja-dostepnosci\.php$ /dostepnosc [R=308,L]
+RewriteCond %{THE_REQUEST} \s/+dzien\.php\?
+RewriteCond %{QUERY_STRING} ^day=([1-9]|1[0-9]|2[0-4])$
+RewriteRule ^dzien\.php$ /dzien/%1 [R=308,QSD,L]
+RewriteCond %{THE_REQUEST} \s/+statystyki/index\.php[?\s]
+RewriteRule ^statystyki/index\.php$ /statystyki/ [R=308,L]
+RewriteCond %{THE_REQUEST} \s/+statystyki/login\.php[?\s]
+RewriteRule ^statystyki/login\.php$ /statystyki/logowanie [R=308,L]
+RewriteCond %{THE_REQUEST} \s/+statystyki/export\.php[?\s]
+RewriteRule ^statystyki/export\.php$ /statystyki/eksport [R=308,L]
+
+RewriteRule ^prywatnosc/?$ polityka-prywatnosci.php [L]
+RewriteRule ^dostepnosc/?$ deklaracja-dostepnosci.php [L]
+RewriteRule ^dzien/([1-9]|1[0-9]|2[0-4])/?$ dzien.php?day=$1 [L]
+RewriteRule ^statystyki/logowanie/?$ statystyki/login.php [L]
+RewriteRule ^statystyki/eksport/?$ statystyki/export.php [L]
+
 <IfModule mod_headers.c>
 Header always set X-Content-Type-Options "nosniff"
 Header always set X-Frame-Options "DENY"

@@ -25,8 +25,9 @@ if ($config['environment'] === 'production') {
     if (!$config['content_approved'] || !$config['branding_approved'] || !$config['legal_approved']
         || $config['stats_source'] !== 'mysql' || $config['preview_now'] !== null
         || !$config['admin_password_hash'] || strlen($config['security_key']) < 32
-        || !is_file(__DIR__ . '/../public/assets/branding/soa-logo.svg')
-        || !is_file(__DIR__ . '/../public/assets/branding/fe-sl-official-strip.svg')) {
+        || !is_file(__DIR__ . '/../public/assets/branding/soa-logo.png')
+        || !is_file(__DIR__ . '/../public/assets/branding/funding-strip.png')
+        || !is_file(__DIR__ . '/../public/assets/branding/funding-strip-small.png')) {
         throw new RuntimeException('Production readiness checks failed.');
     }
 }

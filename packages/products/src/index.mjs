@@ -1,3 +1,4 @@
+export { SANTA_CONSENT_VERSION, SANTA_DIGITAL_CONSENT } from './consent.js';
 export {
   SHIPPING_COST,
   FREE_SHIPPING_THRESHOLD,

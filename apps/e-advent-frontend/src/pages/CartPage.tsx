@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/useCart';
-import FestivePage from '../components/FestivePage';
-import ParchmentCard from '../components/ParchmentCard';
+import OrderSummary from '../components/checkout/OrderSummary';
+import OrderSteps from '../components/checkout/OrderSteps';
+import { useCheckoutPromo } from '../components/checkout/useCheckoutPromo';
+import { readCheckoutEmail, saveCheckoutEmail, isValidCheckoutEmail } from '../utils/checkoutDetails';
+import '../components/checkout/commerce.css';
 import SEOHead from '../components/SEOHead';
 import {
-  formatPrice,
+  formatPrice, applyPercentDiscount,
   getProduct,
 } from '../config/products';
 import {
@@ -18,7 +21,6 @@ import {
   voiceItems,
 } from '../utils/cartStorage';
 import { trackSantaEvent } from '../utils/analytics';
-import { useVoiceConfig } from '../santa-message/useVoiceConfig';
 
 const UPSELL_KEY = 'e-advent-voice-upsell-dismissed';
 
@@ -29,6 +31,7 @@ export default function CartPage() {
     updateQty,
     removeItem,
     removeCertificate,
+    addCertificate,
     setLetterQuantity,
     removeLetterPack,
     addVoiceMessage,
@@ -36,11 +39,27 @@ export default function CartPage() {
     voiceNotice,
     dismissVoiceNotice,
   } = useCart();
-  const { config: voiceConfig } = useVoiceConfig();
+  const navigate = useNavigate();
+  const promo = useCheckoutPromo();
+  const [email, setEmail] = useState(() => readCheckoutEmail() || items.find(item => item.customerEmail)?.customerEmail || '');
+  const [emailError, setEmailError] = useState('');
+  const [certificateOpen, setCertificateOpen] = useState(false);
+  const [certificateName, setCertificateName] = useState('');
+  const [certificateError, setCertificateError] = useState('');
+  const beforeDelivery = { ...totals, shipping: 0, total: totals.subtotal };
+  const priced = (promo.discount != null ? applyPercentDiscount(beforeDelivery, promo.discount) : null) ?? beforeDelivery;
+  const continueOrder = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!isValidCheckoutEmail(email)) { setEmailError('Wpisz poprawny adres e-mail, np. imie@example.com.'); return; }
+    if (checkoutBlocked || promo.checking) return;
+    saveCheckoutEmail(email);
+    navigate('/platnosc?koszyk=1');
+  };
+  const addonPrice = getProduct(VOICE_MESSAGE_ADDON_SKU)!.basePrice;
   const [upsellDismissed, setUpsellDismissed] = useState(() => sessionStorage.getItem(UPSELL_KEY) === '1');
   const displayRows = buildCartDisplayRows(items);
   const addonSlots = voiceAddonSlots(items);
-  const showUpsell = Boolean(voiceConfig?.letterAddonEnabled) && !upsellDismissed && addonSlots > 0 && voiceItems(items).length === 0;
+  const showUpsell = !upsellDismissed && addonSlots > 0 && voiceItems(items).length === 0;
   const dismissUpsell = () => {
     sessionStorage.setItem(UPSELL_KEY, '1');
     setUpsellDismissed(true);
@@ -61,34 +80,13 @@ export default function CartPage() {
 
   return (
     <>
-      <SEOHead
-        title="Koszyk | e-Advent"
-        description="Twój koszyk e-Advent — kalendarze adwentowe i List do Świętego Mikołaja."
-        canonical="https://e-advent.pl/koszyk"
-        robots="noindex, follow"
-      />
-
-      <FestivePage maxWidth="lg">
-        <ParchmentCard padding="lg">
-          <h1 className="heading-page mb-2">
-            Koszyk
-          </h1>
-          <div className="gold-divider mb-8" />
-
-          {items.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-parchment-muted mb-6">Twój koszyk jest pusty.</p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link to="/kalendarze-adwentowe" className="btn-gold px-6 py-3">
-                  Zobacz kalendarze
-                </Link>
-                <Link to="/list-do-swietego-mikolaja" className="btn-outline-parchment px-6 py-3">
-                  List do Mikołaja
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <>
+      <SEOHead title="Koszyk | e-Advent" description="Twoje świąteczne zamówienie e-Advent." canonical="https://e-advent.pl/koszyk" robots="noindex, follow" />
+      <div className="commerce-page"><div className="commerce-container">
+        <OrderSteps step={1} />
+        <header className="commerce-heading"><p className="order-eyebrow">Jeszcze chwila i magia będzie w drodze</p><h1>Twój koszyk</h1><p>Sprawdź wybrane produkty i podaj e-mail. Kupujesz bez zakładania konta.</p></header>
+        {items.length === 0 ? <section className="order-panel order-empty"><i className="far fa-envelope" aria-hidden="true" /><h2>Tu zaczyna się Wasza opowieść</h2><p>Twój koszyk jest jeszcze pusty. Wybierz coś na wspólne świąteczne chwile.</p><Link to="/" className="btn-green">Odkryj e-Advent <i className="fas fa-arrow-right" aria-hidden="true" /></Link></section> : <div className="commerce-layout">
+          <div className="commerce-main">
+            <section className="order-panel"><h2>Wybrane dla Was</h2>
               {voiceNotice && (
                 <div role="status" className="mb-6 flex items-start gap-3 rounded-xl border border-christmas-gold/50 bg-christmas-gold/10 px-4 py-3 text-sm text-parchment-text">
                   <i className="fas fa-info-circle text-christmas-gold mt-0.5" aria-hidden />
@@ -98,7 +96,7 @@ export default function CartPage() {
                   </button>
                 </div>
               )}
-              <ul className="space-y-4 mb-8">
+              <ul className="cart-product-list">
                 {displayRows.map((row) => {
                   if (row.kind === 'letter-group') {
                     return (
@@ -145,6 +143,27 @@ export default function CartPage() {
                             </button>
                           </div>
                         </div>
+                        {row.quantity > row.certificates.length && (
+                          <div className="mt-4 rounded-lg border border-christmas-green/15 bg-cream p-4">
+                            {certificateOpen ? (
+                              <form onSubmit={(event) => {
+                                event.preventDefault();
+                                const name = certificateName.replace(/\s+/g, ' ').trim();
+                                if (name.length < 2) { setCertificateError('Wpisz imię dziecka (co najmniej 2 znaki).'); return; }
+                                addCertificate(name);
+                                setCertificateName(''); setCertificateError(''); setCertificateOpen(false);
+                              }}>
+                                <label className="block text-sm font-medium text-parchment-text mb-2" htmlFor="cart-certificate-name">Imię dziecka na certyfikacie</label>
+                                <div className="flex flex-wrap gap-2">
+                                  <input id="cart-certificate-name" className="input-field min-w-0 flex-1" maxLength={60} value={certificateName} onChange={(event) => setCertificateName(event.target.value)} required />
+                                  <button type="submit" className="btn-green px-5 py-2.5">Dodaj za {formatPrice(getProduct('santa-certificate')?.basePrice ?? 9)}</button>
+                                  <button type="button" className="px-3 py-2 text-sm text-parchment-muted" onClick={() => setCertificateOpen(false)}>Anuluj</button>
+                                </div>
+                                {certificateError && <p role="alert" className="mt-2 text-sm text-christmas-red">{certificateError}</p>}
+                              </form>
+                            ) : <button type="button" className="text-left text-sm font-medium text-christmas-green" onClick={() => setCertificateOpen(true)}><i className="fas fa-plus mr-2" aria-hidden="true" />Dodaj certyfikat z imieniem — {formatPrice(getProduct('santa-certificate')?.basePrice ?? 9)}</button>}
+                          </div>
+                        )}
                         {row.certificates.length > 0 && (
                           <ul className="mt-3 ml-3 sm:ml-5 space-y-2 border-l-2 border-christmas-gold/35 pl-4">
                             {row.certificates.map((cert) => {
@@ -195,7 +214,7 @@ export default function CartPage() {
 
                   if (isVoice) {
                     const isAddon = item.sku === VOICE_MESSAGE_ADDON_SKU;
-                    const canConvert = !isAddon && addonSlots > 0 && voiceConfig?.letterAddonEnabled;
+                    const canConvert = !isAddon && addonSlots > 0;
                     return (
                       <li key={item.id} className="py-4 border-b border-parchment-dark/20 last:border-0">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
@@ -237,7 +256,7 @@ export default function CartPage() {
                             onClick={() => convertVoiceToAddon(item.id)}
                             className="mt-2 text-sm text-christmas-green hover:text-christmas-gold underline underline-offset-2"
                           >
-                            Masz list w koszyku — dołącz wiadomość do listu za {formatPrice(voiceConfig?.prices.letterAddon ?? 14.9)}
+                            Masz list w koszyku — dołącz wiadomość do listu za {formatPrice(addonPrice)}
                           </button>
                         )}
                       </li>
@@ -298,12 +317,12 @@ export default function CartPage() {
               </ul>
 
               {showUpsell && (
-                <div className="mb-8 rounded-2xl border border-christmas-gold/50 bg-[#fffaf0] p-5">
+                <div className="cart-upsell">
                   <div className="flex items-start gap-3">
                     <i className="fas fa-microphone-alt text-christmas-gold text-xl mt-1" aria-hidden />
                     <div className="flex-1">
                       <p className="font-display text-lg font-semibold text-parchment-text">
-                        Dodaj do listu wiadomość głosową od Mikołaja — {formatPrice(voiceConfig?.prices.letterAddon ?? 14.9)}
+                        Dodaj do listu wiadomość głosową od Mikołaja — {formatPrice(addonPrice)}
                       </p>
                       <p className="text-parchment-muted text-sm mt-1">
                         Mikołaj zwróci się do dziecka po imieniu i wspomni jego sukcesy. Link do nagrania przyjdzie na e-mail.
@@ -335,51 +354,26 @@ export default function CartPage() {
                 </div>
               )}
 
-              <div className="space-y-2 text-sm mb-6">
-                <div className="flex justify-between text-parchment-text">
-                  <span>Produkty</span>
-                  <span>{formatPrice(totals.subtotal)}</span>
-                </div>
-                <div className="flex justify-between text-parchment-text">
-                  <span>Dostawa InPost</span>
-                  <span>
-                    {totals.hasPhysical ? 'Cena w następnym kroku' : '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between font-semibold text-lg text-christmas-green pt-2 border-t border-parchment-dark/20">
-                  <span>Produkty razem</span>
-                  <span>{formatPrice(totals.subtotal)}</span>
-                </div>
-              </div>
 
-
-              {hasRetiredProduct && (
-                <p role="alert" className="alert-error mb-6">
-                  W koszyku jest wycofany wariant kalendarza. Usuń go i utwórz kalendarz w aktualnym formacie A3.
-                </p>
-              )}
-              <p className="text-parchment-muted text-sm mb-6 text-center">
-                {totals.hasPhysical
-                  ? 'W kolejnym kroku podasz adres dostawy i opłacisz całe zamówienie naraz.'
-                  : 'W kolejnym kroku podasz adres e-mail i opłacisz zamówienie.'}
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                {!checkoutBlocked && <Link to="/platnosc" className="btn-gold px-8 py-3.5 text-lg">
-                  <i className="fas fa-lock" />
-                  Przejdź do zamówienia
-                </Link>}
-                <Link
-                  to="/kalendarze-adwentowe"
-                  className="btn-outline-parchment px-6 py-3"
-                >
-                  Kontynuuj zakupy
-                </Link>
-              </div>
-            </>
-          )}
-        </ParchmentCard>
-      </FestivePage>
+            </section>
+            <form id="cart-contact" className="order-panel order-contact" onSubmit={continueOrder} noValidate>
+              <p className="order-eyebrow">Kontakt do zamówienia</p><h2>Na jaki e-mail wysłać potwierdzenie?</h2>
+              <p>Tu otrzymasz informacje o zamówieniu oraz linki do produktów cyfrowych.</p>
+              <label htmlFor="cart-email">Adres e-mail <span aria-hidden="true">*</span></label>
+              <input id="cart-email" type="email" name="email" autoComplete="email" required value={email}
+                placeholder="twoj@email.pl" aria-invalid={Boolean(emailError)} aria-describedby="cart-email-help"
+                onChange={event => { setEmail(event.target.value); saveCheckoutEmail(event.target.value); setEmailError(''); }} />
+              <p id="cart-email-help" className={emailError ? 'order-field-error' : 'order-help'}>{emailError || 'Nie musisz tworzyć konta ani pamiętać hasła.'}</p>
+              {hasRetiredProduct && <p role="alert" className="alert-error">W koszyku jest wycofany wariant kalendarza. Usuń go i wybierz aktualny format A3.</p>}
+            </form>
+            <Link to="/" className="order-back"><i className="fas fa-arrow-left" aria-hidden="true" /> Wróć do zakupów</Link>
+          </div>
+          <OrderSummary items={items} subtotal={totals.subtotal} total={priced.total} discount={priced.discount} hasPhysical={totals.hasPhysical} shippingPending={totals.hasPhysical} promo={promo}>
+            <button type="submit" form="cart-contact" className="btn-green order-continue" disabled={checkoutBlocked || promo.checking}>Dostawa i płatność <i className="fas fa-arrow-right" aria-hidden="true" /></button>
+            <p className="order-next-note">W następnym kroku {totals.hasPhysical ? 'wybierzesz dostawę i sposób płatności.' : 'wybierzesz sposób płatności.'}</p>
+          </OrderSummary>
+        </div>}
+      </div></div>
     </>
   );
 }

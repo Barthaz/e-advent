@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useImperativeHandle, useRef, useState, type Ref, type CSSProperties } from 'react';
+import './audio-player.css';
 
 const BAR_COUNT = 48;
 const PROGRESS_MARKS = [25, 50, 75, 100] as const;
 
 export type ProgressMark = (typeof PROGRESS_MARKS)[number];
 
+export interface SantaAudioPlayerHandle { play: () => void; prime: () => void; restart: () => void }
+
 interface SantaAudioPlayerProps {
+  ref?: Ref<SantaAudioPlayerHandle>;
+  variant?: 'ring' | 'wave';
+  onEnded?: () => void;
   src: string;
   downloadUrl?: string;
   /** Seconds known before metadata loads (from the API) */
@@ -46,10 +52,13 @@ type AudioWindow = Window & { webkitAudioContext?: typeof AudioContext };
 
 /**
  * Golden sound ring: BAR_COUNT bars around the play button driven by a Web Audio
- * AnalyserNode. Falls back to a synthetic animation when the analyser is unavailable
- * and to a static ring for prefers-reduced-motion.
+ * AnalyserNode. Shows a static visualization if the analyser is unavailable or
+ * reduced motion is requested. Supports a compact ring and a horizontal wave.
  */
 export default function SantaAudioPlayer({
+  ref,
+  variant = 'ring',
+  onEnded,
   src,
   downloadUrl,
   durationHint,
@@ -72,6 +81,9 @@ export default function SantaAudioPlayer({
   const marksRef = useRef(new Set<number>());
   const retriedRef = useRef(false);
   const analyserFailedRef = useRef(false);
+  const resumeRef = useRef<{ time: number; play: boolean } | null>(null);
+  const wantsPlaybackRef = useRef(false);
+  const primingRef = useRef(false);
 
   const reducedMotion = usePrefersReducedMotion();
   const [currentSrc, setCurrentSrc] = useState(src);
@@ -80,6 +92,7 @@ export default function SantaAudioPlayer({
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(durationHint ?? 0);
   const [failed, setFailed] = useState(false);
+  const [volume, setVolume] = useState(1);
 
   useEffect(() => setCurrentSrc(src), [src]);
 
@@ -116,17 +129,18 @@ export default function SantaAudioPlayer({
     }
   }, [onError]);
 
-  const draw = useCallback((time: number) => {
+  const draw = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const dpr = window.devicePixelRatio || 1;
-    if (canvas.width !== size * dpr) {
+    const height = variant === 'wave' ? 88 : size;
+    if (canvas.width !== size * dpr || canvas.height !== height * dpr) {
       canvas.width = size * dpr;
-      canvas.height = size * dpr;
+      canvas.height = height * dpr;
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, size, size);
+    ctx.clearRect(0, 0, size, height);
 
     const audio = audioRef.current;
     const isPlaying = Boolean(audio && !audio.paused && !audio.ended);
@@ -145,14 +159,29 @@ export default function SantaAudioPlayer({
         // Voice energy sits in the lower bins; spread them over half the ring and mirror.
         const bin = Math.min(data.length - 1, 2 + Math.floor((mirrored / half) * data.length * 0.55));
         target = Math.pow(data[bin] / 255, 1.4);
-      } else if (isPlaying) {
-        target = 0.25 + 0.45 * Math.abs(Math.sin(time / 180 + mirrored * 0.7) * Math.cos(time / 410 + mirrored * 0.33));
       } else {
-        target = 0.07 + 0.05 * Math.sin(time / 900 + mirrored * 0.45);
+        // A quiet static wave when paused or Web Audio is unavailable; never fake speech.
+        target = 0.07 + 0.05 * Math.sin(mirrored * 0.45);
       }
       levels[i] += (target - levels[i]) * (reducedMotion ? 1 : 0.28);
     }
 
+    if (variant === 'wave') {
+      ctx.lineWidth = Math.max(2, size / BAR_COUNT * 0.46);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#edbd70';
+      ctx.shadowColor = '#e9a64b';
+      ctx.shadowBlur = isPlaying && !reducedMotion ? 9 : 0;
+      for (let i = 0; i < BAR_COUNT; i += 1) {
+        const x = (i + 0.5) * size / BAR_COUNT;
+        const length = 3 + levels[i] * 36;
+        ctx.beginPath();
+        ctx.moveTo(x, height / 2 - length);
+        ctx.lineTo(x, height / 2 + length);
+        ctx.stroke();
+      }
+      return;
+    }
     const center = size / 2;
     const inner = size * 0.3;
     const maxLength = size * 0.17;
@@ -187,15 +216,15 @@ export default function SantaAudioPlayer({
       ctx.arc(center, center, inner - 9, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
       ctx.stroke();
     }
-  }, [reducedMotion, size]);
+  }, [reducedMotion, size, variant]);
 
   useEffect(() => {
     let alive = true;
-    const loop = (time: number) => {
+    const loop = () => {
       if (!alive) return;
-      draw(time);
+      draw();
       const audio = audioRef.current;
-      const idleStatic = reducedMotion && (!audio || audio.paused);
+      const idleStatic = reducedMotion || !audio || audio.paused;
       frameRef.current = idleStatic ? null : requestAnimationFrame(loop);
     };
     if (typeof requestAnimationFrame === 'function') frameRef.current = requestAnimationFrame(loop);
@@ -222,11 +251,15 @@ export default function SantaAudioPlayer({
     const audio = audioRef.current;
     if (!audio) return;
     setFailed(false);
-    await setupAnalyser();
+    primingRef.current = false;
+    wantsPlaybackRef.current = true;
+    // Invoke play in the original click stack (also on iOS), before any await.
+    setLoading(true);
+    const playback = audio.play();
+    void setupAnalyser();
     try {
       if (contextRef.current?.state === 'suspended') await contextRef.current.resume();
-      setLoading(true);
-      await audio.play();
+      await playback;
     } catch {
       setLoading(false);
       // A blocked autoplay is not an error: the big button is right there.
@@ -235,6 +268,19 @@ export default function SantaAudioPlayer({
       onError?.('playback');
     }
   }, [onError, setupAnalyser]);
+
+  /**
+   * iOS only lets an element start later from a timer if it was played inside a gesture,
+   * and Web Audio needs the gesture to create a running context. No sound is produced.
+   */
+  const prime = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !audio.paused) return;
+    primingRef.current = true;
+    audio.play()?.catch(() => {});
+    audio.pause();
+    void setupAnalyser();
+  }, [setupAnalyser]);
 
   useEffect(() => {
     if (autoPlay) void play(true);
@@ -253,8 +299,11 @@ export default function SantaAudioPlayer({
     const audio = audioRef.current;
     if (!audio) return;
     audio.currentTime = 0;
+    setCurrent(0);
     if (audio.paused) void play();
   };
+
+  useImperativeHandle(ref, () => ({ play: () => { void play(); }, prime, restart }));
 
   const seek = (value: number) => {
     const audio = audioRef.current;
@@ -283,14 +332,11 @@ export default function SantaAudioPlayer({
     if (onSourceExpired && !retriedRef.current) {
       retriedRef.current = true;
       const resumeAt = audio.currentTime;
+      const shouldPlay = wantsPlaybackRef.current;
       const fresh = await onSourceExpired();
-      if (fresh) {
+      if (fresh && audioRef.current === audio) {
+        resumeRef.current = { time: resumeAt, play: shouldPlay };
         setCurrentSrc(fresh);
-        requestAnimationFrame(() => {
-          if (!audioRef.current) return;
-          audioRef.current.currentTime = resumeAt;
-          void play();
-        });
         return;
       }
     }
@@ -303,7 +349,7 @@ export default function SantaAudioPlayer({
   const total = duration || durationHint || 0;
 
   return (
-    <div className="santa-player flex flex-col items-center gap-4 w-full">
+    <div className={`santa-player ${variant === 'wave' ? 'santa-player--wave' : ''} flex flex-col items-center gap-4 w-full`}>
       <audio
         ref={audioRef}
         src={currentSrc}
@@ -312,28 +358,41 @@ export default function SantaAudioPlayer({
         onLoadedMetadata={(e) => {
           const d = e.currentTarget.duration;
           if (Number.isFinite(d) && d > 0) setDuration(d);
+          const resume = resumeRef.current;
+          if (resume) {
+            resumeRef.current = null;
+            e.currentTarget.currentTime = Number.isFinite(d) ? Math.min(resume.time, d) : resume.time;
+            if (resume.play) void play();
+          }
         }}
         onPlay={() => {
+          if (primingRef.current) return;
           setPlaying(true);
           if (!playedRef.current) {
             playedRef.current = true;
             onFirstPlay?.();
           }
         }}
-        onPlaying={() => setLoading(false)}
+        onPlaying={() => { setLoading(false); retriedRef.current = false; }}
         onWaiting={() => setLoading(true)}
-        onPause={() => setPlaying(false)}
+        onPause={() => {
+          if (primingRef.current) { primingRef.current = false; return; }
+          setPlaying(false); setLoading(false); wantsPlaybackRef.current = false;
+        }}
         onEnded={() => {
           setPlaying(false);
+          setLoading(false);
+          wantsPlaybackRef.current = false;
           handleTimeUpdate();
+          onEnded?.();
         }}
         onTimeUpdate={handleTimeUpdate}
         onError={() => void handleError()}
       />
 
-      <div className="relative" style={{ width: size, height: size, maxWidth: '100%' }}>
+      <div className="relative santa-visualizer" style={{ width: size, height: variant === 'wave' ? 88 : size, maxWidth: '100%' }}>
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden="true" />
-        <button
+        {variant === 'ring' && <button
           type="button"
           onClick={toggle}
           className="santa-play-button absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-christmas-gold-light/70"
@@ -345,7 +404,7 @@ export default function SantaAudioPlayer({
           ) : (
             <i className={`fas ${playing ? 'fa-pause' : 'fa-play ml-1.5'} text-4xl`} aria-hidden="true" />
           )}
-        </button>
+        </button>}
       </div>
 
       <div className="w-full max-w-sm">
@@ -357,6 +416,7 @@ export default function SantaAudioPlayer({
           value={Math.min(current, total || 0)}
           onChange={(e) => seek(Number(e.target.value))}
           className="santa-seek w-full"
+          style={{ '--progress': `${total ? Math.min(100, current / total * 100) : 0}%` } as CSSProperties}
           aria-label="Przewiń nagranie"
           aria-valuetext={`${formatTime(current)} z ${formatTime(total)}`}
           disabled={!total}
@@ -367,7 +427,27 @@ export default function SantaAudioPlayer({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-3">
+      <div className="santa-controls">
+        {variant === 'wave' && <>
+          <div className="santa-volume-controls">
+          <button type="button" className="santa-chip santa-volume-toggle" onClick={() => {
+            if (!audioRef.current) return;
+            const next = volume ? 0 : 1;
+            audioRef.current.volume = next;
+            setVolume(next);
+          }} aria-label={volume ? 'Wycisz dźwięk' : 'Włącz dźwięk'}>
+            <i className={`fas ${volume ? 'fa-volume-high' : 'fa-volume-xmark'}`} aria-hidden="true" />
+          </button>
+          <input className="santa-volume santa-seek" type="range" min="0" max="1" step="0.05" value={volume} aria-label="Głośność" style={{ '--progress': `${volume * 100}%` } as CSSProperties} onChange={(e) => {
+            const next = Number(e.target.value);
+            setVolume(next);
+            if (audioRef.current) audioRef.current.volume = next;
+          }} />
+          </div>
+          <button type="button" onClick={toggle} className="santa-wave-play" aria-label={playing ? 'Wstrzymaj wiadomość' : 'Odtwórz wiadomość'}>
+            <i className={`fas ${loading ? 'fa-circle-notch fa-spin' : playing ? 'fa-pause' : 'fa-play'}`} aria-hidden="true" />
+          </button>
+        </>}
         <button type="button" onClick={restart} className="santa-chip" aria-label="Odtwórz od początku">
           <i className="fas fa-redo-alt" aria-hidden="true" /> Od początku
         </button>
