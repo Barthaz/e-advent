@@ -38,10 +38,10 @@ export default function AddedToCartModal({ open, onContinue, onGoToCart }: Added
         </p>
         <div className="flex flex-col gap-3">
           <button type="button" className="btn-gold w-full py-3 text-base" onClick={onGoToCart}>
-            Przejdź do koszyka
+            <i className="fas fa-shopping-basket" aria-hidden /> Przejdź do koszyka
           </button>
-          <button type="button" className="btn-outline-gold w-full py-3 text-base !text-christmas-green !border-christmas-green/40" onClick={onContinue}>
-            Kontynuuj zakupy
+          <button type="button" className="btn-outline-parchment w-full py-3 text-base" onClick={onContinue}>
+            <i className="fas fa-arrow-left" aria-hidden /> Kontynuuj zakupy
           </button>
         </div>
       </div>
