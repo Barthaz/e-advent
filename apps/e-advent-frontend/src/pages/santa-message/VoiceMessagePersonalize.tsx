@@ -6,6 +6,7 @@ import SEOHead from '../../components/SEOHead';
 import Logo from '../../components/Logo';
 import { trackSantaEvent } from '../../utils/analytics';
 import PersonalizationFields from '../../santa-message/PersonalizationFields';
+import PersonalizationSummary from '../../santa-message/PersonalizationSummary';
 import { approveActivation, getActivation, SantaApiError, submitActivation, type ActivationView } from '../../santa-message/api';
 import {
   EMPTY_PERSONALIZATION,
@@ -140,7 +141,7 @@ export default function VoiceMessagePersonalize() {
                 </p>
                 <h1 className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light">
                   {editing && 'Opowiedz Mikołajowi o dziecku'}
-                  {!editing && view.status === 'SCRIPT_READY' && 'Sprawdź tekst wiadomości'}
+                  {!editing && view.status === 'SCRIPT_READY' && 'Wszystko gotowe dla Mikołaja'}
                   {!editing && IN_PROGRESS.includes(view.status) && 'Mikołaj nagrywa wiadomość'}
                   {!editing && view.status === 'DELIVERED' && 'Wiadomość jest gotowa!'}
                 </h1>
@@ -157,6 +158,12 @@ export default function VoiceMessagePersonalize() {
                       onChange={(next) => { setValue(next); if (Object.keys(errors).length) setErrors({}); }}
                       vocativeTouched={Boolean(view.personalization)}
                     />
+                    {step === 2 && (
+                      <p className="mt-6 text-sm text-parchment-muted">
+                        Na podstawie tych informacji Święty Mikołaj nagra osobistą wiadomość. Po wysłaniu od razu
+                        zabierze się do pracy, więc sprawdź jeszcze imię i jego formę.
+                      </p>
+                    )}
                     {actionError && <p className="mt-4 text-sm text-christmas-red" role="alert">{actionError}</p>}
                     <div className="mt-8 flex flex-wrap justify-between gap-3">
                       {step === 2 ? (
@@ -167,21 +174,19 @@ export default function VoiceMessagePersonalize() {
                         <button type="button" onClick={() => setEditing(false)} className="btn-outline-parchment px-5 py-2.5">Anuluj</button>
                       ) : <span />}
                       <button type="submit" disabled={busy} className="btn-gold px-7 py-3">
-                        {busy ? <><i className="fas fa-circle-notch fa-spin" aria-hidden="true" /> Zapisywanie…</> : step === 1 ? 'Dalej' : 'Przygotuj tekst'}
+                        {busy ? <><i className="fas fa-circle-notch fa-spin" aria-hidden="true" /> Zapisywanie…</> : step === 1 ? 'Dalej' : 'Przekaż Mikołajowi'}
                       </button>
                     </div>
                   </form>
                 )}
 
-                {!editing && view.status === 'SCRIPT_READY' && view.script && (
+                {!editing && view.status === 'SCRIPT_READY' && (
                   <div>
-                    <p className="text-sm text-parchment-muted mb-3">
-                      Przeczytaj tekst. Po zatwierdzeniu Święty Mikołaj nagra wiadomość (ok. {Math.ceil(view.script.estimatedSeconds / 10) * 10} s),
-                      a link wyślemy na {view.email || 'adres z zamówienia'}.
+                    <p className="text-parchment-text leading-relaxed mb-5">
+                      Na podstawie tych informacji Święty Mikołaj nagra osobistą wiadomość, a link wyślemy
+                      na {view.email || 'adres z zamówienia'}.
                     </p>
-                    <div className="rounded-2xl border border-christmas-gold/40 bg-[#fffaf0] p-5 text-parchment-text leading-relaxed whitespace-pre-line max-h-[28rem] overflow-y-auto">
-                      {view.script.text}
-                    </div>
+                    <PersonalizationSummary value={value} />
                     {actionError && <p className="mt-4 text-sm text-christmas-red" role="alert">{actionError}</p>}
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
                       {view.canEdit ? (
@@ -190,7 +195,7 @@ export default function VoiceMessagePersonalize() {
                         </button>
                       ) : <span className="text-xs text-parchment-muted">Limit poprawek wykorzystany.</span>}
                       <button type="button" onClick={() => void approve()} disabled={busy} className="btn-gold px-7 py-3">
-                        {busy ? <><i className="fas fa-circle-notch fa-spin" aria-hidden="true" /> Mikołaj nagrywa…</> : <><i className="fas fa-check" aria-hidden="true" /> Akceptuję i przygotuj nagranie</>}
+                        {busy ? <><i className="fas fa-circle-notch fa-spin" aria-hidden="true" /> Mikołaj nagrywa…</> : <><i className="fas fa-check" aria-hidden="true" /> Przekaż Mikołajowi</>}
                       </button>
                     </div>
                   </div>
@@ -200,7 +205,7 @@ export default function VoiceMessagePersonalize() {
                   <div className="text-center py-6">
                     <div className="icon-circle-lg mx-auto mb-4"><i className="fas fa-microphone-alt text-parchment-text" aria-hidden="true" /></div>
                     <p className="text-parchment-text leading-relaxed">
-                      Dziękujemy! Tekst jest zatwierdzony, a Święty Mikołaj przygotowuje nagranie.
+                      Dziękujemy! Święty Mikołaj przygotowuje nagranie.
                       Link do odsłuchu wyślemy na <strong>{view.email || 'adres z zamówienia'}</strong> — zwykle w ciągu 24 godzin.
                     </p>
                   </div>

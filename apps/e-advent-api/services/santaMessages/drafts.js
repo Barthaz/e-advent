@@ -26,7 +26,7 @@ function draftView(row) {
     mode: row.mode,
     status: row.status,
     personalization,
-    preview: script ? { text: script.spokenText, estimatedSeconds: script.estimatedSeconds } : null,
+    preview: script ? { estimatedSeconds: script.estimatedSeconds } : null,
     expiresAt: row.expires_at,
   };
 }
@@ -53,7 +53,7 @@ async function createDraft({ mode, personalization }) {
      VALUES (?, ?, ?, ?, ?, 'draft', ?)`,
     [id, keyHash(key), mode, encryptJson(prepared.value), encryptJson(prepared.script), draftExpiry()],
   );
-  return { draft: { id, key, mode, preview: { text: prepared.script.spokenText, estimatedSeconds: prepared.script.estimatedSeconds } } };
+  return { draft: { id, key, mode, preview: { estimatedSeconds: prepared.script.estimatedSeconds } } };
 }
 
 /** @returns {Promise<object|null>} raw row when id + key match and the draft is alive */
@@ -83,7 +83,7 @@ async function updateDraft(id, key, { mode, personalization }) {
        expires_at = ? WHERE id = ? AND status = 'draft'`,
     [nextMode, encryptJson(prepared.value), encryptJson(prepared.script), draftExpiry(), id],
   );
-  return { draft: { id, mode: nextMode, preview: { text: prepared.script.spokenText, estimatedSeconds: prepared.script.estimatedSeconds } } };
+  return { draft: { id, mode: nextMode, preview: { estimatedSeconds: prepared.script.estimatedSeconds } } };
 }
 
 /** Draft by id only — used after payment, when the order already proved ownership at checkout. */

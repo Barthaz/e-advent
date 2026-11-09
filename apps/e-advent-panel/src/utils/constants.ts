@@ -85,7 +85,7 @@ export const EMAIL_TYPE_LABELS: Record<string, string> = {
 
 export const SANTA_STATUS_LABELS: Record<string, string> = {
   AWAITING_PERSONALIZATION: 'Czeka na personalizację',
-  SCRIPT_READY: 'Tekst do akceptacji',
+  SCRIPT_READY: 'Czeka na potwierdzenie klienta',
   TTS_QUEUED: 'W kolejce do nagrania',
   TTS_PROCESSING: 'Nagrywanie',
   AUDIO_READY: 'Nagranie do sprawdzenia',

@@ -17,7 +17,6 @@ function int(name, fallback) {
 function santaConfig() {
   return {
     fulfillmentEnabled: flag('SANTA_FULFILLMENT_ENABLED', true),
-    scriptApprovalRequired: flag('SANTA_SCRIPT_APPROVAL_REQUIRED', true),
     adminReviewRequired: flag('SANTA_ADMIN_REVIEW_REQUIRED', true),
     ttsAutomationEnabled: flag('SANTA_TTS_AUTOMATION_ENABLED'),
     devMailOutbox: flag('SANTA_DEV_MAIL_OUTBOX') && process.env.NODE_ENV !== 'production',
@@ -44,10 +43,8 @@ function ttsConfigured(config = santaConfig()) {
 }
 
 function publicConfig() {
-  const config = santaConfig();
   return {
-    scriptApprovalRequired: config.scriptApprovalRequired,
-    maxAudioSeconds: config.maxAudioSeconds,
+    maxAudioSeconds: santaConfig().maxAudioSeconds,
     prices: {
       standalone: getProduct(VOICE_MESSAGE_SKU).basePrice,
       letterAddon: getProduct(VOICE_MESSAGE_ADDON_SKU).basePrice,

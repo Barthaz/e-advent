@@ -22,7 +22,6 @@ beforeEach(() => {
   jest.clearAllMocks();
   process.env.SANTA_TOKEN_SECRET = 'test-only-secret-for-audio-link-12345678';
   process.env.SANTA_ADMIN_REVIEW_REQUIRED = 'true';
-  process.env.SANTA_SCRIPT_APPROVAL_REQUIRED = 'true';
   instance = { id, order_id: 'o1', status: 'TTS_QUEUED', script_enc: crypto.encryptJson({ spokenText: 'Witaj, Zosiu!' }), script_approved_at: new Date(), play_token_version: 1, audio_key: null };
   order = { id: 'o1', status: 'succeeded', customer_email: 'test@example.com', order_number: 42 };
   deliveries = [];
@@ -88,10 +87,8 @@ test('retention expiry and reversed payment are checked on each audio request', 
   await expect(santa.audioForStreaming(id, 1)).resolves.toBeNull();
   expect(audio.readAudio).not.toHaveBeenCalled();
 });
-test('requires payment and script approval before reading a private object', async () => {
-  instance.script_approved_at = null;
-  await expect(santa.adminAttachR2Audio(id, 'a.mp3')).resolves.toEqual({ conflict: 'NOT_APPROVED' });
-  instance.script_approved_at = new Date(); order.status = 'pending';
+test('requires payment before reading a private object', async () => {
+  order.status = 'pending';
   await expect(santa.adminAttachR2Audio(id, 'a.mp3')).resolves.toEqual({ conflict: 'NOT_PAID' });
   expect(r2.readR2Audio).not.toHaveBeenCalled();
 });

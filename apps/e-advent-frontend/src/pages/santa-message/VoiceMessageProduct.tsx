@@ -25,7 +25,7 @@ const HIGHLIGHTS = [
 
 const STEPS = [
   { title: 'Opowiadasz o dziecku', text: 'Imię, forma zwracania się i 2–5 krótkich zdań: sukcesy, z czego jesteście dumni, marzenia.' },
-  { title: 'Sprawdzasz tekst', text: 'Widzisz dokładnie, co powie Mikołaj. Po zakupie raz jeszcze zatwierdzasz scenariusz.' },
+  { title: 'Mikołaj czyta', text: 'Na podstawie Twoich informacji Święty Mikołaj przygotowuje osobistą wiadomość dla dziecka.' },
   { title: 'Mikołaj nagrywa', text: 'Przygotowujemy nagranie ciepłym głosem Mikołaja — ok. 1,5 minuty, maks. 2 minuty.' },
   { title: 'Link na e-mail', text: 'Dostajesz prywatny link do odsłuchu i plik MP3 do pobrania — zwykle w ciągu 24 godzin.' },
 ];
@@ -39,10 +39,10 @@ const HEARS = [
 
 function buildFaq(standalone: number, addon: number) {
   return [
-    { q: 'Czy to rozmowa na żywo?', a: 'Nie. To nagranie przygotowane automatycznie (synteza mowy) na podstawie tego, co napiszesz. Przed nagraniem zobaczysz i zatwierdzisz pełny tekst.' },
+    { q: 'Czy to rozmowa na żywo?', a: 'Nie. To nagranie przygotowane automatycznie (synteza mowy) na podstawie tego, co napiszesz.' },
     { q: 'Jak otrzymam wiadomość?', a: 'Na adres e-mail podany w zamówieniu wyślemy prywatny link do strony odsłuchu. Tam możesz też pobrać plik MP3.' },
-    { q: 'Ile to trwa?', a: 'Zwykle do 24 godzin od zatwierdzenia tekstu. W grudniu, w szczycie sezonu, może to potrwać nieco dłużej — napiszemy, gdyby coś się opóźniało.' },
-    { q: 'Czy mogę poprawić tekst?', a: 'Tak. Przed zakupem możesz edytować wszystko dowolnie, a po zakupie — raz poprawić dane, zanim powstanie nagranie.' },
+    { q: 'Ile to trwa?', a: 'Zwykle do 24 godzin od opłacenia zamówienia i uzupełnienia informacji o dziecku. W grudniu, w szczycie sezonu, może to potrwać nieco dłużej — napiszemy, gdyby coś się opóźniało.' },
+    { q: 'Czy mogę poprawić informacje o dziecku?', a: 'Tak. Do momentu zakupu możesz je dowolnie zmieniać — wystarczy kliknąć „Edytuj” przy wiadomości w koszyku.' },
     { q: 'Dlaczego taniej z listem?', a: `Wiadomość jako dodatek do listu kosztuje ${formatPrice(addon)} zamiast ${formatPrice(standalone)}. Cena dodatku obowiązuje dla jednej wiadomości na każdy list w zamówieniu.` },
     { q: 'Co z danymi dziecka?', a: 'Zbieramy tylko to, co potrzebne do wiadomości. Dane są szyfrowane, link jest prywatny, a nagranie przechowujemy przez 12 miesięcy. Nie wpisuj danych o zdrowiu, szkole ani adresu.' },
   ];
@@ -82,7 +82,7 @@ export default function VoiceMessageProduct() {
           price={formatPrice(standalone)}
           priceHint="Bez kosztów dostawy · prywatny link i MP3"
           priceNote="Jedna wiadomość. Tylko dla Was."
-          features={['Imię dziecka i jego małe sukcesy', 'Tekst sprawdzisz przed nagraniem', 'Ciepłe słowa na pamiątkę po świętach', 'Prywatny link i plik MP3']}
+          features={['Imię dziecka i jego małe sukcesy', 'Nagranie zwykle w ciągu 24 godzin', 'Ciepłe słowa na pamiątkę po świętach', 'Prywatny link i plik MP3']}
         />
         <div className="mb-4">
           <Link to="/wiadomosc-od-mikolaja/kreator" onClick={cta('product_hero', 'standalone')} className="btn-gold px-8 py-3.5 text-lg">
@@ -92,7 +92,7 @@ export default function VoiceMessageProduct() {
         <Link className="mb-4 inline-block text-sm text-christmas-gold-light underline underline-offset-4 hover:text-white" to="/list-do-swietego-mikolaja?wiadomosc=1" onClick={cta('product_hero_bundle', 'letter_addon')}>
           Z listem wiadomość kosztuje {formatPrice(addon)} <i className="fas fa-arrow-right ml-1 text-[0.65rem]" aria-hidden="true" />
         </Link>
-        <p className="text-white/45 text-xs">Tekst sprawdzisz przed nagraniem. Gotową wiadomość otrzymasz zwykle w ciągu 24 godzin od akceptacji.</p>
+        <p className="text-white/45 text-xs">Gotową wiadomość otrzymasz zwykle w ciągu 24 godzin od opłacenia zamówienia.</p>
       </ProductHero>
 
       <ProductHighlights items={HIGHLIGHTS} />

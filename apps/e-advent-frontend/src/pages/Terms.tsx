@@ -120,11 +120,11 @@ export default function Terms() {
 
             <section>
               <h2 className="legal-h2">5b. Wiadomość głosowa — personalizacja i dostarczenie</h2>
-              <p className="mb-4">Po opłaceniu zamówienia klient otrzymuje link do uzupełnienia danych dziecka i zatwierdzenia tekstu. Dane mogą być przygotowane również przed zakupem. Nagranie powstaje po zatwierdzeniu tekstu, zwykle w ciągu 24 godzin; o ewentualnym opóźnieniu informujemy e-mailem. Przed zatwierdzeniem można poprawić dane w zakresie wskazanym w formularzu.</p>
+              <p className="mb-4">Dane dziecka Użytkownik podaje w kreatorze przed zakupem albo po opłaceniu zamówienia przez link przesłany e-mailem. Na ich podstawie przygotowujemy nagranie, zwykle w ciągu 24 godzin od opłacenia zamówienia i uzupełnienia danych; o ewentualnym opóźnieniu informujemy e-mailem. Dane podane w kreatorze można zmieniać do chwili złożenia zamówienia.</p>
               <p className="mb-4">Nagranie trwa zwykle około 1,5 minuty, maksymalnie około 2 minut. Nie należy podawać danych o zdrowiu, adresu, szkoły ani innych informacji, które nie są potrzebne do przygotowania życzeń. Zamówienie składa osoba dorosła uprawniona do przekazania danych dziecka.</p>
               <p className="mb-4">Gotowe nagranie udostępniamy przez prywatny link do strony e-Advent wysłany na e-mail zamówienia. Strona pozwala na wielokrotne odtwarzanie i pobranie MP3. Link działa przez 365 dni od pierwszego dostarczenia nagrania; termin widoczny jest na stronie. Pobrany plik można zachować na własnym urządzeniu. Wiadomość nie obejmuje certyfikatu PDF; papierowy certyfikat można dokupić do listu.</p>
               <p className="mb-4">Link daje dostęp każdej osobie, która go posiada — należy przekazywać go wyłącznie zaufanym osobom. Same pliki są przechowywane w prywatnym magazynie Cloudflare R2 i udostępniane przez API e-Advent po sprawdzeniu uprawnienia. Do odsłuchu potrzebna jest aktualna przeglądarka z obsługą MP3, JavaScript i dostęp do internetu; po pobraniu wystarczy odtwarzacz MP3. Nie ma potrzeby instalowania aplikacji ani logowania.</p>
-              <p className="mb-4">List i certyfikat dostarczamy przesyłką niezależnie od nagrania. Brak uzupełnienia personalizacji lub zatwierdzenia tekstu wstrzymuje przygotowanie wiadomości głosowej.</p>
+              <p className="mb-4">List i certyfikat dostarczamy przesyłką niezależnie od nagrania. Brak uzupełnienia personalizacji wstrzymuje przygotowanie wiadomości głosowej.</p>
             </section>
 
             <section>

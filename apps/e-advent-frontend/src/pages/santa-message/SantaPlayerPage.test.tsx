@@ -9,10 +9,11 @@ vi.mock('../../utils/analytics', () => ({ trackSantaEvent: vi.fn() }));
 const audio = vi.hoisted(() => ({ play: vi.fn(), prime: vi.fn(), restart: vi.fn() }));
 vi.mock('../../santa-message/SantaAudioPlayer', async () => {
   const { useImperativeHandle } = await import('react');
-  return { default: (props: { ref: import('react').Ref<unknown>; onEnded: () => void; onProgress: (n: number) => void }) => {
+  function MockPlayer(props: { ref: import('react').Ref<unknown>; onEnded: () => void; onProgress: (n: number) => void }) {
     useImperativeHandle(props.ref, () => audio);
     return <div><button onClick={props.onEnded}>Zakończ testowe audio</button><button onClick={() => props.onProgress(100)}>Raport postępu</button></div>;
-  } };
+  }
+  return { default: MockPlayer };
 });
 const message: api.PlaybackView = { childName: 'Feliks', childVocative: 'Feliksie', audioUrl: '/audio.mp3', downloadUrl: '/download.mp3', durationSeconds: 24, transcript: 'Witaj, Feliksie!', availableUntil: '2027-12-24T00:00:00Z' };
 function mount(token = 'private-one') {

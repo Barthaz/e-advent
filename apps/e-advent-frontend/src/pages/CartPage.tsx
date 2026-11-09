@@ -225,7 +225,7 @@ export default function CartPage() {
                             </p>
                             <p className="text-parchment-muted text-sm">
                               {isAddon ? 'dodatek do listu' : 'produkt cyfrowy'} ·{' '}
-                              {item.voiceDraftId ? 'tekst przygotowany' : 'personalizacja po zakupie (link w e-mailu)'}
+                              {item.voiceDraftId ? 'informacje o dziecku uzupełnione' : 'personalizacja po zakupie (link w e-mailu)'}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">

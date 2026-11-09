@@ -1330,14 +1330,14 @@ export default function Checkout() {
           {isPhysical ? <>
             <InpostDelivery value={delivery} onChange={choice => { setDelivery(choice); saveCheckoutDelivery(choice); }} {...shippingQuote} />
             <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} deliveryType={delivery.type} />
-          </> : <section className="order-panel order-digital"><i className="far fa-envelope" aria-hidden="true" /><div><h2>Dostawa prosto na e-mail</h2><p>{isVoiceOnly ? 'Po płatności otrzymasz link do personalizacji lub zatwierdzenia wiadomości. Gotowe nagranie będzie dostępne pod prywatnym linkiem.' : 'Po płatności wyślemy prywatny link do Twojego kalendarza.'}</p><span>Bez kosztów dostawy</span></div></section>}
+          </> : <section className="order-panel order-digital"><i className="far fa-envelope" aria-hidden="true" /><div><h2>Dostawa prosto na e-mail</h2><p>{isVoiceOnly ? 'Po płatności Mikołaj nagra wiadomość na podstawie Twoich informacji. Gotowe nagranie będzie dostępne pod prywatnym linkiem.' : 'Po płatności wyślemy prywatny link do Twojego kalendarza.'}</p><span>Bez kosztów dostawy</span></div></section>}
             <div className="order-panel order-payment" id="payment-section">
               <h3 className="heading-section mb-2">Bezpieczna płatność</h3>
               <p className="text-parchment-muted text-sm mb-6">
                 {isPhysical
                   ? 'Po złożeniu zamówienia otrzymasz potwierdzenie na e-mail. Przygotujemy przesyłkę i wyślemy ją InPost.'
                   : isVoiceOnly
-                    ? 'Po opłaceniu zamówienia wyślemy na podany adres e-mail link do zatwierdzenia wiadomości, a potem link do nagrania.'
+                    ? 'Po opłaceniu zamówienia wyślemy na podany adres e-mail link do nagrania (a jeśli informacje o dziecku nie są jeszcze uzupełnione — najpierw link do personalizacji).'
                     : 'Po złożeniu zamówienia otrzymasz unikalny link do swojego kalendarza na podany adres e-mail.'}
               </p>
 

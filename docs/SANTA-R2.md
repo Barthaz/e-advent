@@ -2,7 +2,7 @@
 
 ## Co jest przygotowane
 
-Zakup → potwierdzenie płatności Stripe → wiadomość w panelu → e-mail do personalizacji i zatwierdzenia tekstu → przypisanie MP3 → odsłuch administratora → e-mail z prywatnym linkiem → strona e-Advent z wielokrotnym odsłuchem i pobraniem MP3.
+Zakup → potwierdzenie płatności Stripe → wiadomość w panelu → e-mail do personalizacji (jeśli dane nie zostały podane przed zakupem) → przypisanie MP3 → odsłuch administratora → e-mail z prywatnym linkiem → strona e-Advent z wielokrotnym odsłuchem i pobraniem MP3.
 
 Ceny brutto z katalogu współdzielonego przez frontend i API: wiadomość 24 zł; dodatek do listu 19 zł; list 29 zł; opcjonalny papierowy certyfikat 9 zł. Pakiet 48 zł lub 57 zł z certyfikatem, plus dostawa. API ustala ceny samodzielnie i dopuszcza najwyżej jeden tańszy dodatek na każdy list. Certyfikat można dobrać na stronie listu albo w koszyku.
 
@@ -19,7 +19,7 @@ Polecenia uruchamiaj w katalogu głównym repozytorium po `npm install`. Profil 
 3. Sprawdź połączenie z bucketem poleceniem `npm run check:santa -w e-advent-api -- --r2-only`. Powinny pojawić się potwierdzenia zapisu, odczytu i usunięcia pliku.
 4. Uruchom `npm run dev:santa -- --local-api`. Profil wybiera bazę testową, klucze Stripe test, lokalny adres w linkach i włącza oba warianty produktu. API słucha na `127.0.0.1:3103`. Dane R2 są potrzebne od etapu wgrywania nagrania. Po edycji pliku `.env` uruchom proces ponownie.
 5. Do próby płatności uruchom zalogowany do **testowego** konta Stripe CLI poleceniem `stripe listen --events payment_intent.succeeded --forward-to http://localhost:5183/api/stripe/webhook`. Wpisz sekret podpisu podany przez CLI do `STRIPE_TEST_WEBHOOK_SECRET` API i uruchom ponownie profil. Korzystaj z testowej skrzynki przy zakupie. W trybie lokalnym wiadomości Santa z linkami trafiają domyślnie do `apps/e-advent-api/storage/dev-mail/`; ustawienie `SANTA_DEV_MAIL_OUTBOX=false` przełącza je na skonfigurowany SMTP. Pozostałe e-maile sklepu korzystają z ustawień poczty zamówień.
-6. W sklepie wybierz „Stwórz wiadomość”, uzupełnij przykładowe dane, przejdź przez koszyk i opłać zamówienie w Stripe test. Otwórz link personalizacji i zatwierdź tekst. W panelu zaloguj się kontem administratora testowej bazy, wybierz zamówienie, wgraj MP3 lub przypisz istniejący obiekt R2. Odsłuchaj i kliknij „Wyślij klientowi”. Otwórz otrzymany link i sprawdź odsłuch oraz pobranie.
+6. W sklepie wybierz „Stwórz wiadomość”, uzupełnij przykładowe dane, przejdź przez koszyk i opłać zamówienie w Stripe test. Jeśli dane były podane w kreatorze, wiadomość od razu trafia do realizacji; w przeciwnym razie uzupełnij je przez link z e-maila. W panelu zaloguj się kontem administratora testowej bazy, wybierz zamówienie, wgraj MP3 lub przypisz istniejący obiekt R2. Odsłuchaj i kliknij „Wyślij klientowi”. Otwórz otrzymany link i sprawdź odsłuch oraz pobranie.
 
 ### Lokalny sklep i panel z API na Vercelu
 
@@ -54,7 +54,6 @@ W `apps/e-advent-api/.env` lub zmiennych środowiska wdrożenia:
 
 ```dotenv
 SANTA_FULFILLMENT_ENABLED=true
-SANTA_SCRIPT_APPROVAL_REQUIRED=true
 SANTA_ADMIN_REVIEW_REQUIRED=true
 SANTA_TTS_AUTOMATION_ENABLED=false
 SANTA_AUDIO_RETENTION_DAYS=365
@@ -80,7 +79,7 @@ Obecny cron `/api/v1/cron/daily-windows` zawiera odzyskiwanie zamówień Santa, 
 
 ## 3. Ręczna realizacja w panelu
 
-1. Otwórz **Wiadomości od Mikołaja** i wybierz opłacone zamówienie. Poczekaj na personalizację i akceptację scenariusza przez klienta.
+1. Otwórz **Wiadomości od Mikołaja** i wybierz opłacone zamówienie. Jeśli klient nie podał danych w kreatorze, poczekaj na personalizację przez link z e-maila. Treść widzi tylko administrator.
 2. Przygotuj MP3 (maks. 4 MB, docelowo do 2 minut). API dopuszcza techniczną tolerancję 15 sekund.
 3. Wgraj plik do prywatnego R2, np. `gotowe/zamowienie-123.mp3`.
 4. W panelu wklej **klucz obiektu**, nie URL, do pola „Nagranie z prywatnego R2” i kliknij „Przypisz plik z R2”. API sprawdzi plik i zapisze własną kopię pod `santa-messages/<id>/<losowa-nazwa>.mp3`. Kopia zapewnia niezmienność przypisanej wiadomości; późniejsza podmiana pliku źródłowego nie zmieni nagrania klienta.
@@ -97,7 +96,7 @@ API usuwa własne kopie po 365 dniach i ponawia nieudane usunięcia w cronie. Pl
 
 W środowisku testowym ze Stripe test mode sprawdź po jednym zamówieniu: wiadomość 24 zł, list + wiadomość 48 zł, pakiet z certyfikatem 57 zł (+ dostawa). Osobna zgoda na wcześniejsze dostarczenie treści cyfrowej powinna być wymagana; API zapisuje jej tekst, wersję i czas serwera w `orders.metadata`, a potwierdzenie jest wysyłane e-mailem. Zamówienie z kodem 100% przechodzi przez tę samą zgodę.
 
-Przejdź personalizację, zatwierdź tekst, przypisz testowy MP3, odsłuchaj w panelu, wyślij na własny testowy adres, otwórz prywatny link na komputerze i telefonie. Sprawdź przewijanie, pauzę, zakończenie, powtórkę, pobranie MP3 i ponowne otwarcie linku. Po unieważnieniu linku stara strona i jej adres audio mają przestać działać. Sprawdź także autentyczne dostarczenie SMTP i wywołanie webhooka Stripe.
+Przejdź personalizację, przypisz testowy MP3, odsłuchaj w panelu, wyślij na własny testowy adres, otwórz prywatny link na komputerze i telefonie. Sprawdź przewijanie, pauzę, zakończenie, powtórkę, pobranie MP3 i ponowne otwarcie linku. Po unieważnieniu linku stara strona i jej adres audio mają przestać działać. Sprawdź także autentyczne dostarczenie SMTP i wywołanie webhooka Stripe.
 
 Automatyczne testy `santaR2`, `santaAudioDelivery`, `santaMessages`, `orderMailer`, `Checkout` i `CartPage` sprawdzają logikę bez prawdziwej płatności i bez wysyłania e-maili klientom. Nie zastępują próby rzeczywistego bucketu/SMTP/Stripe po uzupełnieniu kluczy.
 

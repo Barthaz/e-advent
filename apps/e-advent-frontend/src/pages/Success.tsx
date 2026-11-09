@@ -224,10 +224,10 @@ export default function Success() {
                 Wiadomość od Świętego Mikołaja
               </h2>
               <p className="text-sm text-parchment-muted">
-                {emailSent ? 'Wysłaliśmy' : 'Wyślemy'} na{' '}
+                Na podstawie Twoich informacji Mikołaj nagra wiadomość, a link do odsłuchu i MP3 wyślemy na{' '}
                 <strong className="text-parchment-text">{calendarData?.email || 'adres z zamówienia'}</strong>{' '}
-                link do sprawdzenia tekstu (albo uzupełnienia personalizacji). Po Twojej akceptacji Mikołaj nagra
-                wiadomość — link do odsłuchu i MP3 przyjdzie zwykle w ciągu 24 godzin. Sprawdź też folder SPAM.
+                zwykle w ciągu 24 godzin. Jeśli informacje o dziecku nie zostały jeszcze uzupełnione, najpierw
+                {emailSent ? ' wysłaliśmy' : ' wyślemy'} link do personalizacji. Sprawdź też folder SPAM.
               </p>
             </div>
           )}

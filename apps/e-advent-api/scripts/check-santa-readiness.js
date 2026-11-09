@@ -21,7 +21,6 @@ async function main() {
     'SANTA_DATA_KEY lub JWT_SECRET (min. 32 znaki)': (process.env.SANTA_DATA_KEY || process.env.JWT_SECRET || '').length >= 32,
     'E-mail: komplet ustawień SMTP': ['EMAIL_HOST', 'EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM'].every((key) => Boolean(process.env[key])),
     'SANTA_FULFILLMENT_ENABLED': config.fulfillmentEnabled,
-    'SANTA_SCRIPT_APPROVAL_REQUIRED': config.scriptApprovalRequired,
     'SANTA_ADMIN_REVIEW_REQUIRED': config.adminReviewRequired,
     'SANTA_TTS_AUTOMATION_ENABLED=false (realizacja ręczna)': !config.ttsAutomationEnabled,
     'SANTA_AUDIO_RETENTION_DAYS=365 (zgodnie z ofertą)': config.audioRetentionDays === 365,

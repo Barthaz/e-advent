@@ -23,7 +23,7 @@ function linkLine(url) {
 
 /**
  * Subjects and bodies never contain the child's data — only the order number and links.
- * @param {'activation'|'approval'|'order_received'|'audio_ready'} type
+ * @param {'activation'|'order_received'|'audio_ready'} type
  */
 function buildSantaEmail(type, { url, orderNumber }) {
   if (type === 'audio_ready') {
@@ -62,22 +62,6 @@ function buildSantaEmail(type, { url, orderNumber }) {
           <p style="${MUTED}">Zwykle trwa to do 24 godzin. Jeśli wiadomość nie dotrze, sprawdź folder spam albo odpisz na tego maila.</p>`,
       }),
       text: 'Płatność została potwierdzona. Wiadomość od Świętego Mikołaja jest w przygotowaniu — link do odsłuchu wyślemy na ten adres.',
-    };
-  }
-  if (type === 'approval') {
-    return {
-      subject: 'Sprawdź wiadomość od Świętego Mikołaja',
-      html: emailShell({
-        title: 'Prawie gotowe!',
-        subtitle: 'Sprawdź tekst przed nagraniem',
-        preheader: 'Zatwierdź tekst, a Mikołaj nagra wiadomość',
-        bodyHtml: `
-          <p style="${P}">Dziękujemy za zamówienie${orderLabel(orderNumber)}! Przygotowaliśmy tekst wiadomości od Świętego Mikołaja. Przeczytaj go i zatwierdź — dopiero wtedy powstanie nagranie.</p>
-          <p style="text-align:center;margin:22px 0;">${ctaButton(url, 'Sprawdź i zatwierdź tekst')}</p>
-          ${linkLine(url)}
-          <p style="${MUTED}">Jeśli coś się nie zgadza (np. forma imienia), możesz jednorazowo poprawić dane przed nagraniem.</p>`,
-      }),
-      text: `Sprawdź i zatwierdź tekst wiadomości od Świętego Mikołaja: ${url}`,
     };
   }
   return {

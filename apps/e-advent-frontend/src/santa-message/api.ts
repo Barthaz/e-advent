@@ -50,7 +50,7 @@ export interface DraftResult {
   id: string;
   key?: string;
   mode: PurchaseMode;
-  preview: { text: string; estimatedSeconds: number } | null;
+  preview: { estimatedSeconds: number } | null;
 }
 
 export interface DraftView extends DraftResult {
@@ -91,10 +91,8 @@ export interface ActivationView {
   email: string;
   orderNumber: string | null;
   personalization: Personalization | null;
-  script: { text: string; estimatedSeconds: number } | null;
   canEdit: boolean;
   canApprove: boolean;
-  approvalRequired: boolean;
   remainingEdits: number;
 }
 

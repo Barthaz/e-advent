@@ -95,9 +95,7 @@ async function enqueueForPaidOrder(orderId, actor = 'system') {
     for (let index = 0; index < Number(item.quantity || 1); index += 1) {
       const draft = index === 0 && meta.voiceDraftId ? await loadDraftById(meta.voiceDraftId) : null;
       const prepared = draft ? scriptFrom(decryptJson(draft.personalization_enc)) : null;
-      const status = !prepared
-        ? STATUS.AWAITING_PERSONALIZATION
-        : config.scriptApprovalRequired ? STATUS.SCRIPT_READY : STATUS.TTS_QUEUED;
+      const status = prepared ? STATUS.TTS_QUEUED : STATUS.AWAITING_PERSONALIZATION;
       const id = randomUUID();
       const inserted = await withTransaction(async () => {
         const [result] = await query(
@@ -117,8 +115,7 @@ async function enqueueForPaidOrder(orderId, actor = 'system') {
           ],
         );
         if (result.affectedRows !== 1) return false;
-        const firstMail = status === STATUS.AWAITING_PERSONALIZATION ? 'activation'
-          : status === STATUS.SCRIPT_READY ? 'approval' : 'order_received';
+        const firstMail = status === STATUS.AWAITING_PERSONALIZATION ? 'activation' : 'order_received';
         await query(
           `INSERT IGNORE INTO santa_message_deliveries (id, message_id, delivery_type, version, status, next_attempt_at)
            VALUES (?, ?, ?, 1, 'pending', UTC_TIMESTAMP())`,
@@ -288,7 +285,6 @@ async function findByToken(kind, token) {
 async function activationView(instance) {
   const order = await loadOrder(instance.order_id);
   const config = santaConfig();
-  const script = decryptJson(instance.script_enc);
   const editable = EDITABLE.includes(instance.status) && instance.submit_count < config.maxSubmits;
   return {
     status: instance.status,
@@ -296,10 +292,8 @@ async function activationView(instance) {
     email: maskEmail(order?.customer_email),
     orderNumber: formatOrderNumber(order?.order_number),
     personalization: decryptJson(instance.personalization_enc),
-    script: script ? { text: script.spokenText, estimatedSeconds: script.estimatedSeconds } : null,
     canEdit: editable,
     canApprove: instance.status === STATUS.SCRIPT_READY,
-    approvalRequired: config.scriptApprovalRequired,
     remainingEdits: Math.max(0, config.maxSubmits - instance.submit_count),
   };
 }
@@ -314,19 +308,17 @@ async function submitPersonalization(instance, input) {
   if (script.estimatedSeconds > config.maxAudioSeconds) {
     return { errors: [{ field: 'script', code: 'TOO_LONG', max: config.maxAudioSeconds }] };
   }
-  const next = config.scriptApprovalRequired ? STATUS.SCRIPT_READY : STATUS.TTS_QUEUED;
   const [result] = await query(
     `UPDATE santa_message_instances
      SET personalization_enc = ?, script_enc = ?, script_version = ?, status = ?, submit_count = submit_count + 1,
-         script_approved_at = ?
+         script_approved_at = UTC_TIMESTAMP()
      WHERE id = ? AND status IN (?, ?) AND submit_count < ?`,
-    [encryptJson(value), encryptJson(script), script.version, next,
-      next === STATUS.TTS_QUEUED ? new Date() : null,
+    [encryptJson(value), encryptJson(script), script.version, STATUS.TTS_QUEUED,
       instance.id, ...EDITABLE, config.maxSubmits],
   );
   if (result.affectedRows !== 1) return { conflict: 'NOT_EDITABLE' };
-  await logEvent(instance.id, 'personalization_submitted', 'customer', { status: next });
-  if (next === STATUS.TTS_QUEUED) await runTtsWithinRequest();
+  await logEvent(instance.id, 'personalization_submitted', 'customer', { status: STATUS.TTS_QUEUED });
+  await runTtsWithinRequest();
   return { ok: true };
 }
 
@@ -590,7 +582,6 @@ async function audioUploadTarget(id) {
   if (!instance) return { notFound: true };
   if ([STATUS.CANCELLED, STATUS.EXPIRED, STATUS.DELIVERED, STATUS.TTS_PROCESSING].includes(instance.status)) return { conflict: 'CLOSED' };
   if (!instance.script_enc) return { conflict: 'NO_SCRIPT' };
-  if (santaConfig().scriptApprovalRequired && !instance.script_approved_at) return { conflict: 'NOT_APPROVED' };
   const order = await loadOrder(instance.order_id);
   if (order?.status !== 'succeeded') return { conflict: 'NOT_PAID' };
   return { instance };
@@ -645,8 +636,7 @@ async function adminResendLink(id) {
   const instance = await loadInstance(id);
   if (!instance) return { notFound: true };
   const type = instance.status === STATUS.DELIVERED ? 'audio_ready'
-    : instance.status === STATUS.AWAITING_PERSONALIZATION ? 'activation'
-      : instance.status === STATUS.SCRIPT_READY ? 'approval' : null;
+    : EDITABLE.includes(instance.status) ? 'activation' : null;
   if (!type) return { conflict: 'NOTHING_TO_RESEND' };
   await addDelivery(id, type);
   await logEvent(id, 'resend_requested', 'admin', { type });

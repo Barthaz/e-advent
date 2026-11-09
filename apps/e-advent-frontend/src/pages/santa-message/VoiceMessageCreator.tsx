@@ -10,6 +10,7 @@ import { useCart } from '../../context/useCart';
 import { voiceAddonSlots } from '../../utils/cartStorage';
 import { trackSantaEvent } from '../../utils/analytics';
 import PersonalizationFields from '../../santa-message/PersonalizationFields';
+import PersonalizationSummary from '../../santa-message/PersonalizationSummary';
 import { createDraft, getDraft, SantaApiError, updateDraft } from '../../santa-message/api';
 import { clearStoredDraft, loadStoredDraft, saveStoredDraft } from '../../santa-message/draftStore';
 import {
@@ -30,7 +31,7 @@ type Step = 1 | 2 | 3;
 const STEPS: Array<{ step: Step; label: string }> = [
   { step: 1, label: 'Dziecko' },
   { step: 2, label: 'Opowieść' },
-  { step: 3, label: 'Sprawdź' },
+  { step: 3, label: 'Podsumowanie' },
 ];
 
 function formatDuration(seconds: number): string {
@@ -57,7 +58,7 @@ export default function VoiceMessageCreator() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [vocativeTouched, setVocativeTouched] = useState(false);
   const [draft, setDraft] = useState<{ id: string; key: string } | null>(null);
-  const [preview, setPreview] = useState<{ text: string; estimatedSeconds: number } | null>(null);
+  const [preview, setPreview] = useState<{ estimatedSeconds: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
@@ -186,7 +187,7 @@ export default function VoiceMessageCreator() {
             <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light focus:outline-none">
               {step === 1 && 'Dla kogo jest wiadomość?'}
               {step === 2 && 'Opowiedz Mikołajowi o dziecku'}
-              {step === 3 && 'Sprawdź swoją wiadomość'}
+              {step === 3 && 'Wszystko gotowe dla Mikołaja'}
             </h1>
             <p className="text-white/70 text-sm mt-2">
               {formatPrice(price)} {mode === 'letter_addon' ? '· cena dodatku do listu' : ''}
@@ -255,26 +256,16 @@ export default function VoiceMessageCreator() {
 
             {step === 3 && preview && (
               <div>
-                <dl className="grid sm:grid-cols-2 gap-3 mb-6 text-sm">
-                  <div className="rounded-xl bg-white/60 p-3">
-                    <dt className="text-parchment-muted">Dziecko</dt>
-                    <dd className="text-parchment-text font-semibold">{value.childName} („{value.childVocative}”)</dd>
-                  </div>
-                  <div className="rounded-xl bg-white/60 p-3">
-                    <dt className="text-parchment-muted">Długość nagrania</dt>
-                    <dd className="text-parchment-text font-semibold">ok. {formatDuration(preview.estimatedSeconds)} min</dd>
-                  </div>
-                </dl>
-
-                <h2 className="font-display text-xl font-semibold text-parchment-text mb-2">Tak powie Święty Mikołaj</h2>
-                <div className="rounded-2xl border border-christmas-gold/40 bg-[#fffaf0] p-5 text-parchment-text leading-relaxed whitespace-pre-line max-h-[26rem] overflow-y-auto">
-                  {preview.text}
-                </div>
+                <p className="text-parchment-text leading-relaxed mb-5">
+                  Na podstawie tych informacji Święty Mikołaj nagra osobistą wiadomość
+                  (ok. {formatDuration(preview.estimatedSeconds)} min). Sprawdź jeszcze imię i jego formę — to one
+                  zabrzmią w nagraniu.
+                </p>
+                <PersonalizationSummary value={value} />
 
                 <ul className="mt-5 space-y-2 text-sm text-parchment-muted">
                   <li><i className="fas fa-microphone-alt text-christmas-gold mr-2" aria-hidden="true" />To nagranie przygotowywane automatycznie głosem Mikołaja — nie rozmowa na żywo.</li>
                   <li><i className="fas fa-envelope text-christmas-gold mr-2" aria-hidden="true" />Link do odsłuchu i pobrania MP3 wyślemy na adres e-mail podany w zamówieniu.</li>
-                  <li><i className="fas fa-check-double text-christmas-gold mr-2" aria-hidden="true" />Po płatności jeszcze raz zatwierdzisz tekst — możesz wtedy poprawić np. formę imienia.</li>
                 </ul>
 
                 <div className="mt-8 flex flex-wrap items-center justify-between gap-3">

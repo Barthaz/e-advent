@@ -3,7 +3,7 @@
 const { santaConfig } = require('./config');
 
 /**
- * ElevenLabs text-to-speech. Only called after payment and script approval.
+ * ElevenLabs text-to-speech. Only called after payment and personalization.
  * @param {string} text
  * @returns {Promise<Buffer>}
  */

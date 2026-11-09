@@ -25,7 +25,7 @@ const FAQ = [
   },
   {
     question: 'Kiedy dotrze moja przesyłka lub wiadomość?',
-    answer: 'Link do kalendarza online jest dostępny po opłaceniu zamówienia. Produkty fizyczne przygotowujemy w ciągu 3–5 dni roboczych, do których należy doliczyć czas dostawy. Nagranie powstaje zwykle w ciągu 24 godzin od zatwierdzenia tekstu. W szczycie sezonu może to potrwać dłużej.',
+    answer: 'Link do kalendarza online jest dostępny po opłaceniu zamówienia. Produkty fizyczne przygotowujemy w ciągu 3–5 dni roboczych, do których należy doliczyć czas dostawy. Nagranie powstaje zwykle w ciągu 24 godzin od opłacenia zamówienia. W szczycie sezonu może to potrwać dłużej.',
   },
   {
     question: 'Jak działa zestaw list + wiadomość?',
@@ -165,10 +165,10 @@ export default function Landing() {
             <header className="story-section-heading"><p className="story-kicker">Dla rodziców — po prostu</p><h2 id="how-title">Ty wybierasz chwilę.<br />My pomagamy ją przygotować.</h2><p>Każdy produkt ma własną drogę do Waszego domu. Wszystko wyjaśniamy przed zakupem.</p></header>
             <ol className="story-steps">
               <li><span>01</span><h3>Wybierz swój rozdział</h3><p>Kalendarz, papierowy list, nagranie — albo zestaw. Na stronie produktu zobaczysz jego zawartość i cenę.</p></li>
-              <li><span>02</span><h3>Dodaj coś od siebie</h3><p>W kreatorze kalendarza wybierzesz zadania. Po zakupie wiadomości opowiesz Mikołajowi o dziecku i sprawdzisz tekst.</p></li>
+              <li><span>02</span><h3>Dodaj coś od siebie</h3><p>W kreatorze kalendarza wybierzesz zadania. W kreatorze wiadomości opowiesz Mikołajowi o dziecku.</p></li>
               <li><span>03</span><h3>Odbierz i cieszcie się razem</h3><p>Produkty cyfrowe otrzymasz e-mailem. Papierowy zestaw i zdrapkę wyślemy InPost. Pozostaje znaleźć Waszą wspólną chwilę.</p></li>
             </ol>
-            <div className="story-delivery-note"><i className="fas fa-box-open" aria-hidden="true" /><p><strong>List i zdrapka:</strong> realizacja 3–5 dni roboczych + dostawa.<br /><strong>Nagranie:</strong> zwykle do 24 godzin od zatwierdzenia tekstu.</p><Link to="/dostawa-i-zwroty">O dostawie i zwrotach <i className="fas fa-arrow-right" aria-hidden="true" /></Link></div>
+            <div className="story-delivery-note"><i className="fas fa-box-open" aria-hidden="true" /><p><strong>List i zdrapka:</strong> realizacja 3–5 dni roboczych + dostawa.<br /><strong>Nagranie:</strong> zwykle do 24 godzin od opłacenia zamówienia.</p><Link to="/dostawa-i-zwroty">O dostawie i zwrotach <i className="fas fa-arrow-right" aria-hidden="true" /></Link></div>
           </div>
         </section>
 

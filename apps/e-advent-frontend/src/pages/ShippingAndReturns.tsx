@@ -79,7 +79,7 @@ export default function ShippingAndReturns() {
 
             <h3 className="legal-h3">2.2. Treści cyfrowe</h3>
             <p className="mb-4">Kalendarz online i wiadomość głosowa są treściami cyfrowymi. Sama personalizacja nie wyłącza prawa odstąpienia. Dla odpłatnych treści cyfrowych jego utrata wymaga uprzedniej, wyraźnej zgody, poinformowania o utracie prawa po spełnieniu świadczenia i przyjęcia tego do wiadomości oraz potwierdzenia zawarcia umowy na trwałym nośniku, zgodnie z art. 38 ust. 1 pkt 13 ustawy o prawach konsumenta.</p>
-            <p className="mb-4">Nagranie od Mikołaja dostarczamy e-mailem jako prywatny link po przygotowaniu wiadomości, zwykle w ciągu 24 godzin od zatwierdzenia tekstu. Można je wielokrotnie odsłuchać i pobrać jako MP3 przez 365 dni od pierwszego dostarczenia. Nie naliczamy za nie kosztów przesyłki. W pakiecie list i certyfikat są wysyłane osobno od nagrania.</p>
+            <p className="mb-4">Nagranie od Mikołaja dostarczamy e-mailem jako prywatny link po przygotowaniu wiadomości, zwykle w ciągu 24 godzin od opłacenia zamówienia i uzupełnienia informacji o dziecku. Można je wielokrotnie odsłuchać i pobrać jako MP3 przez 365 dni od pierwszego dostarczenia. Nie naliczamy za nie kosztów przesyłki. W pakiecie list i certyfikat są wysyłane osobno od nagrania.</p>
 
             <h3 className="legal-h3">2.3. Produkty gotowe (niepersonalizowane)</h3>
             <p className="mb-4">
