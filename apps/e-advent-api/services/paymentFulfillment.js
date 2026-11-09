@@ -1,10 +1,16 @@
 'use strict';
 
 const { withTransaction } = require('../config/database');
-const { isPhysicalProduct } = require('../config/products');
+const { isPhysicalProduct, isVoiceMessageSku } = require('../config/products');
 const { generateAccessCode } = require('./orderMailer');
 const { orderFingerprint } = require('./orderIdentity');
 const { redeem } = require('./discountCodes');
+
+// Physical items wait for shipping and voice messages for their recording;
+// only orders made purely of instant digital products are delivered on payment.
+function initialFulfillmentStatus(items) {
+  return items.some(item => isPhysicalProduct(item.sku) || isVoiceMessageSku(item.sku)) ? 'pending' : 'delivered';
+}
 
 // Checkout cannot complete without terms + privacy checkboxes, so a paid order
 // always records acceptance even when the storefront did not send timestamps.
@@ -56,7 +62,6 @@ async function fulfillPaidIntent(intent) {
     if (canonicalOrder && orderFingerprint(order, items) !== metadata.checkoutFingerprint) {
       throw new Error('Saved order snapshot mismatch');
     }
-    const hasPhysical = items.some(item => isPhysicalProduct(item.sku));
     for (const item of items) {
       const itemMetadata = typeof item.metadata === 'string' ? JSON.parse(item.metadata) : (item.metadata || {});
       if (canonicalOrder && itemMetadata.calendarId && itemMetadata.calendarId !== item.calendar_id) {
@@ -77,7 +82,7 @@ async function fulfillPaidIntent(intent) {
         [physical ? calendars[0].access_code : (calendars[0].access_code || generateAccessCode()), physical ? 'pending' : 'delivered', item.calendar_id],
       );
     }
-    await markOrderPaid(conn, order.id, hasPhysical ? 'pending' : 'delivered');
+    await markOrderPaid(conn, order.id, initialFulfillmentStatus(items));
     return { duplicate: false, orderId: order.id, rabatCode: order.rabat_code, email: order.customer_email };
   });
 }
@@ -109,7 +114,6 @@ async function fulfillFreeOrder(orderId) {
       throw new Error('Saved order snapshot mismatch');
     }
     await redeem(order.rabat_code, { orderId: order.id, email: order.customer_email });
-    const hasPhysical = items.some(item => isPhysicalProduct(item.sku));
     for (const item of items) {
       const itemMetadata = typeof item.metadata === 'string' ? JSON.parse(item.metadata) : (item.metadata || {});
       if (!item.calendar_id) continue;
@@ -121,7 +125,7 @@ async function fulfillFreeOrder(orderId) {
         [physical ? calendars[0].access_code : (calendars[0].access_code || generateAccessCode()), physical ? 'pending' : 'delivered', item.calendar_id],
       );
     }
-    await markOrderPaid(conn, order.id, hasPhysical ? 'pending' : 'delivered');
+    await markOrderPaid(conn, order.id, initialFulfillmentStatus(items));
     return { duplicate: false, orderId: order.id };
   });
   return result;

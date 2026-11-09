@@ -17,7 +17,7 @@ const router = require('../../routes/santaMessages');
 const app = express().use('/santa-messages', router);
 const id = '8b7b1f7e-3a3f-4c55-9a71-1c2d3e4f5a6b';
 const sample = fs.readFileSync(path.join(__dirname, '../../../e-advent-frontend/public/assets/santa_sample.mp3'));
-let instance, order, deliveries;
+let instance, order, deliveries, orderItems;
 beforeEach(() => {
   jest.clearAllMocks();
   process.env.SANTA_TOKEN_SECRET = 'test-only-secret-for-audio-link-12345678';
@@ -25,6 +25,7 @@ beforeEach(() => {
   instance = { id, order_id: 'o1', status: 'TTS_QUEUED', script_enc: crypto.encryptJson({ spokenText: 'Witaj, Zosiu!' }), script_approved_at: new Date(), play_token_version: 1, audio_key: null };
   order = { id: 'o1', status: 'succeeded', customer_email: 'test@example.com', order_number: 42 };
   deliveries = [];
+  orderItems = [{ sku: 'voice-message' }];
   r2.readR2Audio.mockResolvedValue(sample);
   audio.saveAudio.mockResolvedValue('r2:santa-messages/id/snapshot.mp3');
   audio.readAudio.mockResolvedValue(sample);
@@ -35,6 +36,7 @@ beforeEach(() => {
     if (sql.includes('SELECT COALESCE(MAX(version)')) return [[{ v: deliveries.length }]];
     if (sql.includes('INSERT IGNORE INTO santa_message_deliveries')) { deliveries.push({ id: params[0], message_id: id, delivery_type: params[2], attempts: 0 }); return [{ affectedRows: 1 }]; }
     if (sql.includes('SELECT d.id, d.message_id')) return [deliveries];
+    if (sql.startsWith('SELECT sku FROM order_items')) return [orderItems];
     if (sql.includes('SET audio_key = ?')) {
       Object.assign(instance, { audio_key: params[0], audio_duration_seconds: params[1], audio_bytes: params[2], audio_source: params[3], status: params[4] });
     }
@@ -51,6 +53,7 @@ test('private R2 attachment → admin delivery → signed playback, seeking and 
   await expect(santa.audioForStreaming(id, 1)).resolves.toBeNull();
   await santa.deliverAudio(id);
   expect(instance.status).toBe('DELIVERED');
+  expect(db.query).toHaveBeenCalledWith(expect.stringContaining("SET o.fulfillment_status = 'delivered'"), ['o1', 'DELIVERED', 'CANCELLED', 'EXPIRED']);
   expect(emails.deliverSantaEmail.mock.calls[0][0].url).toMatch(/^https:\/\/e-advent.pl\/od-mikolaja\/[\w-]{43}$/);
   const view = await santa.playbackView(instance);
   expect(view.audioUrl).not.toContain('r2');

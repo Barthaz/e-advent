@@ -33,6 +33,14 @@ describe('paid order activation', () => {
     expect(writes()[1][0]).toMatch(/privacy_policy_accepted_at/);
     expect(writes()[1][1]).toEqual(['delivered', 'order']);
   });
+  test('a voice message keeps the order pending until the recording is sent', async () => {
+    order.amount = 24;
+    items = [{ sku: 'voice-message', unit_price: 24, quantity: 1, calendar_id: null, metadata: {} }];
+    order.metadata.checkoutFingerprint = require('../../services/orderIdentity').orderFingerprint(order, items);
+    await fulfillPaidIntent({ ...intent, amount: 2400, amount_received: 2400, metadata: { ...intent.metadata, checkoutFingerprint: order.metadata.checkoutFingerprint } });
+    expect(writes()).toHaveLength(1);
+    expect(writes()[0][1]).toEqual(['pending', 'order']);
+  });
   test('duplicate event does not reset fulfillment or credentials', async () => {
     order.status = 'succeeded';
     await expect(fulfillPaidIntent(intent)).resolves.toMatchObject({ duplicate: true, orderId: 'order' });

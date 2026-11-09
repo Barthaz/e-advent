@@ -2,7 +2,7 @@
 
 const { randomUUID } = require('node:crypto');
 const { query, withTransaction } = require('../../config/database');
-const { isVoiceMessageSku, VOICE_MESSAGE_SKU, VOICE_MESSAGE_ADDON_SKU } = require('../../config/products');
+const { isPhysicalProduct, isVoiceMessageSku, VOICE_MESSAGE_SKU, VOICE_MESSAGE_ADDON_SKU } = require('../../config/products');
 const { formatOrderNumber } = require('../../utils/orderNumber');
 const { santaConfig, ttsConfigured } = require('./config');
 const { deriveToken, tokenHash, encryptJson, decryptJson, audioSignature } = require('./crypto');
@@ -153,6 +153,18 @@ async function recordEmailSend(order, subject, status, errorMessage, actor) {
 }
 
 /** Sends pending e-mails. Each row is claimed atomically, so parallel callers never double-send. */
+/** Digital-only orders are fulfilled once every voice message has been sent; shipping closes the rest. */
+async function markOrderDeliveredWhenComplete(orderId) {
+  const [items] = await query('SELECT sku FROM order_items WHERE order_id = ?', [orderId]);
+  if (items.some((item) => isPhysicalProduct(item.sku))) return;
+  await query(
+    `UPDATE orders o SET o.fulfillment_status = 'delivered'
+     WHERE o.id = ? AND o.fulfillment_status = 'pending'
+       AND NOT EXISTS (SELECT 1 FROM santa_message_instances s WHERE s.order_id = o.id AND s.status NOT IN (?, ?, ?))`,
+    [orderId, STATUS.DELIVERED, STATUS.CANCELLED, STATUS.EXPIRED],
+  );
+}
+
 async function processDeliveries({ messageId = null, orderId = null, actor = 'system', limit = 20 } = {}) {
   const filters = [];
   const params = [];
@@ -203,6 +215,7 @@ async function processDeliveries({ messageId = null, orderId = null, actor = 'sy
              retention_until = COALESCE(retention_until, ?) WHERE id = ? AND status IN (?, ?)`,
           [STATUS.DELIVERED, retention, instance.id, STATUS.AUDIO_READY, STATUS.DELIVERED],
         );
+        await markOrderDeliveredWhenComplete(order.id);
       }
       await logEvent(instance.id, `email_${row.delivery_type}_sent`, actor);
       await recordEmailSend(order, subject, 'sent', null, actor);
