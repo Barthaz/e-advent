@@ -12,27 +12,13 @@ import {
   type SantaAction,
   type SantaDetail,
 } from '../api/santaMessagesApi';
-import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
-import { SANTA_STATUS_BADGE, SANTA_STATUS_LABELS } from '../utils/constants';
+import { SantaPersonalizationList, SantaStatusBadge as StatusBadge } from '../components/santa/SantaPersonalization';
+import { SANTA_STATUS_LABELS } from '../utils/constants';
 
 const PAGE_SIZE = 25;
-
-const FIELD_LABELS: Record<string, string> = {
-  childName: 'Imię',
-  childVocative: 'Wołacz',
-  addressForm: 'Forma',
-  ageBand: 'Wiek',
-  achievement: 'Osiągnięcie',
-  proudOf: 'Z czego dumni',
-  workingOn: 'Nad czym pracuje',
-  wishes: 'Marzenia',
-  siblingsNote: 'Rodzeństwo / zwierzak',
-};
-
-const ADDRESS_FORM_LABELS: Record<string, string> = { male: 'chłopiec', female: 'dziewczynka', neutral: 'neutralna' };
 
 const EDITABLE = ['SCRIPT_READY', 'TTS_QUEUED', 'NEEDS_ATTENTION'];
 const CLOSED = ['CANCELLED', 'EXPIRED'];
@@ -48,10 +34,6 @@ function formatDuration(seconds: number | null | undefined) {
   if (seconds == null) return '—';
   const s = Math.round(seconds);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
-
-function StatusBadge({ status }: { status: string }) {
-  return <Badge variant={SANTA_STATUS_BADGE[status] ?? 'pending'} label={SANTA_STATUS_LABELS[status] ?? status} icon="fa-microphone" />;
 }
 
 export default function SantaMessagesPage() {
@@ -333,23 +315,7 @@ function SantaMessageDetail({ id, onClose }: { id: string; onClose: () => void }
       <div className="grid gap-5 lg:grid-cols-2">
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Personalizacja</h3>
-          {data.personalization ? (
-            <dl className="space-y-1.5 text-sm">
-              {Object.entries(FIELD_LABELS).map(([key, label]) => {
-                const raw = data.personalization?.[key];
-                if (!raw) return null;
-                const value = key === 'addressForm' ? ADDRESS_FORM_LABELS[raw] ?? raw : raw;
-                return (
-                  <div key={key} className="grid grid-cols-[8.5rem_1fr] gap-2">
-                    <dt className="text-gray-500">{label}</dt>
-                    <dd className="text-gray-800 break-words">{value}</dd>
-                  </div>
-                );
-              })}
-            </dl>
-          ) : (
-            <p className="text-sm text-gray-500">Klient jeszcze nie uzupełnił danych.</p>
-          )}
+          <SantaPersonalizationList personalization={data.personalization} />
           <p className="mt-2 text-xs text-gray-400">Poprawki klienta: {data.submitCount}</p>
         </div>
 

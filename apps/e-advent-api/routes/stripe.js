@@ -103,6 +103,15 @@ function hasPaymentAccess(req, intent) {
     return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
+async function completePaidIntent(intent, actor) {
+    const result = await fulfillPaidIntent(intent);
+    await redeemOrderDiscount(result.orderId, result.rabatCode, result.email);
+    await ensureShipment(result.orderId).catch(error => console.error('InPost auto-create error:', error.message));
+    await deliverOrderEmails(result.orderId);
+    await santaMessages.onOrderPaid(result.orderId, actor);
+    return result;
+}
+
 // Confirm payment
 router.post('/confirm-payment', [
     body('paymentIntentId').notEmpty().withMessage('Payment intent ID is required'),
@@ -148,8 +157,12 @@ router.get('/payment/:paymentIntentId', async (req, res) => {
             || paymentIntent.metadata?.checkoutFingerprint !== payment.metadata.checkoutFingerprint)) {
             throw new Error('Payment order identity mismatch');
         }
-        // Fallback when the webhook was handled elsewhere (e.g. another deployment on the same database).
-        if (payment.status === 'succeeded' && santaMessages.orderHasVoiceItems(payment.items)) {
+        // The intent was just fetched from Stripe with our secret key, so it is as trustworthy as a
+        // signed webhook. This completes orders whose webhook failed or has not arrived yet.
+        if (paymentIntent.status === 'succeeded' && payment.status !== 'succeeded') {
+            await completePaidIntent(paymentIntent, 'system');
+            Object.assign(payment, await Payment.findPaymentByStripeId(paymentIntentId));
+        } else if (payment.status === 'succeeded' && santaMessages.orderHasVoiceItems(payment.items)) {
             await santaMessages.onOrderPaid(payment.id, 'system');
         }
         const [jobs] = await query('SELECT status FROM order_email_jobs WHERE order_id = ?', [payment.id]);
@@ -188,11 +201,7 @@ router.post('/webhook', async (req, res) => {
 
     try {
         if (event.type === 'payment_intent.succeeded') {
-            const result = await fulfillPaidIntent(event.data.object);
-            await redeemOrderDiscount(result.orderId, result.rabatCode, result.email);
-            await ensureShipment(result.orderId).catch(error => console.error('InPost auto-create error:', error.message));
-            await deliverOrderEmails(result.orderId);
-            await santaMessages.onOrderPaid(result.orderId, 'webhook');
+            await completePaidIntent(event.data.object, 'webhook');
         } else if (['payment_intent.payment_failed', 'payment_intent.canceled'].includes(event.type)) {
             // A delayed failed event must not reserve a second payment or undo
             // a later successful retry of this same PaymentIntent.

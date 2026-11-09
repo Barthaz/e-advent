@@ -63,6 +63,30 @@ test('InPost auto-create failure does not block payment confirmation', async () 
   expect((await post()).status).toBe(200);
   expect(deliverOrderEmails).toHaveBeenCalledWith('canonical-order-uuid');
 });
+describe('payment status completes an order whose webhook did not arrive', () => {
+  const db = require('../../config/database');
+  const pending = { id: 'canonical-order-uuid', status: 'pending', items: [], metadata: {}, customerEmail: 'buyer@example.com' };
+  const lookup = () => request(app).get('/api/v1/stripe/payment/pi_signed').set('X-Payment-Client-Secret', 'secret');
+  beforeEach(() => db.query.mockResolvedValue([[{ status: 'sent' }]]));
+
+  test('fulfills the order from the intent fetched from Stripe', async () => {
+    const intent = { id: 'pi_signed', status: 'succeeded', client_secret: 'secret', metadata: {} };
+    stripe.paymentIntents.retrieve.mockResolvedValue(intent);
+    Payment.findPaymentByStripeId.mockResolvedValueOnce({ ...pending }).mockResolvedValueOnce({ ...pending, status: 'succeeded' });
+    const res = await lookup();
+    expect(res.status).toBe(200);
+    expect(res.body.payment.status).toBe('succeeded');
+    expect(fulfillPaidIntent).toHaveBeenCalledWith(intent);
+    expect(deliverOrderEmails).toHaveBeenCalledWith('canonical-order-uuid');
+  });
+
+  test('leaves an unpaid intent untouched', async () => {
+    stripe.paymentIntents.retrieve.mockResolvedValue({ id: 'pi_signed', status: 'processing', client_secret: 'secret', metadata: {} });
+    Payment.findPaymentByStripeId.mockResolvedValue({ ...pending });
+    expect((await lookup()).status).toBe(200);
+    expect(fulfillPaidIntent).not.toHaveBeenCalled();
+  });
+});
 test('late failure event does not downgrade a successful payment', async () => {
   stripe.paymentIntents.retrieve.mockResolvedValue({ id: 'pi_signed', status: 'succeeded' });
   expect((await post('payment_intent.payment_failed')).status).toBe(200);

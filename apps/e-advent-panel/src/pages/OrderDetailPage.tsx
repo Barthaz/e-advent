@@ -1,5 +1,6 @@
 import InpostShipmentCard from '../components/InpostShipmentCard';
 import OrderItemsPanel from '../components/order/OrderItemsPanel';
+import OrderSantaMessages from '../components/order/OrderSantaMessages';
 import { useState, useEffect, type ReactNode } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGetOrderQuery, usePatchOrderMutation } from '../api/ordersApi';
@@ -25,7 +26,7 @@ import {
   FULFILLMENT_STATUS_OPTIONS,
   EMAIL_TYPE_LABELS,
 } from '../utils/constants';
-import { isPhysicalProduct } from '@e-advent/products';
+import { isPhysicalProduct, isVoiceMessageSku } from '@e-advent/products';
 import { getInpostStatusLabel, inpostTrackingUrl } from '../utils/inpostStatus';
 
 export default function OrderDetailPage() {
@@ -338,6 +339,10 @@ export default function OrderDetailPage() {
         shippingVat={order.shipping_vat}
         amount={order.amount}
       />
+
+      {(order.items ?? []).some((item) => isVoiceMessageSku(item.sku)) && (
+        <OrderSantaMessages orderId={orderId} paid={order.status === 'succeeded'} />
+      )}
 
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="panel-card p-5 xl:col-span-2">
