@@ -1,3 +1,4 @@
+import { productSchema } from '../../seo/product';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './voice-product.css';
@@ -18,15 +19,15 @@ const SKU = 'voice-message';
 const LETTER_PRICE = getProduct('santa-letter')?.basePrice ?? 29;
 
 const HIGHLIGHTS = [
-  { icon: 'far fa-heart', label: 'Z imieniem Twojego dziecka' },
-  { icon: 'far fa-clock', label: 'Około 1,5 minuty ciepłych słów' },
+  { icon: 'far fa-heart', label: 'Dla dziecka lub rodzeństwa' },
+  { icon: 'far fa-clock', label: 'Około 2 minut ciepłych słów' },
   { icon: 'fas fa-headphones', label: 'Do słuchania wiele razy' },
 ];
 
 const STEPS = [
-  { title: 'Opowiadasz o dziecku', text: 'Imię, forma zwracania się i 2–5 krótkich zdań: sukcesy, z czego jesteście dumni, marzenia.' },
+  { title: 'Opowiadasz o dziecku', text: 'Wybierz wiadomość dla jednego dziecka albo wspólną dla rodzeństwa. Podaj imiona, sukcesy i marzenia.' },
   { title: 'Mikołaj czyta', text: 'Na podstawie Twoich informacji Święty Mikołaj przygotowuje osobistą wiadomość dla dziecka.' },
-  { title: 'Mikołaj nagrywa', text: 'Przygotowujemy nagranie ciepłym głosem Mikołaja — ok. 1,5 minuty, maks. 2 minuty.' },
+  { title: 'Mikołaj nagrywa', text: 'Mikołaj nagrywa dla Was życzenia. Wiadomość trwa około 2 minut.' },
   { title: 'Link na e-mail', text: 'Dostajesz prywatny link do odsłuchu i plik MP3 do pobrania — zwykle w ciągu 24 godzin.' },
 ];
 
@@ -47,6 +48,10 @@ function buildFaq(standalone: number, addon: number) {
     { q: 'Co z danymi dziecka?', a: 'Zbieramy tylko to, co potrzebne do wiadomości. Dane są szyfrowane, link jest prywatny, a nagranie przechowujemy przez 12 miesięcy. Nie wpisuj danych o zdrowiu, szkole ani adresu.' },
   ];
 }
+
+const JSON_LD = productSchema(SKU, 'Wiadomość głosowa od Świętego Mikołaja',
+  'Personalizowane nagranie MP3 dla dziecka lub rodzeństwa.', '/wiadomosc-od-mikolaja',
+  ['/assets/santa-mail/santa-reading.webp']);
 
 export default function VoiceMessageProduct() {
   const standalone = getProduct(SKU)!.basePrice;
@@ -72,17 +77,17 @@ export default function VoiceMessageProduct() {
 
   return (
     <div className="min-h-screen">
-      <SEOHead title="Wiadomość głosowa od Świętego Mikołaja z imieniem dziecka | e-Advent" description="Osobista wiadomość od Świętego Mikołaja. Imię dziecka, małe sukcesy i ciepłe życzenia. Prywatny odsłuch i MP3 na pamiątkę." canonical="https://e-advent.pl/wiadomosc-od-mikolaja" ogImage="https://e-advent.pl/assets/santa-mail/santa-reading.webp" />
+      <SEOHead jsonLd={JSON_LD} title="Wiadomość głosowa od Świętego Mikołaja z imieniem dziecka | e-Advent" description="Personalizowane nagranie od Mikołaja dla dziecka lub rodzeństwa. Posłuchaj przykładu, podaj imiona i zamów świąteczne życzenia z prywatnym odsłuchem i plikiem MP3." canonical="https://e-advent.pl/wiadomosc-od-mikolaja" ogImage="https://e-advent.pl/assets/santa-mail/santa-reading.webp" />
 
       <ProductHero media={listenCard}>
         <ProductIntro
           eyebrow="Z pracowni Świętego Mikołaja"
-          title={<>Ten głos. To imię.<br /><em>Ta radość.</em></>}
+          title={<>Wiadomość głosowa<br /><em>od Świętego Mikołaja</em></>}
           description="Osobista wiadomość głosowa od Mikołaja, w której najważniejsze jest Twoje dziecko — jego małe sukcesy, wielkie marzenia i to, z czego jesteście dumni."
           price={formatPrice(standalone)}
           priceHint="Bez kosztów dostawy · prywatny link i MP3"
           priceNote="Jedna wiadomość. Tylko dla Was."
-          features={['Imię dziecka i jego małe sukcesy', 'Nagranie zwykle w ciągu 24 godzin', 'Ciepłe słowa na pamiątkę po świętach', 'Prywatny link i plik MP3']}
+          features={['Imiona dzieci i ich małe sukcesy', 'Nagranie zwykle w ciągu 24 godzin', 'Ciepłe słowa na pamiątkę po świętach', 'Prywatny link i plik MP3']}
         />
         <div className="mb-4">
           <Link to="/wiadomosc-od-mikolaja/kreator" onClick={cta('product_hero', 'standalone')} className="btn-gold px-8 py-3.5 text-lg">

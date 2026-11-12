@@ -13,15 +13,19 @@ export default function PersonalizationSummary({ value }: { value: Personalizati
   return (
     <dl className="grid sm:grid-cols-2 gap-3 text-sm">
       <div className="rounded-xl bg-white/60 p-3 sm:col-span-2">
-        <dt className="text-parchment-muted">Dziecko</dt>
+        <dt className="text-parchment-muted">{value.addressForm === 'siblings' ? 'Rodzeństwo' : 'Dziecko'}</dt>
         <dd className="text-parchment-text font-semibold">
           {value.childName}
           {value.childVocative && value.childVocative !== value.childName ? ` („${value.childVocative}”)` : ''}
         </dd>
       </div>
+      {(value.ageYears || value.ageBand) && <div className="rounded-xl bg-white/60 p-3">
+        <dt className="text-parchment-muted">Wiek w latach</dt>
+        <dd className="text-parchment-text">{value.ageYears || value.ageBand}</dd>
+      </div>}
       {story.map((field) => (
         <div key={field.name} className="rounded-xl bg-white/60 p-3">
-          <dt className="text-parchment-muted">{field.label}</dt>
+          <dt className="text-parchment-muted">{value.addressForm === 'siblings' && field.name === 'workingOn' ? 'Nad czym pracują' : field.label}</dt>
           <dd className="text-parchment-text break-words">{value[field.name]}</dd>
         </div>
       ))}

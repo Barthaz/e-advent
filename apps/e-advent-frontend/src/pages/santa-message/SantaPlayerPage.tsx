@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import SEOHead from '../../components/SEOHead';
-import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import logo from '../../assets/brand-logo.webp';
 import SantaAudioPlayer, { type SantaAudioPlayerHandle } from '../../santa-message/SantaAudioPlayer';
 import { absoluteAudioUrl, downloadRecording, getPlayback, refreshPlayback, saveAudioFile, SantaApiError, type PlaybackView } from '../../santa-message/api';
 import { SAMPLE_MESSAGES, samplePath } from '../../santa-message/samples';
@@ -113,6 +113,7 @@ function SantaExperience({ token, sample }: { token: string; sample?: PlaybackVi
     } catch { setDownloadError('Nie udało się pobrać nagrania. Sprawdź połączenie i spróbuj ponownie.'); }
     finally { setDownloadBusy(false); }
   };
+  const siblings = data?.forSiblings === true;
   const vocative = data?.childVocative;
   const name = data?.childName;
   const deliveryDate = data?.availableUntil ? new Date(data.availableUntil) : null;
@@ -139,20 +140,20 @@ function SantaExperience({ token, sample }: { token: string; sample?: PlaybackVi
           {state.kind === 'error' && <div className="mail-state" role="alert"><h1>{state.title}</h1><p>{state.text}</p><button className="mail-button" onClick={() => { setState({ kind: 'loading' }); setAttempt((v) => v + 1); }}>Spróbuj ponownie</button><Link className="mail-text-link" to="/">Wróć do e-Advent</Link></div>}
           {data && <>
             {arrival && <section className="mail-arrival mail-enter" aria-labelledby="mail-title">
-              <h1 id="mail-title">{vocative && <span className="mail-child">{vocative},</span>}masz wyjątkową<br />wiadomość!</h1>
-              <p className="mail-intro">Święty Mikołaj przygotował coś specjalnie dla Ciebie.<br className="mail-desktop-break" /> Przesyłka właśnie dotarła z jego pracowni…</p>
+              <h1 id="mail-title">{vocative && <span className="mail-child">{vocative},</span>}{siblings ? 'macie wyjątkową' : 'masz wyjątkową'}<br />wiadomość!</h1>
+              <p className="mail-intro">Święty Mikołaj przygotował coś specjalnie dla {siblings ? 'Was' : 'Ciebie'}.<br className="mail-desktop-break" /> Przesyłka właśnie dotarła z jego pracowni…</p>
               <div className={`mail-envelope ${phase === 'opening' ? 'is-opening' : ''}`} aria-hidden="true">
-                <div className="mail-envelope-letter"><i className="far fa-snowflake" /><span>Specjalnie dla Ciebie</span></div>
+                <div className="mail-envelope-letter"><i className="far fa-snowflake" /><span>Specjalnie dla {siblings ? 'Was' : 'Ciebie'}</span></div>
                 <div className="mail-envelope-pocket" /><div className="mail-envelope-flap" />
                 <span className="mail-wax"><i className="far fa-snowflake" /></span>
                 <span className="mail-envelope-address">Przesyłka specjalna{ name && <strong>{name}</strong>}</span>
               </div>
               <button type="button" className="mail-button mail-button--red" onClick={open} disabled={phase === 'opening'}><i className="far fa-envelope-open" aria-hidden="true" />{phase === 'opening' ? 'Otwieramy przesyłkę…' : 'Otwórz wiadomość'}</button>
-              <p className="mail-hint"><i className="fas fa-volume-low" aria-hidden="true" /> Włącz dźwięk i rozsiądź się wygodnie</p>
+              <p className="mail-hint"><i className="fas fa-volume-low" aria-hidden="true" /> {siblings ? 'Włączcie dźwięk i rozsiądźcie się wygodnie' : 'Włącz dźwięk i rozsiądź się wygodnie'}</p>
             </section>}
             <section className="mail-listening mail-enter" hidden={phase !== 'listening'} aria-labelledby="listening-title">
-              <p className="mail-eyebrow">{isDemo ? 'Przykładowe nagranie' : 'Wiadomość tylko dla Ciebie'}</p>
-              <h1 id="listening-title" ref={phase === 'listening' ? title : undefined} tabIndex={-1}>{isDemo ? <>Tak brzmi<br />świąteczna magia</> : vocative ? <>{vocative},<br /><em>posłuchaj…</em></> : <>Posłuchaj<br /><em>Świętego Mikołaja…</em></>}</h1>
+              <p className="mail-eyebrow">{isDemo ? 'Przykładowe nagranie' : siblings ? 'Wiadomość dla Was' : 'Wiadomość tylko dla Ciebie'}</p>
+              <h1 id="listening-title" ref={phase === 'listening' ? title : undefined} tabIndex={-1}>{isDemo ? <>Tak brzmi<br />świąteczna magia</> : vocative ? <>{vocative},<br /><em>{siblings ? 'posłuchajcie…' : 'posłuchaj…'}</em></> : <>Posłuchaj<br /><em>Świętego Mikołaja…</em></>}</h1>
               {isDemo && <p className="mail-intro">Rozgość się i posłuchaj krótkiego fragmentu. W Twojej wiadomości Mikołaj zwróci się do dziecka po imieniu.</p>}
               <SantaAudioPlayer ref={player} variant="wave" size={400} src={local ? data.audioUrl : absoluteAudioUrl(data.audioUrl)} durationHint={data.durationSeconds}
                 onFirstPlay={() => trackSantaEvent('santa_audio_play', { source })}
@@ -160,18 +161,18 @@ function SantaExperience({ token, sample }: { token: string; sample?: PlaybackVi
                 onError={(kind) => trackSantaEvent('santa_player_error', { error_type: kind, source })}
                 onSourceExpired={local ? undefined : refreshSource}
                 onEnded={() => { if (!isDemo) { setPhase('complete'); setShowTranscript(false); } }} />
-              {!isDemo && <div className="mail-note"><i className="fas fa-tree" aria-hidden="true" /><p>Elfy opowiedziały mi o Tobie…<br /><em>Tak wiele dobra masz w sobie!</em></p></div>}
+              {!isDemo && <div className="mail-note"><i className="fas fa-tree" aria-hidden="true" /><p>Elfy opowiedziały mi o {siblings ? 'Was' : 'Tobie'}…<br /><em>{siblings ? 'Tak wiele dobra macie w sobie!' : 'Tak wiele dobra masz w sobie!'}</em></p></div>}
               {data.transcript && !isDemo && <div className="mail-transcript"><button className="mail-text-link" type="button" onClick={() => setShowTranscript((v) => !v)} aria-expanded={showTranscript} aria-controls="mail-transcript">{showTranscript ? 'Ukryj tekst wiadomości' : 'Przeczytaj tekst wiadomości'}</button>{showTranscript && <p id="mail-transcript">{data.transcript}</p>}</div>}
               {isDemo && <DemoCta location="demo_player" />}
             </section>
             {phase === 'complete' && !isDemo && <section className="mail-finale mail-enter" aria-labelledby="complete-title">
-              <div className="mail-parchment"><Ornament /><p className="mail-eyebrow">Przesyłka odebrana sercem</p><h1 id="complete-title" ref={title} tabIndex={-1}>Wiadomość<br />została dostarczona!</h1><div className="mail-parchment-rule" /><p>{vocative ? `${vocative}, dziękuję za wspólną chwilę.` : 'Dziękuję za wspólną chwilę.'}<br />Pamiętaj, że magia świąt jest zawsze bliżej, niż myślisz.</p><p className="mail-signature">Ho, ho, ho!<span>Twój Święty Mikołaj</span></p><div className="mail-stamp" aria-hidden="true"><i className="fas fa-sleigh" /><span>Biegun Północny</span></div></div>
+              <div className="mail-parchment"><Ornament /><p className="mail-eyebrow">Przesyłka odebrana sercem</p><h1 id="complete-title" ref={title} tabIndex={-1}>Wiadomość<br />została dostarczona!</h1><div className="mail-parchment-rule" /><p>{vocative ? `${vocative}, dziękuję za wspólną chwilę.` : 'Dziękuję za wspólną chwilę.'}<br />{siblings ? 'Pamiętajcie, że magia świąt jest zawsze bliżej, niż myślicie.' : 'Pamiętaj, że magia świąt jest zawsze bliżej, niż myślisz.'}</p><p className="mail-signature">Ho, ho, ho!<span>{siblings ? 'Wasz' : 'Twój'} Święty Mikołaj</span></p><div className="mail-stamp" aria-hidden="true"><i className="fas fa-sleigh" /><span>Biegun Północny</span></div></div>
               <div className="mail-finale-actions"><button type="button" className="mail-button" onClick={replay}><i className="fas fa-rotate-left" aria-hidden="true" /> Posłuchaj ponownie</button>{data.downloadUrl && <button type="button" className="mail-button mail-button--outline" disabled={downloadBusy} onClick={() => void saveRecording()}><i className={`fas ${downloadBusy ? 'fa-circle-notch fa-spin' : 'fa-download'}`} aria-hidden="true" />{downloadBusy ? 'Pobieramy nagranie…' : 'Pobierz nagranie MP3'}</button>}
                 {downloadError && <p role="alert" className="mail-hint">{downloadError}</p>}
-              </div>{isSample ? <DemoCta location="sample_player" /> : <p className="mail-return-note">Możesz wracać do tej chwili pod swoim linkiem.{until && <> Nagranie dostępne do {until}.</>}</p>}
+              </div>{isSample ? <DemoCta location="sample_player" /> : <p className="mail-return-note">{siblings ? 'Możecie wracać do tej chwili pod Waszym linkiem.' : 'Możesz wracać do tej chwili pod swoim linkiem.'}{until && <> Nagranie dostępne do {until}.</>}</p>}
             </section>}
           </>}
-          <footer className="mail-footer"><Ornament /><p>{isDemo ? 'Odrobina magii. Całe mnóstwo uśmiechu.' : 'Magiczna przesyłka'}{!isDemo && <><span>✦</span>Tylko dla Ciebie</>}</p></footer>
+          <footer className="mail-footer"><Ornament /><p>{isDemo ? 'Odrobina magii. Całe mnóstwo uśmiechu.' : 'Magiczna przesyłka'}{!isDemo && <><span>✦</span>Tylko dla {siblings ? 'Was' : 'Ciebie'}</>}</p></footer>
         </div>
         <div className="mail-scene-caption" aria-hidden="true"><span>66°33′ N · 25°44′ E</span><p>{phase === 'complete' ? 'Najpiękniejsza magia zostaje z nami.' : 'Tu zaczynają się świąteczne opowieści.'}</p></div>
       </div>

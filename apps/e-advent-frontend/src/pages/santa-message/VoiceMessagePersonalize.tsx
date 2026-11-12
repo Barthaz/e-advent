@@ -28,6 +28,7 @@ export default function VoiceMessagePersonalize() {
   const [editing, setEditing] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [value, setValue] = useState<Personalization>(EMPTY_PERSONALIZATION);
+  const [vocativeTouched, setVocativeTouched] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export default function VoiceMessagePersonalize() {
       .then((loaded) => {
         if (!alive) return;
         setView(loaded);
+        setVocativeTouched(Boolean(loaded.personalization));
         setValue({ ...EMPTY_PERSONALIZATION, ...(loaded.personalization ?? {}) });
         setEditing(loaded.status === 'AWAITING_PERSONALIZATION');
       })
@@ -140,7 +142,7 @@ export default function VoiceMessagePersonalize() {
                   Wiadomość od Świętego Mikołaja{view.orderNumber ? ` · zamówienie ${view.orderNumber}` : ''}
                 </p>
                 <h1 className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light">
-                  {editing && 'Opowiedz Mikołajowi o dziecku'}
+                  {editing && (value.addressForm === 'siblings' ? 'Opowiedz Mikołajowi o rodzeństwie' : 'Dla kogo jest wiadomość?')}
                   {!editing && view.status === 'SCRIPT_READY' && 'Wszystko gotowe dla Mikołaja'}
                   {!editing && IN_PROGRESS.includes(view.status) && 'Mikołaj nagrywa wiadomość'}
                   {!editing && view.status === 'DELIVERED' && 'Wiadomość jest gotowa!'}
@@ -156,12 +158,13 @@ export default function VoiceMessagePersonalize() {
                       value={value}
                       errors={errors}
                       onChange={(next) => { setValue(next); if (Object.keys(errors).length) setErrors({}); }}
-                      vocativeTouched={Boolean(view.personalization)}
+                      vocativeTouched={vocativeTouched}
+                      onVocativeTouched={() => setVocativeTouched(true)}
                     />
                     {step === 2 && (
                       <p className="mt-6 text-sm text-parchment-muted">
                         Na podstawie tych informacji Święty Mikołaj nagra osobistą wiadomość. Po wysłaniu od razu
-                        zabierze się do pracy, więc sprawdź jeszcze imię i jego formę.
+                        zabierze się do pracy, więc sprawdź pisownię imion i formę powitania.
                       </p>
                     )}
                     {actionError && <p className="mt-4 text-sm text-christmas-red" role="alert">{actionError}</p>}

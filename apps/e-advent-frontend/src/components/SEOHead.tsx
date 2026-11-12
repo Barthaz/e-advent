@@ -1,122 +1,13 @@
-import { useEffect } from 'react';
+import { useContext, useLayoutEffect } from 'react';
+import { BuildDocument, writeMetadata, type PageMetadata } from '../seo/document';
 
-interface SEOHeadProps {
-  title?: string;
-  description?: string;
-  keywords?: string;
-  canonical?: string;
-  ogImage?: string;
-  robots?: string;
-  /** Structured data object or array — injected as application/ld+json */
-  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
-}
-
-const JSON_LD_ATTR = 'data-e-advent-jsonld';
-
-export default function SEOHead({
-  title = 'e-Advent — Niezapomniane chwile świąt | Kalendarze adwentowe',
-  description = 'e-Advent pomaga przeżywać czas świąteczny w cieple: personalizowane kalendarze adwentowe, list do Mikołaja i magia oczekiwania. Każde święta mogą być niezapomniane.',
-  keywords = 'kalendarz adwentowy, e-advent, e-dawent, kalendarz online, personalizowany kalendarz adwentowy, kalendarz adwentowy online',
-  canonical = new URL(window.location.pathname, 'https://e-advent.pl').href,
-  ogImage = 'https://e-advent.pl/og-logo.png',
-  robots = 'index, follow, max-image-preview:large',
-  jsonLd,
-}: SEOHeadProps) {
-  useEffect(() => {
-    // Update title
-    document.title = title;
-
-    // Update or create meta description
-    let metaDescription = document.querySelector('meta[name="description"]');
-    if (!metaDescription) {
-      metaDescription = document.createElement('meta');
-      metaDescription.setAttribute('name', 'description');
-      document.head.appendChild(metaDescription);
-    }
-    metaDescription.setAttribute('content', description);
-
-    // Update or create meta keywords
-    let metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      metaKeywords = document.createElement('meta');
-      metaKeywords.setAttribute('name', 'keywords');
-      document.head.appendChild(metaKeywords);
-    }
-    metaKeywords.setAttribute('content', keywords);
-
-    if (robots) {
-      let robotsMeta = document.querySelector('meta[name="robots"]');
-      if (!robotsMeta) {
-        robotsMeta = document.createElement('meta');
-        robotsMeta.setAttribute('name', 'robots');
-        document.head.appendChild(robotsMeta);
-      }
-      robotsMeta.setAttribute('content', robots);
-    }
-
-    // Update canonical link
-    let canonicalLink = document.querySelector('link[rel="canonical"]');
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.setAttribute('href', canonical);
-
-    // Update Open Graph tags
-    const updateOGTag = (property: string, content: string) => {
-      let tag = document.querySelector(`meta[property="${property}"]`);
-      if (!tag) {
-        tag = document.createElement('meta');
-        tag.setAttribute('property', property);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute('content', content);
-    };
-
-    updateOGTag('og:title', title);
-    updateOGTag('og:description', description);
-    updateOGTag('og:url', canonical);
-    updateOGTag('og:image', ogImage);
-    updateOGTag('og:image:secure_url', ogImage);
-    updateOGTag('og:image:alt', title);
-    // Product photos do not necessarily share the default logo's dimensions/type.
-    ['og:image:width', 'og:image:height', 'og:image:type'].forEach((property) => {
-      document.querySelector(`meta[property="${property}"]`)?.remove();
-    });
-
-    // Update Twitter Card tags
-    const updateTwitterTag = (name: string, content: string) => {
-      let tag = document.querySelector(`meta[name="${name}"]`);
-      if (!tag) {
-        tag = document.createElement('meta');
-        tag.setAttribute('name', name);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute('content', content);
-    };
-
-    updateTwitterTag('twitter:title', title);
-    updateTwitterTag('twitter:description', description);
-    updateTwitterTag('twitter:url', canonical);
-    updateTwitterTag('twitter:image', ogImage);
-    updateTwitterTag('twitter:image:alt', title);
-
-    // JSON-LD
-    document.querySelectorAll(`script[${JSON_LD_ATTR}]`).forEach((el) => el.remove());
-    if (jsonLd) {
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.setAttribute(JSON_LD_ATTR, 'true');
-      script.textContent = JSON.stringify(jsonLd);
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      document.querySelectorAll(`script[${JSON_LD_ATTR}]`).forEach((el) => el.remove());
-    };
-  }, [title, description, keywords, canonical, ogImage, jsonLd, robots]);
-
+export default function SEOHead({ title, description, keywords, canonical, ogImage, robots, jsonLd }: PageMetadata) {
+  const doc = useContext(BuildDocument);
+  if (doc) writeMetadata(doc, { title, description, keywords, canonical, ogImage, robots, jsonLd });
+  useLayoutEffect(() => {
+    const path = window.location.pathname;
+    const safeCanonical = canonical ?? (['/sukces', '/platnosc', '/koszyk'].includes(path) ? 'https://e-advent.pl' + path : undefined);
+    writeMetadata(document, { title, description, keywords, canonical: safeCanonical, ogImage, robots, jsonLd });
+  }, [title, description, keywords, canonical, ogImage, robots, jsonLd]);
   return null;
 }
-

@@ -186,7 +186,7 @@ export default function VoiceMessageCreator() {
             <p className="text-christmas-gold text-xs tracking-[0.25em] uppercase mb-2">Wiadomość od Świętego Mikołaja</p>
             <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light focus:outline-none">
               {step === 1 && 'Dla kogo jest wiadomość?'}
-              {step === 2 && 'Opowiedz Mikołajowi o dziecku'}
+              {step === 2 && (value.addressForm === 'siblings' ? 'Opowiedz Mikołajowi o rodzeństwie' : 'Opowiedz Mikołajowi o dziecku')}
               {step === 3 && 'Wszystko gotowe dla Mikołaja'}
             </h1>
             <p className="text-white/70 text-sm mt-2">
@@ -270,7 +270,7 @@ export default function VoiceMessageCreator() {
 
                 <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => setStep(1)} className="btn-outline-parchment px-4 py-2.5 text-sm">Popraw dane dziecka</button>
+                    <button type="button" onClick={() => setStep(1)} className="btn-outline-parchment px-4 py-2.5 text-sm">Popraw dane odbiorców</button>
                     <button type="button" onClick={() => setStep(2)} className="btn-outline-parchment px-4 py-2.5 text-sm">Popraw opowieść</button>
                   </div>
                   {editingItem ? (

@@ -1,6 +1,8 @@
 # Konfiguracja Apache dla React Router (SPA)
 # Umieść ten plik w głównym katalogu z plikami dist/
 
+ErrorDocument 404 /404.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -18,28 +20,29 @@ RewriteRule ^(.*)$ https://e-advent.pl/$1 [R=301,L]
   # /.well-known/ zostaje otwarte dla odnawiania certyfikatu SSL.
   RewriteCond %{HTTP_HOST} !^e-advent\.pl$ [NC]
   RewriteCond %{REQUEST_URI} !^/\.well-known/
-  RewriteCond %{REMOTE_ADDR} !^83\.23\.199\.175$
+  RewriteCond %{REMOTE_ADDR} !^83\.23\.247\.138$
   RewriteRule ^ https://e-advent.pl/ [R=302,L]
   
-  # WAŻNE: Najpierw sprawdź czy plik istnieje - jeśli tak, NIE przekierowuj
-  RewriteCond %{REQUEST_FILENAME} -f
-  RewriteRule ^ - [L]
-  
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
-  
-  # NIE przekierowuj żądań do plików statycznych (zawsze)
-  RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|webp|avif|gif|ico|svg|woff|woff2|ttf|eot|json|xml|txt)$ [NC]
-  RewriteRule ^ - [L]
-  
-  # NIE przekierowuj żądań do folderu assets (zawsze)
-  RewriteCond %{REQUEST_URI} ^/assets/ [NC]
-  RewriteRule ^ - [L]
-  
-  # Jeśli plik lub katalog NIE istnieje, przekieruj do index.html (dla SPA routing)
-  RewriteCond %{REQUEST_FILENAME} !-f
+  # Use the canonical URL for external requests. Internal rewrites end here.
+  RewriteRule ^index\.html$ / [R=301,L]
+  RewriteRule ^(?:_pages/|app-shell\.html$) - [R=404,L]
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^ index.html [L]
+  RewriteRule ^(.+)/$ /$1 [R=301,L]
+  RewriteRule ^privacy$ /polityka-prywatnosci [R=301,L]
+  RewriteRule ^terms$ /regulamin [R=301,L]
+  RewriteRule ^(?:shipping|returns)$ /dostawa-i-zwroty [R=301,L]
+  RewriteRule ^track-santa$ /sledz-mikolaja [R=301,L]
+  RewriteRule ^stworz-kalendarz/puzzle$ /stworz-kalendarz [R=301,L]
+  RewriteRule ^checkout$ /platnosc [R=301,L]
+  RewriteRule ^success$ /sukces [R=301,L]
+  RewriteRule ^preview$ /podglad [R=301,L]
+  RewriteRule ^$ index.html [END]
+  RewriteCond %{DOCUMENT_ROOT}/_pages/$1.html -f
+  RewriteRule ^([a-z0-9/-]+)$ _pages/$1.html [END]
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [END]
+  RewriteRule ^(?:koszyk|platnosc|sukces|platnosc-blad|create|podglad|kalendarz|(?:kalendarz|calendar|podglad-okienka)/[^/]+|wiadomosc-od-mikolaja/(?:kreator|personalizacja/[^/]+)|od-mikolaja/(?:[^/]+|przyklad/[^/]+))$ app-shell.html [END]
+  RewriteRule ^ - [R=404,L]
 </IfModule>
 
 # Cache dla plików statycznych
@@ -80,6 +83,7 @@ RewriteRule ^(.*)$ https://e-advent.pl/$1 [R=301,L]
 # Nagłówki bezpieczeństwa
 # Podgląd okienek w panelu (iframe z panel.e-advent.pl) wymaga CSP zamiast X-Frame-Options.
 <IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow" "expr=%{HTTP_HOST} == 'test.e-advent.pl'"
   Header set X-Content-Type-Options "nosniff"
   Header always unset X-Frame-Options
   Header unset X-Frame-Options

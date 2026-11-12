@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/useCart';
 import OrderSummary from '../components/checkout/OrderSummary';
@@ -20,7 +20,7 @@ import {
   voiceAddonSlots,
   voiceItems,
 } from '../utils/cartStorage';
-import { trackSantaEvent } from '../utils/analytics';
+import { trackCartEvent, trackSantaEvent } from '../utils/analytics';
 
 const UPSELL_KEY = 'e-advent-voice-upsell-dismissed';
 
@@ -39,6 +39,17 @@ export default function CartPage() {
     voiceNotice,
     dismissVoiceNotice,
   } = useCart();
+  const currentCart = useRef(items);
+  useEffect(() => { currentCart.current = items; }, [items]);
+  useEffect(() => {
+    const view = () => trackCartEvent('view_cart', currentCart.current.map(line => ({
+      sku: line.sku, name: getProduct(line.sku)?.name ?? line.sku, quantity: line.quantity,
+      price: line.unitPrice ?? getProduct(line.sku)?.basePrice ?? 0,
+    })));
+    view();
+    window.addEventListener('eadvent:measurement-enabled', view);
+    return () => window.removeEventListener('eadvent:measurement-enabled', view);
+  }, []);
   const navigate = useNavigate();
   const promo = useCheckoutPromo();
   const [email, setEmail] = useState(() => readCheckoutEmail() || items.find(item => item.customerEmail)?.customerEmail || '');
@@ -225,7 +236,7 @@ export default function CartPage() {
                             </p>
                             <p className="text-parchment-muted text-sm">
                               {isAddon ? 'dodatek do listu' : 'produkt cyfrowy'} ·{' '}
-                              {item.voiceDraftId ? 'informacje o dziecku uzupełnione' : 'personalizacja po zakupie (link w e-mailu)'}
+                              {item.voiceDraftId ? 'personalizacja uzupełniona' : 'personalizacja po zakupie (link w e-mailu)'}
                             </p>
                           </div>
                           <div className="flex items-center gap-3">

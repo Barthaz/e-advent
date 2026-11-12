@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import logo from '../assets/brand-logo.webp';
 
 export default function Logo({ className = '' }: { className?: string }) {
   const location = useLocation();
@@ -24,7 +24,6 @@ export default function Logo({ className = '' }: { className?: string }) {
           width="200"
           height="80"
           loading="eager"
-          fetchPriority="high"
         />
       </Link>
     </div>

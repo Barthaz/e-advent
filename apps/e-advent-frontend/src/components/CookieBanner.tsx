@@ -1,18 +1,19 @@
+import { chooseMeasurement, measurementChoice } from '../utils/measurementConsent';
 import { useState, useEffect } from 'react';
 
 export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('cookieConsent');
-    if (!consent) {
-      setIsVisible(true);
-    }
+    setIsVisible(!measurementChoice());
+    const open = () => setIsVisible(true);
+    window.addEventListener('eadvent:cookie-settings', open);
+    return () => window.removeEventListener('eadvent:cookie-settings', open);
   }, []);
 
-  const handleAccept = () => {
-    localStorage.setItem('cookieConsent', 'accepted');
+  const choose = (accepted: boolean) => {
     setIsVisible(false);
+    chooseMeasurement(accepted);
   };
 
   if (!isVisible) return null;
@@ -28,17 +29,16 @@ export default function CookieBanner() {
                 <h3 className="text-xl font-semibold font-display">Informacja o plikach cookie</h3>
               </div>
               <p className="text-white/80 text-sm md:text-base leading-relaxed">
-                Ta strona używa plików cookie, aby zapamiętać Twój postęp w kalendarzu adwentowym
-                i zapewnić lepsze doświadczenie. Kontynuując korzystanie ze strony, zgadzasz się
-                na wykorzystanie plików cookie. Więcej informacji znajdziesz w naszej{' '}
+                Zapamiętujemy koszyk i postęp w kalendarzu. Za Twoją zgodą włączymy także Google Analytics i Meta Pixel do pomiaru odwiedzin i zakupów. Wybór możesz zmienić w stopce. Szczegóły opisujemy w{' '}
                 <a href="/polityka-prywatnosci" className="text-christmas-gold-light hover:underline font-medium">
                   Polityce prywatności
                 </a>.
               </p>
             </div>
-            <button onClick={handleAccept} className="btn-gold px-6 py-3 whitespace-nowrap">
+            <button onClick={() => choose(false)} className="text-white underline px-3 py-2">Tylko niezbędne</button>
+            <button onClick={() => choose(true)} className="btn-gold px-6 py-3 whitespace-nowrap">
               <i className="fas fa-check" />
-              Akceptuję
+              Zezwalam na pomiar
             </button>
           </div>
         </div>

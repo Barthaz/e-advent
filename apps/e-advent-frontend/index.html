@@ -2,53 +2,8 @@
 <html lang="pl">
 
 <head>
-  <!-- Private Santa message links carry a bearer token in the path: mask it before any tracker runs. -->
-  <script>
-    (function () {
-      var p = location.pathname;
-      var masked = /^\/od-mikolaja\/(?!przyklad(?:[/?#]|$))[^/?#]+/.test(p) ? '/od-mikolaja/[private]'
-        : /^\/wiadomosc-od-mikolaja\/personalizacja\/[^/?#]+/.test(p) ? '/wiadomosc-od-mikolaja/personalizacja/[private]' : null;
-      window.__eadventPrivatePath = masked;
-      if (masked) {
-        var meta = document.createElement('meta');
-        meta.name = 'referrer';
-        meta.content = 'no-referrer';
-        document.head.appendChild(meta);
-      }
-    })();
-  </script>
-  <!-- Google tag (gtag.js) — ID injected by vite (VITE_GA_MEASUREMENT_ID / test|prod fallback) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=__GA_MEASUREMENT_ID__"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', '__GA_MEASUREMENT_ID__', window.__eadventPrivatePath
-      ? { page_location: location.origin + window.__eadventPrivatePath, page_path: window.__eadventPrivatePath, page_referrer: '' }
-      : {});
-  </script>
-
-  <!-- Facebook Pixel Code (not loaded on private Santa message links) -->
-  <script>
-    if (!window.__eadventPrivatePath) !function (f, b, e, v, n, t, s) {
-      if (f.fbq) return; n = f.fbq = function () {
-        n.callMethod ?
-          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-      };
-      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
-      n.queue = []; t = b.createElement(e); t.async = !0;
-      t.src = v; s = b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t, s)
-    }(window, document, 'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-    if (window.fbq) {
-      fbq('init', '825968096852589');
-      fbq('track', 'PageView');
-    }
-  </script>
-  <!-- End Facebook Pixel Code -->
-
   <meta charset="UTF-8" />
+  <meta name="referrer" content="strict-origin" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- SEO Meta Tags -->
@@ -59,7 +14,6 @@
     content="e-advent, niezapomniane święta, list do świętego mikołaja, kalendarz adwentowy, okres oczekiwania na święta, kalendarz adwentowy online, kalendarz adwentowy zdrapka" />
   <meta name="author" content="e-Advent" />
   <meta name="robots" content="index, follow" />
-  <meta name="revisit-after" content="7 days" />
   <!-- Each route sets its own canonical. Do not canonicalize every SPA route to /. -->
 
   <!-- Open Graph / Facebook -->
@@ -102,7 +56,7 @@
   "description": "Kalendarz adwentowy online - stwórz swój spersonalizowany kalendarz z własnymi zadaniami",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://e-advent.pl/favicon.png",
+    "url": "https://e-advent.pl/icon-512.png",
     "width": 512,
     "height": 512
   },
@@ -120,10 +74,10 @@
   "url": "https://e-advent.pl/",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://e-advent.pl/favicon.png",
+    "url": "https://e-advent.pl/icon-512.png",
     "width": 512,
     "height": 512,
-    "contentUrl": "https://e-advent.pl/favicon.png"
+    "contentUrl": "https://e-advent.pl/icon-512.png"
   },
   "contactPoint": {
     "@type": "ContactPoint",
@@ -134,14 +88,8 @@
 }
   </script>
 
-  <!-- Icons - Favicon dla różnych przeglądarek i Google Search -->
-  <link rel="icon" type="image/png" sizes="16x16" href="/eadvent-mark.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/eadvent-mark.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="/eadvent-mark.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="/eadvent-mark.png" />
-  <link rel="shortcut icon" type="image/png" href="/eadvent-mark.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/eadvent-mark.png" />
-  <link rel="apple-touch-icon" href="/eadvent-mark.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/icon-48.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
   <link rel="manifest" href="/manifest.json" />
 
   <!-- Fonts -->
@@ -149,28 +97,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Dancing+Script:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&family=Great+Vibes&family=Allura&family=Satisfy&family=Courgette&display=swap"
-    rel="stylesheet">
+    rel="stylesheet" media="print" onload="this.media='all'">
+  <script>
+    window.eadventEnablePixel = function () {
+      if (window.fbq) return;
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    if (window.fbq) {
+      fbq('init', '825968096852589');
+    }
+    };
+  </script>
 </head>
 
 <body>
-  <noscript>
-    <p>Włącz JavaScript, aby przeglądać ofertę i złożyć zamówienie w e-Advent.</p>
-    <nav aria-label="Oferta e-Advent">
-      <a href="/">Strona główna</a> ·
-      <a href="/kalendarze-adwentowe">Kalendarze adwentowe</a> ·
-      <a href="/darmowy-kalendarz">Darmowy kalendarz</a> ·
-      <a href="/list-do-swietego-mikolaja">List do Świętego Mikołaja</a> ·
-      <a href="/dostawa-i-zwroty">Dostawa i zwroty</a>
-    </nav>
-  </noscript>
-
-  <!-- Facebook Pixel Code - noscript fallback -->
-  <noscript>
-    <img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=825968096852589&ev=PageView&noscript=1" />
-  </noscript>
-  <!-- End Facebook Pixel Code -->
-
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

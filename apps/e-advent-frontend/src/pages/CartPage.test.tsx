@@ -2,11 +2,12 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { CartProvider } from '../context/CartContext';
+import { trackCartEvent } from '../utils/analytics';
 import CartPage from './CartPage';
 import { readCheckoutEmail } from '../utils/checkoutDetails';
 
 vi.mock('../utils/reconcileCheckout', () => ({ reconcilePendingCheckout: vi.fn(async () => null) }));
-vi.mock('../utils/analytics', () => ({ trackAddToCart: vi.fn(), trackSantaEvent: vi.fn() }));
+vi.mock('../utils/analytics', () => ({ trackAddToCart: vi.fn(), trackCartEvent: vi.fn(), trackSantaEvent: vi.fn() }));
 function Destination() { const location = useLocation(); return <p>Next: {location.search}</p>; }
 function mount() {
   render(<MemoryRouter initialEntries={['/koszyk']}><CartProvider><Routes><Route path="/koszyk" element={<CartPage />} /><Route path="/platnosc" element={<Destination />} /></Routes></CartProvider></MemoryRouter>);
@@ -27,6 +28,7 @@ it('requires a valid email before entering delivery and preserves the trimmed co
   fireEvent.change(screen.getByRole('textbox', { name: 'Adres e-mail' }), { target: { value: ' parent@example.com ' } });
   fireEvent.click(screen.getByRole('button', { name: 'Dostawa i płatność' }));
   expect(screen.getByText('Next: ?koszyk=1')).toBeTruthy();
+  expect(trackCartEvent).toHaveBeenCalledWith('view_cart', expect.any(Array));
   expect(readCheckoutEmail()).toBe('parent@example.com');
 });
 

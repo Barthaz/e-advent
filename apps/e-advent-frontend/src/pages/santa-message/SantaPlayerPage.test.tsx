@@ -32,6 +32,17 @@ async function openMessage() {
 }
 
 describe('North Pole experience', () => {
+  it('greets all siblings on the envelope and addresses them together during playback', async () => {
+    vi.mocked(api.getPlayback).mockResolvedValue({
+      ...message, forSiblings: true, childName: 'Ola i Kuba', childVocative: 'Olu i Kubo',
+    });
+    mount();
+    await screen.findByRole('heading', { name: /Olu i Kubo.*macie wyjątkową/ });
+    fireEvent.click(screen.getByRole('button', { name: 'Otwórz wiadomość' }));
+    await screen.findByRole('heading', { name: /Olu i Kubo.*posłuchajcie/ });
+    fireEvent.click(screen.getByRole('button', { name: 'Zakończ testowe audio' }));
+    expect(await screen.findByText('Wasz Święty Mikołaj')).toBeTruthy();
+  });
   it('opens by gesture, ends only on ended, downloads and replays without fetching a new link', async () => {
     mount();
     await screen.findByText('Feliks');
@@ -89,7 +100,7 @@ describe('North Pole experience', () => {
     expect(screen.getByRole('heading', { name: /została dostarczona/ })).toBeTruthy();
     expect(screen.getByRole('link', { name: /Stwórz własną wiadomość/ }).getAttribute('href')).toBe('/wiadomosc-od-mikolaja/kreator');
     fireEvent.click(screen.getByRole('button', { name: 'Pobierz nagranie MP3' }));
-    await waitFor(() => expect(api.saveAudioFile).toHaveBeenCalledWith('/assets/santa-mail/samples/feliks.mp3'));
+    await waitFor(() => expect(api.saveAudioFile).toHaveBeenCalledWith('/assets/santa-mail/samples/feliks.mp3?v=d3c6b8be53'));
     expect(api.getPlayback).not.toHaveBeenCalled();
     expect(api.downloadRecording).not.toHaveBeenCalled();
   });

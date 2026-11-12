@@ -7,7 +7,7 @@ const { formatOrderNumber } = require('../../utils/orderNumber');
 const { santaConfig, ttsConfigured } = require('./config');
 const { deriveToken, tokenHash, encryptJson, decryptJson, audioSignature } = require('./crypto');
 const { validatePersonalization } = require('./validation');
-const { buildSantaScript, countWords, WORDS_PER_SECOND } = require('./script');
+const { buildSantaScript, recipientNames, countWords, WORDS_PER_SECOND } = require('./script');
 const { loadDraftById, markDraftOrdered } = require('./drafts');
 const { deliverSantaEmail, activationUrl, playUrl } = require('./emails');
 const { saveAudio, readAudio, deleteAudio } = require('./audioStore');
@@ -471,8 +471,9 @@ async function playbackView(instance) {
     await query('UPDATE santa_message_instances SET first_played_at = UTC_TIMESTAMP() WHERE id = ? AND first_played_at IS NULL', [instance.id]);
   }
   return {
-    childVocative: personalization.childVocative || '',
-    childName: personalization.childName || '',
+    childVocative: recipientNames(personalization, 'childVocative'),
+    childName: recipientNames(personalization, 'childName'),
+    forSiblings: personalization.addressForm === 'siblings',
     durationSeconds: instance.audio_duration_seconds != null ? Number(instance.audio_duration_seconds) : null,
     audioUrl: signedAudioPath(instance.id, false, Number(instance.play_token_version) || 1),
     downloadUrl: signedAudioPath(instance.id, true, Number(instance.play_token_version) || 1),

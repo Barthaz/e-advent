@@ -34,7 +34,7 @@ it('shows the readable order number and authoritative shipping despite polluted 
   expect(screen.queryByText(/999999|Obcy produkt|Wrong 7/)).toBeNull();
   expect(screen.getByText(/Właściwa 1/)).toBeTruthy();
   expect(getCalendar).not.toHaveBeenCalled();
-  expect(trackPurchase).toHaveBeenCalledWith(expect.objectContaining({ transactionId: 'canonical-order-uuid', value: 34,
+  expect(trackPurchase).toHaveBeenCalledWith(expect.objectContaining({ transactionId: 'canonical-order-uuid', value: 29, shipping: 5,
     items: [expect.objectContaining({ sku: 'santa-letter', quantity: 1 })] }));
 });
 it('does not erase a new cart on return from an older payment', async () => {

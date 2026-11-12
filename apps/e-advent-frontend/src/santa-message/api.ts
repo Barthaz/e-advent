@@ -112,6 +112,7 @@ export function approveActivation(token: string): Promise<ActivationView> {
 }
 
 export interface PlaybackView {
+  forSiblings?: boolean;
   childName?: string;
   childVocative: string;
   durationSeconds: number | null;

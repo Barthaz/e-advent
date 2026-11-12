@@ -49,6 +49,42 @@ afterEach(() => {
 });
 
 describe('personalization validation', () => {
+  const siblings = { ...VALID, addressForm: 'siblings', childName: 'Zosia, Kuba, Franek', childVocative: 'Zosiu, Kubo, Franku' };
+
+  test('stores exact ages, including zero, and accepts one age per sibling', () => {
+    const baby = validatePersonalization({ ...VALID, ageYears: 0 }).value;
+    expect(baby.ageYears).toBe('0');
+    expect(baby.ageBand).toBeUndefined();
+    expect(buildSantaScript(baby).spokenText).toContain('Rudolf macha');
+    expect(validatePersonalization({ ...siblings, ageYears: '4,7, 10' }).value.ageYears).toBe('4, 7, 10');
+    expect(validatePersonalization(VALID).value.ageBand).toBe('4-6');
+  });
+
+  test.each([
+    { ...VALID, addressForm: 'neutral' }, { ...VALID, ageYears: '4.7' },
+    { ...VALID, ageYears: '2-3' }, { ...VALID, ageYears: '5, 6' },
+    { ...siblings, ageYears: '4, 7' },
+  ])('rejects unsupported form or age input', input => {
+    expect(validatePersonalization(input).value).toBeNull();
+  });
+
+  test('addresses all siblings in one recording and includes each shared answer', () => {
+    const { value, errors } = validatePersonalization({ ...siblings, workingOn: 'Dzielimy się zabawkami', wishes: 'Wspólne wakacje' });
+    expect(errors).toEqual([]);
+    const script = buildSantaScript(value);
+    expect(script.spokenText).toContain('Witajcie, Zosiu, Kubo i Franku!');
+    for (const field of ['achievement', 'proudOf', 'workingOn', 'wishes']) expect(script.spokenText).toContain(value[field]);
+    expect(script.spokenText).toContain('Wasz Święty Mikołaj');
+    expect(script.estimatedSeconds).toBeLessThanOrEqual(120);
+  });
+
+  test.each([
+    { childName: 'Zosia' }, { childName: 'Zosia,,Franek' }, { childVocative: 'Zosiu, Kubo' },
+    { childName: Array(10).fill('Anna').join(',') }, { childVocative: 'Zosiu, Kubo, <Franku>' },
+  ])('rejects incomplete or invalid sibling lists', patch => {
+    expect(validatePersonalization({ ...siblings, ...patch }).value).toBeNull();
+  });
+
   test('accepts a complete form and normalizes whitespace', () => {
     const { value, errors } = validatePersonalization({ ...VALID, proudOf: '  Wspaniale   opiekuje się bratem ' });
     expect(errors).toEqual([]);

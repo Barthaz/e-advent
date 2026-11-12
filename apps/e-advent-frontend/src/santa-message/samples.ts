@@ -5,9 +5,9 @@ export const SAMPLE_MESSAGES: Record<string, PlaybackView> = {
   feliks: {
     childName: 'Feliks',
     childVocative: 'Feliksie',
-    durationSeconds: 173,
-    audioUrl: '/assets/santa-mail/samples/feliks.mp3',
-    downloadUrl: '/assets/santa-mail/samples/feliks.mp3',
+    durationSeconds: 121.4,
+    audioUrl: '/assets/santa-mail/samples/feliks.mp3?v=d3c6b8be53',
+    downloadUrl: '/assets/santa-mail/samples/feliks.mp3?v=d3c6b8be53',
     transcript: '',
     availableUntil: null,
   },

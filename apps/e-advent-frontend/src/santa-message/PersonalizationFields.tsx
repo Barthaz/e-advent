@@ -1,7 +1,6 @@
 import { useId } from 'react';
 import {
   ADDRESS_FORM_OPTIONS,
-  AGE_BAND_OPTIONS,
   charCount,
   FIELD_RULES,
   suggestVocative,
@@ -50,6 +49,14 @@ const TEXT_FIELDS: Array<{ name: FieldName; label: string; placeholder: string; 
   },
 ];
 
+const SIBLING_STORY: Record<string, { label: string; placeholder: string }> = {
+  achievement: { label: 'Co udało się dzieciom w tym roku?', placeholder: 'np. Ola nauczyła się pływać, a Kuba przejechał pierwszą trasę na rowerze' },
+  proudOf: { label: 'Z czego jesteście szczególnie dumni?', placeholder: 'np. Pomagają sobie, kiedy któreś ma trudny dzień' },
+  workingOn: { label: 'Nad czym teraz pracują?', placeholder: 'np. Uczą się dzielić zabawkami' },
+  wishes: { label: 'O czym marzą?', placeholder: 'np. Marzą o wspólnej wyprawie w góry' },
+  siblingsNote: { label: 'Co jeszcze Mikołaj powinien wiedzieć o bliskich?', placeholder: 'np. W weekendy pieką z babcią pierniki' },
+};
+
 function Counter({ value, max }: { value: string | undefined; max: number }) {
   const count = charCount(value);
   return (
@@ -75,57 +82,14 @@ export default function PersonalizationFields({ step, value, errors, onChange, v
   const errorId = (name: string) => `${uid}-${name}-error`;
   const describedBy = (name: FieldName) => (errors[name] ? errorId(name) : undefined);
 
+  const siblings = value.addressForm === 'siblings';
+
   if (step === 1) {
     return (
       <div className="space-y-5">
-        <div>
-          <label htmlFor={fieldId('childName')} className="block text-sm font-medium text-parchment-text mb-1.5">
-            Imię dziecka <span className="text-christmas-red" aria-hidden="true">*</span>
-          </label>
-          <input
-            id={fieldId('childName')}
-            className="input-field"
-            value={value.childName}
-            autoComplete="off"
-            maxLength={60}
-            aria-invalid={Boolean(errors.childName)}
-            aria-describedby={describedBy('childName')}
-            onChange={(e) => {
-              const childName = e.target.value;
-              set(vocativeTouched ? { childName } : { childName, childVocative: suggestVocative(childName) });
-            }}
-            placeholder="np. Zosia"
-          />
-          <ErrorText id={errorId('childName')} error={errors.childName} />
-        </div>
-
-        <div>
-          <label htmlFor={fieldId('childVocative')} className="block text-sm font-medium text-parchment-text mb-1.5">
-            Jak Mikołaj ma zawołać dziecko? <span className="text-christmas-red" aria-hidden="true">*</span>
-          </label>
-          <input
-            id={fieldId('childVocative')}
-            className="input-field"
-            value={value.childVocative}
-            autoComplete="off"
-            maxLength={60}
-            aria-invalid={Boolean(errors.childVocative)}
-            aria-describedby={`${fieldId('childVocative')}-help${errors.childVocative ? ` ${errorId('childVocative')}` : ''}`}
-            onChange={(e) => {
-              onVocativeTouched?.();
-              set({ childVocative: e.target.value });
-            }}
-            placeholder="np. Zosiu, Kubo, Franku"
-          />
-          <p id={`${fieldId('childVocative')}-help`} className="mt-1 text-xs text-parchment-muted">
-            Wołacz lub zdrobnienie — dokładnie tak, jak Mikołaj ma to wypowiedzieć („Witaj, Zosiu!”).
-          </p>
-          <ErrorText id={errorId('childVocative')} error={errors.childVocative} />
-        </div>
-
         <fieldset>
           <legend className="block text-sm font-medium text-parchment-text mb-2">
-            Forma zwracania się <span className="text-christmas-red" aria-hidden="true">*</span>
+            Do kogo mówi Mikołaj? <span className="text-christmas-red" aria-hidden="true">*</span>
           </legend>
           <div className="grid gap-2 sm:grid-cols-3" role="radiogroup" aria-describedby={describedBy('addressForm')}>
             {ADDRESS_FORM_OPTIONS.map((option) => (
@@ -142,7 +106,11 @@ export default function PersonalizationFields({ step, value, errors, onChange, v
                   name={fieldId('addressForm')}
                   value={option.value}
                   checked={value.addressForm === option.value}
-                  onChange={() => set({ addressForm: option.value })}
+                  onChange={() => set({
+                    addressForm: option.value,
+                    ageBand: option.value === 'siblings' ? '' : value.ageBand,
+                    ageYears: option.value === 'siblings' ? value.ageYears : value.ageYears?.split(',')[0].trim(),
+                  })}
                   className="accent-christmas-green"
                 />
                 {option.label}
@@ -152,30 +120,72 @@ export default function PersonalizationFields({ step, value, errors, onChange, v
           <ErrorText id={errorId('addressForm')} error={errors.addressForm} />
         </fieldset>
 
-        <fieldset>
-          <legend className="block text-sm font-medium text-parchment-text mb-2">Wiek dziecka (opcjonalnie)</legend>
-          <div className="flex flex-wrap gap-2">
-            {AGE_BAND_OPTIONS.map((option) => {
-              const active = value.ageBand === option.value;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => set({ ageBand: active ? '' : option.value })}
-                  className={`rounded-full border px-4 py-2 text-sm min-h-[44px] transition-colors ${
-                    active
-                      ? 'border-christmas-green bg-christmas-green text-white'
-                      : 'border-parchment-dark/30 bg-white/60 text-parchment-text hover:border-christmas-gold'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-1 text-xs text-parchment-muted">Pomaga dobrać ton wypowiedzi Mikołaja.</p>
-        </fieldset>
+        <div>
+          <label htmlFor={fieldId('childName')} className="block text-sm font-medium text-parchment-text mb-1.5">
+            {siblings ? 'Imiona dzieci, oddzielone przecinkami' : 'Imię dziecka'} <span className="text-christmas-red" aria-hidden="true">*</span>
+          </label>
+          <input
+            id={fieldId('childName')}
+            className="input-field"
+            value={value.childName}
+            autoComplete="off"
+            maxLength={siblings ? 378 : 60}
+            aria-invalid={Boolean(errors.childName)}
+            aria-describedby={describedBy('childName')}
+            onChange={(e) => {
+              const childName = e.target.value;
+              set(vocativeTouched ? { childName } : { childName, childVocative: siblings ? childName.split(',').map(suggestVocative).join(', ') : suggestVocative(childName) });
+            }}
+            placeholder={siblings ? 'np. Zosia, Kuba, Franek' : 'np. Zosia'}
+          />
+          <ErrorText id={errorId('childName')} error={errors.childName} />
+        </div>
+
+        <div>
+          <label htmlFor={fieldId('childVocative')} className="block text-sm font-medium text-parchment-text mb-1.5">
+            {siblings ? 'Jak Mikołaj ma zawołać każde z dzieci?' : 'Jak Mikołaj ma zawołać dziecko?'} <span className="text-christmas-red" aria-hidden="true">*</span>
+          </label>
+          <input
+            id={fieldId('childVocative')}
+            className="input-field"
+            value={value.childVocative}
+            autoComplete="off"
+            maxLength={siblings ? 378 : 60}
+            aria-invalid={Boolean(errors.childVocative)}
+            aria-describedby={`${fieldId('childVocative')}-help${errors.childVocative ? ` ${errorId('childVocative')}` : ''}`}
+            onChange={(e) => {
+              onVocativeTouched?.();
+              set({ childVocative: e.target.value });
+            }}
+            placeholder={siblings ? 'np. Zosiu, Kubo, Franku' : 'np. Zosiu'}
+          />
+          <p id={`${fieldId('childVocative')}-help`} className="mt-1 text-xs text-parchment-muted">
+            {siblings ? 'Wpisz od 2 do 9 imion w tej samej kolejności. Mikołaj powie np. „Witajcie, Zosiu, Kubo i Franku!”' : 'Wołacz lub zdrobnienie — dokładnie tak, jak Mikołaj ma to wypowiedzieć („Witaj, Zosiu!”).'}
+          </p>
+          <ErrorText id={errorId('childVocative')} error={errors.childVocative} />
+        </div>
+
+        <div>
+          <label htmlFor={fieldId('ageYears')} className="block text-sm font-medium text-parchment-text mb-1.5">
+            {siblings ? 'Wiek dzieci w latach (opcjonalnie)' : 'Wiek dziecka w latach (opcjonalnie)'}
+          </label>
+          <input
+            id={fieldId('ageYears')}
+            className="input-field"
+            type="text"
+            inputMode={siblings ? 'text' : 'numeric'}
+            value={value.ageYears ?? ''}
+            placeholder={siblings ? 'np. 4, 7, 10' : 'np. 7'}
+            onChange={event => set({ ageYears: event.target.value, ageBand: '' })}
+            aria-invalid={Boolean(errors.ageYears)}
+            aria-describedby={`${fieldId('ageYears')}-help${errors.ageYears ? ` ${errorId('ageYears')}` : ''}`}
+          />
+          <p id={`${fieldId('ageYears')}-help`} className="mt-1 text-xs text-parchment-muted">
+            {siblings ? 'Wpisz wiek każdego dziecka po przecinku, w kolejności podanych imion.' : 'Podaj liczbę ukończonych lat.'}
+            {value.ageBand && ` Poprzednio wybrany przedział: ${value.ageBand}.`}
+          </p>
+          <ErrorText id={errorId('ageYears')} error={errors.ageYears} />
+        </div>
       </div>
     );
   }
@@ -187,13 +197,14 @@ export default function PersonalizationFields({ step, value, errors, onChange, v
         Bez danych o zdrowiu, szkole czy adresie.
       </p>
       {TEXT_FIELDS.map((field) => {
+        const copy = siblings ? SIBLING_STORY[field.name] : field;
         const rule = FIELD_RULES[field.name]!;
         const current = (value[field.name] as string | undefined) ?? '';
         return (
           <div key={field.name}>
             <div className="flex items-end justify-between gap-3 mb-1.5">
               <label htmlFor={fieldId(field.name)} className="block text-sm font-medium text-parchment-text">
-                {field.label}{' '}
+                {copy.label}{' '}
                 {rule.required ? (
                   <span className="text-christmas-red" aria-hidden="true">*</span>
                 ) : (
@@ -207,7 +218,7 @@ export default function PersonalizationFields({ step, value, errors, onChange, v
               className="input-field"
               rows={2}
               value={current}
-              placeholder={field.placeholder}
+              placeholder={copy.placeholder}
               aria-invalid={Boolean(errors[field.name])}
               aria-describedby={describedBy(field.name)}
               onChange={(e) => set({ [field.name]: e.target.value } as Partial<Personalization>)}

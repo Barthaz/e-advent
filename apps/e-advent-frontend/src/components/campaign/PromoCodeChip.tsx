@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LETTER_PROMO_CODE } from '../../config/products';
 
 interface PromoCodeChipProps {
@@ -9,11 +9,16 @@ interface PromoCodeChipProps {
 export default function PromoCodeChip({ className = '', tone = 'onLight' }: PromoCodeChipProps) {
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (!copied) return;
+    const timeout = window.setTimeout(() => setCopied(false), 1600);
+    return () => window.clearTimeout(timeout);
+  }, [copied]);
+
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(LETTER_PROMO_CODE);
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
     } catch {
       setCopied(false);
     }

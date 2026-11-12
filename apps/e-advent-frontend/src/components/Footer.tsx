@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import logo from '../assets/brand-logo.webp';
 
 export default function Footer() {
   return (
@@ -129,6 +129,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 mt-10 pt-6 text-center">
           <p className="text-white/30 text-xs tracking-wider">
+            <button type="button" className="underline mr-4" onClick={() => window.dispatchEvent(new Event('eadvent:cookie-settings'))}>Ustawienia cookies</button>
             &copy; {new Date().getFullYear()} e-Advent. Wszelkie prawa zastrzeżone.
           </p>
         </div>

@@ -4,6 +4,10 @@ import '@fortawesome/fontawesome-free/css/all.min.css'
 import './index.css'
 import App from './App.tsx'
 
+import { measurementChoice, startMeasurement } from './utils/measurementConsent';
+
+if (measurementChoice() === 'yes') startMeasurement();
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

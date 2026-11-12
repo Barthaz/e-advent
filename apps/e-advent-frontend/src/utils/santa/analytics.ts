@@ -1,7 +1,5 @@
-import { getGaMeasurementId } from '../analytics';
 
 const TRACKER_PATH = '/sledz-mikolaja';
-const TRACKER_TITLE = 'Śledź Świętego Mikołaja na żywo | Tracker e-Advent';
 
 function gtagEvent(name: string, params?: Record<string, unknown>) {
   if (typeof window === 'undefined' || !window.gtag) return;
@@ -11,20 +9,12 @@ function gtagEvent(name: string, params?: Record<string, unknown>) {
   });
 }
 
-/** Virtual page view for SPA — shows up in GA4 Reports → Engagement → Pages */
+/** Interaction with the tracker; the router owns page_view. */
 export function trackSantaTrackerPageView(debug = false) {
   if (typeof window === 'undefined') return;
 
   const pagePath = debug ? `${TRACKER_PATH}?debug=true` : TRACKER_PATH;
-  const pageLocation = `${window.location.origin}${pagePath}`;
-
   if (window.gtag) {
-    window.gtag('event', 'page_view', {
-      page_title: TRACKER_TITLE,
-      page_location: pageLocation,
-      page_path: pagePath,
-      send_to: getGaMeasurementId(),
-    });
     window.gtag('event', 'santa_tracker_viewed', {
       event_category: 'santa_tracker',
       event_label: debug ? 'debug' : 'live',
@@ -33,7 +23,6 @@ export function trackSantaTrackerPageView(debug = false) {
   }
 
   if (window.fbq) {
-    window.fbq('track', 'PageView');
     window.fbq('trackCustom', 'SantaTrackerView', {
       debug: debug ? 1 : 0,
     });

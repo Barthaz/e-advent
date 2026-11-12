@@ -47,8 +47,8 @@ export default function CalendarsHub() {
                 },
               ]}
               eyebrow={primary.eyebrow ?? 'Magia grudnia'}
-              title={primary.name}
-              description={primary.shortDescription}
+              title="Personalizowane kalendarze adwentowe"
+              description="Porównaj dwa kalendarze z zadaniami na 24 dni. Kalendarz online otwierasz przez prywatny link, a papierowy kalendarz zdrapkę możesz podarować w formacie A3."
               priceLabel={`od ${formatPrice(primary.priceFrom)}`}
               priceHint="Natychmiastowy dostęp po płatności · link na e-mail"
               features={primary.features}
@@ -123,7 +123,7 @@ export default function CalendarsHub() {
               podajesz dopiero przy płatności — potem wysyłamy kalendarz InPost.
             </p>
             <p>
-              Dołącz do tysięcy zadowolonych użytkowników. Przeczytaj naszą{' '}
+              Przeczytaj naszą{' '}
               <Link to="/polityka-prywatnosci">politykę prywatności</Link> i{' '}
               <Link to="/regulamin">regulamin</Link> przed rozpoczęciem. Zobacz też{' '}
               <Link to="/list-do-swietego-mikolaja">List do Świętego Mikołaja</Link> oraz{' '}

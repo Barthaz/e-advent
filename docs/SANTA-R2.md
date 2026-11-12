@@ -8,6 +8,14 @@ Ceny brutto z katalogu współdzielonego przez frontend i API: wiadomość 24 z�
 
 Nagranie nie ma publicznego URL. Klient otrzymuje `/od-mikolaja/<losowy-token>`, a API wystawia krótkotrwałe podpisane adresy własnego endpointu audio. Każde pobranie sprawdza wersję tokenu, status wiadomości, opłacenie zamówienia i termin dostępu. API odczytuje R2 i obsługuje `Range` oraz pobranie MP3. Nie trzeba ustawiać CORS na R2; przeglądarka nie łączy się z R2 bezpośrednio.
 
+## List, certyfikat i wiadomość dla rodzeństwa
+
+Na stronie papierowego listu klient wybiera od 1 do 9 egzemplarzy. Może dobrać imienne certyfikaty, po jednym na list, oraz zaznaczyć dodatek głosowy. To pole dodaje do koszyka jedno nagranie. API sprawdza cenę i liczbę dodatków przy zakupie. Część papierowa trafia do realizacji zamówień z dostawą, a wiadomość głosowa po płatności trafia do „Wiadomości od Mikołaja” w panelu.
+
+W samodzielnym kreatorze, edycji z koszyka lub formularzu z linku po zakupie wybierz **Dla rodzeństwa**. Podaj 2–9 imion, np. `Zosia, Kuba, Franek`, a poniżej formy powitania w tej samej kolejności, np. `Zosiu, Kubo, Franku`. Wspólnie opisz sukcesy i powody do dumy. W jednym polu możesz też wymienić osobne osiągnięcia każdego dziecka. Praca nad nowymi umiejętnościami, marzenia i wzmianka o bliskich są opcjonalne.
+
+Rodzina otrzymuje jedno nagranie, jeden prywatny link i jeden plik MP3. Cena za nagranie jest taka sama jak dla jednego dziecka. Imiona wpisane na certyfikatach dotyczą wydruku. Imiona do nagrania i ich wymowę rodzic podaje w personalizacji. API szyfruje odpowiedzi i scenariusz w bazie. R2 przechowuje dźwięk.
+
 ## Test na tym komputerze
 
 Polecenia uruchamiaj w katalogu głównym repozytorium po `npm install`. Profil Santa uruchamia sklep i panel na osobnych portach. W obu wariantach klient korzysta z tego samego API co administrator. Adresy to [sklep](http://localhost:5183/wiadomosc-od-mikolaja) i [panel](http://localhost:5184/santa-messages).
@@ -30,21 +38,22 @@ Polecenia uruchamiaj w katalogu głównym repozytorium po `npm install`. Profil 
 
 ## 1. Bucket i dane dostępu
 
-1. W Cloudflare R2 utwórz osobny **prywatny** bucket na wiadomości. Możesz wybrać jurysdykcję EU.
-2. Pozostaw **Public Development URL / r2.dev wyłączone**. Nie podpinaj publicznej domeny, publicznego Workera ani reguły cache udostępniającej ten bucket. Losowa nazwa pliku nie zastępuje prywatności bucketu.
-3. Wygeneruj R2 API token z uprawnieniem **Object Read & Write**, ograniczony wyłącznie do tego bucketu. API potrzebuje odczytu, zapisu kopii i usuwania nagrań po retencji.
-4. W środowisku **API**, nigdy w `VITE_*` ani w repozytorium, ustaw:
+1. Zaloguj się do **Cloudflare Dashboard → R2 Object Storage → Overview**. Otwórz swój prywatny bucket lub utwórz go przez **Create bucket**. Skopiuj jego dokładną nazwę do `R2_BUCKET_NAME`. W ustawieniach bucketu pozostaw wyłączone **Public Development URL (r2.dev)** i publiczną domenę.
+2. Na stronie **R2 → Overview** skopiuj **Account ID** do `R2_ACCOUNT_ID`. To 32 znaki szesnastkowe. Możesz je też odczytać z początku nazwy hosta w adresie S3 API endpoint bucketu.
+3. Przy **API Tokens** wybierz **Manage**, następnie **Create Account API token**. Wybierz **Object Read & Write** i ogranicz dostęp do konkretnego bucketu. Po utworzeniu skopiuj **Access Key ID** do `R2_ACCESS_KEY_ID` i **Secret Access Key** do `R2_SECRET_ACCESS_KEY`. Sekret jest widoczny przy tworzeniu. [Instrukcja Cloudflare](https://developers.cloudflare.com/r2/api/tokens/)
+4. Do testu z lokalnym API wklej wartości do istniejących pól w **`apps/e-advent-api/.env`**. Dla zwykłego bucketu pozostaw `R2_JURISDICTION` puste. Ustaw `eu` tylko wtedy, gdy endpoint bucketu zawiera `.eu.r2.cloudflarestorage.com`. [Jurysdykcje R2](https://developers.cloudflare.com/r2/reference/data-location/)
 
 ```dotenv
 SANTA_AUDIO_STORAGE=r2
-R2_ACCOUNT_ID=identyfikator-konta-cloudflare-32-znaki-hex
-R2_BUCKET_NAME=nazwa-prywatnego-bucketu
-R2_ACCESS_KEY_ID=klucz-r2
-R2_SECRET_ACCESS_KEY=sekret-r2
-R2_JURISDICTION=eu
+R2_ACCOUNT_ID=
+R2_BUCKET_NAME=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_JURISDICTION=
 ```
 
-Dla standardowego bucketu zostaw `R2_JURISDICTION` puste; `eu` tylko dla bucketu utworzonego w jurysdykcji EU. Zwykła wskazówka lokalizacji w Europie nie jest tym samym co jurysdykcja EU.
+5. Z katalogu głównego projektu wykonaj `npm run check:santa -w e-advent-api -- --r2-only`. Sukces oznacza zapis próbnego MP3, odczyt identycznej zawartości i usunięcie pliku. Po zmianie zmiennych uruchom ponownie lokalne API. W panelu możesz wgrać MP3 z komputera albo podać klucz istniejącego obiektu, np. `gotowe/test-rodzenstwo.mp3`.
+6. Jeśli sklep i panel mają korzystać z API testowego na Vercelu, otwórz **projekt API → Settings → Environment Variables**. Dodaj tam te same ustawienia dla **Preview** i gałęzi **test**, po czym wykonaj redeploy. Dane dostępowe przechowuje wyłącznie backend. Frontend i panel korzystają z niego również przy odsłuchu. Działanie pełnego zamówienia sprawdź zgodnie z sekcją „Test na tym komputerze”.
 
 Przed pierwszym zamówieniem ustaw trwałe `SANTA_TOKEN_SECRET` i `SANTA_DATA_KEY` (minimum 32 losowe znaki każdy). Bez nich aplikacja korzysta z istniejącego JWT_SECRET. **Nie zmieniaj kluczy po przyjęciu zamówień bez migracji**: zmiana klucza szyfrowania uniemożliwi odczyt danych, a sekretu tokenów unieważni linki. Zachowaj bezpieczną kopię kluczy razem z planem kopii zapasowych bazy.
 
@@ -80,7 +89,7 @@ Obecny cron `/api/v1/cron/daily-windows` zawiera odzyskiwanie zamówień Santa, 
 ## 3. Ręczna realizacja w panelu
 
 1. Otwórz **Wiadomości od Mikołaja** i wybierz opłacone zamówienie. Jeśli klient nie podał danych w kreatorze, poczekaj na personalizację przez link z e-maila. Treść widzi tylko administrator.
-2. Przygotuj MP3 (maks. 4 MB, docelowo do 2 minut). API dopuszcza techniczną tolerancję 15 sekund.
+2. Przygotuj MP3 (maks. 4 MB, docelowo około 2 minut). API dopuszcza techniczną tolerancję 15 sekund.
 3. Wgraj plik do prywatnego R2, np. `gotowe/zamowienie-123.mp3`.
 4. W panelu wklej **klucz obiektu**, nie URL, do pola „Nagranie z prywatnego R2” i kliknij „Przypisz plik z R2”. API sprawdzi plik i zapisze własną kopię pod `santa-messages/<id>/<losowa-nazwa>.mp3`. Kopia zapewnia niezmienność przypisanej wiadomości; późniejsza podmiana pliku źródłowego nie zmieni nagrania klienta.
 5. Odsłuchaj plik w panelu. W razie błędu przypisz poprawiony plik przed wysyłką.

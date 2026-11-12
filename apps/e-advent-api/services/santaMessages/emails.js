@@ -68,10 +68,10 @@ function buildSantaEmail(type, { url, orderNumber }) {
     subject: 'Twoja wiadomość z Laponii czeka na przygotowanie',
     html: emailShell({
       title: 'Ho, ho, ho!',
-      subtitle: 'Opowiedz Mikołajowi o dziecku',
+      subtitle: 'Komu Mikołaj ma nagrać wiadomość?',
       preheader: 'Uzupełnij kilka informacji, a Mikołaj nagra wiadomość',
       bodyHtml: `
-        <p style="${P}">Dziękujemy za zamówienie${orderLabel(orderNumber)}! W zestawie jest osobista wiadomość głosowa od Świętego Mikołaja. Potrzebujemy jeszcze kilku informacji o dziecku — zajmie to około 3 minut.</p>
+        <p style="${P}">Dziękujemy za zamówienie${orderLabel(orderNumber)}! W zestawie jest osobista wiadomość głosowa od Świętego Mikołaja. Podaj imię dziecka lub imiona rodzeństwa i opowiedz, co ostatnio udało się w Waszej rodzinie — zajmie to około 3 minut.</p>
         <p style="text-align:center;margin:22px 0;">${ctaButton(url, 'Personalizuj wiadomość')}</p>
         ${linkLine(url)}
         <p style="${MUTED}">Link jest prywatny i działa tylko dla tego zamówienia.</p>`,

@@ -1,4 +1,6 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
+import { previewSeo } from './scripts/preview-seo.mjs';
+import { prerender } from './scripts/prerender.mjs';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { copyFileSync } from 'fs';
@@ -8,32 +10,20 @@ import { fileURLToPath } from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const monorepoRoot = resolve(__dirname, '../..');
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, __dirname, 'VITE_');
-  const gaMeasurementId =
-    env.VITE_GA_MEASUREMENT_ID ||
-    (mode === 'production' ? 'G-5C07HGBQ6B' : 'G-2EK9WZNGJ1');
-
+export default defineConfig(({ mode, isSsrBuild }) => {
   return {
     base: '/',
     plugins: [
+      { name: 'preview-seo-documents', configurePreviewServer: previewSeo },
       react(),
       tailwindcss(),
       {
-        name: 'inject-ga-measurement-id',
-        transformIndexHtml(html) {
-          return html.replace(/__GA_MEASUREMENT_ID__/g, gaMeasurementId);
-        },
-      },
-      {
-        name: 'copy-htaccess',
-        closeBundle() {
-          try {
-            copyFileSync(join(__dirname, '.htaccess'), join(__dirname, 'dist', '.htaccess'));
-            console.log('✓ .htaccess skopiowany do dist/');
-          } catch {
-            console.warn('⚠ Nie można skopiować .htaccess (może nie istnieć dla innych serwerów)');
-          }
+        name: 'prerender-public-pages',
+        apply: 'build',
+        async writeBundle(options) {
+          if (isSsrBuild || !options.dir) return;
+          copyFileSync(join(__dirname, '.htaccess'), join(options.dir, '.htaccess'));
+          await prerender(__dirname, mode, options.dir);
         },
       },
     ],

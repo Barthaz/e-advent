@@ -33,8 +33,41 @@ function countWords(text) {
   return text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
 }
 
+const nameList = new Intl.ListFormat('pl', { type: 'conjunction' });
+function recipientNames(p, field) {
+  const names = p[field] || '';
+  return p.addressForm === 'siblings' ? nameList.format(names.split(',').map(name => name.trim())) : names;
+}
+
+function composeSiblings(p, compact) {
+  const greeting = recipientNames(p, 'childVocative');
+  const paragraphs = [
+    `Ho, ho, ho! Witajcie, ${greeting}! Tu Święty Mikołaj. Nagrywam tę wiadomość dla Was wszystkich.`,
+    compact ? 'Właśnie przeczytałem list od Waszych bliskich.' :
+      'W mojej pracowni pachnie piernikami. Przy kominku czekał na mnie list od Waszych bliskich. Posłuchajcie, co mi napisali!',
+    `O tym, co Wam się udało, przeczytałem takie słowa: ${quote(p.achievement)}.`,
+    `A oto, z czego Wasi bliscy są szczególnie dumni: ${quote(p.proudOf)}. Ja też jestem z Was dumny!`,
+  ];
+  const used = ['childVocative', 'addressForm', 'achievement', 'proudOf'];
+  if (p.workingOn) {
+    used.push('workingOn');
+    paragraphs.push(`Wiem też, nad czym teraz pracujecie: ${quote(p.workingOn)}. Trzymam za Was kciuki!`);
+  }
+  if (p.wishes) {
+    used.push('wishes');
+    paragraphs.push(`W liście znalazłem również Wasze marzenia: ${quote(p.wishes)}. Życzę Wam radości z każdego małego kroku w ich stronę.`);
+  }
+  if (p.siblingsNote) {
+    used.push('siblingsNote');
+    paragraphs.push(`Bliscy dopisali jeszcze: ${quote(p.siblingsNote)}.`);
+  }
+  paragraphs.push('Przesyłam Wam uściski z Laponii. Wesołych Świąt! Wasz Święty Mikołaj.');
+  return describeScript(paragraphs, used, compact, 'siblings-1');
+}
+
 /** `compact` drops decorative sentences so long parent answers still fit the time limit. */
 function compose(p, compact) {
+  if (p.addressForm === 'siblings') return composeSiblings(p, compact);
   const forms = FORMS[p.addressForm] || FORMS.neutral;
   const voc = p.childVocative;
   const used = ['childVocative', 'addressForm', 'achievement', 'proudOf'];
@@ -42,17 +75,18 @@ function compose(p, compact) {
 
   const intro = [`Ho, ho, ho! Witaj, ${voc}! Tu Święty Mikołaj.`, 'Nagrywam tę wiadomość specjalnie dla Ciebie, prosto z mojej pracowni w Laponii.'];
   if (!compact) intro.push('Za oknem pada puszysty śnieg, renifery odpoczywają po porannym treningu, a elfy pakują paczki i nucą świąteczne piosenki.');
-  if (p.ageBand === '2-3') {
+  const age = p.ageYears == null || p.ageYears === '' ? null : Number(p.ageYears);
+  if (age !== null ? age <= 3 : p.ageBand === '2-3') {
     intro.push('Rudolf macha do Ciebie kopytkiem!');
-    used.push('ageBand');
+    used.push(age !== null ? 'ageYears' : 'ageBand');
   }
   paragraphs.push(intro.join(' '));
 
   const bridge = ['Twoi bliscy napisali do mnie list i opowiedzieli mi o Tobie wiele dobrego.'];
   if (!compact) bridge.push('Przeczytałem go przy kominku, z kubkiem gorącego kakao.');
-  if (p.ageBand === '10+') {
+  if (age !== null ? age >= 10 : p.ageBand === '10+') {
     bridge.push(forms.independent);
-    used.push('ageBand');
+    used.push(age !== null ? 'ageYears' : 'ageBand');
   }
   paragraphs.push(bridge.join(' '));
 
@@ -86,6 +120,10 @@ function compose(p, compact) {
     ? `${voc}, pamiętaj, że jesteś kimś wyjątkowym. Wesołych, ciepłych Świąt! Ho, ho, ho! Twój Święty Mikołaj.`
     : `${voc}, pamiętaj, że jesteś kimś wyjątkowym. Życzę Ci cudownych, spokojnych świąt, pełnych uśmiechu, pierników i rodzinnego ciepła. Muszę już wracać do pracy, bo renifery niecierpliwie przebierają kopytami. Ho, ho, ho! Wesołych Świąt! Twój Święty Mikołaj.`);
 
+  return describeScript(paragraphs, used, compact, SCRIPT_TEMPLATE_VERSION);
+}
+
+function describeScript(paragraphs, used, compact, template) {
   const spokenText = paragraphs.join('\n\n');
   const wordCount = countWords(spokenText);
   return {
@@ -93,7 +131,7 @@ function compose(p, compact) {
     usedFields: [...new Set(used)],
     wordCount,
     estimatedSeconds: Math.round(wordCount / WORDS_PER_SECOND),
-    version: compact ? `${SCRIPT_TEMPLATE_VERSION}-compact` : SCRIPT_TEMPLATE_VERSION,
+    version: compact ? `${template}-compact` : template,
   };
 }
 
@@ -107,4 +145,4 @@ function buildSantaScript(p, { maxSeconds = DEFAULT_MAX_SECONDS } = {}) {
   return full.estimatedSeconds <= maxSeconds ? full : compose(p, true);
 }
 
-module.exports = { buildSantaScript, countWords, WORDS_PER_SECOND, SCRIPT_TEMPLATE_VERSION };
+module.exports = { buildSantaScript, countWords, recipientNames, WORDS_PER_SECOND, SCRIPT_TEMPLATE_VERSION };

@@ -60,7 +60,7 @@ export default function DemoCalendar({ debugMode = false }: DemoCalendarProps) {
   
   // Wczytaj zapisany stan kalendarza z localStorage
   const loadSavedDays = (): DemoDay[] => {
-    const saved = localStorage.getItem(CALENDAR_ID);
+    const saved = typeof window === 'undefined' ? null : localStorage.getItem(CALENDAR_ID);
     if (saved) {
       try {
         return JSON.parse(saved);

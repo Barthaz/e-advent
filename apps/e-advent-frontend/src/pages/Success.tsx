@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import OrderResultLayout from '../components/checkout/OrderResultLayout';
 import LoadingState from '../components/LoadingState';
@@ -9,7 +9,7 @@ import {
 import { isPhysicalProduct, PHYSICAL_FULFILLMENT_TIME, formatPrice } from '../config/products';
 import { OPENING_METHOD_LABELS } from '../components/creator/openingMethods';
 import type { OpeningMethod } from '../types/order';
-import logo from '@e-advent/assets/brand/eadvent-logo.png';
+import logo from '../assets/brand-logo.webp';
 import { trackPurchase } from '../utils/analytics';
 import { clearCartStorage, isVoiceSku } from '../utils/cartStorage';
 import { clearCartAfterPaidOrder, finishCheckout, notifyCartChanged } from '../utils/checkoutSession';
@@ -43,6 +43,7 @@ function isOpeningMethod(value: unknown): value is OpeningMethod {
 export default function Success() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const verifiedPurchase = useRef<Parameters<typeof trackPurchase>[0] | null>(null);
   const [calendarLink, setCalendarLink] = useState('');
   const [calendarData, setCalendarData] = useState<CalendarData | null>(null);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(true);
@@ -66,6 +67,9 @@ export default function Success() {
 
   useEffect(() => {
     let canceled = false;
+    verifiedPurchase.current = null;
+    const reportPurchase = () => { if (verifiedPurchase.current) trackPurchase(verifiedPurchase.current); };
+    window.addEventListener('eadvent:measurement-enabled', reportPurchase);
     const checkPayment = async () => {
       try {
         const paymentIntent = searchParams.get('payment_intent');
@@ -103,8 +107,9 @@ export default function Success() {
           interactiveIds = payment.items.flatMap(item => item.calendarId && !isPhysicalProduct(item.sku) ? [item.calendarId] : []);
           setCalendarData({ name: payment.customerName || '', email: payment.customerEmail || '',
             calendarTitle: 'Zamówienie e-Advent', tasks: [], dailyEmailReminders: false, dates: [] });
-          trackPurchase({ transactionId: payment.id, value: payment.amount, shipping: payment.shippingAmount || 0,
-            items: items.map(item => ({ sku: item.sku, name: item.name, price: item.price, quantity: item.quantity })) });
+          verifiedPurchase.current = { transactionId: payment.id, value: Math.round((payment.amount - (payment.shippingAmount || 0)) * 100) / 100, shipping: payment.shippingAmount || 0,
+            items: items.map(item => ({ sku: item.sku, name: item.name, price: item.price, quantity: item.quantity })) };
+          reportPurchase();
           clearCartAfterPaidOrder(paymentIntent);
         } else if (searchParams.get('free') === 'true') {
           const id = searchParams.get('calendar_id');
@@ -152,7 +157,7 @@ export default function Success() {
       }
     };
     void checkPayment();
-    return () => { canceled = true; };
+    return () => { canceled = true; window.removeEventListener('eadvent:measurement-enabled', reportPurchase); };
   }, [navigate, searchParams]);
 
   const copyLink = async () => {

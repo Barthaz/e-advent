@@ -70,17 +70,17 @@ export default function Landing() {
   return (
     <>
       <SEOHead
-        title="Poczuj Magię Świąt — kalendarze, listy i głos Mikołaja | e-Advent"
+        title="Kalendarze adwentowe i prezenty od Mikołaja | e-Advent"
         description="Zaproś bliskich do świątecznej przygody. Personalizowane kalendarze adwentowe, zestawy do napisania listu i wiadomości głosowe od Świętego Mikołaja."
         canonical="https://e-advent.pl/"
       />
       <div className="home-story">
         <section className="story-hero" aria-labelledby="home-title">
-          <div className="story-hero-photo"><img src={room} alt="" /></div>
+          <div className="story-hero-photo"><img src={room} alt="" width={853} height={1844} fetchPriority="high" /></div>
           <div className="story-hero-shade" />
           <div className="story-container story-hero-content">
             <p className="story-kicker">Twój dom. Wasi bliscy. Wasze święta.</p>
-            <h1 id="home-title">Poczuj<br /><em>Magię Świąt</em></h1>
+            <h1 id="home-title">Kalendarze adwentowe<br /><em>i prezenty od Mikołaja</em></h1>
             <ChristmasCountdown />
             <p className="story-hero-copy">W czekaniu na pierwsze okienko. W liście pisanym z przejęciem. W głosie Mikołaja, który zna Twoje imię.</p>
             <p className="story-hero-invitation">Małe rytuały, do których wraca się po latach.</p>

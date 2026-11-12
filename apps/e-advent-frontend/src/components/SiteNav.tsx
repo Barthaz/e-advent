@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/useCart';
-import navLogo from '@e-advent/assets/brand/eadvent-logo-name.png';
+import navLogo from '../assets/nav-logo.webp';
 
 type NavItem = { to: string; label: string; hint: string };
 
@@ -12,6 +12,7 @@ const NAV_GROUPS: NavGroup[] = [
     id: 'kalendarze',
     label: 'Kalendarze',
     items: [
+      { to: '/stworz-kalendarz', label: 'Wybierz prezent', hint: 'Porównaj produkty e-Advent' },
       { to: '/kalendarze-adwentowe', label: 'Wszystkie kalendarze', hint: 'Online i zdrapka' },
       { to: '/stworz-kalendarz/interaktywny', label: 'Kalendarz online', hint: '24 okienka na telefonie' },
       { to: '/stworz-kalendarz/zdrapka', label: 'Kalendarz zdrapka', hint: 'Papierowy prezent do domu' },

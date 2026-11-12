@@ -1,6 +1,6 @@
 'use strict';
 
-const ADDRESS_FORMS = ['male', 'female', 'neutral'];
+const ADDRESS_FORMS = ['male', 'female', 'siblings'];
 const AGE_BANDS = ['2-3', '4-6', '7-9', '10+'];
 
 const NAME_FIELDS = {
@@ -48,22 +48,45 @@ function validatePersonalization(input) {
   const raw = input && typeof input === 'object' ? input : {};
   const errors = [];
   const value = {};
+  const addressForm = typeof raw.addressForm === 'string' ? clean(raw.addressForm) : '';
+  const siblings = addressForm === 'siblings';
 
   for (const [field, rule] of Object.entries(NAME_FIELDS)) {
-    const text = clean(raw[field]);
+    const text = typeof raw[field] === 'string' ? clean(raw[field]) : '';
     if (!text) { errors.push({ field, code: 'REQUIRED' }); continue; }
-    checkLength(field, text, rule, errors);
-    if (!NAME_PATTERN.test(text)) errors.push({ field, code: 'INVALID_CHARS' });
-    value[field] = text;
+    const names = siblings ? text.split(',').map(clean) : [text];
+    if (siblings && (names.length < 2 || names.length > 9 || names.some(name => !name))) {
+      errors.push({ field, code: 'SIBLING_COUNT' });
+      continue;
+    }
+    for (const name of names) {
+      checkLength(field, name, rule, errors);
+      if (!NAME_PATTERN.test(name)) errors.push({ field, code: 'INVALID_CHARS' });
+    }
+    value[field] = names.join(', ');
+  }
+  if (siblings && value.childName && value.childVocative &&
+      value.childName.split(',').length !== value.childVocative.split(',').length) {
+    errors.push({ field: 'childVocative', code: 'SIBLING_MISMATCH' });
   }
 
-  const addressForm = clean(raw.addressForm);
   if (!addressForm) errors.push({ field: 'addressForm', code: 'REQUIRED' });
   else if (!ADDRESS_FORMS.includes(addressForm)) errors.push({ field: 'addressForm', code: 'INVALID_OPTION' });
   else value.addressForm = addressForm;
 
   const ageBand = clean(raw.ageBand);
-  if (ageBand) {
+  const ageInput = raw.ageYears;
+  if (ageInput != null && ageInput !== '') {
+    const ageText = typeof ageInput === 'string' || typeof ageInput === 'number' ? String(ageInput) : '';
+    const ages = ageText.split(',').map(age => age.trim());
+    if (ages.some(age => !/^\d{1,3}$/.test(age) || Number(age) > 120) || (!siblings && ages.length !== 1)) {
+      errors.push({ field: 'ageYears', code: 'INVALID_AGE' });
+    } else if (siblings && ages.length !== value.childName?.split(',').length) {
+      errors.push({ field: 'ageYears', code: 'AGE_COUNT' });
+    } else {
+      value.ageYears = ages.map(Number).join(', ');
+    }
+  } else if (ageBand) {
     if (!AGE_BANDS.includes(ageBand)) errors.push({ field: 'ageBand', code: 'INVALID_OPTION' });
     else value.ageBand = ageBand;
   }

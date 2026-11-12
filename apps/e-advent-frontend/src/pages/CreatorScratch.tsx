@@ -1,3 +1,4 @@
+import { productSchema } from '../seo/product';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
@@ -88,22 +89,9 @@ const FAQ = [
   },
 ];
 
-const JSON_LD = {
-  '@context': 'https://schema.org',
-  '@type': 'Product',
-  name: 'Kalendarz zdrapka',
-  description:
-    'Fizyczny kalendarz adwentowy ze złotymi zdrapkami. Trzy warianty, gotowa przygoda albo własne zadania. Wysyłka InPost.',
-  image: SCRATCH_GALLERY.map((g) => `https://e-advent.pl${g.src}`),
-  brand: { '@type': 'Brand', name: 'e-Advent' },
-  offers: {
-    '@type': 'Offer',
-    url: 'https://e-advent.pl/stworz-kalendarz/zdrapka',
-    priceCurrency: 'PLN',
-    price: '69.00',
-    availability: 'https://schema.org/InStock',
-  },
-};
+const JSON_LD = productSchema(SKU, 'Kalendarz adwentowy zdrapka A3',
+  'Fizyczny kalendarz z 24 złotymi okienkami, gotową przygodą lub własnymi zadaniami.', '/stworz-kalendarz/zdrapka',
+  SCRATCH_GALLERY.map(image => image.src));
 
 export default function CreatorScratch() {
   const navigate = useNavigate();
@@ -221,7 +209,7 @@ export default function CreatorScratch() {
         <ProductHero media={<ProductGallery images={SCRATCH_GALLERY} fit="contain" />}>
           <ProductIntro
             eyebrow="Fizyczny prezent"
-            title="Kalendarz zdrapka"
+            title="Kalendarz adwentowy zdrapka A3"
             description="Świąteczny kalendarz zdrapka ze złotymi okienkami. Każdego dnia zdrapujesz pole i odkrywasz zadanie — gotową przygodę albo własną historię, którą ułożysz tutaj."
             price={formatPrice(basePrice)}
             priceHint="+ dostawa"

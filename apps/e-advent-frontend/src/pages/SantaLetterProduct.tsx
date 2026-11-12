@@ -1,3 +1,4 @@
+import { productSchema } from '../seo/product';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
@@ -80,22 +81,9 @@ function buildFaq(certificatePriceNote: string) {
   ];
 }
 
-const JSON_LD = {
-  '@context': 'https://schema.org',
-  '@type': 'Product',
-  name: 'List do Świętego Mikołaja',
-  description:
-    'Gotowy zestaw: 2 wersje listu, opisana koperta i naklejki świąteczne. Wysyłka InPost.',
-  image: GALLERY.map((g) => `https://e-advent.pl${g.src}`),
-  brand: { '@type': 'Brand', name: 'e-Advent' },
-  offers: {
-    '@type': 'Offer',
-    url: 'https://e-advent.pl/list-do-swietego-mikolaja',
-    priceCurrency: 'PLN',
-    price: '29.00',
-    availability: 'https://schema.org/InStock',
-  },
-};
+const JSON_LD = productSchema(SKU, 'List do Świętego Mikołaja',
+  'Zestaw do napisania listu z kopertą i świątecznymi naklejkami.', '/list-do-swietego-mikolaja',
+  GALLERY.map(image => image.src));
 
 export default function SantaLetterProduct() {
   const navigate = useNavigate();
@@ -205,7 +193,7 @@ export default function SantaLetterProduct() {
                 Dodaj wiadomość głosową od Mikołaja — {formatPrice(voiceAddonPrice)}
                 <span className="ml-2 text-xs font-normal text-white/50 line-through">{formatPrice(voiceStandalonePrice)}</span>
               </span>
-              Mikołaj zwróci się do dziecka po imieniu i wspomni jego sukcesy. Szczegóły uzupełnisz po zakupie —
+              Wybierz nagranie dla jednego dziecka lub rodzeństwa. Mikołaj powita każde dziecko po imieniu i wspomni o jego sukcesach. Szczegóły uzupełnisz po zakupie —
               link do nagrania przyjdzie na e-mail.{' '}
               <Link to="/wiadomosc-od-mikolaja" className="underline underline-offset-2 hover:text-white">Posłuchaj przykładu</Link>
             </span>

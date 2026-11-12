@@ -126,8 +126,7 @@ export default function PrivacyPolicy() {
 
               <h3 className="legal-h3">4.2. Pliki cookie analityczne</h3>
               <p className="mb-4">
-                Serwis wykorzystuje Google Analytics do analizy ruchu w Serwisie. 
-                Administrator wykorzystuje dane anonimowe do poprawy funkcjonalności Serwisu.
+                Po wyrażeniu zgody Google Analytics i Meta Pixel mierzą odwiedziny, wyświetlenia produktów i zakupy. Zgodę można zmienić w ustawieniach cookies w stopce.
               </p>
 
               <h3 className="legal-h3">4.3. Zarządzanie plikami cookie</h3>

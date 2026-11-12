@@ -24,7 +24,7 @@ import {
   isCalendarsOnSale,
   isLetterPromoActive,
 } from '@e-advent/products';
-import interactiveImage from '../assets/interactive.png';
+import interactiveImage from '../assets/interactive.webp';
 import letterImage from '../assets/list/list_1.webp';
 import scratchHeroImage from '../assets/scratch/wachlarz.webp';
 

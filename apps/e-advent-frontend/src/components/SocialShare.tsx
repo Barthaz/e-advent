@@ -12,7 +12,7 @@ export default function SocialShare({
   description = 'Przeżywaj grudzień w cieple — personalizowany kalendarz adwentowy, list do Mikołaja i magia oczekiwania na święta.',
 }: SocialShareProps) {
   const [instagramHint, setInstagramHint] = useState(false);
-  const shareUrl = url ?? window.location.href;
+  const shareUrl = url ?? (typeof window === 'undefined' ? 'https://e-advent.pl/' : window.location.href);
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const shareText = `${title}\n${description}\n${shareUrl}`;

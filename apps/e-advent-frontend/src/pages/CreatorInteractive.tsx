@@ -1,3 +1,4 @@
+import { productSchema } from '../seo/product';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ParchmentCard from '../components/ParchmentCard';
@@ -41,6 +42,10 @@ const CONTENTS = [
   { title: 'Prywatny link', text: 'Po płatności link do kalendarza przychodzi na e-mail. Bez wysyłki.' },
 ];
 
+const JSON_LD = productSchema('interactive', 'Kalendarz adwentowy online',
+  'Kreator kalendarza z własnymi zadaniami i prywatnym linkiem.', '/stworz-kalendarz/interaktywny',
+  PRODUCT_FAMILIES.filter(product => product.type === 'interactive').flatMap(product => product.imageSrc ? [product.imageSrc] : []));
+
 export default function CreatorInteractive() {
   const navigate = useNavigate();
   const wizard = useCreatorWizard({ productType: 'interactive', steps: STEPS });
@@ -74,11 +79,11 @@ export default function CreatorInteractive() {
 
   return (
     <div className="min-h-screen">
-      <SEOHead title="Kalendarz adwentowy online — kreator | e-Advent" description="Stwórz kalendarz adwentowy online z własnymi zadaniami. Personalizacja i prywatny link na e-mail po opłaceniu zamówienia." canonical="https://e-advent.pl/stworz-kalendarz/interaktywny" />
+      <SEOHead jsonLd={JSON_LD} title="Kalendarz adwentowy online — kreator | e-Advent" description="Stwórz kalendarz adwentowy online z własnymi zadaniami. Personalizacja i prywatny link na e-mail po opłaceniu zamówienia." canonical="https://e-advent.pl/stworz-kalendarz/interaktywny" />
       <ProductHero media={<ProductGallery images={images} />}>
         <ProductIntro
           eyebrow={family?.eyebrow ?? 'Online'}
-          title="Kalendarz online"
+          title="Kalendarz adwentowy online z własnymi zadaniami"
           description="Prywatna strona z 24 okienkami. Podajesz imię, tytuł i zadania, a po płatności link przychodzi na e-mail."
           price={formatPrice(price)}
           priceHint="Produkt cyfrowy — bez kosztów dostawy"

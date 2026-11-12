@@ -416,6 +416,18 @@ export default function Checkout() {
   const [cartMode, setCartMode] = useState(false);
 
   /** Blokada przed pętlą createCalendar + createPaymentIntent w useEffect */
+  const checkoutMeasurement = useRef<Parameters<typeof trackBeginCheckout>[0] | null>(null);
+  const measuredCheckout = useRef(false);
+  useEffect(() => {
+    const enable = () => {
+      if (checkoutMeasurement.current && !measuredCheckout.current) {
+        trackBeginCheckout(checkoutMeasurement.current);
+        measuredCheckout.current = true;
+      }
+    };
+    window.addEventListener('eadvent:measurement-enabled', enable);
+    return () => window.removeEventListener('eadvent:measurement-enabled', enable);
+  }, []);
   const paymentInitLockRef = useRef(false);
   const paymentInitKeyRef = useRef<string | null>(null);
   const pendingIntentRequestRef = useRef<CreatePaymentIntentRequest | null>(null);
@@ -505,15 +517,19 @@ export default function Checkout() {
       if (cookieConsent) localStorage.setItem('cookieConsent', cookieConsent);
       if (savedCartRaw) localStorage.setItem(CART_STORAGE_KEY, savedCartRaw);
 
-      trackBeginCheckout({
-        value: getCartTotals(cart)?.total ?? 0,
+      checkoutMeasurement.current = {
+        value: getCartTotals(cart)?.subtotal ?? 0,
         items: cart.map((i) => ({
           sku: i.sku,
           name: i.label || getProduct(i.sku)?.name || i.sku,
           price: i.unitPrice ?? getProduct(i.sku)?.basePrice ?? 0,
           quantity: i.quantity,
         })),
-      });
+      };
+      if (window.gtag && !measuredCheckout.current) {
+        trackBeginCheckout(checkoutMeasurement.current);
+        measuredCheckout.current = true;
+      }
       return;
     }
 
@@ -575,7 +591,7 @@ export default function Checkout() {
       setValidationError(validation.valid ? null : (validation.error || 'Nie można wygenerować kalendarza.'));
     }
 
-    trackBeginCheckout({
+    checkoutMeasurement.current = {
       value: getProductPrice(resolved.sku) ?? 9,
       items: [{
         sku: resolved.sku,
@@ -583,7 +599,11 @@ export default function Checkout() {
         price: getProduct(resolved.sku)?.basePrice ?? 9,
         quantity: 1,
       }],
-    });
+    };
+    if (window.gtag && !measuredCheckout.current) {
+      trackBeginCheckout(checkoutMeasurement.current);
+      measuredCheckout.current = true;
+    }
   }, [navigate, explicitCart]);
 
   useEffect(() => {

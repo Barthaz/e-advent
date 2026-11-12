@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { privateTitle } from './seo/pages';
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from 'react';
 import Footer from './components/Footer';
 import CookieBanner from './components/CookieBanner';
 import ScrollToTop from './components/ScrollToTop';
@@ -7,17 +8,11 @@ import SantaTrackerTeaser from './components/santa/SantaTrackerTeaser';
 import SiteNav from './components/SiteNav';
 import { CartProvider } from './context/CartContext';
 import Landing from './pages/Landing';
-import Creator from './pages/Creator';
 import ProductSelector from './components/products/ProductSelector';
 import CreatorInteractive from './pages/CreatorInteractive';
 import CreatorScratch from './pages/CreatorScratch';
-import Checkout from './pages/Checkout';
-import Success from './pages/Success';
 import PaymentError from './pages/PaymentError';
-import CalendarView from './pages/CalendarView';
 import CalendarAccess from './pages/CalendarAccess';
-import Preview from './pages/Preview';
-import WindowPreviewPage from './pages/WindowPreviewPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 import ShippingAndReturns from './pages/ShippingAndReturns';
@@ -28,21 +23,39 @@ import SantaLetterProduct from './pages/SantaLetterProduct';
 import CalendarsHub from './pages/CalendarsHub';
 import FreeCalendarPage from './pages/FreeCalendarPage';
 import VoiceMessageProduct from './pages/santa-message/VoiceMessageProduct';
-import VoiceMessageCreator from './pages/santa-message/VoiceMessageCreator';
-import VoiceMessagePersonalize from './pages/santa-message/VoiceMessagePersonalize';
-import SantaPlayerPage from './pages/santa-message/SantaPlayerPage';
-import { trackPageView } from './utils/analytics';
+import { replayProductView, trackPageView } from './utils/analytics';
 import SEOHead from './components/SEOHead';
+
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Success = lazy(() => import('./pages/Success'));
+const CalendarView = lazy(() => import('./pages/CalendarView'));
+const Preview = lazy(() => import('./pages/Preview'));
+const WindowPreviewPage = lazy(() => import('./pages/WindowPreviewPage'));
+const VoiceMessageCreator = lazy(() => import('./pages/santa-message/VoiceMessageCreator'));
+const VoiceMessagePersonalize = lazy(() => import('./pages/santa-message/VoiceMessagePersonalize'));
+const SantaPlayerPage = lazy(() => import('./pages/santa-message/SantaPlayerPage'));
+const Creator = lazy(() => import('./pages/Creator'));
 
 function AnalyticsListener() {
   const location = useLocation();
+  const previous = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    if (previous.current === location.pathname) return;
+    previous.current = location.pathname;
+    trackPageView(location.pathname + location.search, privateTitle(location.pathname) ?? document.title);
+  }, [location.pathname, location.search]);
   useEffect(() => {
-    trackPageView(location.pathname + location.search);
+    const enable = () => {
+      trackPageView(location.pathname + location.search, privateTitle(location.pathname) ?? document.title);
+      replayProductView();
+    };
+    window.addEventListener('eadvent:measurement-enabled', enable);
+    return () => window.removeEventListener('eadvent:measurement-enabled', enable);
   }, [location.pathname, location.search]);
   return null;
 }
 
-function AppContent() {
+export function AppContent() {
   const location = useLocation();
   const isPreviewPage =
     location.pathname === '/preview' ||
@@ -51,61 +64,56 @@ function AppContent() {
   const isSantaPlayer = location.pathname.startsWith('/od-mikolaja/');
   const hideChrome = isPreviewPage || isSantaPlayer;
   const isWindowPreview = location.pathname.startsWith('/podglad-okienka');
-  const noIndexPaths = ['/platnosc', '/checkout', '/sukces', '/success', '/platnosc-blad', '/kalendarz', '/podglad', '/preview', '/wiadomosc-od-mikolaja/kreator'];
-  const isNoIndex =
-    noIndexPaths.includes(location.pathname) ||
-    location.pathname.startsWith('/kalendarz/') ||
-    location.pathname.startsWith('/calendar/') ||
-    location.pathname.startsWith('/wiadomosc-od-mikolaja/personalizacja/') ||
-    isSantaPlayer ||
-    isWindowPreview;
+  const screenTitle = privateTitle(location.pathname);
 
   return (
     <div className={isWindowPreview ? '' : 'flex flex-col min-h-screen pt-[var(--santa-banner-h,0px)]'}>
-      {isNoIndex && (
-        <SEOHead title="e-Advent" description="Proces zamówienia" robots="noindex, nofollow" />
+      {screenTitle && (
+        <SEOHead title={screenTitle} description={screenTitle} robots="noindex, nofollow" />
       )}
       {!hideChrome && <SantaTrackerTeaser />}
       {!hideChrome && <SiteNav />}
       <main className={isWindowPreview ? '' : 'grow'}>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/kalendarze-adwentowe" element={<CalendarsHub />} />
-          <Route path="/darmowy-kalendarz" element={<FreeCalendarPage />} />
-          <Route path="/list-do-swietego-mikolaja" element={<SantaLetterProduct />} />
-          <Route path="/wiadomosc-od-mikolaja" element={<VoiceMessageProduct />} />
-          <Route path="/wiadomosc-od-mikolaja/kreator" element={<VoiceMessageCreator />} />
-          <Route path="/wiadomosc-od-mikolaja/personalizacja/:token" element={<VoiceMessagePersonalize />} />
-          <Route path="/od-mikolaja/:token" element={<SantaPlayerPage />} />
-          <Route path="/od-mikolaja/przyklad/:sample" element={<SantaPlayerPage />} />
-          <Route path="/koszyk" element={<CartPage />} />
-          <Route path="/stworz-kalendarz" element={<ProductSelector />} />
-          <Route path="/stworz-kalendarz/interaktywny" element={<CreatorInteractive />} />
-          <Route path="/stworz-kalendarz/zdrapka" element={<CreatorScratch />} />
-          <Route path="/stworz-kalendarz/puzzle" element={<Navigate to="/stworz-kalendarz" replace />} />
-          <Route path="/platnosc" element={<Checkout />} />
-          <Route path="/sukces" element={<Success />} />
-          <Route path="/platnosc-blad" element={<PaymentError />} />
-          <Route path="/kalendarz" element={<CalendarAccess />} />
-          <Route path="/kalendarz/:calendarId" element={<CalendarView />} />
-          <Route path="/podglad" element={<Preview />} />
-          <Route path="/podglad-okienka/:catalogTaskId" element={<WindowPreviewPage />} />
-          <Route path="/polityka-prywatnosci" element={<PrivacyPolicy />} />
-          <Route path="/regulamin" element={<Terms />} />
-          <Route path="/dostawa-i-zwroty" element={<ShippingAndReturns />} />
-          <Route path="/sledz-mikolaja" element={<SantaTracker />} />
-          <Route path="/track-santa" element={<Navigate to="/sledz-mikolaja" replace />} />
-          <Route path="/create" element={<Creator />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/success" element={<Success />} />
-          <Route path="/calendar/:calendarId" element={<CalendarView />} />
-          <Route path="/preview" element={<Preview />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/shipping" element={<ShippingAndReturns />} />
-          <Route path="/returns" element={<ShippingAndReturns />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<p role="status" className="p-6 text-center">Ładowanie strony…</p>}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/kalendarze-adwentowe" element={<CalendarsHub />} />
+            <Route path="/darmowy-kalendarz" element={<FreeCalendarPage />} />
+            <Route path="/list-do-swietego-mikolaja" element={<SantaLetterProduct />} />
+            <Route path="/wiadomosc-od-mikolaja" element={<VoiceMessageProduct />} />
+            <Route path="/wiadomosc-od-mikolaja/kreator" element={<VoiceMessageCreator />} />
+            <Route path="/wiadomosc-od-mikolaja/personalizacja/:token" element={<VoiceMessagePersonalize />} />
+            <Route path="/od-mikolaja/:token" element={<SantaPlayerPage />} />
+            <Route path="/od-mikolaja/przyklad/:sample" element={<SantaPlayerPage />} />
+            <Route path="/koszyk" element={<CartPage />} />
+            <Route path="/stworz-kalendarz" element={<ProductSelector />} />
+            <Route path="/stworz-kalendarz/interaktywny" element={<CreatorInteractive />} />
+            <Route path="/stworz-kalendarz/zdrapka" element={<CreatorScratch />} />
+            <Route path="/stworz-kalendarz/puzzle" element={<Navigate to="/stworz-kalendarz" replace />} />
+            <Route path="/platnosc" element={<Checkout />} />
+            <Route path="/sukces" element={<Success />} />
+            <Route path="/platnosc-blad" element={<PaymentError />} />
+            <Route path="/kalendarz" element={<CalendarAccess />} />
+            <Route path="/kalendarz/:calendarId" element={<CalendarView />} />
+            <Route path="/podglad" element={<Preview />} />
+            <Route path="/podglad-okienka/:catalogTaskId" element={<WindowPreviewPage />} />
+            <Route path="/polityka-prywatnosci" element={<PrivacyPolicy />} />
+            <Route path="/regulamin" element={<Terms />} />
+            <Route path="/dostawa-i-zwroty" element={<ShippingAndReturns />} />
+            <Route path="/sledz-mikolaja" element={<SantaTracker />} />
+            <Route path="/track-santa" element={<Navigate to="/sledz-mikolaja" replace />} />
+            <Route path="/create" element={<Creator />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/success" element={<Success />} />
+            <Route path="/calendar/:calendarId" element={<CalendarView />} />
+            <Route path="/preview" element={<Preview />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/shipping" element={<ShippingAndReturns />} />
+            <Route path="/returns" element={<ShippingAndReturns />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </main>
       {!hideChrome && <Footer />}
       {(!hideChrome || isSantaPlayer) && <CookieBanner />}
@@ -118,8 +126,8 @@ function App() {
     <Router>
       <CartProvider>
         <ScrollToTop />
-        <AnalyticsListener />
         <AppContent />
+        <AnalyticsListener />
       </CartProvider>
     </Router>
   );

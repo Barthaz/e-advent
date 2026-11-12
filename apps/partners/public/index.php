@@ -11,7 +11,7 @@ pageStart('24 dni do bliskości');
 <div class="hero">
 <p class="season-label"><span aria-hidden="true">✦</span> E-kalendarz adwentowy · 2026 <span aria-hidden="true">✦</span></p>
 <h1 id="calendar-heading">24 dni <em>do bliskości</em></h1>
-<p class="hero-description">Za każdym okienkiem czeka małe zadanie. Otwórz je i znajdź<br class="desktop-break"> chwilę na uważność, odpoczynek i troskę o siebie.</p></div>
+<p class="hero-description">Za każdym okienkiem czeka małe zadanie. Otwórzcie je i znajdźcie<br class="desktop-break"> chwilę na uważność, odpoczynek i troskę o siebie.</p></div>
 <div class="calendar-wrap" id="kalendarz">
 <img class="chalet-roof" src="/assets/decor/chalet-roof.webp" alt="" width="1450" height="342">
 <div class="chalet-wall"><div class="calendar-toolbar"><div class="calendar-availability"><img src="/assets/decor/lantern.svg" alt="" width="42" height="48"><p id="calendar-status" role="status"><?php
@@ -26,8 +26,8 @@ echo match($state['phase']) { 'upcoming' => 'Zaczynamy 1 grudnia', 'ended' => 'D
 <noscript><p>JavaScript jest wyłączony. Dostępne zadania możesz przeczytać poniżej.</p><?php for ($d=1; $d<=$state['available']; $d++): ?><a class="button secondary" href="/dzien/<?= $d ?>"><?= $d ?> grudnia</a> <?php endfor; ?></noscript>
 <p class="calendar-note">Każdego dnia otwiera się jedna nowa chwila. Do wcześniejszych możesz wracać aż do 26 grudnia.</p>
 </div>
-<div class="info-grid"><section class="paper-panel how-it-works"><h2>Jak to działa?</h2><ol class="steps"><li><img src="/assets/decor/step-calendar.svg" alt="" width="38" height="38"><div><strong>1. Otwórz okienko</strong><p>Poznaj dzisiejszą lub wcześniejszą propozycję.</p></div></li><li><img src="/assets/decor/step-pause.svg" alt="" width="38" height="38"><div><strong>2. Zróbcie coś dla siebie</strong><p>Poświęćcie sobie kilka minut. W swoim tempie.</p></div></li><li><img src="/assets/decor/step-return.svg" alt="" width="38" height="38"><div><strong>3. Wróć jutro</strong><p>Odkryj kolejne zadanie na nowy dzień.</p></div></li></ol></section>
-<section class="paper-panel" id="o-projekcie"><h2>O projekcie</h2><p>E-kalendarz to część projektu „Skoordynowane wsparcie pre i post adopcyjne”, realizowanego przez Śląski Ośrodek Adopcyjny w Katowicach.</p><a class="button" href="https://soa-katowice.pl/projekt/">Dowiedz się więcej <span aria-hidden="true">›</span></a></section></div>
+<div class="info-grid"><section class="paper-panel how-it-works"><h2>Jak to działa?</h2><ol class="steps"><li><img src="/assets/decor/step-calendar.svg" alt="" width="38" height="38"><div><strong>1. Otwórz okienko</strong><p>Poznaj dzisiejszą lub wcześniejszą propozycję.</p></div></li><li><img src="/assets/decor/step-pause.svg" alt="" width="38" height="38"><div><strong>2. Zróbcie coś dla siebie i swojej rodziny.</strong><p>Poświęćcie sobie kilka minut. W swoim tempie.</p></div></li><li><img src="/assets/decor/step-return.svg" alt="" width="38" height="38"><div><strong>3. Wróć jutro</strong><p>Odkryj kolejne zadanie na nowy dzień.</p></div></li></ol></section>
+<section class="paper-panel" id="o-projekcie"><h2>O projekcie</h2><p>Zapraszamy do zapoznania się ze wsparciem realizowanym w ramach projektu „Skoordynowane wsparcie pre i post adopcyjne”.</p><a class="button" href="https://soa-katowice.pl/projekt/">Dowiedz się więcej <span aria-hidden="true">›</span></a></section></div>
 </section>
 <section class="storage-note" aria-label="Historia otwarć"><details><summary>O zapamiętywaniu otwartych okienek</summary><p>Po wyrażeniu zgody historia otwarć zostaje zapisana tylko w tej przeglądarce. Bez zgody okienka pamiętamy do zamknięcia lub odświeżenia strony. Wszystkie dostępne zadania nadal możesz otworzyć. Wybór zmienisz w ustawieniach prywatności w stopce.</p><button class="text-button" id="reset-progress" type="button">Wyczyść lokalną historię otwarć</button></details><p id="storage-status" role="status"></p></section>
 </main>

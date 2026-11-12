@@ -1,12 +1,13 @@
 export type PurchaseMode = 'standalone' | 'letter_addon';
-export type AddressForm = 'male' | 'female' | 'neutral';
+export type AddressForm = 'male' | 'female' | 'siblings';
 export type AgeBand = '2-3' | '4-6' | '7-9' | '10+';
 
 export interface Personalization {
   childName: string;
   childVocative: string;
   addressForm: AddressForm | '';
-  ageBand?: AgeBand | '';
+  ageYears?: string;
+  ageBand?: AgeBand | ''; // Range from earlier drafts.
   achievement: string;
   proudOf: string;
   workingOn?: string;
@@ -20,6 +21,7 @@ export const EMPTY_PERSONALIZATION: Personalization = {
   childName: '',
   childVocative: '',
   addressForm: '',
+  ageYears: '',
   ageBand: '',
   achievement: '',
   proudOf: '',
@@ -31,14 +33,7 @@ export const EMPTY_PERSONALIZATION: Personalization = {
 export const ADDRESS_FORM_OPTIONS: Array<{ value: AddressForm; label: string }> = [
   { value: 'male', label: 'Chłopiec (np. „jesteś dzielny”)' },
   { value: 'female', label: 'Dziewczynka (np. „jesteś dzielna”)' },
-  { value: 'neutral', label: 'Forma neutralna' },
-];
-
-export const AGE_BAND_OPTIONS: Array<{ value: AgeBand; label: string }> = [
-  { value: '2-3', label: '2–3 lata' },
-  { value: '4-6', label: '4–6 lat' },
-  { value: '7-9', label: '7–9 lat' },
-  { value: '10+', label: '10+ lat' },
+  { value: 'siblings', label: 'Dla rodzeństwa (jedno wspólne nagranie)' },
 ];
 
 interface Rule {
@@ -60,7 +55,7 @@ export const FIELD_RULES: Partial<Record<FieldName, Rule>> = {
 };
 
 export const STEP_FIELDS: Record<1 | 2, FieldName[]> = {
-  1: ['childName', 'childVocative', 'addressForm', 'ageBand'],
+  1: ['childName', 'childVocative', 'addressForm', 'ageYears'],
   2: ['achievement', 'proudOf', 'workingOn', 'wishes', 'siblingsNote'],
 };
 
@@ -85,7 +80,11 @@ export function errorMessage(code: string, rule?: { min?: number; max?: number }
     case 'TOO_LONG': return `Maksymalnie ${rule?.max ?? ''} znaków — skróć, proszę, tekst.`;
     case 'INVALID_CHARS': return 'Użyj samych liter i zwykłych znaków interpunkcyjnych.';
     case 'LINK_NOT_ALLOWED': return 'Bez linków i adresów stron, proszę.';
+    case 'INVALID_AGE': return 'Wpisz wiek w pełnych latach (0–120).';
+    case 'AGE_COUNT': return 'Podaj po jednym wieku dla każdego imienia, w tej samej kolejności.';
     case 'INVALID_OPTION': return 'Wybierz jedną z opcji.';
+    case 'SIBLING_COUNT': return 'Wpisz od 2 do 9 imion, oddzielając je przecinkami.';
+    case 'SIBLING_MISMATCH': return 'Podaj formę powitania dla każdego imienia, w tej samej kolejności.';
     default: return 'Sprawdź to pole.';
   }
 }
@@ -94,13 +93,31 @@ export function validateFields(value: Personalization, fields: FieldName[]): Fie
   const errors: FieldErrors = {};
   for (const field of fields) {
     if (field === 'addressForm') {
-      if (!value.addressForm) errors.addressForm = 'Wybierz, jak Mikołaj ma się zwracać do dziecka.';
+      if (!ADDRESS_FORM_OPTIONS.some(option => option.value === value.addressForm)) errors.addressForm = 'Wybierz, jak Mikołaj ma się zwracać do dziecka.';
       continue;
     }
-    if (field === 'ageBand') continue;
+    if (field === 'ageYears') {
+      const ageText = cleanText(value.ageYears);
+      if (!ageText) continue;
+      const ages = ageText.split(',').map(age => age.trim());
+      if (ages.some(age => !/^\d{1,3}$/.test(age) || Number(age) > 120)) errors.ageYears = errorMessage('INVALID_AGE');
+      else if (value.addressForm === 'siblings' && ages.length !== value.childName.split(',').length) errors.ageYears = errorMessage('AGE_COUNT');
+      else if (value.addressForm !== 'siblings' && ages.length !== 1) errors.ageYears = errorMessage('INVALID_AGE');
+      continue;
+    }
     const rule = FIELD_RULES[field];
     if (!rule) continue;
     const text = cleanText(value[field] as string | undefined);
+    if (rule.kind === 'name' && value.addressForm === 'siblings') {
+      const names = text.split(',').map(cleanText);
+      if (names.length < 2 || names.length > 9 || names.some(name => !name)) errors[field] = errorMessage('SIBLING_COUNT');
+      else if (names.some(name => charCount(name) < rule.min || charCount(name) > rule.max || !NAME_PATTERN.test(name))) {
+        errors[field] = 'Każde imię powinno mieć od 2 do 40 znaków. Sprawdź pisownię imion.';
+      } else if (field === 'childVocative' && names.length !== value.childName.split(',').length) {
+        errors[field] = errorMessage('SIBLING_MISMATCH');
+      }
+      continue;
+    }
     if (!text) {
       if (rule.required) errors[field] = errorMessage('REQUIRED');
       continue;
@@ -120,7 +137,8 @@ export function normalizePersonalization(value: Personalization): Personalizatio
     childName: cleanText(value.childName),
     childVocative: cleanText(value.childVocative),
     addressForm: value.addressForm,
-    ageBand: value.ageBand || '',
+    ageYears: cleanText(value.ageYears),
+    ...(!value.ageYears && value.ageBand ? { ageBand: value.ageBand } : {}),
     achievement: cleanText(value.achievement),
     proudOf: cleanText(value.proudOf),
     workingOn: cleanText(value.workingOn),

@@ -11,7 +11,7 @@ export default function ProductSelector() {
       <SEOHead title="Wybierz kalendarz adwentowy lub list do Mikołaja | e-Advent" description="Porównaj kalendarz online, kalendarz zdrapka i zestaw listów do Świętego Mikołaja. Wybierz produkt i rozpocznij zamówienie." canonical="https://e-advent.pl/stworz-kalendarz" />
       <div className="text-center mb-10">
         <h1 className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light mb-3 leading-tight">
-          Wybierz swój kalendarz
+          Wybierz kalendarz adwentowy lub prezent od Mikołaja
         </h1>
         <p className="text-white/80 text-base md:text-lg max-w-3xl mx-auto leading-relaxed">
           Trzy sposoby na świąteczny klimat — wybierz wariant dla siebie lub na prezent.
