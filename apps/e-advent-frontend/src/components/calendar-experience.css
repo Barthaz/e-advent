@@ -15,7 +15,7 @@
 .calendar-wait-note p { font-size: .82rem; line-height: 1.8; margin-top: 6px; color: #d3c9b4; }
 .advent-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
 .advent-door { position: relative; isolation: isolate; aspect-ratio: 4 / 5; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; border: 1px solid #ad945c99; border-radius: 5px; background: #214837; color: #ebd1a1; overflow: hidden; padding: 10px; transition: background 160ms ease, border-color 160ms ease; cursor: pointer; }
-.advent-door::before { content: ''; position: absolute; inset: 5px; border: 1px solid #ad945c25; border-radius: 2px; pointer-events: none; }
+.advent-door::before { content: ''; position: absolute; inset: 5px; border: 1px solid #ad945c25; border-radius: 2px; pointer-events: none; z-index: 3; }
 .advent-door-month { text-transform: uppercase; letter-spacing: .12em; font-size: .55rem; color: #d5c19a; }
 .advent-door-ornament { position: absolute; top: 39%; right: 10%; font-size: 2.4rem; opacity: .07; transform: rotate(-13deg); }
 .advent-door-number { font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(2rem, 4vw, 3.5rem); line-height: 1.2; font-variant-numeric: lining-nums; }
@@ -25,13 +25,18 @@
 .advent-door--locked .advent-door-month { color: #b4ad91; }
 .advent-door--available:hover { background: #2b5942; border-color: #efd49f; }
 .advent-door--today { background: #30533b; border-color: #efd49f; }
-.advent-door-panel { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: inherit; color: inherit; transform-origin: left center; backface-visibility: hidden; }
-.advent-door--opening { z-index: 2; background: #ede3cd; }
-.advent-door--opening .advent-door-panel { animation: door-swing .52s cubic-bezier(.22,.65,.25,1) both; }
+.advent-door-inside { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; color: #284832; pointer-events: none; }
+.advent-door-inside .advent-door-month, .advent-door-inside .advent-door-footer { color: #786a4e; }
+.advent-door-panel { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #214837; color: #ebd1a1; transform-origin: left center; backface-visibility: hidden; }
+.advent-door--locked .advent-door-panel { background: #1b3f30; color: #c4b590; }
+.advent-door--today .advent-door-panel { background: #30533b; }
+.advent-door.advent-door--opening,
+.advent-door.advent-door--opening:hover { z-index: 2; background: #ede3cd; perspective: 900px; transition: none; box-shadow: inset 8px 0 16px #1a120833; }
+.advent-door--opening .advent-door-panel { animation: door-swing .4s cubic-bezier(.2,.85,.2,1) both; background: #214837; color: #ebd1a1; }
 @keyframes door-swing {
   0% { transform: perspective(700px) rotateY(0); }
-  30% { filter: drop-shadow(8px 0 6px #1a120833); }
-  100% { transform: perspective(700px) rotateY(-105deg); }
+  42% { transform: perspective(700px) rotateY(-102deg); filter: drop-shadow(8px 0 6px #1a120833); }
+  100% { transform: perspective(700px) rotateY(-108deg); }
 }
 .advent-door--opened { background: #ede3cd; color: #284832; border-color: #cfb580; }
 .advent-door--opened .advent-door-month, .advent-door--opened .advent-door-footer { color: #786a4e; }

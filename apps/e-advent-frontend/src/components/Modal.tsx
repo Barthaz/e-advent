@@ -88,7 +88,7 @@ export default function Modal({ isOpen, onClose, title, children, usePortal = tr
           
           {/* Dzień X na środku w 3/5 wysokości */}
           <div className="advent-modal-heading">
-            <p className="calendar-eyebrow">Chwila, która należy do Was</p>
+            <p className="calendar-eyebrow">Chwila, która należy do Ciebie</p>
             <h2 id={titleId}>{title}</h2>
           </div>
           

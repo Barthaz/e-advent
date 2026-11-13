@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import './calendar-experience.css';
 
 const ornaments = ['fa-star', 'fa-snowflake', 'fa-tree', 'fa-gift', 'fa-bell', 'fa-heart'];
@@ -18,39 +18,59 @@ interface CalendarGridProps {
   previewMode?: boolean; // W trybie preview wszystkie okienka są dostępne (bez sprawdzania kolejności)
 }
 
-function swingDoor(button: HTMLButtonElement, done: () => void) {
-  const finishNow = () => {
-    button.classList.remove('advent-door--opening');
-    done();
-  };
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-    done();
-    return;
-  }
+const CONTENT_DELAY_MS = 210;
+
+function doorCanSwing(button: HTMLButtonElement) {
+  const panel = button.querySelector<HTMLElement>('.advent-door-panel');
+  if (!panel || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
   button.classList.add('advent-door--opening');
-  void button.offsetWidth;
-  const animations = button.getAnimations?.() ?? [];
-  if (animations.length === 0) {
-    finishNow();
-    return;
-  }
-  let settled = false;
-  const finish = () => {
-    if (settled) return;
-    settled = true;
-    button.removeEventListener('animationend', onEnd);
-    finishNow();
-  };
-  const onEnd = (event: AnimationEvent) => {
-    if (event.animationName === 'door-swing') finish();
-  };
-  button.addEventListener('animationend', onEnd);
-  window.setTimeout(finish, 700);
+  void panel.offsetWidth;
+  const animationName = getComputedStyle(panel).animationName;
+  button.classList.remove('advent-door--opening');
+  return Boolean(animationName && animationName !== 'none');
+}
+
+function DoorFace({ day, footer }: { day: number; footer: ReactNode }) {
+  return (
+    <>
+      <span className="advent-door-month" aria-hidden="true">grudzień</span>
+      <i className={`fas ${ornaments[(day - 1) % ornaments.length]} advent-door-ornament`} aria-hidden="true" />
+      <span className="advent-door-number" aria-hidden="true">{day}</span>
+      <span className="advent-door-footer" aria-hidden="true">{footer}</span>
+    </>
+  );
 }
 
 export default function CalendarGrid({ days, onDayClick, currentDate = new Date(), debugMode = false, previewMode = false }: CalendarGridProps) {
   const today = currentDate;
   const opening = useRef<number | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [swinging, setSwinging] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (swinging == null || !gridRef.current) return;
+    const button = gridRef.current.querySelector<HTMLButtonElement>(`[data-day="${swinging}"]`);
+    const panel = button?.querySelector<HTMLElement>('.advent-door-panel');
+    if (!panel) return;
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      panel.removeEventListener('animationend', onEnd);
+      opening.current = null;
+      setSwinging(null);
+    };
+    const onEnd = (event: AnimationEvent) => {
+      if (event.animationName === 'door-swing') finish();
+    };
+    panel.addEventListener('animationend', onEnd);
+    const fallback = window.setTimeout(finish, 800);
+    return () => {
+      settled = true;
+      panel.removeEventListener('animationend', onEnd);
+      window.clearTimeout(fallback);
+    };
+  }, [swinging]);
   
   // Sprawdzamy czy możemy otworzyć okienko (musi być odpowiednia data)
   // W trybie preview wszystkie okienka są dostępne
@@ -99,33 +119,33 @@ export default function CalendarGrid({ days, onDayClick, currentDate = new Date(
   }, [days]);
 
   return (
-    <div className="advent-grid" role="group" aria-label="24 okienka kalendarza adwentowego">
+    <div ref={gridRef} className="advent-grid" role="group" aria-label="24 okienka kalendarza adwentowego">
       {shuffledDays.map(({ day, task, isOpened, date }) => {
         const available = canOpen(day, date);
         const dayDate = new Date(date);
         const isToday = today.toDateString() === dayDate.toDateString();
+        const isSwinging = swinging === day;
         const state = isOpened ? 'opened' : available ? 'available' : 'locked';
-        const face = (
-          <>
-            <span className="advent-door-month" aria-hidden="true">grudzień</span>
-            <i className={`fas ${ornaments[(day - 1) % ornaments.length]} advent-door-ornament`} aria-hidden="true" />
-            <span className="advent-door-number" aria-hidden="true">{day}</span>
-            <span className="advent-door-footer" aria-hidden="true">{isOpened ? <><i className="fas fa-check" /> Odkryte</> : isToday ? 'Na dziś' : available ? 'Otwórz' : <i className="fas fa-lock" />}</span>
-          </>
-        );
-        return <button key={day} type="button" disabled={!available && !isOpened}
+        const closedFooter = isToday ? 'Na dziś' : available ? 'Otwórz' : <i className="fas fa-lock" />;
+        const openedFooter = <><i className="fas fa-check" /> Odkryte</>;
+        const showDoor = !isOpened || isSwinging;
+        return <button key={day} type="button" data-day={day} disabled={!available && !isOpened}
           onClick={(event) => {
             if (isOpened) { onDayClick(day); return; }
             if (opening.current != null) return;
+            if (!doorCanSwing(event.currentTarget)) { onDayClick(day); return; }
             opening.current = day;
-            swingDoor(event.currentTarget, () => {
-              opening.current = null;
-              onDayClick(day);
-            });
+            setSwinging(day);
+            window.setTimeout(() => onDayClick(day), CONTENT_DELAY_MS);
           }}
-          className={`advent-door advent-door--${state}${isToday ? ' advent-door--today' : ''}`}
+          className={`advent-door advent-door--${state}${isToday ? ' advent-door--today' : ''}${isSwinging ? ' advent-door--opening' : ''}`}
           aria-label={`${day} grudnia — ${isOpened ? 'otwarte, przeczytaj ponownie' : available ? 'otwórz okienko' : 'dostępne '+day+' grudnia'}`}>
-          {isOpened ? face : <span className="advent-door-panel">{face}</span>}
+          {showDoor ? (
+            <>
+              <span className="advent-door-inside"><DoorFace day={day} footer={openedFooter} /></span>
+              <span className="advent-door-panel"><DoorFace day={day} footer={closedFooter} /></span>
+            </>
+          ) : <DoorFace day={day} footer={openedFooter} />}
           {isOpened && task && <span className="advent-door-task" aria-hidden="true">{task}</span>}
         </button>;
       })}

@@ -3,7 +3,7 @@ import CalendarGrid from '../components/CalendarGrid';
 import Modal from '../components/Modal';
 import CalendarScene from '../components/CalendarScene';
 
-const SAMPLE_TASK = 'To przykładowe okienko. Treść z Waszego kalendarza pojawi się dopiero po zakupie.';
+const SAMPLE_TASK = 'Przykładowe zadanie na ten dzień.';
 
 export default function Preview() {
   const [opened, setOpened] = useState<number[]>([]);
@@ -19,12 +19,12 @@ export default function Preview() {
   return (
     <CalendarScene
       title="Zajrzyj do kalendarza"
-      description="Tak wyglądają okienka. W podglądzie nie pokazujemy zadań z prawdziwego kalendarza."
+      description="Tak wyglądają okienka. W podglądzie każde z nich ma przykładowe zadanie."
     >
       <div className="notice-preview">
         <p>
           <i className="fas fa-eye mr-2" />
-          <strong>Tryb podglądu</strong> — okienka otwierają się jak w kalendarzu, ale z przykładową treścią
+          <strong>Tryb podglądu</strong> — okienka otwierają się jak w kalendarzu i pokazują przykładowe zadanie
         </p>
       </div>
       <CalendarGrid
