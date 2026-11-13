@@ -15,7 +15,7 @@ export function previewSeo(server) {
       return res.end();
     }
     if (/^[a-z0-9/-]+$/.test(path) && existsSync(resolve(root, '_pages', path + '.html'))) req.url = '/_pages/' + path + '.html';
-    else if (/^(?:koszyk|platnosc|sukces|platnosc-blad|create|podglad|kalendarz|(?:kalendarz|calendar|podglad-okienka)\/[^/]+|wiadomosc-od-mikolaja\/(?:kreator|personalizacja\/[^/]+)|od-mikolaja\/(?:[^/]+|przyklad\/[^/]+))$/.test(path)) req.url = '/app-shell.html';
+    else if (/^(?:koszyk|platnosc|sukces|platnosc-blad|create|podglad|kalendarz|(?:kalendarz|calendar|podglad-okienka)\/[^/]+|stworz-kalendarz\/interaktywny\/kreator|wiadomosc-od-mikolaja\/(?:kreator|personalizacja\/[^/]+)|od-mikolaja\/(?:[^/]+|przyklad\/[^/]+))$/.test(path)) req.url = '/app-shell.html';
     else if (path.startsWith('_pages/') || path === 'app-shell.html' || !existsSync(resolve(root, path))) {
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
       createReadStream(resolve(root, '404.html')).pipe(res);

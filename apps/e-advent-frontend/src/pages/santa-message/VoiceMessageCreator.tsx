@@ -8,6 +8,7 @@ import AddedToCartModal from '../../components/AddedToCartModal';
 import Logo from '../../components/Logo';
 import { formatPrice, getProduct } from '../../config/products';
 import { useCart } from '../../context/useCart';
+import { useScrollStepIntoView } from '../../hooks/useScrollStepIntoView';
 import { voiceAddonSlots } from '../../utils/cartStorage';
 import { trackSantaEvent } from '../../utils/analytics';
 import PersonalizationFields from '../../santa-message/PersonalizationFields';
@@ -64,7 +65,7 @@ export default function VoiceMessageCreator() {
   const [formError, setFormError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
   const startedRef = useRef(false);
-  const headingRef = useRef<HTMLHeadingElement>(null);
+  const headingRef = useScrollStepIntoView<HTMLHeadingElement>(step);
 
   useEffect(() => {
     if (startedRef.current) return;
@@ -93,10 +94,6 @@ export default function VoiceMessageCreator() {
       alive = false;
     };
   }, [editingItem, params]);
-
-  useEffect(() => {
-    headingRef.current?.focus();
-  }, [step]);
 
   const reportErrors = (found: FieldErrors) => {
     for (const field of Object.keys(found)) {
@@ -185,7 +182,7 @@ export default function VoiceMessageCreator() {
 
           <div className="text-center text-white mb-6">
             <p className="text-christmas-gold text-xs tracking-[0.25em] uppercase mb-2">Wiadomość od Świętego Mikołaja</p>
-            <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light focus:outline-none">
+            <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light focus:outline-none scroll-mt-24">
               {step === 1 && 'Dla kogo jest wiadomość?'}
               {step === 2 && (value.addressForm === 'siblings' ? 'Opowiedz Mikołajowi o rodzeństwie' : 'Opowiedz Mikołajowi o dziecku')}
               {step === 3 && 'Wszystko gotowe dla Mikołaja'}

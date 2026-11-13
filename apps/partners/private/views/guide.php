@@ -6,7 +6,7 @@ function guideStart(string $title, string $intro): void {
     ?>
     <main id="main" tabindex="-1" class="guide-scene"><article class="guide-sheet">
     <header class="guide-heading"><a class="guide-back" href="/"><span aria-hidden="true">←</span> Wróć do kalendarza</a>
-    <img src="/assets/decor/sprig-title.webp" alt="" width="120" height="40">
+    <img src="/assets/decor/sprig-title.webp" alt="Gałązka świąteczna" width="120" height="40">
     <p class="eyebrow">E-kalendarz adwentowy · ŚOA</p><h1><?= e($title) ?></h1><p><?= e($intro) ?></p></header>
     <div class="guide-copy">
     <?php

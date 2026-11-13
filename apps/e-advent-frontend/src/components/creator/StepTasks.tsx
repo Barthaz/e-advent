@@ -16,7 +16,6 @@ interface StepTasksProps {
   examples: ExampleSet[];
   validationError: string | null;
   setValidationError: (error: string | null) => void;
-  productType: string;
 }
 
 export default function StepTasks({
@@ -27,7 +26,6 @@ export default function StepTasks({
   examples,
   validationError,
   setValidationError,
-  productType,
 }: StepTasksProps) {
   const [newTaskText, setNewTaskText] = useState('');
   const [newTaskDuration, setNewTaskDuration] = useState('');
@@ -79,15 +77,7 @@ export default function StepTasks({
       setValidationError('Musisz mieć 24 własne zadania LUB wybrać co najmniej jedną kategorię zadań.');
       return;
     }
-    import('../../utils/previewLayout').then(({ generatePreviewLayout }) => {
-      const previewLayout = generatePreviewLayout();
-      localStorage.setItem('calendarPreview', JSON.stringify({
-        name: '', email: '', calendarTitle: '', tasks, dailyEmailReminders: false,
-        dates: [], previewLayout, selectedExampleSets, productType,
-      }));
-      localStorage.removeItem('calendarPreview_openedDays');
-      window.open('/preview', '_blank');
-    });
+    window.open('/podglad', '_blank');
   };
 
   return (

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import './calendar-experience.css';
 
 const ornaments = ['fa-star', 'fa-snowflake', 'fa-tree', 'fa-gift', 'fa-bell', 'fa-heart'];
@@ -18,8 +18,39 @@ interface CalendarGridProps {
   previewMode?: boolean; // W trybie preview wszystkie okienka są dostępne (bez sprawdzania kolejności)
 }
 
+function swingDoor(button: HTMLButtonElement, done: () => void) {
+  const finishNow = () => {
+    button.classList.remove('advent-door--opening');
+    done();
+  };
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    done();
+    return;
+  }
+  button.classList.add('advent-door--opening');
+  void button.offsetWidth;
+  const animations = button.getAnimations?.() ?? [];
+  if (animations.length === 0) {
+    finishNow();
+    return;
+  }
+  let settled = false;
+  const finish = () => {
+    if (settled) return;
+    settled = true;
+    button.removeEventListener('animationend', onEnd);
+    finishNow();
+  };
+  const onEnd = (event: AnimationEvent) => {
+    if (event.animationName === 'door-swing') finish();
+  };
+  button.addEventListener('animationend', onEnd);
+  window.setTimeout(finish, 700);
+}
+
 export default function CalendarGrid({ days, onDayClick, currentDate = new Date(), debugMode = false, previewMode = false }: CalendarGridProps) {
   const today = currentDate;
+  const opening = useRef<number | null>(null);
   
   // Sprawdzamy czy możemy otworzyć okienko (musi być odpowiednia data)
   // W trybie preview wszystkie okienka są dostępne
@@ -74,14 +105,27 @@ export default function CalendarGrid({ days, onDayClick, currentDate = new Date(
         const dayDate = new Date(date);
         const isToday = today.toDateString() === dayDate.toDateString();
         const state = isOpened ? 'opened' : available ? 'available' : 'locked';
+        const face = (
+          <>
+            <span className="advent-door-month" aria-hidden="true">grudzień</span>
+            <i className={`fas ${ornaments[(day - 1) % ornaments.length]} advent-door-ornament`} aria-hidden="true" />
+            <span className="advent-door-number" aria-hidden="true">{day}</span>
+            <span className="advent-door-footer" aria-hidden="true">{isOpened ? <><i className="fas fa-check" /> Odkryte</> : isToday ? 'Na dziś' : available ? 'Otwórz' : <i className="fas fa-lock" />}</span>
+          </>
+        );
         return <button key={day} type="button" disabled={!available && !isOpened}
-          onClick={() => onDayClick(day)}
+          onClick={(event) => {
+            if (isOpened) { onDayClick(day); return; }
+            if (opening.current != null) return;
+            opening.current = day;
+            swingDoor(event.currentTarget, () => {
+              opening.current = null;
+              onDayClick(day);
+            });
+          }}
           className={`advent-door advent-door--${state}${isToday ? ' advent-door--today' : ''}`}
           aria-label={`${day} grudnia — ${isOpened ? 'otwarte, przeczytaj ponownie' : available ? 'otwórz okienko' : 'dostępne '+day+' grudnia'}`}>
-          <span className="advent-door-month" aria-hidden="true">grudzień</span>
-          <i className={`fas ${ornaments[(day - 1) % ornaments.length]} advent-door-ornament`} aria-hidden="true" />
-          <span className="advent-door-number" aria-hidden="true">{day}</span>
-          <span className="advent-door-footer" aria-hidden="true">{isOpened ? <><i className="fas fa-check" /> Odkryte</> : isToday ? 'Na dziś' : available ? 'Otwórz' : <i className="fas fa-lock" />}</span>
+          {isOpened ? face : <span className="advent-door-panel">{face}</span>}
           {isOpened && task && <span className="advent-door-task" aria-hidden="true">{task}</span>}
         </button>;
       })}

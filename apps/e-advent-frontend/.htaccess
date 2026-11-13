@@ -41,7 +41,7 @@ RewriteRule ^(.*)$ https://e-advent.pl/$1 [R=301,L]
   RewriteRule ^([a-z0-9/-]+)$ _pages/$1.html [END]
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [END]
-  RewriteRule ^(?:koszyk|platnosc|sukces|platnosc-blad|create|podglad|kalendarz|(?:kalendarz|calendar|podglad-okienka)/[^/]+|wiadomosc-od-mikolaja/(?:kreator|personalizacja/[^/]+)|od-mikolaja/(?:[^/]+|przyklad/[^/]+))$ app-shell.html [END]
+  RewriteRule ^(?:koszyk|platnosc|sukces|platnosc-blad|create|podglad|kalendarz|(?:kalendarz|calendar|podglad-okienka)/[^/]+|stworz-kalendarz/interaktywny/kreator|wiadomosc-od-mikolaja/(?:kreator|personalizacja/[^/]+)|od-mikolaja/(?:[^/]+|przyklad/[^/]+))$ app-shell.html [END]
   RewriteRule ^ - [R=404,L]
 </IfModule>
 

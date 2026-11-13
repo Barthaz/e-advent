@@ -89,7 +89,7 @@ export default function ProductGallery({ images, fit = 'cover' }: ProductGallery
             >
               <img
                 src={img.thumb ?? img.src}
-                alt=""
+                alt={img.alt}
                 className="w-full aspect-square object-cover"
                 width={180}
                 height={180}

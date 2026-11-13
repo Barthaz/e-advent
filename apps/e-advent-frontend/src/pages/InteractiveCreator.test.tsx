@@ -3,13 +3,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, expect, it, vi } from 'vitest';
 import { CartProvider } from '../context/CartContext';
 import { loadCart } from '../utils/cartStorage';
-import CreatorInteractive from './CreatorInteractive';
+import InteractiveCreator from './InteractiveCreator';
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); localStorage.clear(); });
 
 it('adds two independently personalized calendars alongside a letter and preserves the existing draft', async () => {
   localStorage.setItem('e-advent-cart', JSON.stringify([{ id: 'letter', sku: 'santa-letter', quantity: 1 }]));
   localStorage.setItem('e-advent-pending-calendar-id', 'other-draft');
+  Element.prototype.scrollIntoView = vi.fn();
   const fetchMock = vi.fn(async (_url: string, options: RequestInit) => {
     const { calendar } = JSON.parse(String(options.body));
     expect(options.method).toBe('POST');
@@ -20,7 +21,7 @@ it('adds two independently personalized calendars alongside a letter and preserv
   vi.stubGlobal('fetch', fetchMock);
 
   for (const title of ['Pierwszy', 'Drugi']) {
-    const { unmount } = render(<MemoryRouter><CartProvider><CreatorInteractive /></CartProvider></MemoryRouter>);
+    const { unmount } = render(<MemoryRouter><CartProvider><InteractiveCreator /></CartProvider></MemoryRouter>);
     fireEvent.change(screen.getByPlaceholderText('Jan'), { target: { value: 'Anna' } });
     fireEvent.change(screen.getByPlaceholderText('jan@example.com'), { target: { value: title + '@example.com' } });
     fireEvent.change(screen.getByPlaceholderText('Mój Kalendarz Adwentowy'), { target: { value: title } });

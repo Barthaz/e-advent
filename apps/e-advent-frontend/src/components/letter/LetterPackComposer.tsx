@@ -122,7 +122,7 @@ export default function LetterPackComposer({
           >
             <img
               src={certificatePreview}
-              alt=""
+              alt="Podgląd certyfikatu Grzecznego Dziecka"
               width={280}
               height={364}
               loading="lazy"

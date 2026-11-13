@@ -26,7 +26,7 @@ export default function ScratchDesignPreview({
       />
       <img
         src={scratchTemplate}
-        alt=""
+        alt="Szablon złotych okienek na kalendarzu zdrapce"
         aria-hidden
         className="pointer-events-none absolute inset-0 h-full w-full object-fill"
       />

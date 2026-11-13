@@ -76,7 +76,7 @@ export default function Landing() {
       />
       <div className="home-story">
         <section className="story-hero" aria-labelledby="home-title">
-          <div className="story-hero-photo"><img src={room} alt="" width={853} height={1844} fetchPriority="high" /></div>
+          <div className="story-hero-photo"><img src={room} alt="Świąteczny salon z choinką, kominkiem i ciepłym światłem" width={853} height={1844} fetchPriority="high" /></div>
           <div className="story-hero-shade" />
           <div className="story-container story-hero-content">
             <p className="story-kicker">Twój dom. Wasi bliscy. Wasze święta.</p>
@@ -185,7 +185,7 @@ export default function Landing() {
         </section>
 
         <section className="story-ending" aria-labelledby="ending-title">
-          <img src={room} alt="" />
+          <img src={room} alt="Wieczorne światło w świątecznym domu" />
           <div className="story-container"><p className="story-kicker">To właśnie te chwile</p><h2 id="ending-title">Święta mijają.<br /><em>Magia zostaje.</em></h2><p>Nie zawsze pamiętamy, co było pod choinką.<br />Pamiętamy za to, z kim przeżywaliśmy święta.<br />I jak się wtedy czuliśmy.</p><a className="btn-red story-cta" href="#rozdzialy">Wybierz Wasz świąteczny rozdział<i className="fas fa-arrow-up" aria-hidden="true" /></a><span className="story-signature">Do zobaczenia w Waszych wspomnieniach, e-Advent</span></div>
         </section>
 

@@ -4,6 +4,7 @@ import PageBackground from '../../components/PageBackground';
 import ParchmentCard from '../../components/ParchmentCard';
 import SEOHead from '../../components/SEOHead';
 import Logo from '../../components/Logo';
+import { useScrollStepIntoView } from '../../hooks/useScrollStepIntoView';
 import { trackSantaEvent } from '../../utils/analytics';
 import PersonalizationFields from '../../santa-message/PersonalizationFields';
 import PersonalizationSummary from '../../santa-message/PersonalizationSummary';
@@ -33,6 +34,7 @@ export default function VoiceMessagePersonalize() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const startedRef = useRef(false);
+  const headingRef = useScrollStepIntoView<HTMLHeadingElement>(`${editing ? 'edit' : 'view'}-${step}`);
 
   useEffect(() => {
     let alive = true;
@@ -141,7 +143,11 @@ export default function VoiceMessagePersonalize() {
                 <p className="text-christmas-gold text-xs tracking-[0.25em] uppercase mb-2">
                   Wiadomość od Świętego Mikołaja{view.orderNumber ? ` · zamówienie ${view.orderNumber}` : ''}
                 </p>
-                <h1 className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light">
+                <h1
+                  ref={headingRef}
+                  tabIndex={-1}
+                  className="font-display text-3xl md:text-4xl font-semibold text-christmas-gold-light focus:outline-none scroll-mt-24"
+                >
                   {editing && (value.addressForm === 'siblings' ? 'Opowiedz Mikołajowi o rodzeństwie' : 'Dla kogo jest wiadomość?')}
                   {!editing && view.status === 'SCRIPT_READY' && 'Wszystko gotowe dla Mikołaja'}
                   {!editing && IN_PROGRESS.includes(view.status) && 'Mikołaj nagrywa wiadomość'}

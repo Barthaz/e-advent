@@ -34,6 +34,7 @@ const WindowPreviewPage = lazy(() => import('./pages/WindowPreviewPage'));
 const VoiceMessageCreator = lazy(() => import('./pages/santa-message/VoiceMessageCreator'));
 const VoiceMessagePersonalize = lazy(() => import('./pages/santa-message/VoiceMessagePersonalize'));
 const SantaPlayerPage = lazy(() => import('./pages/santa-message/SantaPlayerPage'));
+const InteractiveCreator = lazy(() => import('./pages/InteractiveCreator'));
 const Creator = lazy(() => import('./pages/Creator'));
 
 function AnalyticsListener() {
@@ -88,6 +89,7 @@ export function AppContent() {
             <Route path="/koszyk" element={<CartPage />} />
             <Route path="/stworz-kalendarz" element={<ProductSelector />} />
             <Route path="/stworz-kalendarz/interaktywny" element={<CreatorInteractive />} />
+            <Route path="/stworz-kalendarz/interaktywny/kreator" element={<InteractiveCreator />} />
             <Route path="/stworz-kalendarz/zdrapka" element={<CreatorScratch />} />
             <Route path="/stworz-kalendarz/puzzle" element={<Navigate to="/stworz-kalendarz" replace />} />
             <Route path="/platnosc" element={<Checkout />} />

@@ -10,7 +10,9 @@ const privateScreens: Record<string, string> = {
   '/sukces': 'Potwierdzenie zamówienia', '/success': 'Potwierdzenie zamówienia',
   '/platnosc-blad': 'Problem z płatnością', '/kalendarz': 'Otwórz swój kalendarz',
   '/podglad': 'Podgląd kalendarza', '/preview': 'Podgląd kalendarza',
-  '/create': 'Kreator kalendarza', '/wiadomosc-od-mikolaja/kreator': 'Kreator wiadomości od Mikołaja',
+  '/create': 'Kreator kalendarza',
+  '/stworz-kalendarz/interaktywny/kreator': 'Kreator kalendarza online',
+  '/wiadomosc-od-mikolaja/kreator': 'Kreator wiadomości od Mikołaja',
 };
 
 export function privateTitle(path: string) {

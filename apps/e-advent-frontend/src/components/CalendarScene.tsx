@@ -6,7 +6,7 @@ import './calendar-experience.css';
 export default function CalendarScene({ title, description, children, free = false }: { title: string; description: string; children: ReactNode; free?: boolean }) {
   return <div className="calendar-scene">
     <header className="calendar-scene-header">
-      <img src={room} alt="" />
+      <img src={room} alt="Świąteczny dom z choinką i kominkiem" />
       <div><p className="calendar-eyebrow">{free ? 'Mały rytuał od e-Advent, bez zamówienia' : 'Wasz grudzień. Wasze małe tradycje.'}</p><h1>{title}</h1><p>{description}</p></div>
     </header>
     <div className="calendar-scene-content">

@@ -7,7 +7,7 @@ function fundingStrip(): void {
 }
 function taskSignature(): void { ?>
     <footer class="task-signature">
-        <img src="/assets/branding/soa-logo.png" alt="" width="200" height="151">
+        <img src="/assets/branding/soa-logo.png" alt="Śląski Ośrodek Adopcyjny w Katowicach" width="200" height="151">
         <div><span>Z życzeniami bliskości</span><strong>Śląski Ośrodek Adopcyjny w Katowicach</strong></div>
     </footer>
 <?php }
@@ -26,7 +26,7 @@ function pageStart(string $title, string $section = 'public'): void {
 <a class="skip-link" href="#main">Przejdź do treści</a>
 <?php if ($config['environment'] !== 'production'): ?><div class="demo-banner">Podgląd projektu · przykładowe zadania i statystyki</div><?php endif; ?>
 <header class="site-header"><div class="header-inner"><a class="brand" href="/">
-<img class="brand-mark" src="/assets/branding/soa-logo.png" alt="" width="50" height="42">
+<img class="brand-mark" src="/assets/branding/soa-logo.png" alt="Śląski Ośrodek Adopcyjny" width="50" height="42">
 <span>Śląski Ośrodek Adopcyjny<small>w Katowicach</small></span></a>
 <?php if ($section === 'public'): ?><a class="platform-brand" href="https://e-advent.pl"><span>We współpracy z</span><img src="/assets/branding/e-advent-logo.png" alt="e-Advent" width="94" height="60"></a><?php elseif ($section === 'stats'): ?><form action="/api/logout.php" method="post"><input type="hidden" name="csrf" value="<?= e(csrf()) ?>"><button class="header-link" type="submit">Wyloguj się</button></form><?php else: ?><a class="header-link" href="/">Do kalendarza</a><?php endif; ?>
 </div></header>

@@ -25,6 +25,14 @@
 .advent-door--locked .advent-door-month { color: #b4ad91; }
 .advent-door--available:hover { background: #2b5942; border-color: #efd49f; }
 .advent-door--today { background: #30533b; border-color: #efd49f; }
+.advent-door-panel { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: inherit; color: inherit; transform-origin: left center; backface-visibility: hidden; }
+.advent-door--opening { z-index: 2; background: #ede3cd; }
+.advent-door--opening .advent-door-panel { animation: door-swing .52s cubic-bezier(.22,.65,.25,1) both; }
+@keyframes door-swing {
+  0% { transform: perspective(700px) rotateY(0); }
+  30% { filter: drop-shadow(8px 0 6px #1a120833); }
+  100% { transform: perspective(700px) rotateY(-105deg); }
+}
 .advent-door--opened { background: #ede3cd; color: #284832; border-color: #cfb580; }
 .advent-door--opened .advent-door-month, .advent-door--opened .advent-door-footer { color: #786a4e; }
 .advent-door--opened:hover { background: #fff1d4; }
@@ -76,7 +84,7 @@
   .calendar-access-form { padding: 28px 24px; }
 }
 @media (max-width: 360px) { .advent-grid { gap: 7px; } .advent-door-number { font-size: 2rem; } .advent-door-month { font-size: .45rem; } .calendar-access-form { padding: 24px 16px; } .calendar-code { gap: 5px; } }
-@media (prefers-reduced-motion: reduce) { .advent-door { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .advent-door { transition: none; } .advent-door--opening .advent-door-panel { animation: none; } }
 .advent-modal { position: relative; width: min(100%, 700px); max-height: 90dvh; overflow-y: auto; border: 1px solid #c7ac77; border-radius: 10px; background: #fbf6eb; color: #274733; box-shadow: 0 20px 60px #0005; }
 .advent-modal-photo { position: absolute; inset: 0 0 auto; height: 150px; background-size: cover; background-position: center 42%; }
 .advent-modal-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #fbf6eb, #132b1a55); }
