@@ -15,7 +15,7 @@ export const BuildDocument = createContext<Document | null>(null);
 export function writeMetadata(doc: Document, page: PageMetadata) {
   const title = page.title ?? 'e-Advent';
   const description = page.description ?? title;
-  const image = page.ogImage ?? 'https://e-advent.pl/og-logo.png';
+  const image = page.ogImage ?? 'https://e-advent.pl/og-image.png';
   doc.title = title;
   function meta(attribute: 'name' | 'property', key: string, value?: string) {
     let tag = doc.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${key}"]`);
@@ -48,7 +48,10 @@ export function writeMetadata(doc: Document, page: PageMetadata) {
     meta(attribute, prefix + ':image:alt', title);
   }
   meta('property', 'og:image:secure_url', image);
-  for (const key of ['width', 'height', 'type']) meta('property', 'og:image:' + key);
+  const isDefaultCard = image === 'https://e-advent.pl/og-image.png';
+  meta('property', 'og:image:type', isDefaultCard ? 'image/png' : undefined);
+  meta('property', 'og:image:width', isDefaultCard ? '1200' : undefined);
+  meta('property', 'og:image:height', isDefaultCard ? '630' : undefined);
   doc.head.querySelector('script[data-e-advent-jsonld]')?.remove();
   if (page.jsonLd) {
     const script = doc.createElement('script');

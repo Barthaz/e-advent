@@ -304,26 +304,20 @@ export default function CalendarView() {
       d.day === day ? { ...d, isOpened: true } : d
     );
     setDays(updated);
+    setOpenedDay(day);
 
-    // Wyślij informację do API o otwarciu okienka
     if (calendarId) {
       try {
-        console.log('[CalendarView] Otwieranie okienka w API:', { calendarId, day });
         const res = await openCalendarDay(calendarId, day);
-        console.log('[CalendarView] Okienko otwarte w API pomyślnie');
         if (res.openedWindow) {
           setOpenedWindows((prev) => ({ ...prev, [day]: res.openedWindow! }));
         }
       } catch (error) {
         console.error('[CalendarView] Błąd podczas otwierania okienka w API:', error);
-        // Cofnij zmianę w UI jeśli API zwróciło błąd
         setDays(previousDays);
-        // Można dodać powiadomienie o błędzie dla użytkownika
+        setOpenedDay(null);
       }
     }
-
-    // Pokaż modal z zadaniem
-    setOpenedDay(day);
   };
 
   const getDayTask = (day: number) => {

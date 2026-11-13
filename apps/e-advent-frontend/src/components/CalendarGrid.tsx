@@ -18,8 +18,6 @@ interface CalendarGridProps {
   previewMode?: boolean; // W trybie preview wszystkie okienka są dostępne (bez sprawdzania kolejności)
 }
 
-const CONTENT_DELAY_MS = 210;
-
 function doorCanSwing(button: HTMLButtonElement) {
   const panel = button.querySelector<HTMLElement>('.advent-door-panel');
   if (!panel || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false;
@@ -45,29 +43,46 @@ export default function CalendarGrid({ days, onDayClick, currentDate = new Date(
   const today = currentDate;
   const opening = useRef<number | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const onDayClickRef = useRef(onDayClick);
+  onDayClickRef.current = onDayClick;
   const [swinging, setSwinging] = useState<number | null>(null);
 
   useEffect(() => {
     if (swinging == null || !gridRef.current) return;
-    const button = gridRef.current.querySelector<HTMLButtonElement>(`[data-day="${swinging}"]`);
+    const day = swinging;
+    const button = gridRef.current.querySelector<HTMLButtonElement>(`[data-day="${day}"]`);
     const panel = button?.querySelector<HTMLElement>('.advent-door-panel');
     if (!panel) return;
     let settled = false;
+    let attempts = 0;
+    let fallback = 0;
+    let frame = 0;
     const finish = () => {
       if (settled) return;
       settled = true;
-      panel.removeEventListener('animationend', onEnd);
+      window.clearTimeout(fallback);
       opening.current = null;
       setSwinging(null);
+      onDayClickRef.current(day);
     };
-    const onEnd = (event: AnimationEvent) => {
-      if (event.animationName === 'door-swing') finish();
+    const arm = () => {
+      const animation = panel.getAnimations().find((item) => item.animationName === 'door-swing');
+      if (!animation) {
+        if (attempts++ < 4) {
+          frame = window.requestAnimationFrame(arm);
+          return;
+        }
+        finish();
+        return;
+      }
+      animation.finished.then(() => finish()).catch(() => {});
+      const duration = animation.effect?.getComputedTiming().duration;
+      fallback = window.setTimeout(finish, (typeof duration === 'number' ? duration : 720) + 40);
     };
-    panel.addEventListener('animationend', onEnd);
-    const fallback = window.setTimeout(finish, 800);
+    frame = window.requestAnimationFrame(arm);
     return () => {
       settled = true;
-      panel.removeEventListener('animationend', onEnd);
+      window.cancelAnimationFrame(frame);
       window.clearTimeout(fallback);
     };
   }, [swinging]);
@@ -136,7 +151,6 @@ export default function CalendarGrid({ days, onDayClick, currentDate = new Date(
             if (!doorCanSwing(event.currentTarget)) { onDayClick(day); return; }
             opening.current = day;
             setSwinging(day);
-            window.setTimeout(() => onDayClick(day), CONTENT_DELAY_MS);
           }}
           className={`advent-door advent-door--${state}${isToday ? ' advent-door--today' : ''}${isSwinging ? ' advent-door--opening' : ''}`}
           aria-label={`${day} grudnia — ${isOpened ? 'otwarte, przeczytaj ponownie' : available ? 'otwórz okienko' : 'dostępne '+day+' grudnia'}`}>

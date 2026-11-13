@@ -27,7 +27,7 @@ import WindowOpenAnimation, {
 import { calendarTheme } from '../components/calendar/calendarTheme';
 import SpecialWindowShell from '../special-windows/SpecialWindowShell';
 
-const logo = require('../assets/logo.png');
+const logo = require('../assets/eadvent-logo.png');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { STORAGE_KEYS } = require('../utils/accessSession');
