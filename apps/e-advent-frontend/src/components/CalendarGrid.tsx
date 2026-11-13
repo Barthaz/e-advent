@@ -66,7 +66,7 @@ export default function CalendarGrid({ days, onDayClick, currentDate = new Date(
       onDayClickRef.current(day);
     };
     const arm = () => {
-      const animation = panel.getAnimations().find((item) => item.animationName === 'door-swing');
+      const animation = panel.getAnimations().find((item) => item instanceof CSSAnimation && item.animationName === 'door-swing');
       if (!animation) {
         if (attempts++ < 4) {
           frame = window.requestAnimationFrame(arm);
