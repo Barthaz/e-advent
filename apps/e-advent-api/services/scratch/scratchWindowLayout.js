@@ -18,19 +18,21 @@ const WINDOW_BOX_SOURCE = {
   stretch: { top: 340, bottom: 800 },
 };
 
-/** Printed size of the white field inside each window (mm). */
-const WINDOW_INNER_MM = { width: 58, height: 35 };
+/** Nominal field used to position the grid and the actual white field in print (mm). */
+const GRID_FIELD_MM = { width: 58, height: 35 };
+const WINDOW_INNER_MM = { width: 57, height: 34 };
 
 const PT_PER_MM = 72 / 25.4;
 
-function windowBoxStretchedHeight() {
+function windowBoxStretchedHeight(field) {
   const { inner } = WINDOW_BOX_SOURCE;
-  const pxPerMm = (inner.right - inner.left) / WINDOW_INNER_MM.width;
-  const targetInnerPx = WINDOW_INNER_MM.height * pxPerMm;
+  const pxPerMm = (inner.right - inner.left) / field.width;
+  const targetInnerPx = field.height * pxPerMm;
   return Math.round(WINDOW_BOX_SOURCE.height + targetInnerPx - (inner.bottom - inner.top));
 }
 
-const WINDOW_BOX_HEIGHT_PX = windowBoxStretchedHeight();
+const GRID_SLOT_ASPECT = WINDOW_BOX_SOURCE.width / windowBoxStretchedHeight(GRID_FIELD_MM);
+const WINDOW_BOX_HEIGHT_PX = windowBoxStretchedHeight(WINDOW_INNER_MM);
 const WINDOW_BOX_ASPECT = WINDOW_BOX_SOURCE.width / WINDOW_BOX_HEIGHT_PX;
 
 const COLS = 4;
@@ -188,13 +190,13 @@ function computeScratchLayout(pageSize) {
   const overhangPerCellW = LAYOUT.badgeSizeFrac * LAYOUT.badgeOverhangFrac;
   const maxGap = Math.max(W, H) * LAYOUT.gridGapMaxFrac;
 
-  let cellW = (WINDOW_INNER_MM.width * PT_PER_MM) / innerFracW;
+  let cellW = (GRID_FIELD_MM.width * PT_PER_MM) / innerFracW;
   // Shrink uniformly only when the target size cannot fit on the page.
   const fitW = (availW - (COLS - 1) * maxGap * 0.5) / (COLS * cellW);
   const fitH = (availH - (ROWS - 1) * maxGap * 0.5)
-    / (ROWS * (cellW / WINDOW_BOX_ASPECT) + cellW * overhangPerCellW);
+    / (ROWS * (cellW / GRID_SLOT_ASPECT) + cellW * overhangPerCellW);
   cellW *= Math.min(1, fitW, fitH);
-  const cellH = cellW / WINDOW_BOX_ASPECT;
+  const cellH = cellW / GRID_SLOT_ASPECT;
 
   const badgeSize = cellW * LAYOUT.badgeSizeFrac;
   const overhang = badgeSize * LAYOUT.badgeOverhangFrac;
@@ -208,8 +210,10 @@ function computeScratchLayout(pageSize) {
   const gridOriginX = padX + Math.max(0, (availW - gridBlockW) / 2);
   const gridOriginY = gridTop + Math.max(0, (availH - gridBlockH) / 2);
 
-  const scaleX = cellW / src.width;
-  const scaleY = cellH / WINDOW_BOX_HEIGHT_PX;
+  const boxW = cellW * WINDOW_INNER_MM.width / GRID_FIELD_MM.width;
+  const boxH = boxW / WINDOW_BOX_ASPECT;
+  const scaleX = boxW / src.width;
+  const scaleY = boxH / WINDOW_BOX_HEIGHT_PX;
   const innerBottomPx = src.inner.bottom + (WINDOW_BOX_HEIGHT_PX - src.height);
   const insetX = LAYOUT.textInsetXMm * PT_PER_MM;
   const insetY = LAYOUT.textInsetYMm * PT_PER_MM;
@@ -219,11 +223,13 @@ function computeScratchLayout(pageSize) {
     const day = i + 1;
     const col = i % COLS;
     const row = Math.floor(i / COLS);
-    const x = gridOriginX + col * (cellW + gap);
-    const y = gridOriginY + overhang + row * (cellH + gap);
+    const slotX = gridOriginX + col * (cellW + gap);
+    const slotY = gridOriginY + overhang + row * (cellH + gap);
+    const x = slotX + (cellW - boxW) / 2;
+    const y = slotY + (cellH - boxH) / 2;
     const badge = {
-      x: x + (cellW - badgeSize) / 2,
-      y: y - overhang,
+      x: slotX + (cellW - badgeSize) / 2,
+      y: slotY - overhang,
       width: badgeSize,
       height: badgeSize,
     };
@@ -231,8 +237,8 @@ function computeScratchLayout(pageSize) {
       day,
       x,
       y,
-      width: cellW,
-      height: cellH,
+      width: boxW,
+      height: boxH,
       badge,
       text: {
         x: x + src.inner.left * scaleX + insetX,

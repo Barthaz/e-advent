@@ -13,9 +13,9 @@ const PRESET_NAMES = new Set(['green', 'red', 'blue']);
 
 // Median edge colours of the bundled designs, used for the printable trim area.
 const PRESET_BORDER_COLORS = {
-  red: '#3c0101',
-  green: '#011400',
-  blue: '#00030a',
+  red: '#380101',
+  green: '#011000',
+  blue: '#000309',
 };
 
 const GRAPHIC_FILES = {

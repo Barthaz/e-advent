@@ -32,7 +32,7 @@
 .advent-door--today .advent-door-panel { background: #30533b; }
 .advent-door.advent-door--opening,
 .advent-door.advent-door--opening:hover { z-index: 2; background: #ede3cd; perspective: 900px; transition: none; box-shadow: inset 8px 0 16px #1a120833; }
-.advent-door--opening .advent-door-panel { animation: door-swing .72s cubic-bezier(.33,.72,.28,1) both; background: #214837; color: #ebd1a1; }
+.advent-door--opening .advent-door-panel { animation: door-swing .5s cubic-bezier(.33,.72,.28,1) both; background: #214837; color: #ebd1a1; }
 @keyframes door-swing {
   0% { transform: perspective(700px) rotateY(0); }
   100% { transform: perspective(700px) rotateY(-108deg); filter: drop-shadow(10px 0 8px #1a120833); }

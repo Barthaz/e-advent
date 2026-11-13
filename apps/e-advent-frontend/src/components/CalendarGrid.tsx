@@ -77,7 +77,7 @@ export default function CalendarGrid({ days, onDayClick, currentDate = new Date(
       }
       animation.finished.then(() => finish()).catch(() => {});
       const duration = animation.effect?.getComputedTiming().duration;
-      fallback = window.setTimeout(finish, (typeof duration === 'number' ? duration : 720) + 40);
+      fallback = window.setTimeout(finish, (typeof duration === 'number' ? duration : 500) + 40);
     };
     frame = window.requestAnimationFrame(arm);
     return () => {

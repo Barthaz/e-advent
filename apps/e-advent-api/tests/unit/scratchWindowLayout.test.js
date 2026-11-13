@@ -86,7 +86,7 @@ describe('scratchWindowLayout', () => {
     expect(cell.badge.y + cell.badge.height).toBeGreaterThan(cell.y);
   });
 
-  test('A3 inner window field is 58×35 mm and text sits inside it', () => {
+  test('A3 inner window field is 57×34 mm and text sits inside it', () => {
     const PT_PER_MM = 72 / 25.4;
     const layout = computeScratchLayout(pageSizePoints('A3'));
     const cell = layout.windows[0];
@@ -100,9 +100,9 @@ describe('scratchWindowLayout', () => {
       width: (src.inner.right - src.inner.left) * scaleX,
       height: (innerBottomPx - src.inner.top) * scaleY,
     };
-    expect(WINDOW_INNER_MM).toEqual({ width: 58, height: 35 });
-    expect(inner.width / PT_PER_MM).toBeCloseTo(58, 1);
-    expect(inner.height / PT_PER_MM).toBeCloseTo(35, 1);
+    expect(WINDOW_INNER_MM).toEqual({ width: 57, height: 34 });
+    expect(inner.width / PT_PER_MM).toBeCloseTo(57, 1);
+    expect(inner.height / PT_PER_MM).toBeCloseTo(34, 1);
     expect(cell.text.x).toBeGreaterThan(inner.x);
     expect(cell.text.y).toBeGreaterThan(inner.y);
     expect(cell.text.x + cell.text.width).toBeLessThan(inner.x + inner.width);
@@ -156,9 +156,9 @@ describe('scratchAssets', () => {
   });
 
   test.each([
-    ['/designs/scratch/red.png', '#3c0101'],
-    ['https://shop.example/designs/scratch/green.png', '#011400'],
-    ['/designs/scratch/blue.png?x=1', '#00030a'],
+    ['/designs/scratch/red.png', '#380101'],
+    ['https://shop.example/designs/scratch/green.png', '#011000'],
+    ['/designs/scratch/blue.png?x=1', '#000309'],
     ['https://blob.example/custom.png', '#ffffff'],
   ])('selects the trim colour for %s', (url, expected) => {
     expect(scratchBorderColor(url)).toBe(expected);
