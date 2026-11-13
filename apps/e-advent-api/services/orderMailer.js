@@ -1,6 +1,6 @@
 const { sendEmail } = require('../config/email');
 const { frontendUrl } = require('../config/app');
-const { isPhysicalProduct, isVoiceMessageSku } = require('../config/products');
+const { isPhysicalProduct } = require('../config/products');
 const Calendar = require('../models/Calendar');
 const Payment = require('../models/Payment');
 const EmailSend = require('../models/EmailSend');
@@ -148,7 +148,7 @@ async function ensureInteractiveUnlocked(calendar) {
 }
 
 /**
- * Maile po opłaceniu: potwierdzenie (fizyczne) + dostęp do każdego kalendarza interaktywnego.
+ * Maile po opłaceniu: potwierdzenie zamówienia + dostęp do każdego kalendarza interaktywnego.
  * Dociąga kod dostępu, jeśli webhook go nie zdążył wygenerować.
  */
 async function sendPaidOrderEmails(order, triggeredBy = 'webhook') {
@@ -165,29 +165,29 @@ async function sendPaidOrderEmails(order, triggeredBy = 'webhook') {
 
   const results = [];
 
-  if (hasPhysical || items.some((item) => isVoiceMessageSku(item.sku))) {
-    const subject = '🎄 Potwierdzenie zamówienia e-Advent';
-    const payload = {
-      orderId: customerFacingOrderNumber(order) || '—',
-      items,
-      shipping: order.shippingAddress || {},
-      parcelLocker: order.parcelLocker || null,
-      deliveryType: order.deliveryType,
-      amount: order.amount,
-      shippingAmount: order.shippingAmount,
-      hasPhysical,
-      digitalConsent: order.metadata?.digitalContentConsent,
-    };
-    results.push(await dispatchAndLog({
-      type: 'order_confirmation',
-      to: customerEmail,
-      subject,
-      html: buildOrderConfirmationEmail(payload),
-      text: buildOrderConfirmationText(payload),
-      orderId: order.id,
-      triggeredBy,
-    }));
-  }
+  const subject = '🎄 Potwierdzenie zamówienia e-Advent';
+  const payload = {
+    orderId: customerFacingOrderNumber(order) || '—',
+    items,
+    shipping: order.shippingAddress || {},
+    parcelLocker: order.parcelLocker || null,
+    deliveryType: order.deliveryType,
+    amount: order.amount,
+    shippingAmount: order.shippingAmount,
+    hasPhysical,
+    digitalConsent: order.metadata?.digitalContentConsent,
+  };
+  results.push(await dispatchAndLog({
+    type: 'order_confirmation',
+    to: customerEmail,
+    subject,
+    html: buildOrderConfirmationEmail(payload),
+    text: buildOrderConfirmationText(payload),
+    orderId: order.id,
+    triggeredBy,
+  }));
+
+  if (!results[0].success) return { sent: 0, failed: 1, results };
 
   for (const item of items) {
     if (isPhysicalProduct(item.sku) || !item.calendarId) continue;

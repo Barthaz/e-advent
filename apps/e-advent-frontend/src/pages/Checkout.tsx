@@ -412,7 +412,7 @@ export default function Checkout() {
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>(emptyShippingAddress());
   const [shippingErrors, setShippingErrors] = useState<Partial<Record<keyof ShippingAddress, string>>>({});
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  /** Physical products from cart (scratch, letters) — one order, shipping at checkout */
+  /** Cart checkout supports both digital and physical items. */
   const [cartMode, setCartMode] = useState(false);
 
   /** Blokada przed pętlą createCalendar + createPaymentIntent w useEffect */
@@ -452,7 +452,8 @@ export default function Checkout() {
   const discountAmount = pricedTotals?.discount ?? 0;
   const isPhysical = pricedTotals?.hasPhysical ?? isPhysicalProduct(sku);
   const isFree = promoCodeDiscount === 100;
-  const isVoiceOnly = cartMode && cartItems.length > 0 && cartItems.every((i) => isVoiceSku(i.sku));
+  const hasVoiceItems = cartMode && cartItems.some(item => isVoiceSku(item.sku));
+  const hasOnlineCalendar = cartItems.some(item => item.sku === 'interactive');
 
   /** Synchronous address check — never fire create-payment-intent with empty shipping */
   const shippingAddressComplete = useMemo(() => {
@@ -467,11 +468,7 @@ export default function Checkout() {
   useEffect(() => {
     const cookieConsent = localStorage.getItem('cookieConsent');
     const savedCartRaw = localStorage.getItem(CART_STORAGE_KEY);
-    const cart = loadCart().filter((item) => {
-      const p = getProduct(item.sku);
-      // Interactive never goes through cart
-      return p != null && p.type !== 'interactive';
-    });
+    const cart = loadCart().filter(item => getProduct(item.sku));
     const data = loadCheckoutCalendarData();
     const active = getActiveProduct();
     let parsedData: CalendarData | null = null;
@@ -483,9 +480,9 @@ export default function Checkout() {
       }
     }
     const resolved = parsedData ? resolveCheckoutProduct(parsedData, active) : null;
-    const isInteractiveCheckout = !explicitCart && Boolean(resolved?.productType === 'interactive' && parsedData);
+    const isInteractiveCheckout = !explicitCart && !cart.some(item => item.sku === 'interactive') && Boolean(resolved?.productType === 'interactive' && parsedData);
 
-    // ── Cart checkout (scratch + letter) ───────────────────────────────────
+    // Each personalized cart line references its own saved calendar.
     if (!isInteractiveCheckout && cart.length > 0) {
       const onlyLetters = cart.every(
         (i) => i.sku === 'santa-letter' || i.sku === 'santa-certificate',
@@ -715,14 +712,14 @@ export default function Checkout() {
         return;
       }
 
-      // ── Cart checkout: one order for all physical items (no new calendars) ──
+      // ── Cart checkout: one order for all cart items ──
       if (cartMode) {
         const missingCalendar = cartItems.some((item) => {
           const p = getProduct(item.sku);
-          return Boolean(p?.requiresDesign && !item.calendarId);
+          return Boolean((p?.requiresDesign || item.sku === 'interactive') && !item.calendarId);
         });
         if (missingCalendar) {
-          setPaymentError('W koszyku brakuje danych kalendarza. Wróć do kreatora zdrapki i dodaj produkt ponownie.');
+          setPaymentError('W koszyku brakuje danych kalendarza. Wróć do kreatora kalendarza i dodaj produkt ponownie.');
           return;
         }
 
@@ -742,8 +739,10 @@ export default function Checkout() {
             ...(promoCodeDiscount ? { promoCode: promoCode.trim() } : {}),
             ...(primaryCalendarId ? { productId: primaryCalendarId } : {}),
             items,
-            shippingAddress: normalizeShippingAddress(shippingAddress),
-            delivery: { ...delivery, quoteKey: shippingQuote.quote?.quoteKey },
+            ...(isPhysical ? {
+              shippingAddress: normalizeShippingAddress(shippingAddress),
+              delivery: { ...delivery, quoteKey: shippingQuote.quote?.quoteKey },
+            } : {}),
             metadata: {
               productType: productType,
               sku,
@@ -1350,15 +1349,13 @@ export default function Checkout() {
           {isPhysical ? <>
             <InpostDelivery value={delivery} onChange={choice => { setDelivery(choice); saveCheckoutDelivery(choice); }} {...shippingQuote} />
             <ShippingForm address={shippingAddress} onChange={setShippingAddress} errors={shippingErrors} deliveryType={delivery.type} />
-          </> : <section className="order-panel order-digital"><i className="far fa-envelope" aria-hidden="true" /><div><h2>Dostawa prosto na e-mail</h2><p>{isVoiceOnly ? 'Po płatności Mikołaj nagra wiadomość na podstawie Twoich informacji. Gotowe nagranie będzie dostępne pod prywatnym linkiem.' : 'Po płatności wyślemy prywatny link do Twojego kalendarza.'}</p><span>Bez kosztów dostawy</span></div></section>}
+          </> : <section className="order-panel order-digital"><i className="far fa-envelope" aria-hidden="true" /><div><h2>Dostawa prosto na e-mail</h2><p>{hasVoiceItems && hasOnlineCalendar ? 'Dostęp do kalendarza wyślemy po płatności. Link do nagrania otrzymasz po jego przygotowaniu.' : hasVoiceItems ? 'Po płatności Mikołaj nagra wiadomość na podstawie Twoich informacji. Gotowe nagranie będzie dostępne pod prywatnym linkiem.' : 'Po potwierdzeniu zamówienia wyślemy dostęp do każdego kalendarza na adres podany w jego kreatorze.'}</p><span>Bez kosztów dostawy</span></div></section>}
             <div className="order-panel order-payment" id="payment-section">
               <h3 className="heading-section mb-2">Bezpieczna płatność</h3>
               <p className="text-parchment-muted text-sm mb-6">
                 {isPhysical
                   ? 'Po złożeniu zamówienia otrzymasz potwierdzenie na e-mail. Przygotujemy przesyłkę i wyślemy ją InPost.'
-                  : isVoiceOnly
-                    ? 'Po opłaceniu zamówienia wyślemy na podany adres e-mail link do nagrania (a jeśli informacje o dziecku nie są jeszcze uzupełnione — najpierw link do personalizacji).'
-                    : 'Po złożeniu zamówienia otrzymasz unikalny link do swojego kalendarza na podany adres e-mail.'}
+                  : 'Po opłaceniu zamówienia otrzymasz potwierdzenie zakupu na swój adres e-mail.'}
               </p>
 
               {paymentError && (
@@ -1394,7 +1391,7 @@ export default function Checkout() {
                     isFree
                     onCreateFreeCalendar={completeFreeOrder}
                     onCommitCheckout={commitPaidCheckout}
-                    hasVoice={cartMode && cartItems.some((item) => isVoiceSku(item.sku))}
+                    hasVoice={hasVoiceItems}
                     payAmount={0}
                     billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
                   />
@@ -1418,7 +1415,7 @@ export default function Checkout() {
                     isFree={false}
                     onCreateFreeCalendar={completeFreeOrder}
                     onCommitCheckout={commitPaidCheckout}
-                    hasVoice={cartMode && cartItems.some((item) => isVoiceSku(item.sku))}
+                    hasVoice={hasVoiceItems}
                     payAmount={totalPrice}
                     billingAddress={toStripeBillingAddress(isPhysical ? shippingAddress : null)}
                   />

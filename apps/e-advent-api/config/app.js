@@ -57,8 +57,11 @@ const corsAllowlist = Array.from(
   ]),
 );
 
-const emailLogoUrl =
-  process.env.EMAIL_LOGO_URL || 'https://e-advent.pl/assets/brand/eadvent-logo.png';
+const configuredLogo = process.env.EMAIL_LOGO_URL?.trim();
+// Existing deployments still reference the old storefront logo in their env.
+const emailLogoUrl = !configuredLogo || configuredLogo === 'https://e-advent.pl/assets/logo.png'
+  ? 'https://e-advent.pl/eadvent-logo.png'
+  : configuredLogo;
 
 /**
  * Aktywne credentiale MySQL zależne od TESTING_MODE.

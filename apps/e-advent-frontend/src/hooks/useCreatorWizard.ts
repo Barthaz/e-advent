@@ -28,8 +28,6 @@ import {
   saveDesign,
   loadFormat,
   saveFormat,
-  setActiveProduct,
-  getStorageKeys,
   loadScratchPreset,
   saveScratchPreset,
   loadScratchMode,
@@ -37,7 +35,6 @@ import {
   loadScratchShuffle,
   saveScratchShuffle,
 } from '../utils/creatorStorage';
-import { getSkuForTypeAndFormat } from '../config/products';
 
 interface ExampleSet {
   title: string;
@@ -272,57 +269,6 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     setCurrentStep((s) => Math.max(s - 1, 0));
   }, []);
 
-  const getSku = useCallback(() => {
-    if (productType === 'interactive') return 'interactive';
-    return getSkuForTypeAndFormat(productType, format) || 'interactive';
-  }, [productType, format]);
-
-  const prepareCheckoutData = useCallback(() => {
-    const sku = getSku();
-    setActiveProduct(productType, sku);
-    const keys = getStorageKeys(productType);
-    const resolvedDailyEmail =
-      openingMethod === 'email' ? (dailyContentEmail.trim() || email.trim()) : undefined;
-    const data = {
-      name,
-      email,
-      calendarTitle,
-      tasks,
-      dailyEmailReminders: openingMethod === 'email',
-      openingMethod: openingMethod || undefined,
-      dailyContentEmail: resolvedDailyEmail,
-      selectedExampleSets: isScratch ? undefined : selectedExampleSets,
-      selectedScratchPreset: isScratch ? selectedScratchPreset : undefined,
-      scratchContentMode: isScratch ? scratchContentMode : undefined,
-      shuffleCustomTasks: isScratch ? shuffleCustomTasks : undefined,
-      productType,
-      sku,
-      format: productType !== 'interactive' ? format : undefined,
-      design: design || undefined,
-    };
-    localStorage.setItem(keys.calendarData, JSON.stringify(data));
-    localStorage.setItem('calendarData', JSON.stringify(data));
-    localStorage.setItem('e-advent-product-type', productType);
-    localStorage.setItem('e-advent-sku', sku);
-    return data;
-  }, [
-    name,
-    email,
-    calendarTitle,
-    tasks,
-    openingMethod,
-    dailyContentEmail,
-    selectedExampleSets,
-    selectedScratchPreset,
-    scratchContentMode,
-    shuffleCustomTasks,
-    productType,
-    format,
-    design,
-    getSku,
-    isScratch,
-  ]);
-
   return {
     currentStep,
     steps,
@@ -359,8 +305,6 @@ export function useCreatorWizard({ productType, steps, requiresDesign = false }:
     productType,
     goNext,
     goBack,
-    getSku,
-    prepareCheckoutData,
     validateBasicStep,
     validateTasksStep,
     validateDesignStep,

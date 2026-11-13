@@ -34,6 +34,24 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
+it.each([false, true])('keeps both personalized calendars in the payment request (with letter: %s)', async withLetter => {
+  const calendars = ['cal-one', 'cal-two'].map((calendarId, index) => ({
+    id: calendarId, sku: 'interactive', quantity: 1, calendarId, customerEmail: `owner${index}@example.com`,
+  }));
+  const letter = JSON.parse(localStorage.getItem('e-advent-cart')!)[0];
+  localStorage.setItem('e-advent-cart', JSON.stringify(withLetter ? [...calendars, letter] : calendars));
+  render(<MemoryRouter initialEntries={['/platnosc?koszyk=1']}><Checkout /></MemoryRouter>);
+  if (withLetter) fireEvent.click(screen.getByLabelText('Kurier InPost'));
+  await waitFor(() => expect(screen.getByTestId('stripe-form')).toBeTruthy(), { timeout: 3000 });
+  const request = vi.mocked(createPaymentIntent).mock.calls.at(-1)![0];
+  expect(request.items?.map(({ sku, calendarId }) => [sku, calendarId]).sort()).toEqual([
+    ['interactive', 'cal-one'], ['interactive', 'cal-two'], ...(withLetter ? [['santa-letter', undefined]] : []),
+  ].sort());
+  expect(request.amount).toBe(withLetter ? 59 : 18);
+  expect(Boolean(request.shippingAddress)).toBe(withLetter);
+  expect(Boolean(request.delivery)).toBe(withLetter);
+});
+
 it('hides the previous Stripe form immediately and uses the new intent after an address change', async () => {
   render(<MemoryRouter><Checkout /></MemoryRouter>);
   fireEvent.click(screen.getByLabelText('Kurier InPost'));

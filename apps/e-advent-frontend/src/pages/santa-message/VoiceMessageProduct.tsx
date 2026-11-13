@@ -113,7 +113,7 @@ export default function VoiceMessageProduct() {
         title={<>Najpierw list.<br /><em>Potem głos Mikołaja.</em></>}
         text="Papierowy list do wspólnego wypełnienia i wiadomość głosowa przygotowana na podstawie Twoich słów. Mały świąteczny rytuał od początku do końca."
         price={formatPrice(LETTER_PRICE + addon)}
-        priceNote={<>list + wiadomość<br /><small>+ koszt dostawy listu</small></>}
+        priceNote="+ koszt dostawy"
         cta={{ label: 'Wybierz zestaw', to: '/list-do-swietego-mikolaja?wiadomosc=1', onClick: cta('product_bundle_section', 'letter_addon') }}
       />
       <ProductFaq

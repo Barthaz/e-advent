@@ -1,3 +1,4 @@
+import CreatorSteps from '../../components/creator/CreatorSteps';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageBackground from '../../components/PageBackground';
@@ -194,23 +195,7 @@ export default function VoiceMessageCreator() {
             </p>
           </div>
 
-          <ol className="flex items-center justify-center gap-2 mb-6" aria-label="Kroki kreatora">
-            {STEPS.map((s) => (
-              <li key={s.step} className="flex items-center gap-2">
-                <span
-                  aria-current={s.step === step ? 'step' : undefined}
-                  className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-sm ${
-                    s.step === step
-                      ? 'bg-christmas-gold text-christmas-green font-semibold'
-                      : s.step < step ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
-                  }`}
-                >
-                  <span className="font-semibold">{s.step}</span> {s.label}
-                </span>
-                {s.step < 3 && <span className="w-6 h-px bg-white/30" aria-hidden="true" />}
-              </li>
-            ))}
-          </ol>
+          <CreatorSteps labels={STEPS.map(s => s.label)} current={step - 1} />
 
           <ParchmentCard padding="lg">
             {step < 3 && (

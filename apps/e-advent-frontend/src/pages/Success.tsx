@@ -121,11 +121,14 @@ export default function Success() {
             setOrderItems([{ sku: response.calendar.sku || 'interactive', name: 'Kalendarz online', quantity: 1, price: 0 }]);
           } else if (summary) {
             setOrderItems(summary.items);
+            setCalendarData({ name: '', email: summary.customerEmail || '', calendarTitle: 'Zamówienie e-Advent',
+              tasks: [], dailyEmailReminders: false, dates: [] });
             setOrderNumber(summary.orderNumber || '');
             physical = summary.items.some(item => isPhysicalProduct(item.sku));
             voice = summary.items.some(item => isVoiceSku(item.sku));
             setPhysicalDetails({ shipping: summary.shipping || undefined });
-            ids = [];
+            ids = summary.items.flatMap(item => item.calendarId ? [item.calendarId] : []);
+            interactiveIds = summary.items.flatMap(item => item.calendarId && item.sku === 'interactive' ? [item.calendarId] : []);
           } else {
             throw new Error('Missing free order');
           }
@@ -142,7 +145,7 @@ export default function Success() {
         setCalendarLink(links[0] || '');
         setIsPhysicalOrder(physical);
         setHasVoice(voice);
-        if (!physical && interactiveIds.length) {
+        if (!physical && !voice && interactiveIds.length === 1) {
           const { calendar } = await getCalendar(interactiveIds[0]);
           if (canceled) return;
           const openingMethod = isOpeningMethod(calendar.openingMethod) ? calendar.openingMethod : null;
@@ -180,7 +183,7 @@ export default function Success() {
     return <LoadingState message="Weryfikowanie płatności..." />;
   }
 
-  const isSummaryOrder = isPhysicalOrder || (hasVoice && calendarLinks.length === 0);
+  const isSummaryOrder = isPhysicalOrder || hasVoice || orderItems.length > 1 || calendarLinks.length !== 1;
 
   if (!calendarData && !isSummaryOrder) {
     return <LoadingState message="Ładowanie..." />;
@@ -304,6 +307,7 @@ export default function Success() {
                 {calendarData?.email
                   ? <> {emailSent ? 'Potwierdzenie wysłaliśmy na' : 'Potwierdzenie wyślemy na'} {calendarData.email}.</>
                   : null}
+                {calendarLinks.length > 0 && <> Dostęp do każdego kalendarza otrzymasz w osobnej wiadomości na adres podany w jego kreatorze.</>}
               </p>
             </div>
           ) : (
@@ -368,7 +372,7 @@ export default function Success() {
                 ) : (
                   <>
                     <p className="text-sm text-parchment-muted mb-3">
-                      Link do kalendarza i kod dostępu {emailSent ? 'wysłaliśmy' : 'wyślemy'} na{' '}
+                      Potwierdzenie zakupu trafia na adres z zamówienia. Osobny e-mail z linkiem do kalendarza i kodem dostępu {emailSent ? 'wysłaliśmy' : 'wyślemy'} na{' '}
                       <strong className="text-parchment-text">{calendarData.email}</strong>.
                     </p>
                     <div className="notice-warning">

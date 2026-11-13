@@ -44,8 +44,11 @@ const sendEmail = async (options) => {
 
     const transporter = createTransporter();
 
+    // Older deployments may store a display name as part of EMAIL_FROM.
+    const from = (process.env.EMAIL_FROM || process.env.EMAIL_USER).trim();
+    const address = from.match(/<([^<>]+)>$/)?.[1] || from;
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: { name: 'e-Advent', address },
       to: options.to,
       subject: options.subject,
       text: options.text,

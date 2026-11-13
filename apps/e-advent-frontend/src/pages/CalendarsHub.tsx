@@ -72,7 +72,7 @@ export default function CalendarsHub() {
               title={secondary.name}
               description={secondary.shortDescription}
               priceLabel={`od ${formatPrice(secondary.priceFrom)}`}
-              priceHint="Wysyłka · realizacja 3–5 dni roboczych"
+              priceHint="+ koszt dostawy"
               features={secondary.features}
               cta={{ label: 'Zobacz kalendarz', to: secondary.creatorRoute }}
               tone="onLight"

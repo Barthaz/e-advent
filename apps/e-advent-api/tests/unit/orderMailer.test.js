@@ -88,7 +88,7 @@ describe('orderMailer', () => {
     }));
   });
 
-  test('sendPaidOrderEmails sends access mail for interactive item', async () => {
+  test.each([{ extras: [] }, { extras: [{ sku: 'santa-letter', quantity: 1, unitPrice: 29 }] }])('sends buyer confirmation before calendar access with $extras', async ({ extras }) => {
     Calendar.findCalendarById.mockResolvedValue(interactiveCalendar({
       data: { ...interactiveCalendar().data, email: 'owner@example.com', openingMethod: 'online' },
     }));
@@ -96,15 +96,33 @@ describe('orderMailer', () => {
       id: 'ord-i',
       status: 'succeeded',
       customerEmail: 'buyer@example.com',
-      amount: 9,
+      amount: 9 + extras.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
       shippingAmount: 0,
       productType: 'interactive',
-      items: [{ sku: 'interactive', quantity: 1, unitPrice: 9, calendarId: 'cal-1' }],
-    }, 'admin');
-    expect(result.sent).toBe(1);
-    expect(sendEmail.mock.calls[0][0].subject).toMatch(/Kalendarz/);
-    expect(sendEmail.mock.calls[0][0].html).toContain('ABC123');
-    expect(sendEmail.mock.calls[0][0].to).toBe('owner@example.com');
+      items: [{ sku: 'interactive', quantity: 1, unitPrice: 9, calendarId: 'cal-1' }, ...extras],
+    }, 'webhook');
+    expect(result.sent).toBe(2);
+    const [receipt, access] = sendEmail.mock.calls.map(([message]) => message);
+    expect(receipt.to).toBe('buyer@example.com');
+    expect(receipt.subject).toMatch(/Potwierdzenie/);
+    expect(receipt.text).toMatch(/osobnym e-mailu/);
+    expect(access.to).toBe('owner@example.com');
+    expect(access.html).toContain('ABC123');
+  });
+
+  test('retries a failed confirmation before sending access to either calendar owner', async () => {
+    const items = ['cal-one', 'cal-two'].map(calendarId => ({ sku: 'interactive', calendarId, quantity: 1, unitPrice: 9 }));
+    const order = physicalOrder({ productType: 'interactive', amount: 18, shippingAmount: 0, items });
+    Calendar.findCalendarById.mockImplementation(async id => interactiveCalendar({
+      id, _id: id, data: { ...interactiveCalendar().data, email: id + '@example.com' },
+    }));
+    sendEmail.mockRejectedValueOnce(new Error('SMTP temporarily unavailable'));
+    expect(await sendPaidOrderEmails(order)).toMatchObject({ sent: 0, failed: 1 });
+    expect(Calendar.findCalendarById).not.toHaveBeenCalled();
+    expect(await sendPaidOrderEmails(order)).toMatchObject({ sent: 3, failed: 0 });
+    expect(sendEmail.mock.calls.map(([message]) => message.to)).toEqual([
+      'buyer@example.com', 'buyer@example.com', 'cal-one@example.com', 'cal-two@example.com',
+    ]);
   });
 
   test('sendPaidOrderEmails rejects unpaid orders', async () => {

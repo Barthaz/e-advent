@@ -40,7 +40,6 @@ const GALLERY = [
 
 const HIGHLIGHTS = [
   { icon: 'far fa-envelope', label: 'Koperta zaadresowana do Mikołaja' },
-  { icon: 'fas fa-truck', label: 'Wysyłka InPost w 3–5 dni roboczych' },
   { icon: 'far fa-heart', label: 'Rytuał, który dzieci zapamiętają' },
 ];
 
@@ -141,7 +140,7 @@ export default function SantaLetterProduct() {
     <>
       <SEOHead
         title="List do Świętego Mikołaja — zestaw listów, koperta i naklejki | e-Advent"
-        description="Gotowy zestaw List do Świętego Mikołaja: 2 wersje listu, opisana koperta i naklejki. Cena od 29 zł + dostawa. Idealny prezent adwentowy dla dzieci."
+        description="Gotowy zestaw List do Świętego Mikołaja: 2 wersje listu, opisana koperta i naklejki. Cena od 29 zł + koszt dostawy. Idealny prezent adwentowy dla dzieci."
         keywords="list do świętego mikołaja, list do mikołaja, zestaw list mikołaj, koperta do mikołaja, prezent adwentowy, e-advent"
         canonical="https://e-advent.pl/list-do-swietego-mikolaja"
         ogImage={`https://e-advent.pl${GALLERY[0].src}`}
@@ -155,9 +154,8 @@ export default function SantaLetterProduct() {
             title="List do Świętego Mikołaja"
             description="Gotowy zestaw do wysyłki: dwie wersje listu, opisana koperta i naklejki świąteczne. Magiczny rytuał, który dzieci zapamiętają na lata."
             price={formatPrice(basePrice)}
-            priceHint="+ dostawa"
-            priceNote="Cena za jeden zestaw, bez dostawy"
-            features={['2 wersje listu', 'Opisana koperta', 'Naklejki świąteczne', 'Wysyłka InPost']}
+            priceHint="+ koszt dostawy"
+            features={['2 wersje listu', 'Opisana koperta', 'Naklejki świąteczne']}
           />
 
           <LetterPackComposer

@@ -6,6 +6,7 @@ import type { ShippingAddress } from '../types/order';
 export const ORDER_SUMMARY_KEY = 'e-advent-order-summary';
 
 export interface OrderLineItem {
+  calendarId?: string;
   sku: string;
   name: string;
   quantity: number;
@@ -32,6 +33,7 @@ export function toOrderLineItems(items: AnalyticsItem[]): OrderLineItem[] {
 
 export function cartItemsToOrderLines(items: CartItem[]): OrderLineItem[] {
   return items.map((i) => ({
+    ...(i.calendarId ? { calendarId: i.calendarId } : {}),
     sku: i.sku,
     name:
       i.label

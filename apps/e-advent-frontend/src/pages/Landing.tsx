@@ -17,7 +17,7 @@ const CALENDAR_PRICE = PRODUCT_FAMILIES.find((family) => family.type === 'intera
 const FAQ = [
   {
     question: 'Co dokładnie otrzymam po zamówieniu?',
-    answer: 'Kalendarz online to prywatna strona z 24 okienkami — link otrzymasz e-mailem po płatności. Kalendarz zdrapka i zestaw do napisania listu to produkty fizyczne, które wysyłamy InPost. Wiadomość od Mikołaja to spersonalizowane nagranie głosowe ze stroną odsłuchu i możliwością pobrania MP3.',
+    answer: 'Kalendarz online to prywatna strona z 24 okienkami — link otrzymasz e-mailem po płatności. Kalendarz zdrapka i zestaw do napisania listu to produkty fizyczne, które wyślemy do Ciebie kurierem. Wiadomość od Mikołaja to spersonalizowane nagranie głosowe ze stroną odsłuchu i możliwością pobrania MP3.',
   },
   {
     question: 'Czy wiadomość od Mikołaja jest rozmową na żywo?',
@@ -126,11 +126,10 @@ export default function Landing() {
               <p>Przykład poniżej to tylko głos. Własną wiadomość układasz pod dziecko: Mikołaj wypowie jego imię, wspomni mały sukces i powie kilka słów tylko dla niego.</p>
               <ul className="story-voice-points">
                 <li>Po zakupie wpisujesz imię i to, z czego dziecko jest dumne</li>
-                <li>Sprawdzasz tekst, zanim powstanie nagranie</li>
                 <li>Na e-mail przychodzi prywatny link i plik MP3</li>
               </ul>
               <div className="story-sample">
-                <p className="story-sample-label"><span /> Posłuchaj, jak to brzmi <small>Przykład, bez imienia Twojego dziecka</small></p>
+                <p className="story-sample-label"><span /> Posłuchaj, jak to brzmi</p>
                 <SantaAudioPlayer src="/assets/santa_sample.mp3" variant="wave" size={400} durationHint={24}
                   onFirstPlay={() => trackSantaEvent('santa_audio_play', { source: 'demo' })}
                   onProgress={(mark) => trackSantaEvent('santa_audio_progress', { progress_percent: mark, source: 'demo' })}
@@ -152,7 +151,7 @@ export default function Landing() {
               <h2 id="bundle-title">Od „Drogi Mikołaju…”<br />do „Witaj, <em>maluchu!</em>”</h2>
               <p>Najpierw wspólnie zapisujecie marzenia. Później dziecko słyszy Mikołaja, który zwraca się właśnie do niego. Połącz papierowy list z osobistą wiadomością głosową.</p>
               <ul className="story-bundle-includes"><li><i className="far fa-envelope" aria-hidden="true" /> Zestaw do napisania listu — przesyłka do domu</li><li><i className="fas fa-headphones" aria-hidden="true" /> Spersonalizowane nagranie — prywatny link i MP3</li></ul>
-              <div className="story-bundle-price"><span>List + wiadomość</span><strong>{formatPrice(bundle)}</strong><p>Osobno: {formatPrice(LETTER_PRICE + standalone)}{savings > 0 && <> · W zestawie oszczędzasz {formatPrice(savings)}</>}</p><small>+ koszt dostawy papierowego zestawu</small></div>
+              <div className="story-bundle-price"><span>List + wiadomość</span><strong>{formatPrice(bundle)}</strong><p>Osobno: {formatPrice(LETTER_PRICE + standalone)}{savings > 0 && <> · W zestawie oszczędzasz {formatPrice(savings)}</>}</p><small>+ koszt dostawy</small></div>
               <Link className="btn-green story-cta" to="/list-do-swietego-mikolaja?wiadomosc=1" onClick={() => trackSantaEvent('santa_product_cta_click', { cta_location: 'landing_bundle', purchase_mode: 'letter_addon' })}>
                 Wybierz magiczny zestaw<i className="fas fa-arrow-right" aria-hidden="true" />
               </Link>
@@ -166,7 +165,7 @@ export default function Landing() {
             <ol className="story-steps">
               <li><span>01</span><h3>Wybierz swój rozdział</h3><p>Kalendarz, papierowy list, nagranie — albo zestaw. Na stronie produktu zobaczysz jego zawartość i cenę.</p></li>
               <li><span>02</span><h3>Dodaj coś od siebie</h3><p>W kreatorze kalendarza wybierzesz zadania. W kreatorze wiadomości opowiesz Mikołajowi o dziecku.</p></li>
-              <li><span>03</span><h3>Odbierz i cieszcie się razem</h3><p>Produkty cyfrowe otrzymasz e-mailem. Papierowy zestaw i zdrapkę wyślemy InPost. Pozostaje znaleźć Waszą wspólną chwilę.</p></li>
+              <li><span>03</span><h3>Odbierz i cieszcie się razem</h3><p>Produkty cyfrowe otrzymasz e-mailem. List i zdrapkę wyślemy do Ciebie kurierem. Pozostaje znaleźć Waszą wspólną chwilę.</p></li>
             </ol>
             <div className="story-delivery-note"><i className="fas fa-box-open" aria-hidden="true" /><p><strong>List i zdrapka:</strong> realizacja 3–5 dni roboczych + dostawa.<br /><strong>Nagranie:</strong> zwykle do 24 godzin od opłacenia zamówienia.</p><Link to="/dostawa-i-zwroty">O dostawie i zwrotach <i className="fas fa-arrow-right" aria-hidden="true" /></Link></div>
           </div>
@@ -181,7 +180,7 @@ export default function Landing() {
               <ul><li>Próbka nagrania dostępna przed zakupem.</li><li>Prywatne linki do produktów cyfrowych.</li><li>Zawartość zestawu i koszty pokazane przy zamówieniu.</li></ul>
               <p className="story-contact">Potrzebujesz pomocy w wyborze?<a href="mailto:kontakt@e-advent.pl">kontakt@e-advent.pl <i className="fas fa-arrow-up-right-from-square" aria-hidden="true" /></a></p>
             </div>
-            <div className="story-faq"><h3>O co najczęściej pytają rodzice?</h3>{FAQ.map((item) => <details key={item.question}><summary>{item.question}<i className="fas fa-plus" aria-hidden="true" /></summary><p>{item.answer}</p></details>)}</div>
+            <div className="story-faq"><h3>O co najczęściej pytają klienci?</h3>{FAQ.map((item) => <details key={item.question}><summary>{item.question}<i className="fas fa-plus" aria-hidden="true" /></summary><p>{item.answer}</p></details>)}</div>
           </div>
         </section>
 

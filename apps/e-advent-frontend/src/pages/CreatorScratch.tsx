@@ -198,7 +198,7 @@ export default function CreatorScratch() {
     <>
       <SEOHead
         title="Kalendarz zdrapka — złote okienka, 3 warianty | e-Advent"
-        description="Fizyczny kalendarz adwentowy ze złotymi zdrapkami. Wybierz wariant i przygodę — gotową historię albo własne zadania. Cena 69 zł + dostawa."
+        description="Fizyczny kalendarz adwentowy ze złotymi zdrapkami. Wybierz wariant i przygodę — gotową historię albo własne zadania. Cena 69 zł + koszt dostawy."
         keywords="kalendarz adwentowy zdrapka, kalendarz zdrapka A3, adwentowy kalendarz fizyczny, e-advent"
         canonical="https://e-advent.pl/stworz-kalendarz/zdrapka"
         ogImage={`https://e-advent.pl${SCRATCH_GALLERY[0].src}`}
@@ -212,7 +212,7 @@ export default function CreatorScratch() {
             title="Kalendarz adwentowy zdrapka A3"
             description="Świąteczny kalendarz zdrapka ze złotymi okienkami. Każdego dnia zdrapujesz pole i odkrywasz zadanie — gotową przygodę albo własną historię, którą ułożysz tutaj."
             price={formatPrice(basePrice)}
-            priceHint="+ dostawa"
+            priceHint="+ koszt dostawy"
             features={['Format A3 (29,7 × 42 cm)', 'Złote okienka do zdrapania', '3 warianty', 'Wysyłka InPost']}
           />
 

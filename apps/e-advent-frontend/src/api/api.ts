@@ -145,7 +145,8 @@ function mapToApiFormat(
 
 export async function createCalendar(
   internalData: InternalCalendarData,
-  calendarId?: string
+  calendarId?: string,
+  saveAsPending = true
 ): Promise<CreateCalendarResponse> {
   const pendingToken = typeof localStorage !== 'undefined'
     ? localStorage.getItem('e-advent-pending-edit-token')
@@ -195,7 +196,7 @@ export async function createCalendar(
         } catch {
           /* ignore */
         }
-        return createCalendar(internalData, undefined);
+        return createCalendar(internalData, undefined, saveAsPending);
       }
 
       const error = new Error(errorMessage) as Error & { status?: number; responseData?: unknown };
@@ -210,10 +211,12 @@ export async function createCalendar(
 
     if (responseData.editToken) {
       try {
-        localStorage.setItem('e-advent-pending-calendar-id', responseData.calendar.id);
-        localStorage.setItem('e-advent-pending-edit-token', responseData.editToken);
         localStorage.setItem(`e-advent-edit-token:${responseData.calendar.id}`, responseData.editToken);
-        localStorage.setItem('calendarId', responseData.calendar.id);
+        if (saveAsPending) {
+          localStorage.setItem('e-advent-pending-calendar-id', responseData.calendar.id);
+          localStorage.setItem('e-advent-pending-edit-token', responseData.editToken);
+          localStorage.setItem('calendarId', responseData.calendar.id);
+        }
       } catch {
         /* ignore */
       }

@@ -286,8 +286,9 @@ export default function CartPage() {
                         <p className="text-parchment-muted text-sm">
                           {formatPrice(unit)} / szt.
                           {item.format ? ` · format ${item.format}` : ''}
-                          {isPersonalized ? ' · spersonalizowany' : ''}
+                          {item.sku === 'interactive' ? ' · produkt cyfrowy · personalizacja uzupełniona' : isPersonalized ? ' · spersonalizowany' : ''}
                         </p>
+                        {item.sku === 'interactive' && <p className="text-parchment-muted text-sm">Po opłaceniu wyślemy osobny e-mail z dostępem {item.customerEmail ? 'na ' + item.customerEmail : 'na adres podany w kreatorze'}.</p>}
                       </div>
                       <div className="flex items-center gap-3">
                         {row.lockQuantity ? (
@@ -369,7 +370,7 @@ export default function CartPage() {
             </section>
             <form id="cart-contact" className="order-panel order-contact" onSubmit={continueOrder} noValidate>
               <p className="order-eyebrow">Kontakt do zamówienia</p><h2>Na jaki e-mail wysłać potwierdzenie?</h2>
-              <p>Tu otrzymasz informacje o zamówieniu oraz linki do produktów cyfrowych.</p>
+              <p>Na ten adres wyślemy potwierdzenie zamówienia{items.some(item => item.sku === 'interactive') ? '. Dostęp do kalendarza trafi na adres podany przy jego personalizacji.' : ' oraz informacje o realizacji.'}</p>
               <label htmlFor="cart-email">Adres e-mail <span aria-hidden="true">*</span></label>
               <input id="cart-email" type="email" name="email" autoComplete="email" required value={email}
                 placeholder="twoj@email.pl" aria-invalid={Boolean(emailError)} aria-describedby="cart-email-help"

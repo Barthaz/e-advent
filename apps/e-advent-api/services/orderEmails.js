@@ -189,9 +189,6 @@ function emailShell({ title, subtitle, bodyHtml, logoUrl, preheader, footerNote 
               <tr>
                 <td align="center" class="px-mobile" style="padding:48px 52px 8px 52px;">
                   ${logoBlock}
-                  <p class="c-gold" style="margin:0; letter-spacing:4px; text-transform:uppercase; font-size:10px; color:${gold} !important; font-family:'Helvetica Neue',Arial,sans-serif;">
-                    Kalendarz Adwentowy
-                  </p>
                 </td>
               </tr>
               <tr>
@@ -340,6 +337,7 @@ function buildOrderConfirmationEmail({
     ${itemsTableHtml(items)}
     <div style="margin-top:10px;">${totalsHtml}</div>
     <div style="margin-top:18px;">${addressHtml}</div>
+    ${items.some(item => item.sku === 'interactive') ? '<p>Dostęp do każdego kalendarza online wyślemy w osobnym e-mailu na adres podany w jego kreatorze.</p>' : ''}
     ${digitalConsent?.text ? `<div style="margin-top:18px;">${sectionLabel('Potwierdzenie zgody na treść cyfrową')}<p style="color:#2f3a30;font-size:12px;line-height:1.6;">${escapeHtml(digitalConsent.text)}<br>Data: ${escapeHtml(digitalConsent.acceptedAt)} · wersja ${escapeHtml(digitalConsent.version)}</p></div>` : ''}
   `;
 
@@ -377,6 +375,7 @@ function buildOrderConfirmationText({
     '',
     'Pozycje:',
     ...lines,
+    ...(items.some(item => item.sku === 'interactive') ? ['Dostęp do każdego kalendarza online wyślemy w osobnym e-mailu na adres podany w jego kreatorze.'] : []),
     '',
     `Razem: ${formatPln(amount)}`,
   ];
